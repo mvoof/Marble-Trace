@@ -6,7 +6,7 @@ import { getGameDelta } from '@shared/lib/delta-utils';
 import { useWidgetSettings } from '@entities/layout/useWidgetSettings';
 import { usePlayerStore } from '@entities/player/player-context';
 import type { SectorMatrixWidgetSettings } from '../settings-schema';
-import { formatLapTimeOrDash } from '../sector-matrix-format';
+import { formatLapTimeOrDash } from '@shared/lib/telemetry-format';
 
 import styles from './SectorHeader.module.scss';
 
@@ -32,7 +32,7 @@ export const SectorHeader = observer(() => {
       <div className={styles.lap}>
         <StatChip
           lead={`L${lapNum ?? '-'}`}
-          leadVariant="solid"
+          look="state"
           tone="positive"
           className={styles.lapChip}
         />
@@ -46,8 +46,8 @@ export const SectorHeader = observer(() => {
       {showPredicted && (
         <StatChip
           lead="PRED"
+          look="reading"
           tone="accent"
-          emphasized
           className={styles.predChip}
         >
           <FixedDigits text={formatLapTimeOrDash(predictedTime)} />

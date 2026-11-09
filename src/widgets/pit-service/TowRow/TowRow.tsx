@@ -23,7 +23,7 @@ export const TowRow = observer(() => {
   return (
     <div className={styles.tow}>
       <div className={styles.row}>
-        <StatChip lead="TOW TIME" tone="danger" leadVariant="solid" />
+        <StatChip lead="TOW TIME" look="vivid" tone="danger" />
 
         <span className={styles.value}>
           {formatCountdown(widget.towTimeS)}

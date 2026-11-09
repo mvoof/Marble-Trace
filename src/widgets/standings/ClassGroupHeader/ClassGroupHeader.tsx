@@ -55,12 +55,12 @@ export const ClassGroupHeader = observer(
 
         <div className={styles.pills}>
           {settings.showSOF && (
-            <StatChip lead="SOF" leadVariant="solid" tone="accent" emphasized>
+            <StatChip lead="SOF" look="reading" tone="accent">
               {formatIRating(classSof, settings.abbreviateSof)}
             </StatChip>
           )}
 
-          <StatChip icon={Users} leadVariant="solid" tone="info" emphasized>
+          <StatChip icon={Users} look="reading" tone="info">
             {totalDrivers}
           </StatChip>
         </div>

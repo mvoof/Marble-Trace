@@ -2,11 +2,7 @@ import { useWidgetSettings } from '@entities/layout/useWidgetSettings';
 import { observer } from 'mobx-react-lite';
 
 import { FixedDigits } from '@shared/ui/FixedDigits/FixedDigits';
-import {
-  formatFuel,
-  NO_FUEL_DATA_PLACEHOLDER,
-  NO_LAPS_REMAINING_DATA_PLACEHOLDER,
-} from '@shared/lib/telemetry-format';
+import { formatFuel, EMPTY_VALUE } from '@shared/lib/telemetry-format';
 import { useBackendComputedStore } from '@entities/cars/computed-context';
 import { useUnitsStore } from '@entities/app-settings/units-context';
 import {
@@ -65,7 +61,7 @@ export const FuelSummaryRow = observer(() => {
   const shortageText =
     shortage !== null
       ? `${shortage >= 0 ? '+' : ''}${formatFuel(shortage, unitSystem)}`
-      : NO_FUEL_DATA_PLACEHOLDER;
+      : EMPTY_VALUE;
 
   const isShort = shortage !== null && shortage < 0;
   const shortageClass = resolveShortageClass(shortage, lapsStatus);
@@ -80,9 +76,7 @@ export const FuelSummaryRow = observer(() => {
         <FixedDigits
           className={styles.sideValue}
           text={
-            avgPerLap !== null
-              ? formatFuel(avgPerLap, unitSystem)
-              : NO_FUEL_DATA_PLACEHOLDER
+            avgPerLap !== null ? formatFuel(avgPerLap, unitSystem) : EMPTY_VALUE
           }
         />
 
@@ -96,9 +90,7 @@ export const FuelSummaryRow = observer(() => {
           <FixedDigits
             className={styles.lapsValue}
             text={
-              lapsRemaining !== null
-                ? lapsRemaining.toFixed(1)
-                : NO_LAPS_REMAINING_DATA_PLACEHOLDER
+              lapsRemaining !== null ? lapsRemaining.toFixed(1) : EMPTY_VALUE
             }
           />
         </span>

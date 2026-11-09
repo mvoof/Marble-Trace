@@ -367,10 +367,8 @@ export const DriverRow = observer(
             <StatChip
               key={chip.status}
               lead={chip.label}
-              leadVariant="solid"
+              look="reading"
               tone={chip.tone}
-              className={styles.statusChip}
-              emphasized
             >
               {chip.status === 'tow'
                 ? towDetail

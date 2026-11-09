@@ -57,7 +57,7 @@ export const SafetyRatingChip = observer(
         ].join(' ')}
         lead={lead}
         leadKind="number"
-        leadVariant={isSolid ? 'solid' : 'tint'}
+        look={isSolid ? 'vivid' : 'plain'}
         tone={licenseTone(licString)}
       />
     );

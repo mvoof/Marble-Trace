@@ -4,7 +4,7 @@ import {
   getDeltaState,
 } from '@shared/lib/delta-utils';
 import type { StatChipTone } from '@shared/ui/StatChip/StatChip';
-import { EMPTY_VALUE } from '../sector-matrix-format';
+import { EMPTY_VALUE } from '@shared/lib/telemetry-format';
 
 const LIVE_TEXT = 'LIVE';
 

@@ -1,11 +1,7 @@
 import { useWidgetSettings } from '@entities/layout/useWidgetSettings';
 import { observer } from 'mobx-react-lite';
 
-import {
-  formatFuel,
-  NO_FUEL_DATA_PLACEHOLDER,
-  NO_LAPS_REMAINING_DATA_PLACEHOLDER,
-} from '@shared/lib/telemetry-format';
+import { formatFuel, EMPTY_VALUE } from '@shared/lib/telemetry-format';
 import { useBackendComputedStore } from '@entities/cars/computed-context';
 import { usePlayerStore } from '@entities/player/player-context';
 import { useUnitsStore } from '@entities/app-settings/units-context';
@@ -64,12 +60,12 @@ export const FuelStatsRow = observer(() => {
   const stats = fuel?.historyStats ?? EMPTY_FUEL_HISTORY_STATS;
 
   const formatConsumption = (value: number | null): string =>
-    value !== null ? formatFuel(value, unitSystem) : NO_FUEL_DATA_PLACEHOLDER;
+    value !== null ? formatFuel(value, unitSystem) : EMPTY_VALUE;
 
   const formatLaps = (value: number | null): string => {
     const laps = computeLapsToEmpty(fuelLevel, value);
 
-    return laps !== null ? laps.toFixed(1) : NO_LAPS_REMAINING_DATA_PLACEHOLDER;
+    return laps !== null ? laps.toFixed(1) : EMPTY_VALUE;
   };
 
   return (

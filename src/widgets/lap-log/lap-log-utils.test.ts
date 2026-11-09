@@ -4,7 +4,6 @@ import type { LapHistoryEntry } from '@shared/contracts/generated/bindings';
 import {
   averageValidLapTime,
   computeLapLogDesignWidth,
-  formatLapTimeOrDash,
   paceLossFraction,
   paceLossTone,
 } from './lap-log-utils';
@@ -52,17 +51,6 @@ describe('averageValidLapTime', () => {
       average: null,
       count: 0,
     });
-  });
-});
-
-describe('formatLapTimeOrDash', () => {
-  it('writes a dash where there is no time, never the template', () => {
-    expect(formatLapTimeOrDash(null)).toBe('-');
-    expect(formatLapTimeOrDash(0)).toBe('-');
-  });
-
-  it('writes a time as the tables do', () => {
-    expect(formatLapTimeOrDash(90.412)).toBe('1:30.412');
   });
 });
 

@@ -3,10 +3,10 @@ import { observer } from 'mobx-react-lite';
 import { FixedDigits } from '@shared/ui/FixedDigits/FixedDigits';
 import { StatChip } from '@shared/ui/StatChip/StatChip';
 import { formatDelta } from '@shared/lib/delta-utils';
+import { EMPTY_VALUE } from '@shared/lib/telemetry-format';
 import {
   paceLossFraction,
   paceLossTone,
-  EMPTY_VALUE,
   type PaceLossTone,
 } from '../lap-log-utils';
 
@@ -62,7 +62,7 @@ const DeltaCell = observer(({ delta, paceLossBars }: DeltaCellProps) => {
   const text = formatDelta(delta).trim();
 
   if (!paceLossBars) {
-    return <StatChip lead={text} leadKind="number" tone={tone} emphasized />;
+    return <StatChip lead={text} leadKind="number" look="mark" tone={tone} />;
   }
 
   const fraction = paceLossFraction(delta);
@@ -116,8 +116,8 @@ export const LapRow = observer(
               <StatChip
                 lead="RUN"
                 leadKind="number"
+                look="reading"
                 tone="positive"
-                emphasized
               />
             )}
 
@@ -125,13 +125,13 @@ export const LapRow = observer(
               <StatChip
                 lead="★ BEST"
                 leadKind="number"
+                look="reading"
                 tone="special"
-                emphasized
               />
             )}
 
             {kind === 'invalid' && (
-              <StatChip lead="INV" leadVariant="solid" tone="danger" />
+              <StatChip lead="INV" look="reading" tone="danger" />
             )}
 
             {kind === 'lap' && (

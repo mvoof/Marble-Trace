@@ -30,8 +30,20 @@ $pad-y: var(--chip-pad-y, #{sp(xxxs)});
   vertical-align: middle;
 }
 
-// Only a chip whose state asks for a look takes its color on the edge.
-.chipEmphasized {
+// `reading`: the label light on a deep shade of its color, framed in it.
+.lookReading {
+  @include chip-muted-solid;
+
+  border-color: $edge;
+}
+
+// `state`: the same deep shade, a label alone and unframed.
+.lookState {
+  @include chip-muted-solid;
+}
+
+// `mark`: the plain label, framed bright.
+.lookMark {
   border-color: $edge;
 }
 
