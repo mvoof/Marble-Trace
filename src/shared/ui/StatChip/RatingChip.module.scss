@@ -19,6 +19,12 @@ $seam-half: 0.33em;
   gap: sp(xxs);
 }
 
+// A filled chip has no edge, so it would sit 2px shorter than the chips beside
+// it; its line takes the 2px back.
+.srSolid {
+  --chip-line: calc(#{$table-chip-line} + 2px);
+}
+
 // The iRating on a white chip, its number dark — set apart from the colored SR
 // beside it, and from the rows' quieted chips.
 .iRating {
@@ -26,6 +32,17 @@ $seam-half: 0.33em;
   --chip-value-bg: #{$chip-text};
   --chip-value-text: #{$chip-bg};
   --chip-value-padding-x: #{sp(xs)};
+  // The SR's weight, so the pair reads as one pair of figures.
+  --chip-value-weight: 700;
+
+  // The number centred in the box its widest format reserves.
+  > span {
+    justify-content: center;
+
+    > span {
+      text-align: center;
+    }
+  }
 }
 
 .split {
