@@ -20,6 +20,9 @@ interface CarDotProps {
 const PLAYER_RADIUS_SCALE = 1.3; // player dot is 30% larger than competitor dots
 const STROKE_TO_RADIUS = 0.25; // class-color border thickness
 const NUMBER_FONT_TO_RADIUS = 1.2; // car number font size inside the circle
+// Three digits at the two-digit size run wider than the circle they sit in.
+const LONG_NUMBER_FONT_TO_RADIUS = 0.8;
+const LONG_NUMBER_LENGTH = 3;
 const NUMBER_DY_TO_FONT = 0.4; // vertical nudge to visually center text (SVG dy is from baseline)
 const MARKER_GAP_TO_SCALE = 8; // gap between the marker icon and the dot outline
 
@@ -34,7 +37,11 @@ export const CarDot = observer(
     playerColor = '#18181b',
   }: CarDotProps) => {
     const r = isPlayer ? radius * PLAYER_RADIUS_SCALE : radius;
-    const fontSize = radius * NUMBER_FONT_TO_RADIUS;
+    const fontToRadius =
+      carNumber.length >= LONG_NUMBER_LENGTH
+        ? LONG_NUMBER_FONT_TO_RADIUS
+        : NUMBER_FONT_TO_RADIUS;
+    const fontSize = radius * fontToRadius;
     const scale = radius / 10;
     const rect = carDotRect(shape, r);
     // The diamond's corner, not its edge, is what the marker has to clear.

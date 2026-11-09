@@ -25,6 +25,9 @@
   align-items: center;
   gap: sp('lg');
   min-width: 0;
+  // The rival side aligns its content to the right edge, so an uncapped header
+  // grows leftwards out of its half and over the gap in the middle.
+  max-width: 100%;
 }
 
 .sideRival .header {

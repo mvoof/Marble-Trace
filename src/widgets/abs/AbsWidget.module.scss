@@ -30,7 +30,7 @@ $badge-slant: ws(14);
   clip-path: polygon(0 0, 100% 0, calc(100% - #{$badge-slant}) 100%, 0 100%);
   background: var(--abs-badge);
   color: $widget-text-on-accent;
-  font-size: fs(xxl);
+  font-size: fs(xl);
   font-weight: 700;
   font-style: italic;
   letter-spacing: 0.02em;
@@ -53,7 +53,7 @@ $badge-slant: ws(14);
   align-items: center;
   justify-content: center;
   color: $widget-text-primary;
-  font-size: fs(xxxl);
+  font-size: fs(xxl);
   font-weight: 700;
   line-height: 1;
 }
