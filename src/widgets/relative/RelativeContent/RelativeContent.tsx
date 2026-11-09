@@ -55,21 +55,17 @@ export const RelativeContent = observer(() => {
       return rows.slice(0, visibleRowCount);
     }
 
-    // Force an odd window so the player can sit dead-centre with an equal
-    // number of rows above and below. On resize, rows are then added/removed
-    // symmetrically from both ends — the player row never shifts position.
-    let total = Math.min(visibleRowCount, rows.length);
-
-    if (total % 2 === 0 && total > 1) {
-      total -= 1;
-    }
+    // Every row the height allows is drawn, one at a time as the widget grows,
+    // as the standings do. An odd window centres the player; an even one gives
+    // its extra row to the cars ahead.
+    const total = Math.min(visibleRowCount, rows.length);
 
     const aboveAvail = playerIdx;
     const belowAvail = rows.length - playerIdx - 1;
-    const half = (total - 1) / 2;
+    const others = total - 1;
 
-    let above = Math.min(half, aboveAvail);
-    let below = Math.min(half, belowAvail);
+    let above = Math.min(Math.ceil(others / 2), aboveAvail);
+    let below = Math.min(Math.floor(others / 2), belowAvail);
     // Reclaim the opposite side's unused budget when the player is near an edge.
     above = Math.min(total - 1 - below, aboveAvail);
     below = Math.min(total - 1 - above, belowAvail);
