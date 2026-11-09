@@ -5,10 +5,26 @@
 // (`ratingChipWidth`).
 $seam-half: 0.33em;
 
-// The iRating sits on the darkest ground the chip has: it keeps the full
-// white even in a row that quiets its other chips.
-.chip {
+// Two chips where `ratingChipWidth` counts one: a filled SR chip has no edge,
+// so the pair spends the one chip's 2px of edges and 16px of value padding on
+// the iRating's edges (2px), its padding (12px) and the gap (4px). A tinted SR
+// chip keeps its edges, so its gap is the 2px left over.
+.pair {
+  display: inline-flex;
+  align-items: center;
+  gap: sp(xxxs);
+}
+
+.pairSolid {
+  gap: sp(xxs);
+}
+
+// The iRating on the darkest ground the chip has, in the full white even in a
+// row that quiets its other chips.
+.iRating {
+  --chip-value-bg: #{$chip-value-dark};
   --chip-value-text: #{$widget-text-primary};
+  --chip-value-padding-x: #{sp(xs)};
 }
 
 .split {

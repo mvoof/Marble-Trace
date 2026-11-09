@@ -111,7 +111,7 @@ $edge: var(--chip-edge, #{$chip-border});
   display: inline-flex;
   align-items: center;
   min-width: 0;
-  padding: sp(xxxs) sp(sm);
+  padding: sp(xxxs) var(--chip-value-padding-x, #{sp(sm)});
   background: var(--chip-value-bg, transparent);
   color: var(--chip-value-text, #{$widget-text-primary});
   font-family: $font-mono;
