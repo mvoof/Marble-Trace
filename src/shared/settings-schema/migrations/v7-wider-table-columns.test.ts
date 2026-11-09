@@ -4,12 +4,14 @@ import { STANDINGS_SETTINGS } from '@widgets/standings/settings-schema';
 import { computeStandingsDesignWidth } from '@widgets/standings/standings-utils';
 import { RELATIVE_SETTINGS } from '@widgets/relative/settings-schema';
 import { computeRelativeDesignWidth } from '@widgets/relative/relative-utils';
+import { FUEL_MANIFEST } from '@widgets/fuel/manifest';
 import { v7WiderTableColumns } from './v7-wider-table-columns';
 
 // What v6 derived for the shipped settings: the frames on disk were drawn
 // against these.
 const STANDINGS_V6_DEFAULT_WIDTH = 802;
 const RELATIVE_V6_DEFAULT_WIDTH = 430;
+const FUEL_V6_DEFAULT_WIDTH = 240;
 
 const instance = (
   type: string,
@@ -109,10 +111,63 @@ describe('v7 — table frames widened with their columns', () => {
 
   it('leaves every other widget alone', () => {
     const migrated = v7WiderTableColumns.migrate(
-      fileWith([instance('fuel', 300)])
+      fileWith([instance('weather', 300)])
     );
 
     expect(frameWidthOf(widgetsOf(migrated)[0])).toBe(300);
+  });
+
+  it('lands a default fuel frame on the mockup card width', () => {
+    const migrated = v7WiderTableColumns.migrate(
+      fileWith([instance('fuel', FUEL_V6_DEFAULT_WIDTH)])
+    );
+
+    expect(frameWidthOf(widgetsOf(migrated)[0])).toBe(
+      FUEL_MANIFEST.designWidth
+    );
+  });
+
+  it('keeps the text size of a fuel frame the driver resized', () => {
+    const migrated = v7WiderTableColumns.migrate(
+      fileWith([instance('fuel', 229)])
+    );
+
+    const [fuel] = widgetsOf(migrated);
+    const frame = fuel['frame'] as { width: number; height: number };
+
+    expect(frame.width / FUEL_MANIFEST.designWidth).toBeCloseTo(
+      229 / FUEL_V6_DEFAULT_WIDTH,
+      2
+    );
+    expect(frame.height).toBe(Math.round(500 * (306 / 240)));
+  });
+
+  it('leaves a fuel frame with a design size of its own', () => {
+    const design = { width: 240, height: 360 };
+    const migrated = v7WiderTableColumns.migrate(
+      fileWith([instance('fuel', 240, { design })])
+    );
+
+    expect(frameWidthOf(widgetsOf(migrated)[0])).toBe(240);
+  });
+
+  it('widens the fuel template', () => {
+    const migrated = v7WiderTableColumns.migrate(
+      fileWith([], {
+        fuel: {
+          enabled: true,
+          size: { width: FUEL_V6_DEFAULT_WIDTH, height: 360 },
+          settings: {},
+        },
+      })
+    );
+
+    const templates = migrated['widgetTemplates'] as Record<
+      string,
+      { size: { width: number } }
+    >;
+
+    expect(templates['fuel'].size.width).toBe(FUEL_MANIFEST.designWidth);
   });
 
   it('widens the templates a new layout is built from', () => {
