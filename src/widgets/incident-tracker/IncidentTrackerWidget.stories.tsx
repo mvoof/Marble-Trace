@@ -19,9 +19,9 @@ const meta: Meta<StoryArgs> = {
   ...defineWidgetStories<StoryArgs>({
     widget: IncidentTrackerWidget,
     // The plate paints its own ground from --widget-bg; the frame around it
-    // stays empty, as the transparent container does on the overlay.
+    // stays empty and hugs it, as the transparent container does on the overlay.
     size: {
-      width: 180,
+      width: 'max-content',
       background: 'transparent',
       widgetBg: 'rgba(21, 22, 26, 0.8)',
       border: 'none',

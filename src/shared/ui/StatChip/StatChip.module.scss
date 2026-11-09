@@ -84,11 +84,11 @@ $edge: var(--chip-edge, #{$chip-border});
 .leadNumber {
   font-family: $font-mono;
   font-size: var(--chip-lead-size, #{fs(xxs)});
-  font-weight: 700;
+  font-weight: var(--chip-lead-weight, 700);
 }
 
 .leadSolid {
-  padding-inline: sp(sm);
+  padding-inline: var(--chip-solid-padding-x, #{sp(sm)});
   background: $solid-bg;
   color: $on-solid;
   font-weight: 800;

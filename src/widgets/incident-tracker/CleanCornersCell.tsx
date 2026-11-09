@@ -17,14 +17,18 @@ export const CleanCornersCell = observer(() => {
 
   if (needed === null) {
     return (
-      <MetricCell label={LABEL} tone="neutral">
+      <MetricCell label={LABEL} width="narrow" tone="muted">
         <span className={styles.count}>{UNKNOWN_VALUE}</span>
       </MetricCell>
     );
   }
 
   return (
-    <MetricCell label={LABEL} tone={needed === 0 ? 'positive' : 'warning'}>
+    <MetricCell
+      label={LABEL}
+      width="narrow"
+      tone={needed === 0 ? 'positive' : 'warning'}
+    >
       <FixedDigits className={styles.count} text={String(needed)} />
     </MetricCell>
   );

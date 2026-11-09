@@ -209,6 +209,9 @@ $chip-danger: #ef4444;
 $chip-danger-border: #3b1d22;
 // A caption on a danger ground — the red lifted so it reads on its own tint.
 $chip-danger-soft: #fca5a5;
+// A ground a limit is close on — a shade of the red over the plate, faint
+// enough that the figures on it keep their own colors.
+$chip-danger-ground: rgba($chip-danger, 0.05);
 $chip-special-bg: #2b174d;
 $chip-special: #c49bff;
 $chip-special-edge: #9c64fe;

@@ -1,6 +1,8 @@
 import { observer } from 'mobx-react-lite';
 
 import { FixedDigits } from '@shared/ui/FixedDigits/FixedDigits';
+import { StatChip, type StatChipTone } from '@shared/ui/StatChip/StatChip';
+import { licenseTone } from '@shared/ui/StatChip/rating';
 import {
   deltaDirection,
   formatSr,
@@ -9,45 +11,58 @@ import {
 import { useIncidentTrackerStore } from './incident-tracker-context';
 import styles from './SafetyRatingCell.module.scss';
 
-const DELTA_CLASS: Record<DeltaDirection, string> = {
-  up: styles.deltaUp,
-  down: styles.deltaDown,
-  flat: styles.deltaNeutral,
+const DELTA_TONE: Record<DeltaDirection, StatChipTone> = {
+  up: 'positive',
+  down: 'danger',
+  flat: 'muted',
 };
 
 /** What a session that moves no rating shows where the change would be. */
 const UNRATED_LABEL = 'OFF';
 
+/** Before the roster carries the license, the badge takes the rookie class. */
+const UNKNOWN_LICENSE = 'R';
+
 /**
  * The upper tier: the rating as iRacing states it, which holds still through
- * the event, and a chip with what the event has done to it so far. The chip is
- * an estimate — iRacing publishes no formula.
+ * the event, behind a badge in its license class, and a chip with what the
+ * event has done to it so far. The chip is an estimate — iRacing publishes no
+ * formula.
  */
 export const SafetyRatingCell = observer(() => {
   const store = useIncidentTrackerStore();
-  const deltaClass = DELTA_CLASS[deltaDirection(store.srDelta)];
 
   return (
     <div className={styles.row}>
       <div className={styles.rating}>
-        <span className={styles.label}>SR</span>
+        <StatChip
+          className={styles.badge}
+          lead="SR"
+          leadVariant="solid"
+          tone={licenseTone(store.licString ?? UNKNOWN_LICENSE)}
+        />
         <FixedDigits
           className={styles.value}
           text={formatSr(store.srOfficial)}
         />
       </div>
 
-      <div className={`${styles.delta} ${deltaClass}`}>
-        {store.isRated ? (
-          <>
-            {/* The chip is the model's estimate, never iRacing's number. */}
-            <span className={styles.approx}>≈</span>
-            <FixedDigits text={store.chipText} />
-          </>
-        ) : (
-          UNRATED_LABEL
-        )}
-      </div>
+      {store.isRated ? (
+        <StatChip
+          className={styles.delta}
+          leadKind="number"
+          tone={DELTA_TONE[deltaDirection(store.srDelta)]}
+          lead={
+            <>
+              {/* The chip is the model's estimate, never iRacing's number. */}
+              <span className={styles.approx}>≃</span>
+              <FixedDigits text={store.chipText} />
+            </>
+          }
+        />
+      ) : (
+        <StatChip className={styles.delta} lead={UNRATED_LABEL} tone="muted" />
+      )}
     </div>
   );
 });

@@ -2,35 +2,29 @@ import { observer } from 'mobx-react-lite';
 
 import { FixedDigits } from '@shared/ui/FixedDigits/FixedDigits';
 import { useIncidentTrackerStore } from './incident-tracker-context';
-import { MetricCell, type MetricTone } from './MetricCell';
+import { MetricCell } from './MetricCell';
 import styles from './IncidentsCell.module.scss';
 
 const LABEL = 'INC';
 
-/** Red near or past the limit, amber once the count is off zero. */
-const incidentsTone = (count: number, isAlarmed: boolean): MetricTone => {
-  if (isAlarmed) {
-    return 'danger';
-  }
-
-  if (count > 0) {
-    return 'warning';
-  }
-
-  return 'neutral';
-};
-
-/** The session's incident points, over the limit when the session has one. */
+/**
+ * The session's incident points, over the limit when the session has one —
+ * white until the limit is close, red from there.
+ */
 export const IncidentsCell = observer(() => {
   const store = useIncidentTrackerStore();
-  const count = store.countedIncidents;
   const limit = store.incidentLimit;
-  const tone = incidentsTone(count, store.isDisqualified || store.isNearLimit);
+  const isAlarmed = store.isLimitAlarm;
 
   return (
-    <MetricCell label={LABEL} tone={tone}>
+    <MetricCell
+      label={LABEL}
+      width="normal"
+      tone={isAlarmed ? 'danger' : 'neutral'}
+      isLabelAlarmed={isAlarmed}
+    >
       <span>
-        <FixedDigits text={String(count)} />
+        <FixedDigits text={String(store.countedIncidents)} />
         {limit !== null ? (
           <FixedDigits className={styles.limit} text={`/${limit}`} />
         ) : null}

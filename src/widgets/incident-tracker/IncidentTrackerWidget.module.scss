@@ -1,29 +1,29 @@
-// The plate is as wide as what it holds — a session without penalties or a
-// tier switched off narrows it — so it paints the user's background and border
-// itself; the container around it is transparent (`transparentContainer`).
+// The plate is as wide as what it holds, never narrower than its columns'
+// share of the mockup's card (`minWidth`), so it paints the user's background
+// and border itself; the container around it is transparent
+// (`transparentContainer`). The tiers draw their own grounds inside it.
 .root {
-  justify-content: center;
-  padding: sp(xs) sp(sm);
+  overflow: hidden;
   border: 1px solid var(--widget-border);
-  border-radius: radius(lg);
+  border-radius: radius(md);
   background: var(--widget-bg);
   font-family: $font-widget;
   line-height: 1;
 }
 
-// A hairline between the tiers: parts of one readout, not two cards.
-.divider {
-  height: 1px;
-  margin: sp(xxs) 0;
-  background: $widget-border-default;
+// Near the limit the whole plate is framed in the pit red, as the fuel plate is
+// in a stint's last laps.
+.rootAlarm {
+  border-color: rgba($chip-pit, 0.7);
+
+  .counters {
+    background: $chip-danger-ground;
+  }
 }
 
-// Spread to the plate's edges, so the last counter sits under the rating's
-// change. The plate is only as wide as its widest tier, so a dropped column
-// narrows it rather than opening a hole between the cells.
+// The lower tier, a shade under the plate as a table's rows are.
 .counters {
   display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: sp(lg);
+  align-items: stretch;
+  background: $table-row-bg;
 }

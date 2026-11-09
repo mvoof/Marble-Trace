@@ -1,24 +1,52 @@
+// The columns share the tier as the mockup's grid does — 4 · 5 · 3 — and a
+// column that leaves takes its share of the plate with it. A ruled edge
+// between them, as between a table's cells.
 .cell {
   display: flex;
-  align-items: baseline;
-  gap: sp(xxxs);
-  min-width: 0;
+  align-items: center;
+  justify-content: space-between;
+  gap: sp(xs);
+  padding: sp(xs) sp(sm);
   white-space: nowrap;
+
+  & + & {
+    border-left: 1px solid $table-row-rule;
+  }
+}
+
+.widthNarrow {
+  flex: 3 1 0;
+}
+
+.widthNormal {
+  flex: 4 1 0;
+}
+
+.widthWide {
+  flex: 5 1 0;
 }
 
 .label {
-  font-size: fs(xxxs);
+  font-family: $font-widget;
+  font-size: wfs(9);
   font-weight: 700;
-  letter-spacing: 0.08em;
-  color: $widget-text-secondary;
+  letter-spacing: 0.05em;
+  color: $chip-text-muted;
 }
 
+.labelAlarmed {
+  color: $chip-danger-soft;
+}
+
+// The counters a step over the mockup's 11px: they are what the driver reads.
 .value {
   display: flex;
-  align-items: baseline;
-  gap: sp(xxxs);
+  align-items: center;
+  gap: sp(xxs);
+  font-family: $font-mono;
   font-size: fs(sm);
-  font-weight: 700;
+  font-weight: 800;
+  line-height: 1;
 }
 
 .toneNeutral {
@@ -26,13 +54,17 @@
 }
 
 .tonePositive {
-  color: $widget-status-positive;
+  color: $chip-positive;
 }
 
 .toneWarning {
-  color: $widget-status-warning;
+  color: $chip-accent;
 }
 
 .toneDanger {
-  color: $widget-status-danger;
+  color: $chip-danger;
+}
+
+.toneMuted {
+  color: $chip-text-muted;
 }
