@@ -14,6 +14,8 @@ export const LAP_LOG_SETTINGS = defineSettings('lapLog', {
    * The delta column drawn as a bar of the time lost to the best lap, the
    * delta written over it, instead of a chip.
    */
+  /** The delta column; without it the widget is the lap and time columns alone. */
+  showDelta: bool(true),
   paceLossBars: bool(false),
   /** How tall a lap row is — the tables' three steps; the mockup's is wide. */
   rowPadding: choice(ROW_PADDING, 'wide'),

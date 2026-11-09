@@ -915,6 +915,8 @@
     },
     "lapLog": {
       "moduleParameters": "Module parameters",
+      "showDelta": "Delta column",
+      "showDeltaDesc": "The column with each lap's loss to your best. Hidden, the widget narrows to the lap and time columns.",
       "paceLossBars": "Pace loss bars",
       "paceLossBarsDesc": "The delta column shows how much each lap lost to your best as a bar, the delta written over it, instead of a chip.",
       "rowPadding": "Row height",

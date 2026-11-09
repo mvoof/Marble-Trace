@@ -70,3 +70,25 @@ export const formatLapTimeOrDash = (seconds: number | null): string => {
 
   return formatLapTime(seconds);
 };
+
+/** The mockup card's width, every column shown. */
+const FULL_DESIGN_WIDTH = 264;
+
+/** The columns in twelfths of the card: lap · time · delta, the mockup's 3 · 5 · 4. */
+const LAP_COLUMN_SHARE = 3;
+const TIME_COLUMN_SHARE = 5;
+const DELTA_COLUMN_SHARE = 4;
+const COLUMN_SHARES_TOTAL =
+  LAP_COLUMN_SHARE + TIME_COLUMN_SHARE + DELTA_COLUMN_SHARE;
+
+/** The width the shown columns take at the mockup's scale. */
+export const computeLapLogDesignWidth = (settings: {
+  showDelta: boolean;
+}): number => {
+  const shares =
+    LAP_COLUMN_SHARE +
+    TIME_COLUMN_SHARE +
+    (settings.showDelta ? DELTA_COLUMN_SHARE : 0);
+
+  return Math.round((FULL_DESIGN_WIDTH * shares) / COLUMN_SHARES_TOTAL);
+};

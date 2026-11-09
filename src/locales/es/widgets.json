@@ -915,6 +915,8 @@
     },
     "lapLog": {
       "moduleParameters": "Parámetros del módulo",
+      "showDelta": "Columna de delta",
+      "showDeltaDesc": "La columna con lo que cada vuelta perdió frente a tu mejor. Oculta, el widget se estrecha a las columnas de vuelta y tiempo.",
       "paceLossBars": "Barras de pérdida de ritmo",
       "paceLossBarsDesc": "La columna de delta muestra lo que cada vuelta perdió frente a tu mejor como una barra, con el delta encima, en lugar de un chip.",
       "rowPadding": "Altura de fila",

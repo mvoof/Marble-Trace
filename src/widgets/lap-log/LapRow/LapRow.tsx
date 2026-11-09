@@ -43,6 +43,8 @@ interface LapRowProps {
   delta?: number | null;
   /** The delta as a bar of the time lost instead of a chip. */
   paceLossBars?: boolean;
+  /** The delta column; without it the row is the lap and its time. */
+  showDelta?: boolean;
 }
 
 interface DeltaCellProps {
@@ -83,9 +85,19 @@ const DeltaCell = observer(({ delta, paceLossBars }: DeltaCellProps) => {
 });
 
 export const LapRow = observer(
-  ({ kind, lapNum, time, delta = null, paceLossBars = false }: LapRowProps) => {
+  ({
+    kind,
+    lapNum,
+    time,
+    delta = null,
+    paceLossBars = false,
+    showDelta = true,
+  }: LapRowProps) => {
     return (
-      <div className={`${styles.row} ${ROW_CLASS[kind]}`} data-lap-row>
+      <div
+        className={`${styles.row} ${ROW_CLASS[kind]} ${showDelta ? '' : styles.rowNoDelta}`}
+        data-lap-row
+      >
         <span className={`${styles.cell} ${styles.lapCell}`}>
           L{lapNum ?? EMPTY_VALUE}
         </span>
@@ -98,28 +110,35 @@ export const LapRow = observer(
           )}
         </span>
 
-        <span className={`${styles.cell} ${styles.deltaCell}`}>
-          {kind === 'live' && (
-            <StatChip lead="RUN" leadKind="number" tone="positive" emphasized />
-          )}
+        {showDelta && (
+          <span className={`${styles.cell} ${styles.deltaCell}`}>
+            {kind === 'live' && (
+              <StatChip
+                lead="RUN"
+                leadKind="number"
+                tone="positive"
+                emphasized
+              />
+            )}
 
-          {kind === 'best' && (
-            <StatChip
-              lead="★ BEST"
-              leadKind="number"
-              tone="special"
-              emphasized
-            />
-          )}
+            {kind === 'best' && (
+              <StatChip
+                lead="★ BEST"
+                leadKind="number"
+                tone="special"
+                emphasized
+              />
+            )}
 
-          {kind === 'invalid' && (
-            <StatChip lead="INV" leadVariant="solid" tone="danger" />
-          )}
+            {kind === 'invalid' && (
+              <StatChip lead="INV" leadVariant="solid" tone="danger" />
+            )}
 
-          {kind === 'lap' && (
-            <DeltaCell delta={delta} paceLossBars={paceLossBars} />
-          )}
-        </span>
+            {kind === 'lap' && (
+              <DeltaCell delta={delta} paceLossBars={paceLossBars} />
+            )}
+          </span>
+        )}
       </div>
     );
   }

@@ -21,6 +21,16 @@ $chip-height: calc(#{wfs(16)} + #{sp(xxxs)} * 2 + 2px);
   }
 }
 
+// Without the delta column: the lap and its time, the time's rule gone with
+// the column it divided off.
+.rowNoDelta {
+  grid-template-columns: 3fr 5fr;
+
+  .timeCell {
+    border-right: 0;
+  }
+}
+
 .rowLive,
 .rowLive:nth-child(even) {
   border-left-color: $chip-positive;

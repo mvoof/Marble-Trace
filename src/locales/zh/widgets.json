@@ -915,6 +915,8 @@
     },
     "lapLog": {
       "moduleParameters": "模块参数",
+      "showDelta": "差值列",
+      "showDeltaDesc": "显示每圈比最佳圈慢多少的列。隐藏后，组件收窄为圈号和时间两列。",
       "paceLossBars": "节奏损失条",
       "paceLossBarsDesc": "差值列以条形显示每圈比最佳圈慢了多少，差值写在条上，而不是用标签。",
       "rowPadding": "行高",

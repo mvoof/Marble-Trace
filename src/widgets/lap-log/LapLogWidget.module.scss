@@ -11,6 +11,7 @@
 }
 
 .title {
+  white-space: nowrap;
   font-family: $font-widget;
   font-size: fs(xxxs);
   font-weight: 800;
@@ -39,6 +40,7 @@
 }
 
 .footerLabel {
+  white-space: nowrap;
   font-family: $font-widget;
   font-size: fs(xxxs);
   font-weight: 700;

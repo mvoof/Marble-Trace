@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import type { LapHistoryEntry } from '@shared/contracts/generated/bindings';
 import {
   averageValidLapTime,
+  computeLapLogDesignWidth,
   formatLapTimeOrDash,
   paceLossFraction,
   paceLossTone,
@@ -62,5 +63,12 @@ describe('formatLapTimeOrDash', () => {
 
   it('writes a time as the tables do', () => {
     expect(formatLapTimeOrDash(90.412)).toBe('1:30.412');
+  });
+});
+
+describe('computeLapLogDesignWidth', () => {
+  it('is the mockup card with every column, its lap and time columns without the delta', () => {
+    expect(computeLapLogDesignWidth({ showDelta: true })).toBe(264);
+    expect(computeLapLogDesignWidth({ showDelta: false })).toBe(176);
   });
 });

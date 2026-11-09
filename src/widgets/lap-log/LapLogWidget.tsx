@@ -60,7 +60,7 @@ const isShown = (visibility: LapLogVisibility, hasTime: boolean): boolean =>
  * only as tall as the laps it has, so the frame is a ceiling, not a size.
  */
 export const LapLogWidget = observer(() => {
-  const { paceLossBars, rowPadding, bestLapChip, averageFooter } =
+  const { showDelta, paceLossBars, rowPadding, bestLapChip, averageFooter } =
     useWidgetSettings<LapLogWidgetSettings>('lap-log');
   const { lapHistory } = useBackendComputedStore();
   const { lapTiming } = usePlayerStore();
@@ -118,7 +118,8 @@ export const LapLogWidget = observer(() => {
 
             {showsBestChip && (
               <StatChip
-                lead="BEST"
+                // Without the delta column the card is too narrow for the word.
+                lead={showDelta ? 'BEST' : '★'}
                 tone="special"
                 emphasized
                 className={styles.bestChip}
@@ -136,6 +137,7 @@ export const LapLogWidget = observer(() => {
                 kind="live"
                 lapNum={lapNum}
                 time={formatLapTimeOrDash(currentLapTime)}
+                showDelta={showDelta}
               />
 
               {visibleHistory.map((entry) => (
@@ -146,6 +148,7 @@ export const LapLogWidget = observer(() => {
                   time={formatLapTimeOrDash(entry.lapTime)}
                   delta={entry.delta}
                   paceLossBars={paceLossBars}
+                  showDelta={showDelta}
                 />
               ))}
             </div>
@@ -154,7 +157,9 @@ export const LapLogWidget = observer(() => {
           {showsFooter && (
             <div className={styles.footer}>
               <span className={styles.footerLabel}>
-                AVG VALID ({count} {count === 1 ? 'LAP' : 'LAPS'})
+                {showDelta
+                  ? `AVG VALID (${count} ${count === 1 ? 'LAP' : 'LAPS'})`
+                  : `AVG (${count})`}
               </span>
 
               <StatChip>

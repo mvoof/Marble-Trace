@@ -16,7 +16,8 @@ export const LapLogSettingsPanel = observer(() => {
   return (
     <Card title={t('settingsPanels.lapLog.moduleParameters')}>
       <Row setting="rowPadding" />
-      <Row setting="paceLossBars" />
+      <Row setting="showDelta" />
+      <Row setting="paceLossBars" dependsOn="showDelta" />
       <Row setting="bestLapChip" />
       <Row setting="averageFooter" />
     </Card>
