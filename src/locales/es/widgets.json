@@ -52,7 +52,7 @@
       "description": "Tiempos por sector: progreso, delta de cada sector, ÚLTIMA y MEJOR."
     },
     "lap-log": {
-      "description": "Las últimas 8 vueltas con su tiempo y delta frente a tu mejor vuelta."
+      "description": "Vueltas recientes: tiempo y delta a tu mejor. Más alto, más vueltas."
     },
     "engine-panel": {
       "description": "Temperaturas, presiones y los ajustes internos que expone el coche."
@@ -912,6 +912,28 @@
       "showPenaltiesDesc": "Drive-through cumplidos y, entre paréntesis, los incidentes que faltan para el siguiente. DQ al superar el límite. Oculto en una sesión sin penalizaciones.",
       "showCleanCorners": "Curvas limpias",
       "showCleanCornersDesc": "Curvas sin incidentes necesarias para que la sesión deje de restar Safety Rating. Cero significa que ya estás igual o mejor."
+    },
+    "lapLog": {
+      "moduleParameters": "Parámetros del módulo",
+      "showDelta": "Columna de delta",
+      "showDeltaDesc": "La columna con lo que cada vuelta perdió frente a tu mejor. Oculta, el widget se estrecha a las columnas de vuelta y tiempo.",
+      "paceLossBars": "Barras de pérdida de ritmo",
+      "paceLossBarsDesc": "La columna de delta muestra lo que cada vuelta perdió frente a tu mejor como una barra, con el delta encima, en lugar de un chip.",
+      "rowPadding": "Altura de fila",
+      "rowPaddingDesc": "La altura de cada fila de vuelta.",
+      "rowPadding_narrow": "Estrecha",
+      "rowPadding_medium": "Media",
+      "rowPadding_wide": "Ancha",
+      "bestLapChip": "Chip de mejor vuelta",
+      "bestLapChipDesc": "El chip BEST en la cabecera: siempre, solo cuando ya hay mejor vuelta, o nunca.",
+      "bestLapChip_always": "Siempre",
+      "bestLapChip_withTime": "Con tiempo",
+      "bestLapChip_never": "Nunca",
+      "averageFooter": "Pie con la media",
+      "averageFooterDesc": "El pie AVG VALID: siempre, solo cuando una vuelta tiene tiempo, o nunca.",
+      "averageFooter_always": "Siempre",
+      "averageFooter_withTime": "Con tiempo",
+      "averageFooter_never": "Nunca"
     },
     "radio": {
       "moduleParameters": "Parámetros del módulo",

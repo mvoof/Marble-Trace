@@ -52,7 +52,7 @@
       "description": "逐分段计时，带进度条、每段实时差值、LAST 和 BEST。"
     },
     "lap-log": {
-      "description": "最近 8 圈的时间及与个人最佳的差值，最佳圈高亮显示。"
+      "description": "最近的圈速及与最佳圈的差值。组件越高，显示的圈数越多。"
     },
     "engine-panel": {
       "description": "液体温度、压力，以及赛车提供的全部车内调节项——ABS、牵引力控制、制动分配、发动机映射、发动机制动与差速器。"
@@ -912,6 +912,28 @@
       "showPenaltiesDesc": "已执行的 drive-through，括号内为距下一次处罚剩余的事故点。超过上限显示 DQ。 在不设处罚的赛事中隐藏。",
       "showCleanCorners": "干净弯道",
       "showCleanCornersDesc": "本节不再降低安全评级之前需要无事故跑完的弯道数。为零表示已持平或上升。"
+    },
+    "lapLog": {
+      "moduleParameters": "模块参数",
+      "showDelta": "差值列",
+      "showDeltaDesc": "显示每圈比最佳圈慢多少的列。隐藏后，组件收窄为圈号和时间两列。",
+      "paceLossBars": "节奏损失条",
+      "paceLossBarsDesc": "差值列以条形显示每圈比最佳圈慢了多少，差值写在条上，而不是用标签。",
+      "rowPadding": "行高",
+      "rowPaddingDesc": "每圈行的高度。",
+      "rowPadding_narrow": "窄",
+      "rowPadding_medium": "中",
+      "rowPadding_wide": "宽",
+      "bestLapChip": "最佳圈标签",
+      "bestLapChipDesc": "标题中的 BEST 标签：始终显示、仅在已有最佳圈时显示，或从不显示。",
+      "bestLapChip_always": "始终",
+      "bestLapChip_withTime": "有时间时",
+      "bestLapChip_never": "从不",
+      "averageFooter": "平均值页脚",
+      "averageFooterDesc": "AVG VALID 页脚：始终显示、仅在有计时圈时显示，或从不显示。",
+      "averageFooter_always": "始终",
+      "averageFooter_withTime": "有时间时",
+      "averageFooter_never": "从不"
     },
     "radio": {
       "moduleParameters": "模块参数",

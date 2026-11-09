@@ -1,46 +1,111 @@
+// The table's bar: the same ground, rule and padding as the standings header.
 .header {
+  flex-shrink: 0;
   display: flex;
+  align-items: center;
   justify-content: space-between;
-  align-items: baseline;
-  padding: sp(xxs) sp(xs);
-  border-bottom: 1px solid $widget-border-subtle;
-}
-
-.headerLeft {
-  display: flex;
-  align-items: baseline;
   gap: sp(xs);
+  padding: sp(xs) sp(md);
+  background: $table-bar-bg;
+  border-bottom: 1px solid $table-bar-border;
 }
 
-.headerTitle {
+.title {
+  white-space: nowrap;
   font-family: $font-widget;
   font-size: fs(xxxs);
-  font-weight: 300;
-  letter-spacing: 1px;
-  color: $widget-text-primary;
+  font-weight: 800;
+  letter-spacing: 0.05em;
   text-transform: uppercase;
+  color: $widget-text-primary;
 }
 
-.headerBest {
+// BEST over the best lap, both in the best-lap purple; its caption a step
+// under the chip's own.
+.bestChip {
+  --chip-lead-size: #{wfs(9)};
+  --chip-value-text: #{$chip-special};
+}
+
+.footer {
+  flex-shrink: 0;
   display: flex;
-  align-items: baseline;
+  align-items: center;
+  justify-content: space-between;
   gap: sp(xs);
+  // The rows' padding, so the footer is one row tall whatever their height.
+  padding: var(--lap-row-pad) sp(md);
+  background: $table-bar-bg;
+  border-top: 1px solid $table-bar-border;
 }
 
-.headerBestLabel {
+.footerLabel {
+  white-space: nowrap;
   font-family: $font-widget;
   font-size: fs(xxxs);
-  font-weight: 300;
-  letter-spacing: 1px;
-  color: $widget-text-primary;
-  text-transform: uppercase;
-}
-
-.headerBestTime {
-  font-family: $font-mono;
-  font-size: fs(xs);
   font-weight: 700;
-  color: $widget-text-best-lap;
-  font-variant-numeric: tabular-nums;
-  letter-spacing: -0.01em;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: $chip-text-muted;
+}
+
+// The frame is transparent (`transparentContainer`): its height is the most
+// the laps may take. The card inside paints the user's background and border
+// and is only as tall as the laps it has.
+.panel {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.frame {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+}
+
+.card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  max-height: 100%;
+  overflow: hidden;
+  border-radius: radius(lg);
+  background: var(--widget-bg);
+
+  // The border is drawn over the card, not around it, so it takes no room
+  // from the rows the frame's height was counted for.
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border: 2px solid var(--widget-border);
+    border-radius: inherit;
+    pointer-events: none;
+  }
+}
+
+// The row height setting: the tables' three paddings, read by the rows and the
+// footer alike.
+.rowPaddingNarrow {
+  --lap-row-pad: #{sp(xxxs)};
+}
+
+.rowPaddingMedium {
+  --lap-row-pad: #{sp(xxs)};
+}
+
+.rowPaddingWide {
+  --lap-row-pad: #{sp(xs)};
+}
+
+.lapList {
+  display: flex;
+  flex: 0 1 auto;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
 }

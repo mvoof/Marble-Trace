@@ -25,15 +25,31 @@ import { asObject, mapEveryStoredWidget, type StoredBlobWidget } from '../blob';
  *
  * Fuel moved the same way: its design width became the redesign mockup's card,
  * 306 instead of 240, and its frame widens by that ratio so the text keeps its
- * size — a default 240 frame comes out at 306.
+ * size — a default 240 frame comes out at 306. The lap log moved with it: its
+ * design width became its mockup card, 264 instead of 220, and its height
+ * stopped following its laps — a taller frame now shows more of them — so the
+ * height it had on disk, never its own, gives way to its design height of 385
+ * at the frame's scale.
  */
 
 type TableSettings = Record<string, unknown>;
 
-// Fuel's design width in v6 and in v7, frozen.
-const FUEL_V6_DESIGN_WIDTH = 240;
-const FUEL_V7_DESIGN_WIDTH = 306;
-const FUEL_TYPE = 'fuel';
+// The widgets whose design width moved, in v6 and in v7, frozen.
+interface DesignWidthRebase {
+  before: number;
+  after: number;
+  /**
+   * The design height of a widget whose height used to follow its content and
+   * now is the frame's: the stored height meant nothing, so the frame takes
+   * this one at its new scale.
+   */
+  fitHeight?: number;
+}
+
+const DESIGN_WIDTH_REBASES: Readonly<Record<string, DesignWidthRebase>> = {
+  fuel: { before: 240, after: 306 },
+  'lap-log': { before: 220, after: 264, fitHeight: 385 },
+};
 
 type WidthOf = (settings: TableSettings) => number;
 
@@ -282,40 +298,54 @@ const widenedWidth = (
   return Math.round((width / before) * after);
 };
 
-/** A size scaled by fuel's design-width ratio, or null when it is not a size. */
-const widenedFuelSize = (
+/** A size scaled by its widget's design-width ratio, or null when it is not a size. */
+const rebasedSize = (
+  type: string,
   size: Record<string, unknown>
 ): Record<string, unknown> | null => {
   const { width, height } = size;
+  const rebase = DESIGN_WIDTH_REBASES[type];
 
-  if (!isPositive(width)) {
+  if (!rebase || !isPositive(width)) {
     return null;
   }
 
-  const ratio = FUEL_V7_DESIGN_WIDTH / FUEL_V6_DESIGN_WIDTH;
+  const ratio = rebase.after / rebase.before;
+  const nextWidth = Math.round(width * ratio);
+
+  if (rebase.fitHeight !== undefined) {
+    return {
+      ...size,
+      width: nextWidth,
+      height: Math.round((nextWidth / rebase.after) * rebase.fitHeight),
+    };
+  }
 
   return {
     ...size,
-    width: Math.round(width * ratio),
+    width: nextWidth,
     ...(isPositive(height) ? { height: Math.round(height * ratio) } : {}),
   };
 };
 
-const widenFuelInstance = (widget: StoredBlobWidget): StoredBlobWidget => {
+const rebaseInstance = (
+  type: string,
+  widget: StoredBlobWidget
+): StoredBlobWidget => {
   const frame = asObject(widget?.frame);
 
   if (!frame || widget.design !== undefined) {
     return widget;
   }
 
-  const widened = widenedFuelSize(frame);
+  const widened = rebasedSize(type, frame);
 
   return widened === null ? widget : { ...widget, frame: widened };
 };
 
 const widenInstance = (widget: StoredBlobWidget): StoredBlobWidget => {
-  if (widget?.type === FUEL_TYPE) {
-    return widenFuelInstance(widget);
+  if (typeof widget?.type === 'string' && widget.type in DESIGN_WIDTH_REBASES) {
+    return rebaseInstance(widget.type, widget);
   }
 
   const columns =
@@ -363,14 +393,18 @@ const widenTemplates = (blob: SettingsBlob): SettingsBlob => {
     }
   }
 
-  const fuelTemplate = asObject(templates[FUEL_TYPE]);
-  const fuelSize = asObject(fuelTemplate?.['size']);
+  for (const type of Object.keys(DESIGN_WIDTH_REBASES)) {
+    const template = asObject(templates[type]);
+    const templateSize = asObject(template?.['size']);
 
-  if (fuelTemplate && fuelSize && fuelTemplate['design'] === undefined) {
-    const size = widenedFuelSize(fuelSize);
+    if (!template || !templateSize || template['design'] !== undefined) {
+      continue;
+    }
+
+    const size = rebasedSize(type, templateSize);
 
     if (size !== null) {
-      widened[FUEL_TYPE] = { ...fuelTemplate, size };
+      widened[type] = { ...template, size };
     }
   }
 
@@ -380,7 +414,7 @@ const widenTemplates = (blob: SettingsBlob): SettingsBlob => {
 export const v7WiderTableColumns: Migration = {
   to: 7,
   describe:
-    'Standings and Relative frames widened with their columns; Fuel widened to its new design width',
+    'Standings and Relative frames widened with their columns; Fuel and Lap Log widened to their new design widths',
   migrate: (blob: SettingsBlob): SettingsBlob =>
     widenTemplates(
       mapEveryStoredWidget(blob, (widgets) => widgets.map(widenInstance))

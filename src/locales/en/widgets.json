@@ -52,7 +52,7 @@
       "description": "Sector-by-sector timing with progress bar, live delta per sector, LAST and BEST."
     },
     "lap-log": {
-      "description": "Last 8 laps with time and delta vs personal best. Best lap highlighted."
+      "description": "Recent laps: time and delta to your best. A taller widget shows more laps."
     },
     "engine-panel": {
       "description": "Liquid temperatures, pressures and the in-car adjustments the car exposes."
@@ -912,6 +912,28 @@
       "showPenaltiesDesc": "Drive-throughs served and, in brackets, the incidents left before the next one. DQ once over the limit. Hidden in a session that hands out no penalties.",
       "showCleanCorners": "Clean corners",
       "showCleanCornersDesc": "Corners to drive without an incident before this session stops costing Safety Rating. Zero means it is level or better already."
+    },
+    "lapLog": {
+      "moduleParameters": "Module parameters",
+      "showDelta": "Delta column",
+      "showDeltaDesc": "The column with each lap's loss to your best. Hidden, the widget narrows to the lap and time columns.",
+      "paceLossBars": "Pace loss bars",
+      "paceLossBarsDesc": "The delta column shows how much each lap lost to your best as a bar, the delta written over it, instead of a chip.",
+      "rowPadding": "Row height",
+      "rowPaddingDesc": "How tall each lap row is.",
+      "rowPadding_narrow": "Narrow",
+      "rowPadding_medium": "Medium",
+      "rowPadding_wide": "Wide",
+      "bestLapChip": "Best lap chip",
+      "bestLapChipDesc": "The BEST chip in the header: always, only once there is a best lap, or never.",
+      "bestLapChip_always": "Always",
+      "bestLapChip_withTime": "With a time",
+      "bestLapChip_never": "Never",
+      "averageFooter": "Average footer",
+      "averageFooterDesc": "The AVG VALID footer: always, only once a lap has a time, or never.",
+      "averageFooter_always": "Always",
+      "averageFooter_withTime": "With a time",
+      "averageFooter_never": "Never"
     },
     "radio": {
       "moduleParameters": "Module parameters",
