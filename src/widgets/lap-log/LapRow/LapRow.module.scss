@@ -131,13 +131,6 @@ $chip-height: calc(#{wfs(16)} + #{sp(xxxs)} * 2 + 2px);
   color: $chip-danger;
 }
 
-// A delta or a best lap is framed in the chip's plain edge; only the lap being
-// driven keeps its color on the frame. Through the cell, so it wins over the
-// tone's own edge whatever order the stylesheets load in.
-.deltaCell .plainEdge {
-  --chip-edge: #{$chip-border};
-}
-
 .timeEmpty {
   font-family: $font-mono;
   font-size: fs(sm);
