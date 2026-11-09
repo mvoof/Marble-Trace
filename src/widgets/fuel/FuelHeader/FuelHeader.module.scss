@@ -40,6 +40,14 @@
   color: $widget-text-primary;
 }
 
+// The capacity, a step down and quieter, so the level leads.
+.levelMax {
+  margin-left: calc(-1 * #{sp(xxs)});
+  font-size: fs(xs);
+  font-weight: 600;
+  color: $chip-text-muted;
+}
+
 .levelUnit {
   font-size: fs(xxxs);
   font-weight: 700;
