@@ -1,9 +1,8 @@
 // Static by design — a flashing block sits in the driver's periphery for the
-// whole end of a stint; the red ground and the accent edge already read "now".
+// whole end of a stint; the red ground already reads "now".
 .pitWarning {
   display: flex;
   flex-direction: column;
   padding: sp(sm) sp(md);
   background: rgba($chip-danger, 0.08);
-  border-left: 3px solid $chip-accent;
 }
