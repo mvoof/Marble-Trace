@@ -212,6 +212,22 @@ export const HOTKEY_ACTIONS: readonly HotkeyActionSpec[] = [
     defaultBinding: null,
   },
   {
+    id: 'pit-service:pressure-plus',
+    owner: 'pit-service',
+    labelKey: 'pitServicePressurePlus',
+    kind: 'sim',
+    trigger: 'press',
+    defaultBinding: null,
+  },
+  {
+    id: 'pit-service:pressure-minus',
+    owner: 'pit-service',
+    labelKey: 'pitServicePressureMinus',
+    kind: 'sim',
+    trigger: 'press',
+    defaultBinding: null,
+  },
+  {
     id: 'pit-service:tire-compound',
     owner: 'pit-service',
     labelKey: 'pitServiceTireCompound',

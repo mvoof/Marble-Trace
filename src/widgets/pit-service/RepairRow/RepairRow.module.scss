@@ -57,6 +57,26 @@
   color: $race-amber;
 }
 
+// The repair has run out: the one cell that tells the driver to go. It takes
+// the room the countdowns had.
+.cellDone {
+  flex: 2 1 0;
+  justify-content: center;
+  background: $chip-positive-bg;
+}
+
+.cellDone .icon {
+  color: $chip-positive;
+}
+
+.done {
+  white-space: nowrap;
+  font-size: fs(xs);
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  color: $chip-positive;
+}
+
 // The stop clock is the number being watched while the car is stationary.
 .cellLive {
   background: rgba($race-amber, 0.14);

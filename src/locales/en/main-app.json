@@ -306,7 +306,9 @@
       "autoTiresDesc": "Auto mode checks the corners worn past the threshold below, one corner at a time.",
       "autoTireWearThreshold": "Change a tire at {{percent}}% tread left",
       "fuelAdjustStep": "Fuel key step",
-      "fuelAdjustStepDesc": "How much one press of the fuel up / down keys adds or removes, in the unit you read — litres on metric, gallons on imperial."
+      "fuelAdjustStepDesc": "How much one press of the fuel up / down keys adds or removes, in the unit you read — litres on metric, gallons on imperial.",
+      "pressureAdjustStep": "Tyre pressure step",
+      "pressureAdjustStepDesc": "How much one press of the pressure buttons and keys changes a tyre. Setting a pressure also orders that tyre changed — the sim has no pressure without the change."
     },
     "carLength": {
       "title": "Car",
@@ -668,6 +670,8 @@
       "pitServiceTireLr": "Change the left rear tyre",
       "pitServiceTireRr": "Change the right rear tyre",
       "pitServiceTireCompound": "Step to the next tyre compound",
+      "pitServicePressurePlus": "Raise every tyre's pressure by one step (and order the tyres changed)",
+      "pitServicePressureMinus": "Lower every tyre's pressure by one step (and order the tyres changed)",
       "pitServiceFastRepair": "Use a fast repair",
       "pitServiceWindshield": "Clean the windscreen (uses a tear-off)",
       "widgetToggleVisibility": "Show / hide «{{widget}}»"

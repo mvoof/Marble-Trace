@@ -6,15 +6,20 @@
   // gaps are what the grid is measured by.
   padding: sp(xxxs) sp(xxs) sp(xxs);
   border-radius: radius(sm);
-  background: $widget-surface-cell;
-  font-family: $font-widget;
+  // The frame is drawn inside the box, not as a border: in interact mode the
+  // corner is a button whose reset strips borders, and a border lost there
+  // made the panel two pixels a row shorter the moment interact mode came on.
+  box-shadow: inset 0 0 0 1px $chip-border;
+  background: $chip-bg;
+  font-family: $font-mono;
   font-variant-numeric: tabular-nums;
 }
 
 // The order is the whole background, not a stripe beside it: one signal per
 // state reads faster than an edge and a tint saying the same thing.
 .cornerOrdered {
-  background: rgba($race-green, 0.16);
+  box-shadow: inset 0 0 0 1px rgba($chip-positive, 0.6);
+  background: $chip-positive-bg;
 }
 
 // A corner not on the order is told apart by its plain background alone. It
@@ -22,7 +27,7 @@
 // numbers down with it — and those are readings, not order state: a temperature
 // is worth exactly as much on a tire nobody is changing.
 .cornerKept {
-  background: $widget-surface-cell;
+  background: $chip-bg;
 }
 
 .cornerClickable {
@@ -35,7 +40,7 @@
 
 .zoneRow {
   display: grid;
-  grid-template-columns: repeat(3, ws(26));
+  grid-template-columns: repeat(3, ws(27));
   gap: 2px;
   justify-content: center;
   text-align: center;
@@ -51,11 +56,13 @@
 // Temperatures carry their own zone color — the same one that fills the tread
 // below them, so the number and the block agree without a second legend.
 .zoneTemp {
-  font-size: fs(sm);
+  font-size: fs(xxs);
+  font-weight: 800;
 }
 
 .zoneWear {
-  font-size: fs(sm);
+  font-size: fs(xxs);
+  font-weight: 700;
   color: $widget-text-primary;
 }
 
@@ -77,14 +84,14 @@
 .tire {
   position: relative;
   display: grid;
-  grid-template-columns: repeat(3, ws(18));
+  grid-template-columns: repeat(3, ws(16));
   gap: 2px;
   justify-content: center;
   align-self: center;
-  height: ws(58);
+  height: ws(50);
   padding: 2px;
-  background: rgba(0, 0, 0, $opacity-strong);
-  border: 1px solid rgba(255, 255, 255, 0.25);
+  background: $chip-value-dark;
+  border: 1px solid $chip-border;
   border-radius: $widget-border-radius;
   overflow: hidden;
 }
@@ -124,7 +131,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: fs(lg);
+  font-size: fs(md);
+  font-weight: 800;
   color: $widget-text-primary;
   text-shadow:
     0 0 3px #000,
@@ -154,4 +162,55 @@
 
 .puncture[data-blink-step='1'] {
   outline-color: rgba($race-red, 0.6);
+}
+
+// Holds the corner and, in interact mode, the pressure steps beside its tread.
+.cornerFrame {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+
+  > .corner {
+    flex: 1 1 auto;
+  }
+}
+
+// Level with the tread, in the room the narrow tread leaves at each side.
+.step {
+  appearance: none;
+  position: absolute;
+  top: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: ws(18);
+  height: ws(24);
+  margin: 0;
+  padding: 0;
+  border: 1px solid $chip-border;
+  border-radius: radius(sm);
+  background: $chip-neutral-bg;
+  color: $chip-text;
+  transform: translateY(-50%);
+  cursor: pointer;
+
+  &:hover {
+    border-color: rgba($chip-info, 0.5);
+    background: $chip-info-bg;
+    color: $chip-info;
+  }
+}
+
+.stepDown {
+  left: sp(xxs);
+}
+
+.stepUp {
+  right: sp(xxs);
+}
+
+// Dialed and not sent yet: the presses have not settled, the sim has nothing.
+.pressureDialing {
+  color: $chip-accent;
 }

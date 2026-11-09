@@ -24,7 +24,7 @@
 
 use serde::{Deserialize, Serialize};
 
-use crate::pit::pit_action::{PitAction, TireCorner};
+use crate::pit::pit_action::{PitAction, TireCorner, TireSet};
 
 /// Owner of the actions that are not a widget's. Never gated by the layout.
 pub const APP_OWNER: &str = "app";
@@ -302,6 +302,20 @@ pub const HOTKEY_ACTIONS: &[HotkeyActionDecl] = &[
     tire("pit-service:tire-rf", "pitServiceTireRf", TireCorner::Rf),
     tire("pit-service:tire-lr", "pitServiceTireLr", TireCorner::Lr),
     tire("pit-service:tire-rr", "pitServiceTireRr", TireCorner::Rr),
+    pit(
+        "pit-service:pressure-plus",
+        "pitServicePressurePlus",
+        PitAction::PressureStepUp {
+            corners: TireSet::ALL,
+        },
+    ),
+    pit(
+        "pit-service:pressure-minus",
+        "pitServicePressureMinus",
+        PitAction::PressureStepDown {
+            corners: TireSet::ALL,
+        },
+    ),
     pit(
         "pit-service:tire-compound",
         "pitServiceTireCompound",

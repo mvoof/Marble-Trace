@@ -10,7 +10,9 @@
 //! window being alive, unpaused or subscribed to the right slice. The thread
 //! sends what `step` returns; this module only decides.
 
-use mt_model::pit::pit_auto::{PitAutoConfig, PitAutoFrame, PitAutoMode, PitClaim};
+use mt_model::pit::pit_auto::{
+    DialedPressures, PitAutoConfig, PitAutoFrame, PitAutoMode, PitClaim,
+};
 use mt_model::pit::pit_command::{PitCommandKind, PitCommandRequest};
 use mt_model::sim::player::ChassisFrame;
 
@@ -160,6 +162,7 @@ impl PitAuto {
             mode: self.mode(config),
             orders_sent: self.orders_sent,
             last_order_ok: self.last_order_ok,
+            dialed_pressure: DialedPressures::default(),
         }
     }
 
@@ -397,6 +400,7 @@ mod tests {
             auto_tires: true,
             tire_wear_threshold_pct: 60.0,
             fuel_step_liters: 1.0,
+            pressure_step_kpa: 1.0,
             widget_on_screen: true,
         }
     }

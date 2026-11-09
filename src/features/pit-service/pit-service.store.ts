@@ -92,6 +92,17 @@ export class PitServiceWidgetStore {
         (inPitStall) => this.panel.handleStallChange(inPitStall),
         { fireImmediately: true }
       ),
+      // Registered after the stall reaction, which clears the flag on arrival,
+      // so a repair already running as the car stops still counts.
+      reaction(
+        () => this.isInPitStall && this.hasRepairRunning,
+        (running) => {
+          if (running) {
+            this.panel.handleRepairRunning();
+          }
+        },
+        { fireImmediately: true }
+      ),
       reaction(
         () => this.isServiceActive,
         (serviceActive) => {
@@ -274,6 +285,14 @@ export class PitServiceWidgetStore {
   /** The crew is working on the car — `pitstop_active` from the sim. */
   get isServiceActive(): boolean {
     return this.root.player.pitService?.serviceActive ?? false;
+  }
+
+  get hasRepairRunning(): boolean {
+    const service = this.root.player.pitService;
+
+    return (
+      (service?.repairLeftS ?? 0) > 0 || (service?.optRepairLeftS ?? 0) > 0
+    );
   }
 
   get towTimeS(): number {

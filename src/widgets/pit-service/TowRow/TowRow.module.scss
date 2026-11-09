@@ -4,43 +4,45 @@
   gap: sp(xxxs);
   padding: sp(xxs) sp(xs);
   border-radius: radius(sm);
-  // The state is the whole tint, like every other block in the panel — an edge
-  // stripe on top of it says the same thing twice.
-  background: rgba($race-red, 0.16);
+  // The state is the whole tint, like every other block in the panel — no
+  // frame and no edge stripe on top of it.
+  background: rgba($chip-danger, 0.12);
   font-family: $font-widget;
 }
 
 .row {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   justify-content: space-between;
   gap: sp(sm);
 }
 
-.label {
-  font-size: fs(xxs);
-  letter-spacing: 0.06em;
-  color: $widget-label;
-  font-weight: 600;
+.chips {
+  display: flex;
+  align-items: center;
+  gap: sp(xxs);
+  min-width: 0;
 }
 
 .value {
+  white-space: nowrap;
   font-family: $font-mono;
-  font-size: fs(xxl);
+  font-size: fs(xl);
+  font-weight: 800;
   line-height: 1;
-  color: $race-red;
+  color: $chip-danger;
   font-variant-numeric: tabular-nums;
 }
 
 .unit {
   font-size: fs(xxs);
-  color: $widget-label;
-  font-weight: 600;
+  color: $chip-danger-soft;
+  font-weight: 700;
 }
 
 .hint {
   font-size: fs(xxxs);
   letter-spacing: 0.06em;
-  color: $widget-label;
-  font-weight: 600;
+  color: rgba($chip-danger-soft, 0.8);
+  font-weight: 700;
 }

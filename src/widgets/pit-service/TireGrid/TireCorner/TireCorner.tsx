@@ -1,5 +1,5 @@
 import { observer } from 'mobx-react-lite';
-import { Check } from 'lucide-react';
+import { Check, Minus, Plus } from 'lucide-react';
 
 import styles from './TireCorner.module.scss';
 import { OrderToggle } from '@widgets/pit-service/OrderToggle/OrderToggle';
@@ -17,6 +17,7 @@ import { usePitServiceWidgetStore } from '@features/pit-service/pit-service-cont
 import { usePlayerStore } from '@entities/player/player-context';
 import { useUnitsStore } from '@entities/app-settings/units-context';
 import { useBlink, type BlinkCycle } from '@shared/hooks/useBlink';
+import type { MouseEvent as ReactMouseEvent } from 'react';
 
 const WEAR_TO_PCT = 100;
 
@@ -25,8 +26,10 @@ const PUNCTURE_BLINK: BlinkCycle = { stepMs: 600, steps: 2 };
 const MIN_FILL_PCT = 5;
 // Heavier and larger than an inline icon: it is read at a glance over a busy
 // tread, not next to a label.
-const CHECK_SIZE = 30;
+const CHECK_SIZE = 22;
 const CHECK_STROKE = 3.2;
+const STEP_ICON_SIZE = 12;
+const STEP_ICON_STROKE = 3;
 
 interface TireCornerProps {
   position: CornerPosition;
@@ -42,7 +45,12 @@ export const TireCorner = observer(({ position }: TireCornerProps) => {
     data.isPunctured ? PUNCTURE_BLINK : null
   );
   const ordered = isCornerOrdered(position, pitService);
-  const orderedKpa = orderedPressure(position, pitService);
+  // A pressure being dialed, or sent and not yet reported back by the sim,
+  // stands over the sim's own: the sim keeps showing the old one.
+  const dialed = widget.auto.dialedPressure(position);
+  const orderedKpa = dialed?.kpa ?? orderedPressure(position, pitService);
+  const isDialing = dialed?.pending === true;
+  const showsOrder = ordered || dialed !== null;
 
   // Which corner this is says itself from the place it holds in the grid, so
   // the row that used to name it (LF · SET 165) is gone. What the order sets is
@@ -59,87 +67,136 @@ export const TireCorner = observer(({ position }: TireCornerProps) => {
     { wear: data.wearR, temp: data.tempR, color: data.tempColorR },
   ];
 
+  const stepPressure = (
+    event: ReactMouseEvent<HTMLButtonElement>,
+    direction: 'up' | 'down'
+  ) => {
+    event.stopPropagation();
+    widget.order.stepPressure(position, direction);
+  };
+
+  // Interact mode shares the mouse with widget dragging; without this a press
+  // on a step would start moving the widget.
+  const stopDrag = (event: ReactMouseEvent<HTMLButtonElement>) => {
+    event.stopPropagation();
+  };
+
   return (
-    <OrderToggle
-      className={`${styles.corner} ${ordered ? styles.cornerOrdered : styles.cornerKept}`}
-      clickableClassName={styles.cornerClickable}
-      label={`Toggle ${position.toUpperCase()} tire change`}
-      onToggle={() => widget.order.toggleTire(position)}
-    >
-      <div className={styles.zoneRow}>
-        {zones.map((zone, index) => (
-          <span
-            key={`temp-${index}`}
-            className={styles.zoneTemp}
-            style={{ color: zone.color }}
-          >
-            {zone.temp === null ? '—' : `${Math.round(zone.temp)}°`}
-          </span>
-        ))}
-      </div>
-
-      <div
-        ref={punctureRef}
-        className={`${styles.tire} ${data.isPunctured ? styles.puncture : ''}`}
+    <div className={styles.cornerFrame}>
+      <OrderToggle
+        className={`${styles.corner} ${ordered ? styles.cornerOrdered : styles.cornerKept}`}
+        clickableClassName={styles.cornerClickable}
+        label={`Toggle ${position.toUpperCase()} tire change`}
+        onToggle={() => widget.order.toggleTire(position)}
       >
-        {zones.map((zone, index) => (
-          <span key={`fill-${index}`} className={styles.section}>
+        <div className={styles.zoneRow}>
+          {zones.map((zone, index) => (
             <span
-              className={styles.fill}
-              style={{
-                height: `${Math.max(MIN_FILL_PCT, (zone.wear ?? 0) * WEAR_TO_PCT)}%`,
-                backgroundColor: zone.color,
-              }}
-            />
-          </span>
-        ))}
+              key={`temp-${index}`}
+              className={styles.zoneTemp}
+              style={{ color: zone.color }}
+            >
+              {zone.temp === null ? '—' : `${Math.round(zone.temp)}°`}
+            </span>
+          ))}
+        </div>
 
-        {ordered ? (
-          <>
-            <Check
-              size={CHECK_SIZE}
-              strokeWidth={CHECK_STROKE}
-              className={styles.check}
-            />
+        <div
+          ref={punctureRef}
+          className={`${styles.tire} ${data.isPunctured ? styles.puncture : ''}`}
+        >
+          {zones.map((zone, index) => (
+            <span key={`fill-${index}`} className={styles.section}>
+              <span
+                className={styles.fill}
+                style={{
+                  height: `${Math.max(MIN_FILL_PCT, (zone.wear ?? 0) * WEAR_TO_PCT)}%`,
+                  backgroundColor: zone.color,
+                }}
+              />
+            </span>
+          ))}
 
-            {orderedBar !== null && (
-              <span className={`${styles.pressure} ${styles.pressureOrdered}`}>
-                {orderedBar}
-              </span>
-            )}
-          </>
-        ) : (
-          <span className={styles.pressure}>
-            {data.pressure === null ? '—' : Math.round(data.pressure)}
-          </span>
-        )}
-      </div>
+          {showsOrder ? (
+            <>
+              {ordered && (
+                <Check
+                  size={CHECK_SIZE}
+                  strokeWidth={CHECK_STROKE}
+                  className={styles.check}
+                />
+              )}
 
-      {/*
+              {orderedBar !== null && (
+                <span
+                  className={`${styles.pressure} ${styles.pressureOrdered} ${isDialing ? styles.pressureDialing : ''}`}
+                >
+                  {orderedBar}
+                </span>
+              )}
+            </>
+          ) : (
+            <span className={styles.pressure}>
+              {data.pressure === null ? '—' : Math.round(data.pressure)}
+            </span>
+          )}
+        </div>
+
+        {/*
         The sim writes tire wear once per stop, on arrival in the box, and never
         touches it in between — not even when the crew fits a new set. Away from
         the box these numbers describe tires that may already be off the car, so
         they are dimmed rather than read as live.
       */}
-      <div
-        className={`${styles.zoneRow} ${widget.auto.isTireWearStale ? styles.zoneRowStale : ''}`}
-        title={
-          widget.auto.isTireWearStale
-            ? 'Tread measured at the last pit stop — the sim only refreshes it in the box'
-            : 'Tread measured on arrival in the box'
-        }
-      >
-        {zones.map((zone, index) => (
-          <span
-            key={`wear-${index}`}
-            className={`${styles.zoneWear} ${styles[wearLevel(zone.wear)]}`}
+        <div
+          className={`${styles.zoneRow} ${widget.auto.isTireWearStale ? styles.zoneRowStale : ''}`}
+          title={
+            widget.auto.isTireWearStale
+              ? 'Tread measured at the last pit stop — the sim only refreshes it in the box'
+              : 'Tread measured on arrival in the box'
+          }
+        >
+          {zones.map((zone, index) => (
+            <span
+              key={`wear-${index}`}
+              className={`${styles.zoneWear} ${styles[wearLevel(zone.wear)]}`}
+            >
+              {zone.wear === null
+                ? '—'
+                : `${Math.round(zone.wear * WEAR_TO_PCT)}%`}
+            </span>
+          ))}
+        </div>
+      </OrderToggle>
+
+      {/*
+        Beside the toggle rather than inside it, so a step is never also a
+        click on the corner. The sim takes a pressure only with the change, so
+        a step orders the corner as well.
+      */}
+      {widget.order.canClickOrders && (
+        <>
+          <button
+            type="button"
+            aria-label={`Lower ${position.toUpperCase()} pressure one step`}
+            className={`${styles.step} ${styles.stepDown}`}
+            onClick={(event) => stepPressure(event, 'down')}
+            onMouseDown={stopDrag}
           >
-            {zone.wear === null
-              ? '—'
-              : `${Math.round(zone.wear * WEAR_TO_PCT)}%`}
-          </span>
-        ))}
-      </div>
-    </OrderToggle>
+            <Minus size={STEP_ICON_SIZE} strokeWidth={STEP_ICON_STROKE} />
+          </button>
+
+          <button
+            type="button"
+            aria-label={`Raise ${position.toUpperCase()} pressure one step`}
+            className={`${styles.step} ${styles.stepUp}`}
+            onClick={(event) => stepPressure(event, 'up')}
+            onMouseDown={stopDrag}
+          >
+            <Plus size={STEP_ICON_SIZE} strokeWidth={STEP_ICON_STROKE} />
+          </button>
+        </>
+      )}
+    </div>
   );
 });

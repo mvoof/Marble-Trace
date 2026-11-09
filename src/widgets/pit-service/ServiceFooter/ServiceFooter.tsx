@@ -1,6 +1,7 @@
 import { useWidgetSettings } from '@entities/layout/useWidgetSettings';
 import { observer } from 'mobx-react-lite';
 
+import { StatChip, type StatChipTone } from '@shared/ui/StatChip/StatChip';
 import styles from './ServiceFooter.module.scss';
 import { resolveServiceState } from '@widgets/pit-service/pit-service-utils';
 import { useBackendComputedStore } from '@entities/cars/computed-context';
@@ -16,6 +17,13 @@ const STATE_LABEL = {
   servicing: 'IN BOX',
   towing: 'TOWING',
 } as const;
+
+const STATE_TONE: Record<keyof typeof STATE_LABEL, StatChipTone> = {
+  idle: 'muted',
+  armed: 'positive',
+  servicing: 'accent',
+  towing: 'danger',
+};
 
 const MANUAL_LABEL = 'MANUAL';
 
@@ -43,28 +51,26 @@ export const ServiceFooter = observer(() => {
 
   return (
     <footer className={styles.footer}>
-      <span className={`${styles.state} ${styles[state]}`}>
-        {STATE_LABEL[state]}
-      </span>
-
       {/*
-        Names the halves auto mode still owns — FUEL AUTO once the tires have
-        been picked by hand, TIRE AUTO once the fuel has. Absent entirely while
-        auto mode is off in the settings.
+        One two-part chip: the state, and the halves auto mode still owns —
+        FUEL AUTO once the tires have been picked by hand, TIRE AUTO once the
+        fuel has. The mode part is absent while auto mode is off.
       */}
-      {mode !== null && (
-        <span
-          className={
-            mode === MANUAL_LABEL ? styles.modeManual : styles.modeAuto
-          }
-        >
-          {mode}
-        </span>
-      )}
-
-      <span className={styles.stops}>STOP {stops}</span>
+      <StatChip lead={STATE_LABEL[state]} tone={STATE_TONE[state]}>
+        {mode === null ? undefined : (
+          <span
+            className={
+              mode === MANUAL_LABEL ? styles.modeManual : styles.modeAuto
+            }
+          >
+            {mode}
+          </span>
+        )}
+      </StatChip>
 
       <PositionBadge
+        stops={stops}
+        className={styles.stops}
         useLivePositions={useLivePositions}
         classPositionInMulticlass={classPositionInMulticlass}
         showProjectedPosition={showProjectedPosition}

@@ -1,46 +1,32 @@
 .footer {
   display: flex;
   align-items: center;
-  gap: sp(sm);
+  gap: sp(xxs);
   // No rule of its own: the tire block below already ends on one, and two
   // hairlines a few pixels apart read as a doubled divider.
   padding-top: sp(xxs);
   font-family: $font-widget;
-  font-size: fs(xs);
-  letter-spacing: 0.08em;
-  color: $widget-label;
-  font-weight: 600;
-  font-variant-numeric: tabular-nums;
-}
-
-.state {
-  letter-spacing: 0.1em;
-  color: $widget-label;
-}
-
-.armed {
-  color: $race-green;
-}
-
-.servicing {
-  color: $race-amber;
-}
-
-.towing {
-  color: $race-red;
-}
-
-.modeAuto {
-  color: $race-green;
-  opacity: 0.85;
-}
-
-.modeManual {
-  color: $widget-label;
 }
 
 // The stop count and the position are the pair that was here before; they keep
 // the right-hand end so the states read as a prefix rather than a new column.
 .stops {
   margin-left: auto;
+}
+
+// A word, not a reading: set as the lead is, not in the value's mono face.
+.modeAuto,
+.modeManual {
+  font-family: $font-widget;
+  font-size: fs(xxxs);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.modeAuto {
+  color: $chip-positive;
+}
+
+.modeManual {
+  color: $chip-neutral-text;
 }

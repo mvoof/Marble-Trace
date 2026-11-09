@@ -8,6 +8,7 @@ const STRATEGY: PitStrategy = {
   pitAutoTires: false,
   pitAutoTireWearThreshold: 40,
   pitFuelAdjustStep: 5,
+  pitPressureAdjustStep: 2,
 };
 
 describe('pitAutoConfigOf', () => {
@@ -17,6 +18,7 @@ describe('pitAutoConfigOf', () => {
       autoTires: false,
       tireWearThresholdPct: 40,
       fuelStepLiters: 5,
+      pressureStepKpa: 2,
       widgetOnScreen: true,
     });
   });

@@ -1,5 +1,5 @@
 import { observer } from 'mobx-react-lite';
-import { Hammer, Timer, Wrench } from 'lucide-react';
+import { CircleCheck, Hammer, Timer, Wrench } from 'lucide-react';
 
 import styles from './RepairRow.module.scss';
 import {
@@ -58,6 +58,15 @@ export const RepairRow = observer(() => {
             {formatCountdown(repair)}
             {countdownUnit(repair)}
           </span>
+        </div>
+      )}
+
+      {/* Only once a repair has run out: a stop without one has nothing to wait on. */}
+      {widget.panel.isRepairDone && (
+        <div className={`${styles.cell} ${styles.cellDone}`}>
+          <CircleCheck size={ICON_SIZE} className={styles.icon} />
+
+          <span className={styles.done}>REPAIR DONE · GO</span>
         </div>
       )}
 

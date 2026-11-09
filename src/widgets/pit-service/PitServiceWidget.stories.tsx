@@ -26,6 +26,12 @@ interface StoryArgs {
   fuelCalculated?: number;
   repairLeftS?: number;
   optRepairLeftS?: number;
+  /** A repair ran this stop and has run out. */
+  repairDone?: boolean;
+  /** Interact mode: the orders and the pressure steps take clicks. */
+  interactMode?: boolean;
+  /** LF being dialed to this kPa, RF sent at this kPa and not reported back. */
+  dialedKpa?: number;
   changeFronts?: boolean;
   changeRears?: boolean;
   inPitStall?: boolean;
@@ -76,6 +82,31 @@ const meta: Meta<StoryArgs> = {
         store.player.updatePitService(
           mockPitService({ ...store.player.pitService, ...service })
         );
+      }
+
+      if (args.interactMode === true) {
+        store.appSettings.applyOverlayModes({
+          dragMode: false,
+          interactMode: true,
+        });
+      }
+
+      if (args.dialedKpa !== undefined) {
+        store.backendComputed.updatePitAuto({
+          mode: 'manual',
+          ordersSent: 0,
+          lastOrderOk: null,
+          dialedPressure: {
+            lf: { kpa: args.dialedKpa, pending: true },
+            rf: { kpa: args.dialedKpa, pending: false },
+            lr: null,
+            rr: null,
+          },
+        });
+      }
+
+      if (args.repairDone === true) {
+        store.pitServiceWidget.panel.handleRepairRunning();
       }
 
       if (args.distToBoxM !== undefined) {
@@ -129,6 +160,26 @@ export const RepairsUnderWay: Story = {
 
 // A fill the driver typed in rather than the one the calculation asked for, so
 // the two numbers disagree on screen.
+// The repair the stop needed has run out and the car may leave.
+export const RepairDone: Story = {
+  parameters: previewScenario('pit-service'),
+  args: { repairDone: true },
+};
+
+// Interact mode: every order takes a click, and each tread has its pressure
+// steps beside it.
+export const InteractMode: Story = {
+  parameters: previewScenario('pit-service'),
+  args: { interactMode: true },
+};
+
+// LF being dialed (amber, nothing sent yet) beside RF sent and not yet
+// reported back by the sim.
+export const PressureDialing: Story = {
+  parameters: previewScenario('pit-service'),
+  args: { interactMode: true, dialedKpa: 158, changeFronts: false },
+};
+
 export const ManualFuelOrder: Story = {
   parameters: previewScenario('pit-service'),
   args: { fuelOrdered: 40, fuelCalculated: 34.2 },

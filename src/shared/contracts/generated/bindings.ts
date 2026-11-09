@@ -1027,6 +1027,28 @@ export type DetectedApp = {
   processName?: string | null;
 };
 
+/**
+ * A tire pressure the telemetry thread holds over the one the sim reports:
+ * being dialed and not sent yet, or sent and not reported back by the sim.
+ */
+export type DialedPressure = {
+  kpa: number;
+  /**
+   * Still being dialed: the steps have not stopped, nothing has gone out.
+   */
+  pending: boolean;
+};
+
+/**
+ * One `DialedPressure` per corner, `None` where the sim's own stands.
+ */
+export type DialedPressures = {
+  lf: DialedPressure | null;
+  rf: DialedPressure | null;
+  lr: DialedPressure | null;
+  rr: DialedPressure | null;
+};
+
 export type DriverEntriesFrame = {
   entries: DriverEntry[];
   playerCarIdx: number;
@@ -1788,6 +1810,13 @@ export type PitAction =
   | { kind: 'toggleAllTires' }
   | { kind: 'toggleTire'; corner: TireCorner }
   /**
+   * One step of `pitPressureAdjustStep` up from the pressure the sim holds
+   * for each of these corners. Setting a pressure is how the SDK orders a
+   * corner, so every corner stepped is also changed.
+   */
+  | { kind: 'pressureStepUp'; corners: TireSet }
+  | { kind: 'pressureStepDown'; corners: TireSet }
+  /**
    * The next compound the session lists, wrapping at the end.
    */
   | { kind: 'cycleCompound' }
@@ -1828,6 +1857,11 @@ export type PitAutoConfig = {
    * driver picked from the unit on display.
    */
   fuelStepLiters: number;
+  /**
+   * One press of the tire pressure keys and buttons, in kPa — main converts
+   * the step the driver picked from the unit on display.
+   */
+  pressureStepKpa: number;
   widgetOnScreen: boolean;
 };
 
@@ -1847,6 +1881,10 @@ export type PitAutoFrame = {
    * before the first.
    */
   lastOrderOk: boolean | null;
+  /**
+   * Tire pressures the widget shows over the sim's own.
+   */
+  dialedPressure: DialedPressures;
 };
 
 /**

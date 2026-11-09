@@ -304,7 +304,9 @@
       "autoTiresDesc": "自动模式逐条勾选磨损超过下方阈值的轮胎。",
       "autoTireWearThreshold": "胎面剩余 {{percent}}% 时更换该轮胎",
       "fuelAdjustStep": "加油按键步长",
-      "fuelAdjustStepDesc": "加油/减油按键每次按下调整的量，单位与显示一致——公制为升，英制为加仑。"
+      "fuelAdjustStepDesc": "加油/减油按键每次按下调整的量，单位与显示一致——公制为升，英制为加仑。",
+      "pressureAdjustStep": "胎压步长",
+      "pressureAdjustStepDesc": "胎压按钮和按键每次按下改变的胎压。设定胎压的同时也会勾选更换该轮胎——模拟器中没有不换胎的胎压设定。"
     },
     "carLength": {
       "title": "车辆",
@@ -666,6 +668,8 @@
       "pitServiceTireLr": "更换左后轮",
       "pitServiceTireRr": "更换右后轮",
       "pitServiceTireCompound": "切换到下一种轮胎配方",
+      "pitServicePressurePlus": "将所有轮胎胎压提高一个步长（并勾选换胎）",
+      "pitServicePressureMinus": "将所有轮胎胎压降低一个步长（并勾选换胎）",
       "pitServiceFastRepair": "使用快速维修",
       "pitServiceWindshield": "清洁挡风玻璃（消耗一张撕膜）",
       "widgetToggleVisibility": "显示 / 隐藏“{{widget}}”"

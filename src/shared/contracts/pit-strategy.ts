@@ -8,6 +8,15 @@ export const FUEL_ADJUST_STEPS = [1, 5, 10, 15, 20] as const;
 export type FuelAdjustStep = (typeof FUEL_ADJUST_STEPS)[number];
 
 /**
+ * The tire pressure steps, offered in the unit the driver reads. The step is
+ * stored in kPa — the unit the sim takes — so switching units keeps its size.
+ */
+export const PRESSURE_ADJUST_STEPS_KPA = [1, 2, 3, 5] as const;
+export const PRESSURE_ADJUST_STEPS_PSI = [0.25, 0.5, 1] as const;
+export const KPA_PER_PSI = 6.894757;
+export const DEFAULT_PRESSURE_ADJUST_STEP_KPA = 1;
+
+/**
  * The rules the pit order is built by — app-level, because the sim has one car
  * and one tank: two pit boxes on two screens cannot hold different ones. Kept
  * in `appSettings` and mirrored to the overlays and remote screens as one value.
@@ -24,4 +33,7 @@ export interface PitStrategy {
   /** One press of the fuel up / down keys, in the unit the driver reads —
    *  liters on metric, gallons on imperial. */
   pitFuelAdjustStep: FuelAdjustStep;
+  /** One press of the tire pressure keys and buttons, in kPa whatever the
+   *  unit on display. */
+  pitPressureAdjustStep: number;
 }

@@ -1,7 +1,11 @@
 import { makeAutoObservable } from 'mobx';
 
 import { togglePitAuto } from '@shared/api/pit.service';
-import type { PitAutoMode } from '@shared/contracts/generated/bindings';
+import type {
+  DialedPressure,
+  PitAutoMode,
+} from '@shared/contracts/generated/bindings';
+import type { CornerPosition } from './pit-tires';
 import type { PitServiceWidgetStore } from './pit-service.store';
 
 export type AutoModeLabel = 'AUTO' | 'FUEL AUTO' | 'TIRE AUTO' | 'MANUAL';
@@ -41,6 +45,17 @@ export class PitAutoService {
    * decide. Null while auto mode is switched off — the order is manual by
    * definition then, and a permanent plate would say nothing.
    */
+  /**
+   * A pressure the telemetry thread holds over the sim's for this corner —
+   * being dialed, or sent and not reported back — or null where the sim's
+   * own stands.
+   */
+  dialedPressure(corner: CornerPosition): DialedPressure | null {
+    return (
+      this.store.root.backendComputed.pitAuto?.dialedPressure[corner] ?? null
+    );
+  }
+
   get autoModeLabel(): AutoModeLabel | null {
     const mode = this.store.root.backendComputed.pitAuto?.mode ?? 'off';
 

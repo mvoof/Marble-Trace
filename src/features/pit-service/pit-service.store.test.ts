@@ -109,12 +109,20 @@ describe('PitServiceWidgetStore — pit orders', () => {
 
   // An order the telemetry thread sent, manual or automatic, as the widget
   // learns of it: the count on the published frame steps.
+  const NO_DIALED_PRESSURE = { lf: null, rf: null, lr: null, rr: null };
+
   const setPitAuto = (frame: Partial<PitAutoFrame> | null) => {
     runInAction(() => {
       rootStore.backendComputed.pitAuto =
         frame === null
           ? null
-          : { mode: 'auto', ordersSent: 0, lastOrderOk: null, ...frame };
+          : {
+              mode: 'auto',
+              ordersSent: 0,
+              lastOrderOk: null,
+              dialedPressure: NO_DIALED_PRESSURE,
+              ...frame,
+            };
     });
   };
 
@@ -204,6 +212,24 @@ describe('PitServiceWidgetStore — pit orders', () => {
       { kind: 'cycleCompound' },
       { kind: 'toggleFastRepair' },
       { kind: 'toggleWindshield' },
+    ]);
+  });
+
+  it('steps one corner pressure up or down, naming only that corner', () => {
+    const order = rootStore.pitServiceWidget.order;
+
+    order.stepPressure('lr', 'up');
+    order.stepPressure('rf', 'down');
+
+    expect(sentActions()).toEqual([
+      {
+        kind: 'pressureStepUp',
+        corners: { lf: false, rf: false, lr: true, rr: false },
+      },
+      {
+        kind: 'pressureStepDown',
+        corners: { lf: false, rf: true, lr: false, rr: false },
+      },
     ]);
   });
 
@@ -648,6 +674,58 @@ describe('PitServiceWidgetStore — pit orders', () => {
 
       expect(rootStore.pitServiceWidget.panel.visitPhase).toBe('entering');
       vi.useRealTimers();
+    });
+  });
+
+  describe('when the repair runs out in the stall', () => {
+    const setStall = (options: {
+      inPitStall: boolean;
+      repairLeftS?: number;
+      optRepairLeftS?: number;
+    }) => {
+      runInAction(() => {
+        rootStore.player.pitService = {
+          inPitStall: options.inPitStall,
+          serviceActive: options.inPitStall,
+          flags: 0,
+          towTimeS: 0,
+          repairLeftS: options.repairLeftS ?? 0,
+          optRepairLeftS: options.optRepairLeftS ?? 0,
+        } as never;
+      });
+    };
+
+    beforeEach(() => {
+      rootStore.pitServiceWidget.init();
+    });
+
+    it('says the repair is done once both countdowns reach zero', () => {
+      setStall({ inPitStall: true, repairLeftS: 12, optRepairLeftS: 4 });
+
+      expect(rootStore.pitServiceWidget.panel.isRepairDone).toBe(false);
+
+      setStall({ inPitStall: true, optRepairLeftS: 1 });
+
+      expect(rootStore.pitServiceWidget.panel.isRepairDone).toBe(false);
+
+      setStall({ inPitStall: true });
+
+      expect(rootStore.pitServiceWidget.panel.isRepairDone).toBe(true);
+    });
+
+    it('says nothing on a stop without a repair', () => {
+      setStall({ inPitStall: true });
+
+      expect(rootStore.pitServiceWidget.panel.isRepairDone).toBe(false);
+    });
+
+    it('forgets the repair once the car leaves the stall', () => {
+      setStall({ inPitStall: true, repairLeftS: 5 });
+      setStall({ inPitStall: true });
+      setStall({ inPitStall: false });
+      setStall({ inPitStall: true });
+
+      expect(rootStore.pitServiceWidget.panel.isRepairDone).toBe(false);
     });
   });
 });

@@ -267,6 +267,25 @@ export class PitOrder {
     this.act({ kind: 'toggleTire', corner });
   }
 
+  /**
+   * One step of the pressure step up or down on one corner. The sim takes a
+   * pressure only with the change, so the corner is ordered too.
+   */
+  stepPressure(corner: CornerPosition, direction: 'up' | 'down') {
+    const corners = {
+      lf: corner === 'lf',
+      rf: corner === 'rf',
+      lr: corner === 'lr',
+      rr: corner === 'rr',
+    };
+
+    this.act(
+      direction === 'up'
+        ? { kind: 'pressureStepUp', corners }
+        : { kind: 'pressureStepDown', corners }
+    );
+  }
+
   toggleFastRepair() {
     this.act({ kind: 'toggleFastRepair' });
   }

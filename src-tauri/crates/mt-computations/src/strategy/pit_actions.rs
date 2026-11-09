@@ -18,7 +18,8 @@ const FUEL_CLAIM: PitClaim = PitClaim {
     fuel: true,
     tires: false,
 };
-const TIRES_CLAIM: PitClaim = PitClaim {
+/// What a tire order takes from auto mode.
+pub const TIRES_CLAIM: PitClaim = PitClaim {
     fuel: false,
     tires: true,
 };
@@ -72,6 +73,9 @@ pub fn resolve(action: PitAction, input: &PitActionInput<'_>) -> Option<ManualOr
         PitAction::SetFuel { liters } => Some(set_fuel(input, liters)),
         PitAction::ToggleAllTires => Some(toggle_all_tires(input.service)),
         PitAction::ToggleTire { corner } => Some(toggle_tire(input.service, corner)),
+        // Dialed rather than sent: the steps add up on the telemetry thread and
+        // go out as one order once they stop (`pressure_dial`).
+        PitAction::PressureStepUp { .. } | PitAction::PressureStepDown { .. } => None,
         PitAction::CycleCompound => cycle_compound(input),
         PitAction::ToggleFastRepair => Some(unclaimed(if input.service.fast_repair {
             PitCommandKind::ClearFastRepair
@@ -182,7 +186,7 @@ fn is_corner_ordered(service: &PitServiceFrame, corner: TireCorner) -> bool {
     }
 }
 
-fn ordered_pressure(service: &PitServiceFrame, corner: TireCorner) -> Option<f32> {
+pub(crate) fn ordered_pressure(service: &PitServiceFrame, corner: TireCorner) -> Option<f32> {
     match corner {
         TireCorner::Lf => service.lf_pressure,
         TireCorner::Rf => service.rf_pressure,
@@ -191,7 +195,7 @@ fn ordered_pressure(service: &PitServiceFrame, corner: TireCorner) -> Option<f32
     }
 }
 
-fn corner_kind(corner: TireCorner) -> PitCommandKind {
+pub(crate) fn corner_kind(corner: TireCorner) -> PitCommandKind {
     match corner {
         TireCorner::Lf => PitCommandKind::Lf,
         TireCorner::Rf => PitCommandKind::Rf,
