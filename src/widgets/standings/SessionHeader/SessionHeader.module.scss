@@ -12,6 +12,7 @@
   // under the rows they frame.
   --chip-solid-strength: 40%;
   --chip-solid-text: #{$chip-text};
+  --chip-solid-weight: 500;
 
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto;
