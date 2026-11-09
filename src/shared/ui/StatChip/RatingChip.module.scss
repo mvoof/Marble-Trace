@@ -1,23 +1,8 @@
-// The lead gives up its padding and gap: the letter and the rating each pad
-// themselves, edge to edge. Together they take what "A 4.99" in one box took —
-// the box's sp(sm) at either end, and the space between them (one tracked mono
-// advance, 0.66em) split across the seam — so the column keeps its width
-// (`ratingChipWidth`).
+// A filled SR chip's lead gives up its padding and gap: the letter and the
+// rating each pad themselves, edge to edge. Together they hold what "A 4.99" in
+// one box would — the space between them (one tracked mono advance, 0.66em)
+// split across the seam (`srChipWidth`).
 $seam-half: 0.33em;
-
-// Two chips where `ratingChipWidth` counts one: a filled SR chip has no edge,
-// so the pair spends the one chip's 2px of edges and 16px of value padding on
-// the iRating's edges (2px), its padding (12px) and the gap (4px). A tinted SR
-// chip keeps its edges, so its gap is the 2px left over.
-.pair {
-  display: inline-flex;
-  align-items: center;
-  gap: sp(xxxs);
-}
-
-.pairSolid {
-  gap: sp(xxs);
-}
 
 // A filled chip has no edge, so it would sit 2px shorter than the chips beside
 // it; its line takes the 2px back.

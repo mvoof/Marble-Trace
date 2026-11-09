@@ -11,33 +11,19 @@ import {
 import { StatChip } from './StatChip';
 import styles from './RatingChip.module.scss';
 
-interface RatingChipProps {
+interface SafetyRatingChipProps {
   licString: string;
-  iRating: number;
-  showSafetyRating: boolean;
   showLicenseLetter: boolean;
-  showIRating: boolean;
-  abbreviateIRating: boolean;
   badgeStyle: LicBadgeStyle;
 }
 
 /**
- * A driver's safety rating and iRating as two chips side by side. Filled, the
- * SR chip puts the class letter on the license's bright color and the rating
- * on its deeper shade; the iRating is a chip of its own on the darkest ground.
- * The pair takes the width `ratingChipWidth` counts for one chip: the iRating
- * gives up the room its second edge and the gap take.
+ * A driver's safety rating, a column of its own. Filled, the class letter sits
+ * on the license's bright color and the rating on its deeper shade, so the
+ * class reads first.
  */
-export const RatingChip = observer(
-  ({
-    licString,
-    iRating,
-    showSafetyRating,
-    showLicenseLetter,
-    showIRating,
-    abbreviateIRating,
-    badgeStyle,
-  }: RatingChipProps) => {
+export const SafetyRatingChip = observer(
+  ({ licString, showLicenseLetter, badgeStyle }: SafetyRatingChipProps) => {
     const isSolid = badgeStyle !== 'dark';
     const parts = safetyRatingParts(licString);
     const splitsLetter = isSolid && showLicenseLetter && parts.rating !== '';
@@ -52,29 +38,30 @@ export const RatingChip = observer(
     );
 
     return (
-      <span className={`${styles.pair} ${isSolid ? styles.pairSolid : ''}`}>
-        {showSafetyRating && (
-          <StatChip
-            className={[
-              isSolid ? styles.srSolid : '',
-              splitsLetter ? styles.split : '',
-            ].join(' ')}
-            lead={lead}
-            leadKind="number"
-            leadVariant={isSolid ? 'solid' : 'tint'}
-            tone={licenseTone(licString)}
-          />
-        )}
-
-        {showIRating && (
-          <StatChip
-            className={styles.iRating}
-            valueChars={iRatingChars(abbreviateIRating)}
-          >
-            {formatIr(iRating, abbreviateIRating)}
-          </StatChip>
-        )}
-      </span>
+      <StatChip
+        className={[
+          isSolid ? styles.srSolid : '',
+          splitsLetter ? styles.split : '',
+        ].join(' ')}
+        lead={lead}
+        leadKind="number"
+        leadVariant={isSolid ? 'solid' : 'tint'}
+        tone={licenseTone(licString)}
+      />
     );
   }
+);
+
+interface IRatingChipProps {
+  iRating: number;
+  abbreviate: boolean;
+}
+
+/** A driver's iRating, a column of its own: a white chip, its number dark. */
+export const IRatingChip = observer(
+  ({ iRating, abbreviate }: IRatingChipProps) => (
+    <StatChip className={styles.iRating} valueChars={iRatingChars(abbreviate)}>
+      {formatIr(iRating, abbreviate)}
+    </StatChip>
+  )
 );

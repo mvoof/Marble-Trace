@@ -14,7 +14,7 @@ import { getContrastTextColor, playerRowStyle } from '@shared/lib/colors';
 import { CountryFlag } from '@shared/ui/CountryFlag/CountryFlag';
 import { DriverFlagBadge } from '@shared/ui/DriverFlagBadge/DriverFlagBadge';
 import { StatChip } from '@shared/ui/StatChip/StatChip';
-import { RatingChip } from '@shared/ui/StatChip/RatingChip';
+import { IRatingChip, SafetyRatingChip } from '@shared/ui/StatChip/RatingChip';
 import {
   buildRelativeGridTemplate,
   resolveRowPosition,
@@ -234,16 +234,24 @@ export const DriverRow = observer(({ carIdx, index }: DriverRowProps) => {
         ))}
       </div>
 
-      {(settings.showLicBadge || settings.showIRating) && (
-        <div className={`${styles.colRating} ${styles.blockEnd}`}>
-          <RatingChip
+      {/* The rule closes the rating group after whichever of the two ends it. */}
+      {settings.showLicBadge && (
+        <div
+          className={`${styles.colRating} ${settings.showIRating ? '' : styles.blockEnd}`}
+        >
+          <SafetyRatingChip
             licString={driver.licString}
-            iRating={driver.iRating}
-            showSafetyRating={settings.showLicBadge}
             showLicenseLetter={settings.showLicenseLetter}
-            showIRating={settings.showIRating}
-            abbreviateIRating={settings.abbreviateIRating}
             badgeStyle={settings.licBadgeStyle}
+          />
+        </div>
+      )}
+
+      {settings.showIRating && (
+        <div className={`${styles.colRating} ${styles.blockEnd}`}>
+          <IRatingChip
+            iRating={driver.iRating}
+            abbreviate={settings.abbreviateIRating}
           />
         </div>
       )}

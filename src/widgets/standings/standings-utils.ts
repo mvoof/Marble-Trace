@@ -5,8 +5,10 @@ import {
   columnPx,
   fontScaleOf,
   type WithFontScale,
+  irChipWidth,
   ratingChipParts,
-  ratingChipWidth,
+  srChipWidth,
+  type ChipWidth,
   MONO_ADVANCE_EM,
   valueChipWidth,
 } from '@shared/ui/StatChip/rating';
@@ -182,7 +184,8 @@ export type StandingsColumn =
   | 'posChange'
   | 'countryFlag'
   | 'name'
-  | 'rating'
+  | 'sr'
+  | 'ir'
   | 'irChange'
   | 'laps'
   | 'gap'
@@ -209,21 +212,20 @@ interface ColSpec {
   show: boolean;
 }
 
-// The rating column: the chip's own width and the cell's padding, growing with
+// A chip's column: the chip's own width and the cell's padding, growing with
 // the font scale as the chip's digits do.
-const ratingColumn = (
+const chipColumn = (
+  width: ChipWidth | null,
   settings: WithFontScale<StandingsWidgetSettings>
-): { px: number; css: string } => {
-  const { sr, ir } = ratingChipParts(settings);
-  const width = ratingChipWidth(sr, ir, settings.licBadgeStyle);
-
-  return {
-    // The design width is what the grid really draws, the font scale too —
-    // else a scaled-up chip pushes the last column out of the frame.
-    px: columnPx(width, CELL_PAD_X_PX * 2, fontScaleOf(settings)),
-    css: chipColumnCss(width, CELL_PAD_X_PX * 2),
-  };
-};
+): { px: number; css: string } | null =>
+  width === null
+    ? null
+    : {
+        // The design width is what the grid really draws, the font scale too —
+        // else a scaled-up chip pushes the last column out of the frame.
+        px: columnPx(width, CELL_PAD_X_PX * 2, fontScaleOf(settings)),
+        css: chipColumnCss(width, CELL_PAD_X_PX * 2),
+      };
 
 /**
  * A column of text: `contentPx` is what its widest value takes at font scale 1,
@@ -265,91 +267,108 @@ const bestLapColumn = (
 
 const colSpecs = (
   settings: WithFontScale<StandingsWidgetSettings>
-): ColSpec[] => [
-  { key: 'pos', block: 'driver', ...textColumn(28, settings, 0), show: true }, // "00" (fs md, bold)
-  {
-    key: 'carNumber',
-    block: 'driver',
-    ...textColumn(40, settings),
-    show: true,
-  }, // class-colored badge
-  {
-    key: 'posChange',
-    block: 'driver',
-    ...textColumn(38, settings),
-    show: settings.showPosChange,
-  }, // "▲12"
-  {
-    key: 'countryFlag',
-    block: 'driver',
-    px: padded(22),
-    show: settings.showCountryFlag,
-  }, // right before the name
-  {
-    key: 'name',
-    block: 'driver',
-    px: clampNameColumnWidth(settings.nameColumnWidth),
-    show: true,
-  }, // fixed, user-sized
-  {
-    // Safety rating and iRating, one chip whichever of the two is shown. The
-    // column is the chip's own width plus the cell padding, so a format switch
-    // moves the column by what the chip gained or lost and nothing else.
-    key: 'rating',
-    block: 'rating',
-    ...ratingColumn(settings),
-    show: settings.showLicBadge || settings.showIRating,
-  },
-  {
-    key: 'irChange',
-    block: 'rating',
-    ...textColumn(42, settings),
-    show: settings.showIrChange,
-  }, // "+123"
-  {
-    key: 'laps',
-    block: 'race',
-    ...textColumn(28, settings),
-    show: settings.showLapsCompleted,
-  }, // "00"
-  {
-    key: 'gap',
-    block: 'race',
-    ...textColumn(50, settings),
-    show: settings.showGap,
-  }, // "+123.4" / "12 L" / "LDR"
-  {
-    key: 'interval',
-    block: 'race',
-    ...textColumn(50, settings),
-    show: settings.showInterval,
-  }, // "123.4" / "12 L"
-  {
-    key: 'lastLap',
-    block: 'times',
-    ...textColumn(LAST_LAP_TEXT_PX, settings),
-    show: settings.showLastLap,
-  }, // "1:32.400" (9 chars mono max)
-  {
-    key: 'lapDelta',
-    block: 'times',
-    ...textColumn(50, settings),
-    show: settings.showLapDelta,
-  }, // "12.34"
-  {
-    key: 'bestLap',
-    block: 'times',
-    ...bestLapColumn(settings),
-    show: settings.showBestLap,
-  }, // "1:32.400" (9 chars mono max)
-  {
-    key: 'brand',
-    block: 'car',
-    ...textColumn(36, settings),
-    show: settings.showBrand,
-  }, // "MERC" — at end
-  { key: 'tire', block: 'car', px: padded(30), show: settings.showTire }, // badge — at end
-];
+): ColSpec[] => {
+  const { sr, ir } = ratingChipParts(settings);
+  const srColumn = chipColumn(
+    srChipWidth(sr, settings.licBadgeStyle),
+    settings
+  );
+  const irColumn = chipColumn(irChipWidth(ir), settings);
+
+  return [
+    { key: 'pos', block: 'driver', ...textColumn(28, settings, 0), show: true }, // "00" (fs md, bold)
+    {
+      key: 'carNumber',
+      block: 'driver',
+      ...textColumn(40, settings),
+      show: true,
+    }, // class-colored badge
+    {
+      key: 'posChange',
+      block: 'driver',
+      ...textColumn(38, settings),
+      show: settings.showPosChange,
+    }, // "▲12"
+    {
+      key: 'countryFlag',
+      block: 'driver',
+      px: padded(22),
+      show: settings.showCountryFlag,
+    }, // right before the name
+    {
+      key: 'name',
+      block: 'driver',
+      px: clampNameColumnWidth(settings.nameColumnWidth),
+      show: true,
+    }, // fixed, user-sized
+    // The safety rating and the iRating, each a column of its chip's own width
+    // plus the cell padding, so a format switch moves a column by what its chip
+    // gained or lost and nothing else.
+    {
+      key: 'sr',
+      block: 'rating',
+      px: srColumn?.px ?? 0,
+      css: srColumn?.css,
+      show: srColumn !== null,
+    },
+    {
+      key: 'ir',
+      block: 'rating',
+      px: irColumn?.px ?? 0,
+      css: irColumn?.css,
+      show: irColumn !== null,
+    },
+    {
+      key: 'irChange',
+      block: 'rating',
+      ...textColumn(42, settings),
+      show: settings.showIrChange,
+    }, // "+123"
+    {
+      key: 'laps',
+      block: 'race',
+      ...textColumn(28, settings),
+      show: settings.showLapsCompleted,
+    }, // "00"
+    {
+      key: 'gap',
+      block: 'race',
+      ...textColumn(50, settings),
+      show: settings.showGap,
+    }, // "+123.4" / "12 L" / "LDR"
+    {
+      key: 'interval',
+      block: 'race',
+      ...textColumn(50, settings),
+      show: settings.showInterval,
+    }, // "123.4" / "12 L"
+    {
+      key: 'lastLap',
+      block: 'times',
+      ...textColumn(LAST_LAP_TEXT_PX, settings),
+      show: settings.showLastLap,
+    }, // "1:32.400" (9 chars mono max)
+    {
+      key: 'lapDelta',
+      block: 'times',
+      ...textColumn(50, settings),
+      show: settings.showLapDelta,
+    }, // "12.34"
+    {
+      key: 'bestLap',
+      block: 'times',
+      ...bestLapColumn(settings),
+      show: settings.showBestLap,
+    }, // "1:32.400" (9 chars mono max)
+    {
+      key: 'brand',
+      block: 'car',
+      ...textColumn(36, settings),
+      show: settings.showBrand,
+    }, // "MERC" — at end
+    { key: 'tire', block: 'car', px: padded(30), show: settings.showTire }, // badge — at end
+  ];
+};
 
 /**
  * The visible columns that close a group with another group after them — the

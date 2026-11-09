@@ -6,7 +6,7 @@ import { asObject, mapEveryStoredWidget, type StoredBlobWidget } from '../blob';
  *
  * Every value cell gained a little padding on both sides, Standings gained
  * two columns shown by default — the interval and the lap delta — and the
- * safety rating and iRating merged into one chip whose column is the chip's own
+ * safety rating and iRating became chips, each in a column of its chip's own
  * width. A table's design width is the sum of its columns, so it moved with
  * them.
  *
@@ -70,19 +70,17 @@ const LIC_COLUMN_PX: Record<
   plain: { withLetter: 48, ratingOnly: 34 },
 };
 
-// The rating chip of v7, frozen: JetBrains Mono digits at 11px, the solid lead
-// tracked 0.06em, its padding, the iRating's padding and the chip's edges.
+// The rating chips of v7, frozen: JetBrains Mono digits at 11px, a filled SR
+// lead tracked 0.06em with no edge, a row chip's side padding and edges.
 const RATING_ADVANCE_PX = 0.6 * 11;
 const RATING_SOLID_ADVANCE_PX = (0.6 + 0.06) * 11;
-const RATING_SOLID_PAD_PX = 16;
-const RATING_TINT_PAD_PX = 12;
-const RATING_VALUE_PAD_PX = 16;
+const RATING_SOLID_PAD_PX = 12;
+const RATING_TINT_PAD_PX = 8;
+const RATING_VALUE_PAD_PX = 12;
 const RATING_EDGE_PX = 2;
 
 interface Column {
   show: (settings: TableSettings) => boolean;
-  /** Whether it shows in v7, when that differs from v6. */
-  showAfter?: (settings: TableSettings) => boolean;
   /** Width in v6, or null for a column v6 did not have. */
   before: WidthOf | null;
   /** Width in v7, or null for a column v7 no longer has. */
@@ -132,35 +130,27 @@ const iRatingWidth =
   (settings) =>
     flag('abbreviateIRating', true)(settings) ? abbreviatedPx : fullPx;
 
-const showsRating = (settings: TableSettings): boolean =>
-  flag('showLicBadge', true)(settings) || flag('showIRating', true)(settings);
+/** The v7 SR column: its chip, padded. */
+const srColumnWidth: WidthOf = (settings) => {
+  const chars = flag('showLicenseLetter', true)(settings) ? 6 : 4;
+  const chipPx =
+    settings['licBadgeStyle'] === 'dark'
+      ? RATING_TINT_PAD_PX + RATING_EDGE_PX + chars * RATING_ADVANCE_PX
+      : RATING_SOLID_PAD_PX + chars * RATING_SOLID_ADVANCE_PX;
 
-/** The v7 rating column: the chip of whichever parts are shown, padded. */
-const ratingChipWidth: WidthOf = (settings) => {
-  const isSolid = settings['licBadgeStyle'] !== 'dark';
-  const showsSr = flag('showLicBadge', true)(settings);
-  const showsIr = flag('showIRating', true)(settings);
-  const srChars = !showsSr
-    ? 0
-    : flag('showLicenseLetter', true)(settings)
-      ? 6
-      : 4;
-  const irChars = !showsIr
-    ? 0
-    : flag('abbreviateIRating', true)(settings)
-      ? 4
-      : 5;
+  return Math.ceil(chipPx + CELL_PAD_X_PX * 2);
+};
 
-  const srPx =
-    srChars === 0
-      ? 0
-      : isSolid
-        ? RATING_SOLID_PAD_PX + srChars * RATING_SOLID_ADVANCE_PX
-        : RATING_TINT_PAD_PX + srChars * RATING_ADVANCE_PX;
-  const irPx =
-    irChars === 0 ? 0 : RATING_VALUE_PAD_PX + irChars * RATING_ADVANCE_PX;
+/** The v7 iRating column: its chip, padded. */
+const irColumnWidth: WidthOf = (settings) => {
+  const chars = flag('abbreviateIRating', true)(settings) ? 4 : 5;
 
-  return Math.ceil(srPx + irPx + RATING_EDGE_PX + CELL_PAD_X_PX * 2);
+  return Math.ceil(
+    RATING_VALUE_PAD_PX +
+      RATING_EDGE_PX +
+      chars * RATING_ADVANCE_PX +
+      CELL_PAD_X_PX * 2
+  );
 };
 
 const STANDINGS_COLUMNS: readonly Column[] = [
@@ -183,14 +173,13 @@ const STANDINGS_COLUMNS: readonly Column[] = [
   },
   {
     show: flag('showLicBadge', true),
-    showAfter: showsRating,
     before: licWidth,
-    after: ratingChipWidth,
+    after: srColumnWidth,
   },
   {
     show: flag('showIRating', true),
     before: iRatingWidth(42, 52),
-    after: null,
+    after: irColumnWidth,
   },
   {
     show: flag('showIrChange', true),
@@ -244,14 +233,13 @@ const RELATIVE_COLUMNS: readonly Column[] = [
   },
   {
     show: flag('showLicBadge', true),
-    showAfter: showsRating,
     before: licWidth,
-    after: ratingChipWidth,
+    after: srColumnWidth,
   },
   {
     show: flag('showIRating', true),
     before: iRatingWidth(36, 48),
-    after: null,
+    after: irColumnWidth,
   },
   { show: always, before: fixed(56), after: fixed(padded(56)) },
 ];
@@ -266,13 +254,8 @@ const designWidth = (
   settings: TableSettings,
   side: 'before' | 'after'
 ): number => {
-  const shows = (column: Column): boolean =>
-    side === 'after' && column.showAfter !== undefined
-      ? column.showAfter(settings)
-      : column.show(settings);
-
   const widths = columns
-    .filter((column) => column[side] !== null && shows(column))
+    .filter((column) => column[side] !== null && column.show(settings))
     .map((column) => (column[side] as WidthOf)(settings));
 
   const columnsWidth = widths.reduce((sum, width) => sum + width, 0);

@@ -50,8 +50,6 @@ export const ratingChipParts = (settings: {
 const CHIP_FONT_PX = 11; // fs(xxs)
 export const MONO_ADVANCE_EM = 0.6; // JetBrains Mono
 const SOLID_TRACKING_EM = 0.06; // .leadSolid letter-spacing
-const SOLID_LEAD_PAD_PX = 16; // sp(sm) on both sides
-const TINT_LEAD_PAD_PX = 12; // sp(xs) on both sides
 const VALUE_PAD_PX = 16; // sp(sm) on both sides
 const CHIP_EDGE_PX = 2; // 1px on either side
 
@@ -67,7 +65,7 @@ const IR_CHARS: Record<RatingChipIr, number> = {
   full: 5, // "12345"
 };
 
-/** The characters the iRating half always holds: "9.9k", or "12345". */
+/** The characters the iRating chip always holds: "9.9k", or "12345". */
 export const iRatingChars = (abbreviate: boolean): number =>
   abbreviate ? IR_CHARS.abbreviated : IR_CHARS.full;
 
@@ -79,27 +77,47 @@ export interface ChipWidth {
   textPx: number;
 }
 
-/** The rating chip's width for the parts it shows and the badge style. */
-export const ratingChipWidth = (
-  sr: RatingChipSr,
-  ir: RatingChipIr,
-  badgeStyle: LicBadgeStyle
-): ChipWidth => {
-  const isSolid = badgeStyle !== 'dark';
-  const advancePx = MONO_ADVANCE_EM * CHIP_FONT_PX;
-  const srAdvancePx = isSolid
-    ? (MONO_ADVANCE_EM + SOLID_TRACKING_EM) * CHIP_FONT_PX
-    : advancePx;
+// A row's own chips are tighter at the sides than a bar's (the rows'
+// `--chip-*-padding-x` and `--chip-lead-padding`).
+const ROW_SOLID_PAD_PX = 12; // sp(xs) on both sides — the SR's letter and rating too
+const ROW_TINT_PAD_PX = 8; // sp(xxs) on both sides
+const ROW_VALUE_PAD_PX = 12; // sp(xs) on both sides
 
-  const srPadPx =
-    sr === 'none' ? 0 : isSolid ? SOLID_LEAD_PAD_PX : TINT_LEAD_PAD_PX;
-  const irPadPx = ir === 'none' ? 0 : VALUE_PAD_PX;
+/**
+ * The SR chip's width, or null when it is off. Filled it has no edge; its
+ * letter and rating together hold the six characters "A 4.99" would, the
+ * space split between their two boxes.
+ */
+export const srChipWidth = (
+  sr: RatingChipSr,
+  badgeStyle: LicBadgeStyle
+): ChipWidth | null => {
+  if (sr === 'none') {
+    return null;
+  }
+
+  if (badgeStyle !== 'dark') {
+    return {
+      fixedPx: ROW_SOLID_PAD_PX,
+      textPx:
+        SR_CHARS[sr] * (MONO_ADVANCE_EM + SOLID_TRACKING_EM) * CHIP_FONT_PX,
+    };
+  }
 
   return {
-    fixedPx: srPadPx + irPadPx + CHIP_EDGE_PX,
-    textPx: SR_CHARS[sr] * srAdvancePx + IR_CHARS[ir] * advancePx,
+    fixedPx: ROW_TINT_PAD_PX + CHIP_EDGE_PX,
+    textPx: SR_CHARS[sr] * MONO_ADVANCE_EM * CHIP_FONT_PX,
   };
 };
+
+/** The iRating chip's width, or null when it is off. */
+export const irChipWidth = (ir: RatingChipIr): ChipWidth | null =>
+  ir === 'none'
+    ? null
+    : {
+        fixedPx: ROW_VALUE_PAD_PX + CHIP_EDGE_PX,
+        textPx: IR_CHARS[ir] * MONO_ADVANCE_EM * CHIP_FONT_PX,
+      };
 
 /**
  * A chip holding a value alone — a lap time — of `chars` characters: its

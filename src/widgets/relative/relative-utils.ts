@@ -11,8 +11,10 @@ import {
   columnPx,
   fontScaleOf,
   type WithFontScale,
+  irChipWidth,
   ratingChipParts,
-  ratingChipWidth,
+  srChipWidth,
+  type ChipWidth,
 } from '@shared/ui/StatChip/rating';
 import type { RelativeWidgetSettings } from './settings-schema';
 
@@ -50,39 +52,41 @@ interface ColSpec {
   show: boolean;
 }
 
-// The rating column: the chip's own width and the cell's padding, growing with
+// A chip's column: the chip's own width and the cell's padding, growing with
 // the font scale as the chip's digits do.
-const ratingColumn = (
+const chipColumn = (
+  width: ChipWidth | null,
   settings: WithFontScale<RelativeWidgetSettings>
-): { px: number; css: string } => {
-  const { sr, ir } = ratingChipParts(settings);
-  const width = ratingChipWidth(sr, ir, settings.licBadgeStyle);
-
-  return {
-    // The design width is what the grid really draws, the font scale too —
-    // else a scaled-up chip pushes the last column out of the frame.
-    px: columnPx(width, CELL_PAD_X_PX * 2, fontScaleOf(settings)),
-    css: chipColumnCss(width, CELL_PAD_X_PX * 2),
-  };
-};
+): ColSpec => ({
+  // The design width is what the grid really draws, the font scale too — else a
+  // scaled-up chip pushes the last column out of the frame.
+  px:
+    width === null
+      ? 0
+      : columnPx(width, CELL_PAD_X_PX * 2, fontScaleOf(settings)),
+  css: width === null ? undefined : chipColumnCss(width, CELL_PAD_X_PX * 2),
+  show: width !== null,
+});
 
 // Single source of truth for column order + widths (px at scale 1). Order MUST
 // match the render order in DriverRow.tsx.
 const colSpecs = (
   settings: WithFontScale<RelativeWidgetSettings>
-): ColSpec[] => [
-  { px: 28, show: true }, // pos
-  { px: padded(40), show: settings.showCarNumber }, // carNum — class-colored badge, right after pos
-  { px: padded(22), show: settings.showCountryFlag }, // country flag, right before the name
-  { px: clampNameColumnWidth(settings.nameColumnWidth), show: true }, // name — fixed, user-sized
-  // Safety rating and iRating, one chip — the same column Standings has, so
-  // the two tables line up when stacked.
-  {
-    ...ratingColumn(settings),
-    show: settings.showLicBadge || settings.showIRating,
-  },
-  { px: padded(56), show: true }, // gap
-];
+): ColSpec[] => {
+  const { sr, ir } = ratingChipParts(settings);
+
+  return [
+    { px: 28, show: true }, // pos
+    { px: padded(40), show: settings.showCarNumber }, // carNum — class-colored badge, right after pos
+    { px: padded(22), show: settings.showCountryFlag }, // country flag, right before the name
+    { px: clampNameColumnWidth(settings.nameColumnWidth), show: true }, // name — fixed, user-sized
+    // The safety rating and the iRating, each a column — the same columns
+    // Standings has, so the two tables line up when stacked.
+    chipColumn(srChipWidth(sr, settings.licBadgeStyle), settings),
+    chipColumn(irChipWidth(ir), settings),
+    { px: padded(56), show: true }, // gap
+  ];
+};
 
 export const buildRelativeGridTemplate = (
   settings: RelativeWidgetSettings
