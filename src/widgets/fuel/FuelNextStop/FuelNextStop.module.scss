@@ -29,6 +29,11 @@
   color: $chip-text-muted;
 }
 
+// The fuel footer's captions sit a step under the table's.
+.chip {
+  --chip-lead-size: #{wfs(9)};
+}
+
 .countdown {
   --chip-value-text: #{$chip-accent};
 }

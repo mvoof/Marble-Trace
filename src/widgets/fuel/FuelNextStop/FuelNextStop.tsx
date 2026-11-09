@@ -49,7 +49,7 @@ export const FuelNextStop = observer(() => {
       <span className={styles.label}>NEXT PIT</span>
 
       <div className={styles.chips}>
-        <StatChip lead="LAP" tone="positive">
+        <StatChip lead="LAP" tone="positive" className={styles.chip}>
           {forecast.targetLap ?? NO_LAP_PLACEHOLDER}
 
           {forecast.windowEndLap !== null && (
@@ -60,7 +60,7 @@ export const FuelNextStop = observer(() => {
         <StatChip
           lead="EST"
           tone="accent"
-          className={hasCountdown ? styles.countdown : styles.countdownEmpty}
+          className={`${styles.chip} ${hasCountdown ? styles.countdown : styles.countdownEmpty}`}
         >
           <FixedDigits
             text={

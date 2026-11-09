@@ -10,6 +10,7 @@
 
 // The range on the block's red ground: its lead a shade of it, not grey.
 .lapChip {
+  --chip-lead-size: #{wfs(9)};
   --chip-lead-bg: #{rgba($chip-danger, 0.1)};
   --chip-lead-text: #{$table-dim-text};
 

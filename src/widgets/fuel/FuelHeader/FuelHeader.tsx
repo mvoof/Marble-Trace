@@ -32,7 +32,6 @@ export const FuelHeader = observer(() => {
         <StatChip
           lead={isLow ? 'FUEL LOW' : 'FUEL'}
           leadVariant="solid"
-          size="md"
           tone={isLow ? 'danger' : 'positive'}
         />
 

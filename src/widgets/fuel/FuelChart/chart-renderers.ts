@@ -25,7 +25,7 @@ const drawAvgLine = (
   ctx.stroke();
   ctx.setLineDash([]);
 
-  ctx.font = 'bold 11px monospace';
+  ctx.font = 'bold 8px monospace';
   ctx.textAlign = 'right';
   ctx.textBaseline = 'bottom';
   ctx.fillStyle = FUEL_COLORS.averageLabel;
@@ -43,7 +43,7 @@ const drawXLabels = (
 ) => {
   const n = data.length;
 
-  ctx.font = '11px monospace';
+  ctx.font = '9px monospace';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'top';
   ctx.fillStyle = FUEL_COLORS.textMuted;

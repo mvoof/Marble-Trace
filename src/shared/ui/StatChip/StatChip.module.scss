@@ -41,7 +41,7 @@ $edge: var(--chip-edge, #{$chip-border});
   align-items: center;
   gap: sp(xxs);
   min-height: calc(#{fs(xxs)} * 1.25 + #{sp(xxxs)} * 2);
-  padding: sp(xxxs) sp(xs);
+  padding: var(--chip-lead-padding, #{sp(xxxs) sp(xs)});
   background: $lead-bg;
   color: $lead-text;
 }
@@ -53,9 +53,11 @@ $edge: var(--chip-edge, #{$chip-border});
 }
 
 // A word: the label of a reading, a status.
+// A caller whose layout sets its own type steps the lead through
+// `--chip-lead-size` — a caption under a widget's own scale.
 .leadLabel {
   font-family: $font-widget;
-  font-size: fs(xxxs);
+  font-size: var(--chip-lead-size, #{fs(xxxs)});
   font-weight: 700;
   letter-spacing: 0.04em;
   text-transform: uppercase;
@@ -64,7 +66,7 @@ $edge: var(--chip-edge, #{$chip-border});
 // A number: a safety rating, a lap time, laps down.
 .leadNumber {
   font-family: $font-mono;
-  font-size: fs(xxs);
+  font-size: var(--chip-lead-size, #{fs(xxs)});
   font-weight: 700;
 }
 

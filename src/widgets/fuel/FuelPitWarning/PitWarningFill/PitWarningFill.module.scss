@@ -53,6 +53,8 @@
 // The buffer is a note on the amount, not a state: the chip's own ground with
 // the accent written on it.
 .bufferChip {
+  --chip-lead-size: #{fs(xxxs)};
+  --chip-lead-padding: #{sp(xxs) sp(sm)};
   --chip-lead-bg: transparent;
 
   --chip-edge: #{$chip-accent-bg};
