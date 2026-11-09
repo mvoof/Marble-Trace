@@ -1,6 +1,14 @@
 import type { CarIdentity } from '@shared/contracts/car-identity';
 import type { DriverEntry } from '@shared/contracts/driver-entry';
-import { licColumnWidthPx } from '@shared/ui/RatingBadge/LicBadge.utils';
+import {
+  chipColumnCss,
+  columnPx,
+  fontScaleOf,
+  type WithFontScale,
+  ratingChipParts,
+  ratingChipWidth,
+} from '@shared/ui/StatChip/rating';
+import { formatLapTime } from '@shared/lib/telemetry-format';
 import type { StandingsWidgetSettings } from './settings-schema';
 
 export interface VisibleRows {
@@ -139,6 +147,12 @@ const ws = (px: number) => `calc(${px}px * var(--wfs, 1))`;
 // Layout constants — must mirror the SCSS: column-gap sp(xxxs)=2, padding sp(md)=10.
 const COL_GAP_PX = 2;
 const ROW_PAD_X_PX = 10;
+// Inner padding on each side of a value cell — sp(xxs) in the SCSS — so a value
+// never touches the edge of its column stripe. Position and name carry their own.
+const CELL_PAD_X_PX = 4;
+
+const padded = (contentPx: number): number => contentPx + CELL_PAD_X_PX * 2;
+
 // The name column is fixed, not elastic: an elastic name swallows every pixel
 // freed by a hidden column, so the only way left to narrow the table is to drag
 // its edge — which scales the text down with it. Its width is a user setting,
@@ -160,36 +174,149 @@ const clampNameColumnWidth = (width: number | undefined) => {
 
 // Single source of truth for column order + widths (px at scale 1). Order here
 // MUST match the render order in DriverRow.tsx and StandingsHeader.tsx.
+export type StandingsColumn =
+  | 'pos'
+  | 'carNumber'
+  | 'posChange'
+  | 'countryFlag'
+  | 'name'
+  | 'rating'
+  | 'irChange'
+  | 'laps'
+  | 'gap'
+  | 'interval'
+  | 'lastLap'
+  | 'lapDelta'
+  | 'bestLap'
+  | 'brand'
+  | 'tire';
+
+/**
+ * The groups a thin rule divides the row into: who the driver is, how rated,
+ * where in the race, how fast, in what car. Rules sit between groups, never
+ * between the columns of one.
+ */
+type ColumnBlock = 'driver' | 'rating' | 'race' | 'times' | 'car';
+
 interface ColSpec {
+  key: StandingsColumn;
+  block: ColumnBlock;
   px: number;
+  /** The track as CSS, when it is more than `px` at the widget's scale. */
+  css?: string;
   show: boolean;
 }
 
-const colSpecs = (settings: StandingsWidgetSettings): ColSpec[] => [
-  { px: 28, show: true }, // pos      "00" (fs md, bold)
-  { px: 40, show: true }, // carNum   class-colored badge, right after pos
-  { px: 38, show: settings.showPosChange }, // +/- pos  "▲12"
-  { px: 22, show: settings.showCountryFlag }, // country flag, right before the name
-  { px: clampNameColumnWidth(settings.nameColumnWidth), show: true }, // name — fixed, user-sized
+// The rating column: the chip's own width and the cell's padding, growing with
+// the font scale as the chip's digits do.
+const ratingColumn = (
+  settings: WithFontScale<StandingsWidgetSettings>
+): { px: number; css: string } => {
+  const { sr, ir } = ratingChipParts(settings);
+  const width = ratingChipWidth(sr, ir, settings.licBadgeStyle);
+
+  return {
+    // The design width is what the grid really draws, the font scale too —
+    // else a scaled-up chip pushes the last column out of the frame.
+    px: columnPx(width, CELL_PAD_X_PX * 2, fontScaleOf(settings)),
+    css: chipColumnCss(width, CELL_PAD_X_PX * 2),
+  };
+};
+
+const colSpecs = (
+  settings: WithFontScale<StandingsWidgetSettings>
+): ColSpec[] => [
+  { key: 'pos', block: 'driver', px: 28, show: true }, // "00" (fs md, bold)
+  { key: 'carNumber', block: 'driver', px: padded(40), show: true }, // class-colored badge
   {
-    // "A 4.99" — matches Relative for an equal PIT↔SR gap; the width follows
-    // both the class letter and the style the value is drawn in.
-    px: licColumnWidthPx(settings.licBadgeStyle, settings.showLicenseLetter),
-    show: settings.showLicBadge,
+    key: 'posChange',
+    block: 'driver',
+    px: padded(38),
+    show: settings.showPosChange,
+  }, // "▲12"
+  {
+    key: 'countryFlag',
+    block: 'driver',
+    px: padded(22),
+    show: settings.showCountryFlag,
+  }, // right before the name
+  {
+    key: 'name',
+    block: 'driver',
+    px: clampNameColumnWidth(settings.nameColumnWidth),
+    show: true,
+  }, // fixed, user-sized
+  {
+    // Safety rating and iRating, one chip whichever of the two is shown. The
+    // column is the chip's own width plus the cell padding, so a format switch
+    // moves the column by what the chip gained or lost and nothing else.
+    key: 'rating',
+    block: 'rating',
+    ...ratingColumn(settings),
+    show: settings.showLicBadge || settings.showIRating,
   },
   {
-    // "9.9k" abbreviated, "12345" spelled out — five mono digits need the room.
-    px: settings.abbreviateIRating ? 42 : 52,
-    show: settings.showIRating,
-  },
-  { px: 42, show: settings.showIrChange }, // ΔiR     "+123"
-  { px: 28, show: settings.showLapsCompleted }, // laps "00"
-  { px: 50, show: settings.showGap }, // gap  "+123.4" / "12 L"
-  { px: 82, show: settings.showLastLap }, // last "--:--.---" (9 chars mono)
-  { px: 82, show: settings.showBestLap }, // best "--:--.---" (9 chars mono)
-  { px: 36, show: settings.showBrand }, // brand    "MERC" — at end
-  { px: 30, show: settings.showTire }, // tire     badge — at end
+    key: 'irChange',
+    block: 'rating',
+    px: padded(42),
+    show: settings.showIrChange,
+  }, // "+123"
+  {
+    key: 'laps',
+    block: 'race',
+    px: padded(28),
+    show: settings.showLapsCompleted,
+  }, // "00"
+  { key: 'gap', block: 'race', px: padded(50), show: settings.showGap }, // "+123.4" / "12 L" / "LDR"
+  {
+    key: 'interval',
+    block: 'race',
+    px: padded(50),
+    show: settings.showInterval,
+  }, // "123.4" / "12 L"
+  {
+    key: 'lastLap',
+    block: 'times',
+    px: padded(82),
+    show: settings.showLastLap,
+  }, // "1:32.400" (9 chars mono max)
+  {
+    key: 'lapDelta',
+    block: 'times',
+    px: padded(50),
+    show: settings.showLapDelta,
+  }, // "12.34"
+  {
+    key: 'bestLap',
+    block: 'times',
+    px: padded(82),
+    show: settings.showBestLap,
+  }, // "1:32.400" (9 chars mono max)
+  { key: 'brand', block: 'car', px: padded(36), show: settings.showBrand }, // "MERC" — at end
+  { key: 'tire', block: 'car', px: padded(30), show: settings.showTire }, // badge — at end
 ];
+
+/**
+ * The visible columns that close a group with another group after them — the
+ * cells that carry the thin rule on their right edge. The last group carries
+ * none: the row's own edge closes it.
+ */
+export const buildBlockEndColumns = (
+  settings: StandingsWidgetSettings
+): ReadonlySet<StandingsColumn> => {
+  const visible = colSpecs(settings).filter((col) => col.show);
+  const ends = new Set<StandingsColumn>();
+
+  visible.forEach((col, index) => {
+    const next = visible[index + 1];
+
+    if (next !== undefined && next.block !== col.block) {
+      ends.add(col.key);
+    }
+  });
+
+  return ends;
+};
 
 export const buildGridTemplate = (
   settings: StandingsWidgetSettings
@@ -198,7 +325,7 @@ export const buildGridTemplate = (
 
   for (const col of colSpecs(settings)) {
     if (col.show) {
-      parts.push(ws(col.px));
+      parts.push(col.css ?? ws(col.px));
     }
   }
 
@@ -210,7 +337,7 @@ export const buildGridTemplate = (
 // shrinking text: --wfs = currentWidth / designWidth stays put when both move
 // together (see resolveStandingsLayout in widget-defaults).
 export const computeStandingsDesignWidth = (
-  settings: StandingsWidgetSettings
+  settings: WithFontScale<StandingsWidgetSettings>
 ): number => {
   const visible = colSpecs(settings).filter((col) => col.show);
   const columnsWidth = visible.reduce((sum, col) => sum + col.px, 0);
@@ -263,6 +390,95 @@ export interface StandingsGapInfo {
   isEmpty: boolean;
 }
 
+// Short enough for a chip in the gap column.
+const LEADER_LABEL = 'LDR';
+
+/** What a table cell holds when it has no value — drawn centred. */
+export const EMPTY_VALUE = '-';
+
+/** A lap time for the Last and Best columns, or the empty dash without one. */
+export const formatLapCell = (seconds: number | null): string =>
+  seconds === null || seconds <= 0 ? EMPTY_VALUE : formatLapTime(seconds);
+
+const SECONDS_PER_MINUTE = 60;
+
+/**
+ * Time on pit road, short enough for a badge: tenths under a minute
+ * ("23.5s"), minutes and whole seconds past it ("1:32").
+ */
+export const formatPitStopTime = (seconds: number | null): string => {
+  if (seconds === null || !Number.isFinite(seconds)) {
+    return '-';
+  }
+
+  if (seconds < SECONDS_PER_MINUTE) {
+    return `${seconds.toFixed(1)}s`;
+  }
+
+  const wholeSeconds = Math.floor(seconds);
+  const minutes = Math.floor(wholeSeconds / SECONDS_PER_MINUTE);
+  const remainder = wholeSeconds % SECONDS_PER_MINUTE;
+
+  return `${minutes}:${String(remainder).padStart(2, '0')}`;
+};
+
+const LAP_DELTA_DECIMALS = 2;
+
+export type LapDeltaTone = 'faster' | 'slower' | 'even';
+
+export interface LapDeltaDisplay {
+  value: string;
+  tone: LapDeltaTone;
+}
+
+/**
+ * The Delta column: the last lap against the one before it, unsigned, to two
+ * decimals — the colour alone says faster or slower. A delta that rounds to
+ * zero is neither.
+ */
+export const formatLapDelta = (delta: number | undefined): LapDeltaDisplay => {
+  if (delta === undefined || !Number.isFinite(delta)) {
+    return { value: EMPTY_VALUE, tone: 'even' };
+  }
+
+  const rounded = Number(delta.toFixed(LAP_DELTA_DECIMALS));
+
+  if (rounded === 0) {
+    return { value: (0).toFixed(LAP_DELTA_DECIMALS), tone: 'even' };
+  }
+
+  if (rounded < 0) {
+    return {
+      value: Math.abs(rounded).toFixed(LAP_DELTA_DECIMALS),
+      tone: 'faster',
+    };
+  }
+
+  return { value: rounded.toFixed(LAP_DELTA_DECIMALS), tone: 'slower' };
+};
+
+/**
+ * The interval: the same measurement as the gap, taken against the car
+ * directly ahead instead of the leader. The leader has no car ahead.
+ */
+export const getStandingsInterval = (
+  driver: DriverEntry,
+  carAhead: DriverEntry | null,
+  isRace: boolean
+): StandingsGapInfo => {
+  if (carAhead === null) {
+    return { value: EMPTY_VALUE, isLeader: false, isEmpty: true };
+  }
+
+  return getStandingsGap(
+    driver,
+    carAhead,
+    isRace,
+    false,
+    calculateLapsBehind(carAhead, driver)
+  );
+};
+
 export const getStandingsGap = (
   driver: DriverEntry,
   leader: DriverEntry | null,
@@ -271,7 +487,7 @@ export const getStandingsGap = (
   lapsBehind: number
 ): StandingsGapInfo => {
   if (isLeader) {
-    return { value: '-', isLeader: true, isEmpty: false };
+    return { value: LEADER_LABEL, isLeader: true, isEmpty: false };
   }
 
   if (!isRace) {
@@ -286,10 +502,10 @@ export const getStandingsGap = (
         return { value: timeDiff.toFixed(1), isLeader: false, isEmpty: false };
       }
 
-      return { value: '--.-', isLeader: false, isEmpty: true };
+      return { value: EMPTY_VALUE, isLeader: false, isEmpty: true };
     }
 
-    return { value: '--.-', isLeader: false, isEmpty: true };
+    return { value: EMPTY_VALUE, isLeader: false, isEmpty: true };
   }
 
   // In race, try to use Session ResultsPositions gap data. Everything the sim
@@ -329,7 +545,7 @@ export const getStandingsGap = (
     // Only the row the caller marked as leader may render as leader. A
     // non-positive difference here means the reference row is not actually
     // ahead of this car — showing a second '-' would read as a second leader.
-    return { value: '--.-', isLeader: false, isEmpty: true };
+    return { value: EMPTY_VALUE, isLeader: false, isEmpty: true };
   }
 
   // Fallback if resultsPosition values are not available (e.g. at the start of a
@@ -348,7 +564,7 @@ export const getStandingsGap = (
     };
   }
 
-  return { value: '--.-', isLeader: false, isEmpty: true };
+  return { value: EMPTY_VALUE, isLeader: false, isEmpty: true };
 };
 
 const UNLIMITED_LAPS = 'unlimited';

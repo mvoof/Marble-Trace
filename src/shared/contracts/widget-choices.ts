@@ -22,7 +22,7 @@ export type RowPadding = (typeof ROW_PADDING)[number];
  * color, and `dark` keeps the letter's colored plate but puts the number in the
  * class color on a near-black ground.
  */
-export const LIC_BADGE_STYLE = ['badge', 'plain', 'dark'] as const;
+export const LIC_BADGE_STYLE = ['badge', 'dark'] as const;
 export type LicBadgeStyle = (typeof LIC_BADGE_STYLE)[number];
 
 /**

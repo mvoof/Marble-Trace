@@ -203,9 +203,12 @@ export const StandingsSettingsPanel = observer(() => {
         <Row setting="showIRating" />
         <Row setting="abbreviateIRating" dependsOn="showIRating" />
         <Row setting="showGap" />
+        <Row setting="showInterval" />
         <Row setting="showLastLap" />
+        <Row setting="showLapDelta" />
         <Row setting="showBestLap" />
         <Row setting="showPitIndicator" />
+        <Row setting="showPitStopTime" />
         <Row setting="showRadioMark" />
         <Row setting="showIrChange" />
         <Row setting="showLapsCompleted" />

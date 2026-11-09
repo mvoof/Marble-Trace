@@ -1,0 +1,220 @@
+// One chip for every bar and row of the timing tables. Each tone names its
+// lead's ground and text, its fill, and its edge; the chip reads them through
+// variables, so a caller's own class — a license, a pit state — can set them
+// too, whatever order the stylesheets load in.
+$lead-bg: var(--chip-lead-bg, #{$chip-neutral-bg});
+$lead-text: var(--chip-lead-text, #{$chip-neutral-text});
+$solid-bg: var(--chip-solid-bg, #{$chip-neutral-text});
+$on-solid: var(--chip-on-solid, #{$chip-bg});
+$edge: var(--chip-edge, #{$chip-border});
+
+.chip {
+  display: inline-flex;
+  align-items: stretch;
+  flex-shrink: 0;
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid $chip-border;
+  border-radius: radius(sm);
+  background: $chip-bg;
+  line-height: 1.25;
+  white-space: nowrap;
+}
+
+// Only a chip whose state asks for a look takes its color on the edge.
+.chipEmphasized {
+  border-color: $edge;
+}
+
+// A lead alone — LEADER, laps down, a best lap — is the whole chip, framed in
+// its own color.
+.chipSingle {
+  border-color: $edge;
+  background: $lead-bg;
+}
+
+// The lead is at least the value's height, so a chip of its lead alone — LDR,
+// a best lap — is one height with the two-part chips beside it.
+.lead {
+  display: inline-flex;
+  align-items: center;
+  gap: sp(xxs);
+  min-height: calc(#{fs(xxs)} * 1.25 + #{sp(xxxs)} * 2);
+  padding: sp(xxxs) sp(xs);
+  background: $lead-bg;
+  color: $lead-text;
+}
+
+// A word set in the widget face sits high in its line box — the face's ascent
+// is taller than its descent. Trimmed to the capitals, it centres on the lead.
+.leadLabel .leadText {
+  text-box: trim-both cap alphabetic;
+}
+
+// A word: the label of a reading, a status.
+.leadLabel {
+  font-family: $font-widget;
+  font-size: fs(xxxs);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+// A number: a safety rating, a lap time, laps down.
+.leadNumber {
+  font-family: $font-mono;
+  font-size: fs(xxs);
+  font-weight: 700;
+}
+
+.leadSolid {
+  padding-inline: sp(sm);
+  background: $solid-bg;
+  color: $on-solid;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+}
+
+.icon {
+  width: ws(12);
+  height: ws(12);
+  flex-shrink: 0;
+}
+
+.value {
+  display: inline-flex;
+  align-items: center;
+  min-width: 0;
+  padding: sp(xxxs) sp(sm);
+  background: var(--chip-value-bg, transparent);
+  color: var(--chip-value-text, #{$widget-text-primary});
+  font-family: $font-mono;
+  font-size: fs(xxs);
+  font-weight: 800;
+}
+
+// A step up for the bar over the table.
+.chipMd {
+  .lead {
+    min-height: calc(#{fs(xs)} * 1.25 + #{sp(xxxs)} * 2);
+  }
+
+  .leadLabel {
+    font-size: fs(xxs);
+  }
+
+  .leadNumber,
+  .value {
+    font-size: fs(xs);
+  }
+}
+
+.valueDanger {
+  color: $chip-danger;
+}
+
+.valueFixed {
+  display: inline-block;
+  text-align: right;
+}
+
+.toneAccent {
+  --chip-lead-bg: #{$chip-accent-bg};
+  --chip-lead-text: #{$chip-accent};
+  --chip-solid-bg: #{$chip-accent};
+  --chip-on-solid: #{$chip-bg};
+  --chip-edge: #{rgba($chip-accent, 0.35)};
+}
+
+.tonePositive {
+  --chip-lead-bg: #{$chip-positive-bg};
+  --chip-lead-text: #{$chip-positive};
+  --chip-solid-bg: #{$chip-positive};
+  --chip-on-solid: #{$chip-on-positive};
+  --chip-edge: #{rgba($chip-positive, 0.4)};
+}
+
+.toneInfo {
+  --chip-lead-bg: #{$chip-info-bg};
+  --chip-lead-text: #{$chip-info};
+  --chip-solid-bg: #{$chip-info};
+  --chip-on-solid: #{$chip-bg};
+  --chip-edge: #{rgba($chip-info, 0.4)};
+}
+
+.toneSpecial {
+  --chip-lead-bg: #{$chip-special-bg};
+  --chip-lead-text: #{$chip-special};
+  --chip-solid-bg: #{$chip-special-edge};
+  --chip-on-solid: #{$chip-bg};
+  --chip-edge: #{rgba($chip-special-edge, 0.6)};
+}
+
+.toneDanger {
+  --chip-lead-bg: #{$chip-danger-bg};
+  --chip-lead-text: #{$chip-danger};
+  --chip-solid-bg: #{$chip-pit};
+  --chip-on-solid: #{$widget-text-primary};
+  --chip-edge: #{$chip-danger-border};
+}
+
+.toneLapped {
+  --chip-lead-bg: #{$chip-lapped-bg};
+  --chip-lead-text: #{$chip-lapped};
+  --chip-solid-bg: #{$chip-lapped};
+  --chip-on-solid: #{$chip-bg};
+  --chip-edge: #{rgba($chip-lapped-edge, 0.5)};
+}
+
+.toneNeutral {
+  --chip-lead-bg: #{$chip-neutral-bg};
+  --chip-lead-text: #{$chip-text};
+  --chip-edge: #{$chip-neutral-border};
+}
+
+.toneMuted {
+  --chip-solid-bg: #{$chip-neutral-text};
+  --chip-on-solid: #{$chip-bg};
+  --chip-lead-bg: #{$chip-neutral-bg};
+  --chip-lead-text: #{$chip-neutral-text};
+  --chip-edge: #{$chip-neutral-border};
+}
+
+// A color read from the data — a temperature, the track's wetness — taken down
+// to a ground the same way the fixed tones are.
+.toneData {
+  --chip-lead-bg: color-mix(in srgb, var(--chip-data) 22%, #{$chip-bg});
+  --chip-lead-text: var(--chip-data);
+  --chip-edge: color-mix(in srgb, var(--chip-data) 40%, transparent);
+}
+
+// A license class: the rating filled with the class's chip color — or, as a
+// tint, written in the class's own color — beside the iRating on the darkest
+// ground the chip has.
+@mixin license($fill, $tier) {
+  --chip-solid-bg: #{$fill};
+  --chip-on-solid: #{$widget-text-primary};
+  --chip-lead-bg: #{$chip-value-dark};
+  --chip-lead-text: #{$tier};
+  --chip-value-bg: #{$chip-value-dark};
+}
+
+.toneLicenseA {
+  @include license($chip-lic-a, $rating-lic-a);
+}
+
+.toneLicenseB {
+  @include license($chip-lic-b, $rating-lic-b);
+}
+
+.toneLicenseC {
+  @include license($chip-lic-c, $rating-lic-c);
+}
+
+.toneLicenseD {
+  @include license($chip-lic-d, $rating-lic-d);
+}
+
+.toneLicenseR {
+  @include license($chip-lic-r, $rating-lic-r);
+}

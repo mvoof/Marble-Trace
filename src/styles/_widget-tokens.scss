@@ -150,9 +150,6 @@ $rating-lic-b: $race-green;
 $rating-lic-c: $race-amber;
 $rating-lic-d: $race-orange;
 $rating-lic-r: $race-red;
-// Ground the dark SR half sits on — dark enough that the class color reads as
-// the digits on top of it.
-$rating-lic-dark-bg: rgba(0, 0, 0, 0.85);
 
 // Rating Badge — iRating tiers
 $rating-ir-rookie-bg: rgba($race-neutral, 0.28);
@@ -185,3 +182,55 @@ $widget-tire-wet-bg: rgba($race-blue, 0.1);
 // of its own and simply follows, so the two numbers stack in one column instead
 // of the eye hunting for each of them in turn.
 $pit-readout-seam: 82%;
+
+// Stat chips — the two-part chip the timing tables and their bars share. A
+// palette of its own: every lead is a dark ground of its color with the color
+// as text, so a row full of chips stays one tone darker than its values.
+$chip-bg: #111317;
+// The darkest ground — the iRating beside its license.
+$chip-value-dark: #0e1013;
+$chip-border: #262932;
+$chip-text: #e5e7eb;
+$chip-text-muted: #7e828a;
+$chip-accent-bg: #382b14;
+$chip-accent: #e5b822;
+$chip-info-bg: #182945;
+$chip-info: #4a85e8;
+$chip-positive-bg: #11312a;
+$chip-positive: #19b394;
+$chip-on-positive: #091f1a;
+$chip-danger-bg: #3b1a1e;
+$chip-danger: #ef4444;
+$chip-danger-border: #3b1d22;
+$chip-special-bg: #2b174d;
+$chip-special: #c49bff;
+$chip-special-edge: #9c64fe;
+$chip-lapped-bg: #262015;
+$chip-lapped: #d99b26;
+$chip-lapped-edge: #7c4d19;
+$chip-neutral-bg: #181b20;
+$chip-neutral-border: #252830;
+$chip-neutral-text: #8e9299;
+// A stop: the status filled in the pit red.
+$chip-pit: #a82424;
+// License classes on a chip — the tier colors taken down to the chip's depth,
+// so white digits read on every one of them.
+$chip-lic-a: #1f4f8f;
+$chip-lic-b: #107c65;
+$chip-lic-c: #7c5a12;
+$chip-lic-d: #7c4d19;
+$chip-lic-r: #8a2222;
+// The timing table around the chips. The grounds are shades laid over the
+// widget's own background — never a color of their own — so the background
+// color and transparency the user picks still carry the whole table; over the
+// default plate they come out at the mockup's tones.
+$table-row-bg: rgba(0, 0, 0, 0.1);
+$table-row-bg-alt: rgba(255, 255, 255, 0.015);
+$table-head-bg: rgba(0, 0, 0, 0.16);
+$table-head-text: #7e828a;
+$table-bar-bg: rgba(255, 255, 255, 0.025);
+$table-bar-border: #282b33;
+$table-rule: #1c1e24;
+$table-row-rule: #1e2025;
+$table-dim-text: #9ca3af;
+$table-empty-text: #52565e;

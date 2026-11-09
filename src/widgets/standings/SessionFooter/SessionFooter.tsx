@@ -1,10 +1,16 @@
 import { useWidgetSettings } from '@entities/layout/useWidgetSettings';
 import { observer } from 'mobx-react-lite';
-import { Wrench, Thermometer, Waves, TriangleAlert, Gavel } from 'lucide-react';
+import {
+  Wrench,
+  Thermometer,
+  Waves,
+  TriangleAlert,
+  Flag,
+  Gavel,
+} from 'lucide-react';
 
 import { formatTemp, tempUnit } from '@shared/lib/telemetry-format';
 import { parseWeekendTemp } from '@widgets/standings/standings-utils';
-import { getAirTempColor, getTrackTempColor } from '@shared/lib/colors';
 import { getTrackWetnessInfo } from '@shared/lib/weather-utils';
 import {
   getIncidentPenaltyStatus,
@@ -12,7 +18,7 @@ import {
   isNearIncidentPenalty,
 } from '@shared/lib/driver';
 
-import { StatPill, type StatPillVariant } from '@shared/ui/StatPill/StatPill';
+import { StatChip } from '@shared/ui/StatChip/StatChip';
 import styles from './SessionFooter.module.scss';
 import { useBackendComputedStore } from '@entities/cars/computed-context';
 import { useEnvironmentStore } from '@entities/environment/environment-context';
@@ -20,10 +26,10 @@ import { useSessionStore } from '@entities/session/session-context';
 import { useUnitsStore } from '@entities/app-settings/units-context';
 import type { StandingsWidgetSettings } from '../settings-schema';
 
-// Boxed chips would make the strip taller than the rows it sits under, which is
-// the one thing the footer must not be.
-const PILL_VARIANT: StatPillVariant = 'inline';
-
+/**
+ * The strip under the rows: track conditions at the left, the player's own
+ * counts at the right, each a chip in the shape the rows use.
+ */
 export const SessionFooter = observer(() => {
   const { pitStops, driverIdentities } = useBackendComputedStore();
   const { sessionInfo } = useSessionStore();
@@ -56,6 +62,11 @@ export const SessionFooter = observer(() => {
   });
   const isNearPenalty = isNearIncidentPenalty(playerIncidents, penaltyStatus);
 
+  const incidentsToPenalty =
+    penaltyStatus?.nextAt == null
+      ? null
+      : Math.max(0, penaltyStatus.nextAt - playerIncidents);
+
   const playerPitStops = pitStops?.playerStops ?? 0;
 
   const airCelsius =
@@ -66,96 +77,66 @@ export const SessionFooter = observer(() => {
 
   const tUnit = tempUnit(unitSystem);
 
-  const airStr =
-    airCelsius !== null
-      ? `${formatTemp(airCelsius, unitSystem)}${tUnit}`
-      : null;
-
-  const trkStr =
-    trkCelsius !== null
-      ? `${formatTemp(trkCelsius, unitSystem)}${tUnit}`
-      : null;
-
   const wetnessInfo = getTrackWetnessInfo(environment?.trackWetness);
 
   return (
     <div className={styles.sessionFooter}>
-      <div className={styles.footerLeft}>
-        {showWeather && airCelsius !== null && airStr && (
-          <StatPill
-            icon={Thermometer}
-            iconColor={getAirTempColor(airCelsius)}
-            label="AIR"
-            variant={PILL_VARIANT}
-          >
-            {airStr}
-          </StatPill>
+      <div className={styles.footerGroup}>
+        {showWeather && airCelsius !== null && (
+          <StatChip icon={Thermometer} tone="accent" lead="AIR">
+            {`${formatTemp(airCelsius, unitSystem)}${tUnit}`}
+          </StatChip>
         )}
 
-        {showWeather && trkCelsius !== null && trkStr && (
-          <StatPill
-            icon={Thermometer}
-            iconColor={getTrackTempColor(trkCelsius)}
-            label="TRACK"
-            variant={PILL_VARIANT}
-          >
-            {trkStr}
-          </StatPill>
+        {showWeather && trkCelsius !== null && (
+          <StatChip icon={Thermometer} tone="info" lead="TRACK">
+            {`${formatTemp(trkCelsius, unitSystem)}${tUnit}`}
+          </StatChip>
+        )}
+
+        {showWeather && wetnessInfo && (
+          <StatChip icon={Waves} tone="accent" lead="SURFACE">
+            {wetnessInfo.label}
+          </StatChip>
         )}
       </div>
 
-      <div className={styles.footerCenter}>
+      <div className={styles.footerGroup}>
         {showPitStops && (
-          <StatPill
-            icon={Wrench}
-            iconTone="accent"
-            label="PIT"
-            variant={PILL_VARIANT}
-          >
+          <StatChip icon={Wrench} lead="PIT" tone="accent">
             {playerPitStops}
-          </StatPill>
+          </StatChip>
         )}
 
         {showIncidents && (
-          <StatPill
-            icon={TriangleAlert}
-            iconTone={isNearLimit ? 'danger' : 'warning'}
-            label="INC"
-            variant={PILL_VARIANT}
+          <StatChip
+            icon={Flag}
+            tone={isNearLimit ? 'danger' : 'accent'}
+            lead="INC"
+            limit={incidentLimit ?? undefined}
             valueDanger={isNearLimit}
-            pulse={isNearLimit}
+            emphasized={isNearLimit}
           >
-            {incidentLimit === null
-              ? `${playerIncidents}x`
-              : `${playerIncidents}/${incidentLimit}x`}
-          </StatPill>
+            {incidentLimit === null ? `${playerIncidents}x` : playerIncidents}
+          </StatChip>
+        )}
+
+        {showIncidents && incidentsToPenalty !== null && (
+          <StatChip
+            icon={TriangleAlert}
+            tone={isNearPenalty ? 'danger' : 'accent'}
+            lead="TO PEN"
+            valueDanger={isNearPenalty}
+            emphasized={isNearPenalty}
+          >
+            {incidentsToPenalty}
+          </StatChip>
         )}
 
         {showIncidents && penaltyStatus && (
-          <StatPill
-            icon={Gavel}
-            iconTone={isNearPenalty ? 'danger' : 'warning'}
-            label="PEN"
-            variant={PILL_VARIANT}
-            valueDanger={isNearPenalty}
-          >
-            {penaltyStatus.nextAt === null
-              ? `${penaltyStatus.served}`
-              : `${penaltyStatus.served} · ${penaltyStatus.nextAt}x`}
-          </StatPill>
-        )}
-      </div>
-
-      <div className={styles.footerRight}>
-        {showWeather && wetnessInfo && (
-          <StatPill
-            icon={Waves}
-            iconColor={wetnessInfo.color}
-            label="SURFACE"
-            variant={PILL_VARIANT}
-          >
-            {wetnessInfo.label}
-          </StatPill>
+          <StatChip icon={Gavel} lead="PEN" tone="accent">
+            {penaltyStatus.served}
+          </StatChip>
         )}
       </div>
     </div>

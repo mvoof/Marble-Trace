@@ -4,7 +4,7 @@ import { Trophy, Users } from 'lucide-react';
 
 import { formatIRating } from '@shared/lib/driver';
 
-import { StatPill } from '@shared/ui/StatPill/StatPill';
+import { StatChip } from '@shared/ui/StatChip/StatChip';
 import styles from './ClassGroupHeader.module.scss';
 import type { StandingsWidgetSettings } from '../settings-schema';
 
@@ -45,7 +45,7 @@ export const ClassGroupHeader = observer(
       >
         <div className={styles.left}>
           {paginationLabel && (
-            <span className={styles.pagination}>{paginationLabel}</span>
+            <StatChip lead={paginationLabel} leadKind="number" tone="neutral" />
           )}
 
           <span className={styles.className} style={{ color: classColor }}>
@@ -55,12 +55,14 @@ export const ClassGroupHeader = observer(
 
         <div className={styles.pills}>
           {settings.showSOF && (
-            <StatPill icon={Trophy} iconColor={classColor} label="SOF">
+            <StatChip icon={Trophy} lead="SOF" tone="accent">
               {formatIRating(classSof, settings.abbreviateSof)}
-            </StatPill>
+            </StatChip>
           )}
 
-          <StatPill icon={Users}>{totalDrivers}</StatPill>
+          <StatChip icon={Users} lead="DRIVERS" tone="info">
+            {totalDrivers}
+          </StatChip>
         </div>
       </div>
     );

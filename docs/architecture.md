@@ -968,7 +968,7 @@ of `shared/`.
 
 ### `ui/` and `hooks/`
 
-Primitives used by two or more slices — `WidgetPanel`, `StatPill`,
+Primitives used by two or more slices — `WidgetPanel`, `StatChip`,
 `WidgetValue`, `WidgetLabel`, `FixedDigits`, the badges, `CarDot`,
 `ScrollIndicator`, `NoDataPlaceholder`, `SettingsCard`, `ErrorBoundary` — and
 the DOM-only hooks (`useReactiveDomWrite`, `useReactiveCanvasLoop`,

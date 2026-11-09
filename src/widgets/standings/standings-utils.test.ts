@@ -11,11 +11,18 @@ import {
   buildLapProgress,
   buildVisibleRows,
   drawsClassHeaders,
+  formatLapCell,
+  formatLapDelta,
+  formatPitStopTime,
   getStandingsGap,
+  getStandingsInterval,
   maxScrollOffset,
   resolveBestLapDisplay,
 } from './standings-utils';
-import type { StandingsWidgetSettings } from './settings-schema';
+import {
+  STANDINGS_SETTINGS,
+  type StandingsWidgetSettings,
+} from './settings-schema';
 
 const makeField = (count: number, playerIdx: number): DriverEntry[] =>
   Array.from(
@@ -213,6 +220,94 @@ describe('getStandingsGap', () => {
       '4.2'
     );
   });
+
+  it('names the leader instead of leaving a dash', () => {
+    const leader = makeGapEntry({});
+
+    expect(getStandingsGap(leader, leader, true, true, 0)).toEqual({
+      value: 'LDR',
+      isLeader: true,
+      isEmpty: false,
+    });
+  });
+});
+
+describe('getStandingsInterval', () => {
+  it('measures the race gap against the car directly ahead', () => {
+    const carAhead = makeGapEntry({
+      resultsPositionLap: 0,
+      resultsPositionTime: 12.4,
+    });
+    const driver = makeGapEntry({
+      resultsPositionLap: 0,
+      resultsPositionTime: 13.1,
+    });
+
+    expect(getStandingsInterval(driver, carAhead, true).value).toBe('0.7');
+  });
+
+  it('counts a lap to the car ahead as a lap', () => {
+    const carAhead = makeGapEntry({
+      resultsPositionLap: 0,
+      resultsPositionTime: 80,
+    });
+    const driver = makeGapEntry({
+      resultsPositionLap: 1,
+      resultsPositionTime: 5,
+    });
+
+    expect(getStandingsInterval(driver, carAhead, true).value).toBe('1 L');
+  });
+
+  it('is empty, not a leader, for the car with nobody ahead', () => {
+    const interval = getStandingsInterval(makeGapEntry({}), null, true);
+
+    expect(interval.isLeader).toBe(false);
+    expect(interval.isEmpty).toBe(true);
+  });
+});
+
+describe('formatLapCell', () => {
+  it('writes a lap time in full', () => {
+    expect(formatLapCell(92.4)).toBe('1:32.400');
+  });
+
+  it('is a single dash without a time, not a dashed-out clock', () => {
+    expect(formatLapCell(null)).toBe('-');
+    expect(formatLapCell(0)).toBe('-');
+  });
+});
+
+describe('formatPitStopTime', () => {
+  it('keeps tenths under a minute', () => {
+    expect(formatPitStopTime(23.46)).toBe('23.5s');
+  });
+
+  it('switches to minutes and seconds past a minute', () => {
+    expect(formatPitStopTime(92.7)).toBe('1:32');
+  });
+
+  it('is a dash without a time', () => {
+    expect(formatPitStopTime(null)).toBe('-');
+  });
+});
+
+describe('formatLapDelta', () => {
+  it('writes a slower lap without a sign, two decimals at most', () => {
+    expect(formatLapDelta(1.23456)).toEqual({ value: '1.23', tone: 'slower' });
+  });
+
+  it('drops the minus of a faster lap — the colour says it', () => {
+    expect(formatLapDelta(-0.5)).toEqual({ value: '0.50', tone: 'faster' });
+  });
+
+  it('calls a delta that rounds to zero even', () => {
+    expect(formatLapDelta(-0.004)).toEqual({ value: '0.00', tone: 'even' });
+  });
+
+  it('is a dash until two laps exist', () => {
+    expect(formatLapDelta(undefined)).toEqual({ value: '-', tone: 'even' });
+  });
 });
 
 const makeBestLapEntry = (
@@ -312,6 +407,22 @@ describe('name column width', () => {
     );
 
     expect(wide - narrow).toBe(40);
+  });
+
+  it('widens the table with the font scale, as the rating chip grows', () => {
+    const atScale = computeStandingsDesignWidth({
+      ...STANDINGS_SETTINGS.defaults,
+      fontScale: 1,
+    });
+    const scaledUp = computeStandingsDesignWidth({
+      ...STANDINGS_SETTINGS.defaults,
+      fontScale: 1.3,
+    });
+
+    expect(atScale).toBe(
+      computeStandingsDesignWidth(STANDINGS_SETTINGS.defaults)
+    );
+    expect(scaledUp).toBeGreaterThan(atScale);
   });
 
   it('clamps a width outside the slider range', () => {

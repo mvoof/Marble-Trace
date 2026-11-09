@@ -173,9 +173,13 @@ const BLACK_FLAG_BIT = 0x00010000;
  * distinguish, in one frame.
  */
 export const MOCK_PIT_ROWS: MockFieldRows = {
-  [-2]: { onPitRoad: true, pitState: 'in' },
-  [-1]: { trackSurface: TrackSurface.InPitStall, pitState: 'stall' },
-  [2]: { onPitRoad: true, pitState: 'exit' },
+  [-2]: { onPitRoad: true, pitState: 'in', pitElapsedS: 6.2 },
+  [-1]: {
+    trackSurface: TrackSurface.InPitStall,
+    pitState: 'stall',
+    pitElapsedS: 23.5,
+  },
+  [2]: { onPitRoad: true, pitState: 'exit', pitElapsedS: 41.8 },
 };
 
 /** A blue, a meatball and a black flag on three rows — the flags a driver row draws. */

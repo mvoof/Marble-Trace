@@ -21,20 +21,6 @@
   overflow: hidden;
 }
 
-.pagination {
-  font-family: $font-mono;
-  font-size: fs(xs);
-  font-weight: 700;
-  color: $widget-text-primary;
-  letter-spacing: 0.04em;
-  background: rgba(0, 0, 0, 0.5);
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  border-radius: radius(sm);
-  padding: sp(xxxs) sp(xs);
-  line-height: 1.4;
-  flex-shrink: 0;
-}
-
 .className {
   font-family: $font-widget;
   font-weight: 800;

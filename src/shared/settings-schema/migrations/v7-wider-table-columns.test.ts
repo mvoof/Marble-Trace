@@ -1,0 +1,144 @@
+import { describe, expect, it } from 'vitest';
+
+import { STANDINGS_SETTINGS } from '@widgets/standings/settings-schema';
+import { computeStandingsDesignWidth } from '@widgets/standings/standings-utils';
+import { RELATIVE_SETTINGS } from '@widgets/relative/settings-schema';
+import { computeRelativeDesignWidth } from '@widgets/relative/relative-utils';
+import { v7WiderTableColumns } from './v7-wider-table-columns';
+
+// What v6 derived for the shipped settings: the frames on disk were drawn
+// against these.
+const STANDINGS_V6_DEFAULT_WIDTH = 802;
+const RELATIVE_V6_DEFAULT_WIDTH = 430;
+
+const instance = (
+  type: string,
+  width: number,
+  extra: Record<string, unknown> = {}
+) => ({
+  id: type,
+  type,
+  enabled: true,
+  frame: { x: 10, y: 20, width, height: 500 },
+  settings: {},
+  ...extra,
+});
+
+const fileWith = (widgets: unknown[], templates?: unknown) => ({
+  schemaVersion: 6,
+  layouts: [
+    {
+      id: 'race',
+      name: 'Race',
+      createdAt: 1,
+      monitors: [{ name: 'MAIN', widgets }],
+    },
+  ],
+  ...(templates === undefined ? {} : { widgetTemplates: templates }),
+});
+
+const widgetsOf = (blob: Record<string, unknown>) =>
+  (
+    blob['layouts'] as Array<{
+      monitors: Array<{ widgets: Array<Record<string, unknown>> }>;
+    }>
+  )[0].monitors[0].widgets;
+
+const frameWidthOf = (widget: Record<string, unknown>) =>
+  (widget['frame'] as { width: number }).width;
+
+describe('v7 — table frames widened with their columns', () => {
+  it('lands a default table on exactly the width this build derives', () => {
+    const migrated = v7WiderTableColumns.migrate(
+      fileWith([
+        instance('standings', STANDINGS_V6_DEFAULT_WIDTH),
+        instance('relative', RELATIVE_V6_DEFAULT_WIDTH),
+      ])
+    );
+
+    const [standings, relative] = widgetsOf(migrated);
+
+    expect(frameWidthOf(standings)).toBe(
+      computeStandingsDesignWidth(STANDINGS_SETTINGS.defaults)
+    );
+    expect(frameWidthOf(relative)).toBe(
+      computeRelativeDesignWidth(RELATIVE_SETTINGS.defaults)
+    );
+  });
+
+  it('keeps the scale the driver gave the table', () => {
+    const doubled = STANDINGS_V6_DEFAULT_WIDTH * 2;
+    const migrated = v7WiderTableColumns.migrate(
+      fileWith([instance('standings', doubled)])
+    );
+
+    expect(frameWidthOf(widgetsOf(migrated)[0])).toBe(
+      computeStandingsDesignWidth(STANDINGS_SETTINGS.defaults) * 2
+    );
+  });
+
+  it('reads the columns the instance turned off', () => {
+    const settings = {
+      showInterval: false,
+      showLapDelta: false,
+      showBrand: false,
+      nameColumnWidth: 150,
+    };
+    const v6Width = 802 - 36 - 2 - 50;
+
+    const migrated = v7WiderTableColumns.migrate(
+      fileWith([instance('standings', v6Width, { settings })])
+    );
+
+    expect(frameWidthOf(widgetsOf(migrated)[0])).toBe(
+      computeStandingsDesignWidth({
+        ...STANDINGS_SETTINGS.defaults,
+        ...settings,
+      })
+    );
+  });
+
+  it('leaves a widget with its own design size to the load path', () => {
+    const design = { width: 900, height: 500 };
+    const migrated = v7WiderTableColumns.migrate(
+      fileWith([instance('standings', 900, { design })])
+    );
+
+    expect(frameWidthOf(widgetsOf(migrated)[0])).toBe(900);
+  });
+
+  it('leaves every other widget alone', () => {
+    const migrated = v7WiderTableColumns.migrate(
+      fileWith([instance('fuel', 300)])
+    );
+
+    expect(frameWidthOf(widgetsOf(migrated)[0])).toBe(300);
+  });
+
+  it('widens the templates a new layout is built from', () => {
+    const migrated = v7WiderTableColumns.migrate(
+      fileWith([], {
+        standings: {
+          enabled: true,
+          size: { width: STANDINGS_V6_DEFAULT_WIDTH, height: 500 },
+          settings: {},
+        },
+      })
+    );
+
+    const templates = migrated['widgetTemplates'] as Record<
+      string,
+      { size: { width: number } }
+    >;
+
+    expect(templates['standings'].size.width).toBe(
+      computeStandingsDesignWidth(STANDINGS_SETTINGS.defaults)
+    );
+  });
+
+  it('survives a frame that is not a number', () => {
+    const broken = { ...instance('relative', 0), frame: { width: 'wide' } };
+
+    expect(() => v7WiderTableColumns.migrate(fileWith([broken]))).not.toThrow();
+  });
+});

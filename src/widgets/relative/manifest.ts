@@ -1,3 +1,4 @@
+import type { WithFontScale } from '@shared/ui/StatChip/rating';
 import type { WidgetManifest } from '@shared/contracts/widget-settings';
 import {
   COMMON_WIDGET_DEFAULTS,
@@ -11,14 +12,16 @@ import {
   type RelativeWidgetSettings,
 } from './settings-schema';
 
-const resolveRelativeLayout =
-  makeExactColumnLayoutResolver<RelativeWidgetSettings>(
-    // A column's width changes as well as its presence (the license letter,
-    // the badge style, the abbreviated iRating), so every one of them
-    // re-measures the table exactly as a column being toggled does.
-    RELATIVE_COLUMN_KEYS,
-    computeRelativeDesignWidth
-  );
+const resolveRelativeLayout = makeExactColumnLayoutResolver<
+  WithFontScale<RelativeWidgetSettings>
+>(
+  // A column's width changes as well as its presence (the license letter,
+  // the badge style, the abbreviated iRating), so every one of them
+  // re-measures the table exactly as a column being toggled does. The font
+  // scale widens the rating chip, so it does too.
+  [...RELATIVE_COLUMN_KEYS, 'fontScale'],
+  computeRelativeDesignWidth
+);
 
 const RELATIVE_DESIGN_WIDTH = computeRelativeDesignWidth(
   RELATIVE_SETTINGS.defaults

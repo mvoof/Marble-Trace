@@ -2,7 +2,9 @@
 // Columns: pos | car# | name+badges(1fr) | lic? | iR? | gap
 .driverRow {
   display: grid;
-  align-items: center;
+  // Cells fill the row's height so a column's stripe runs edge to edge; each
+  // cell centres its own content.
+  align-items: stretch;
   column-gap: sp(xxxs);
   padding: 0 sp(md);
   position: relative;
@@ -10,9 +12,10 @@
   // rows (the list is overflow: hidden) instead of overlapping their text.
   flex-shrink: 0;
   overflow: hidden;
-  border-bottom: 1px solid $widget-row-border;
+  border-bottom: 1px solid $table-row-rule;
   line-height: 1.15;
-  font-size: fs(md);
+  font-size: fs(xs);
+  background: $table-row-bg;
 
   // Class marker, matching the one the standings rows and the class header
   // carry. A pseudo-element rather than a border so the grid columns keep
@@ -29,7 +32,7 @@
 }
 
 .rowOdd {
-  background-color: rgba(255, 255, 255, 0.035);
+  background: $table-row-bg-alt;
 }
 
 .driverRowPlayer {
@@ -58,57 +61,61 @@
   }
 }
 
-.rowPaddingNarrow {
-  padding-top: sp(xxxs);
-  padding-bottom: sp(xxxs);
+// A thin rule after each group — who, how rated — and none between the columns
+// of one group: the standings rows carry the same rules.
+.blockEnd {
+  border-right: 1px solid $table-rule;
+}
 
-  .posBlock {
-    margin-top: calc(-1 * sp(xxxs));
-    margin-bottom: calc(-1 * sp(xxxs));
-    padding-top: sp(xxxs);
-    padding-bottom: sp(xxxs);
+// Safety rating and iRating — one chip, whichever of the two is shown.
+.colRating {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+// The row's vertical padding sits in its cells, not on the row: a padded row
+// would leave the column stripes short of its edges. Two classes, so the
+// padding outranks each cell's own `padding` shorthand.
+@mixin row-padding($space) {
+  & > * {
+    padding-top: $space;
+    padding-bottom: $space;
   }
 }
 
-.rowPaddingMedium {
-  padding-top: sp(xxs);
-  padding-bottom: sp(xxs);
-
-  .posBlock {
-    margin-top: calc(-1 * sp(xxs));
-    margin-bottom: calc(-1 * sp(xxs));
-    padding-top: sp(xxs);
-    padding-bottom: sp(xxs);
-  }
+.driverRow.rowPaddingNarrow {
+  @include row-padding(sp(xxxs));
 }
 
-.rowPaddingWide {
-  padding-top: sp(xs);
-  padding-bottom: sp(xs);
-
-  .posBlock {
-    margin-top: calc(-1 * sp(xs));
-    margin-bottom: calc(-1 * sp(xs));
-    padding-top: sp(xs);
-    padding-bottom: sp(xs);
-  }
+.driverRow.rowPaddingMedium {
+  @include row-padding(sp(xxs));
 }
 
-// Position block — stretches to the row edges so padding matches the row
+.driverRow.rowPaddingWide {
+  @include row-padding(sp(xs));
+}
+
+// Every value cell keeps a little room on both sides, so a value never touches
+// the edge of its column stripe — `CELL_PAD_X_PX` in relative-utils, which
+// widens each column by the same amount. Position and name have their own.
+.driverRow > :not(.posBlock, .infoBlock) {
+  padding-inline: sp(xxs);
+}
+
+// Position block — reaches the row's left edge so the class marker sits on it
 .posBlock {
   display: flex;
   align-items: center;
-  align-self: stretch;
-  margin-top: calc(-1 * sp(xxxs));
-  margin-bottom: calc(-1 * sp(xxxs));
   margin-left: calc(-1 * sp(md));
-  padding: sp(xxxs) sp(xxxs) sp(xxxs) sp(md);
+  padding: 0 sp(xxxs) 0 sp(md);
 }
 
 // Position — primary emphasis
 .driverPosition {
-  font-weight: 700;
-  font-size: fs(md);
+  font-family: $font-mono;
+  font-weight: 800;
+  font-size: fs(xs);
   color: $widget-text-primary;
 }
 
@@ -128,17 +135,16 @@
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  padding: 0 sp(sm) 0 0;
 }
 
 // Car number — the badge carries the class color
 .driverCarNumber {
-  font-size: fs(md);
-  font-weight: 700;
-  line-height: 1;
+  font-size: fs(xxs);
+  font-weight: 800;
+  line-height: 1.25;
   font-family: $font-mono;
   padding: sp(xxxs) sp(xxs);
-  border-radius: radius(md);
+  border-radius: radius(sm);
   white-space: nowrap;
 
   // Sized for three digits, the widest number the field can hold, so a one-digit
@@ -146,8 +152,8 @@
   // edge. Inline-block, or min-width is ignored; content-box, so the padding
   // sits outside the three digits.
   display: inline-block;
-  box-sizing: content-box;
-  min-width: 3ch;
+  box-sizing: border-box;
+  min-width: ws(28);
   text-align: center;
 }
 
@@ -159,11 +165,13 @@
   overflow: hidden;
   min-width: 0;
   white-space: nowrap;
+  // Room between the badges that end the name and the rule after it.
+  padding-right: sp(sm);
 }
 
 .driverName {
   font-weight: 700;
-  font-size: fs(md);
+  font-size: fs(xs);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -184,35 +192,17 @@
   color: $widget-status-danger;
 }
 
-// License badge column
-.colLic {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-}
-
-// iRating value column
-.colIr {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  font-family: $font-mono;
-  font-weight: 600;
-  color: $widget-text-primary;
-}
-
 // F2 Time (gap) block
 .f2Block {
   display: flex;
   justify-content: flex-end;
   align-items: center;
-  padding-right: sp(xxxs);
 }
 
 .f2Time {
   font-family: $font-mono;
-  font-weight: 900;
-  font-size: fs(md);
+  font-weight: 700;
+  font-size: fs(xs);
   text-align: right;
 }
 

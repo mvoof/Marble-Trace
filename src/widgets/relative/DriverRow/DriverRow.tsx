@@ -8,13 +8,18 @@ import {
   TRACK_SURFACE_OFF_TRACK,
 } from '@shared/lib/driver';
 import { computeRelativeGap, parseDriverFlags } from '@shared/lib/driver';
-import { DriverStatusBadges } from '@shared/ui/DriverStatusBadge/DriverStatusBadges';
+import { resolveDriverStatuses } from '@shared/ui/StatChip/driver-status';
 import { RadioMark } from '@entities/cars/RadioMark/RadioMark';
 import { getContrastTextColor, playerRowStyle } from '@shared/lib/colors';
 import { CountryFlag } from '@shared/ui/CountryFlag/CountryFlag';
 import { DriverFlagBadge } from '@shared/ui/DriverFlagBadge/DriverFlagBadge';
-import { LicBadge } from '@shared/ui/RatingBadge/LicBadge';
-import { formatIr } from '@shared/ui/RatingBadge/LicBadge.utils';
+import { StatChip } from '@shared/ui/StatChip/StatChip';
+import {
+  formatIr,
+  iRatingChars,
+  licenseTone,
+  safetyRatingLabel,
+} from '@shared/ui/StatChip/rating';
 import {
   buildRelativeGridTemplate,
   resolveRowPosition,
@@ -23,6 +28,8 @@ import { useReactiveDomWrite } from '@shared/hooks/useReactiveDomWrite';
 
 import styles from './DriverRow.module.scss';
 import { useBackendComputedStore } from '@entities/cars/computed-context';
+import { usePlayerStore } from '@entities/player/player-context';
+import { TowTime } from '@entities/player/TowTime/TowTime';
 import type { RelativeWidgetSettings } from '../settings-schema';
 
 interface DriverRowProps {
@@ -38,6 +45,7 @@ interface DriverRowProps {
  */
 export const DriverRow = observer(({ carIdx, index }: DriverRowProps) => {
   const computed = useBackendComputedStore();
+  const player = usePlayerStore();
 
   const settings = useWidgetSettings<RelativeWidgetSettings>('relative');
 
@@ -122,6 +130,22 @@ export const DriverRow = observer(({ carIdx, index }: DriverRowProps) => {
   const pitState = driver.pitState;
   const flagType = parseDriverFlags(driver.rawFlags);
 
+  // A towed player sits in the stall while the tow counts down — that is the
+  // tow, not a stop.
+  const isTowed = driver.isTowed || (driver.isPlayer && player.isTowing);
+
+  // Read from the identity, so the list changes with the row's own render and
+  // adds none: a pit stop or a tow is the rare event the row redraws for.
+  const statusChips = resolveDriverStatuses({
+    flagType,
+    isTowed,
+    isOut,
+    isOffTrack,
+    isPit,
+    pitState,
+    showPit: settings.showPitIndicator,
+  });
+
   const position = resolveRowPosition(driver, settings.useLivePositions);
 
   const rowClass = [
@@ -184,7 +208,7 @@ export const DriverRow = observer(({ carIdx, index }: DriverRowProps) => {
         </div>
       )}
 
-      <div className={styles.infoBlock}>
+      <div className={`${styles.infoBlock} ${styles.blockEnd}`}>
         {settings.showDriverFlags && flagType !== 'none' && (
           <DriverFlagBadge type={flagType} />
         )}
@@ -206,32 +230,43 @@ export const DriverRow = observer(({ carIdx, index }: DriverRowProps) => {
           <RadioMark carIdx={driver.carIdx} onPlayerRow={driver.isPlayer} />
         )}
 
-        <DriverStatusBadges
-          flagType={flagType}
-          isTowed={driver.isTowed}
-          isOut={isOut}
-          isOffTrack={isOffTrack}
-          isPit={isPit}
-          pitState={pitState}
-          showPit={settings.showPitIndicator}
-        />
+        {statusChips.map((chip) => (
+          <StatChip
+            key={chip.status}
+            lead={chip.label}
+            leadVariant={chip.lead}
+            tone={chip.tone}
+            emphasized={chip.lead === 'solid'}
+          >
+            {chip.status === 'tow' && driver.isPlayer && player.isTowing ? (
+              <TowTime />
+            ) : undefined}
+          </StatChip>
+        ))}
       </div>
 
-      {settings.showLicBadge ? (
-        <div className={styles.colLic}>
-          <LicBadge
-            licString={driver.licString}
-            showLetter={settings.showLicenseLetter}
-            badgeStyle={settings.licBadgeStyle}
-          />
+      {(settings.showLicBadge || settings.showIRating) && (
+        <div className={`${styles.colRating} ${styles.blockEnd}`}>
+          <StatChip
+            lead={
+              settings.showLicBadge
+                ? safetyRatingLabel(
+                    driver.licString,
+                    settings.showLicenseLetter
+                  )
+                : undefined
+            }
+            leadKind="number"
+            leadVariant={settings.licBadgeStyle === 'dark' ? 'tint' : 'solid'}
+            tone={licenseTone(driver.licString)}
+            valueChars={iRatingChars(settings.abbreviateIRating)}
+          >
+            {settings.showIRating
+              ? formatIr(driver.iRating, settings.abbreviateIRating)
+              : undefined}
+          </StatChip>
         </div>
-      ) : null}
-
-      {settings.showIRating ? (
-        <div className={styles.colIr}>
-          <span>{formatIr(driver.iRating, settings.abbreviateIRating)}</span>
-        </div>
-      ) : null}
+      )}
 
       <div className={styles.f2Block}>
         <span ref={gapRef} className={styles.f2Time} />

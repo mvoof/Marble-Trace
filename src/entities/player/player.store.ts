@@ -66,6 +66,16 @@ export class PlayerStore {
   }
 
   /**
+   * The player's car is being towed. The sim puts a towed player straight into
+   * the pit stall and counts the tow down there, so the stall alone reads as a
+   * pit stop. Read as a flag of its own, it wakes a row only when the tow starts
+   * or ends, not on every tick of the countdown.
+   */
+  get isTowing(): boolean {
+    return (this.pitService?.towTimeS ?? 0) > 0;
+  }
+
+  /**
    * The ABS light. It lives in the 60 Hz inputs frame but flips only when the
    * brakes lock, so it is read as a flag of its own: a component reading this
    * wakes when the light changes rather than on every tick.

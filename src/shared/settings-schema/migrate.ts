@@ -5,6 +5,7 @@ import { v3WidgetShapes } from './migrations/v3-widget-shapes';
 import { v4PitLineDefaultSize } from './migrations/v4-pit-line-default-size';
 import { v5WidgetDesignSizes } from './migrations/v5-widget-design-sizes';
 import { v6PerMonitorWidgets } from './migrations/v6-per-monitor-widgets';
+import { v7WiderTableColumns } from './migrations/v7-wider-table-columns';
 
 /**
  * Format version of `settings.json`. An integer, deliberately unrelated to the
@@ -14,7 +15,7 @@ import { v6PerMonitorWidgets } from './migrations/v6-per-monitor-widgets';
  *
  * 0 = anything written before 0.21, which carried no version field at all.
  */
-export const CURRENT_SCHEMA_VERSION = 6;
+export const CURRENT_SCHEMA_VERSION = 7;
 
 /**
  * Oldest version the chain can still migrate. Bump it only when a step is
@@ -31,6 +32,7 @@ export const MIGRATIONS: Migration[] = [
   v4PitLineDefaultSize,
   v5WidgetDesignSizes,
   v6PerMonitorWidgets,
+  v7WiderTableColumns,
 ];
 
 /**

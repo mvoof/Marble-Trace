@@ -1,171 +1,40 @@
+// Three tracks: the session and its field at the left, the track in the middle,
+// the laps and the clock at the right. The middle one is the elastic one — the
+// track name ends in an ellipsis before a chip is ever pushed out.
 .sessionHeader {
-  // Lit from the top, so the bar reads as the widget's frame rather than as one
-  // more row — the height it gains comes from the type, not from padding.
-  background: linear-gradient(
-    180deg,
-    rgba(30, 30, 35, $opacity-heavy) 0%,
-    rgba(19, 19, 22, $opacity-heavy) 100%
-  );
-  padding: sp(xxs) sp(md);
-  // Three tracks rather than two ends, and the title holds the elastic one: the
-  // stats and the lap/clock readout are sized to their content and never give
-  // way, so a bar too narrow for everything truncates the track name instead of
-  // pushing the readout out of the widget. A centre track measured from the bar
-  // itself would centre the title perfectly and clip the clock to do it.
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
   column-gap: sp(sm);
-  border-bottom: 1px solid $widget-row-border;
-  font-family: $font-mono;
-  text-transform: uppercase;
-  font-size: fs(xs);
-  font-weight: 400;
-  color: $widget-text-secondary;
+  padding: sp(xs) sp(md);
+  background: $table-bar-bg;
+  border-bottom: 1px solid $table-bar-border;
+}
+
+.sessionLeft,
+.sessionRight {
+  display: flex;
+  align-items: center;
+  gap: sp(xs);
 }
 
 .sessionLeft {
-  display: flex;
-  gap: sp(sm);
-  align-items: center;
   justify-self: start;
-  min-width: 0;
-  overflow: hidden;
-  white-space: nowrap;
-}
-
-.sessionCenter {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 0;
-  overflow: hidden;
-}
-
-// Rule between the header's plain-text items — the chips they replaced carried
-// their own borders. Painted from the header's own text color rather than the
-// row border, which is near-black and vanishes against this background.
-.divider {
-  width: 1px;
-  align-self: stretch;
-  margin: sp(xxxs) 0;
-  background: currentColor;
-  opacity: 0.2;
-  flex-shrink: 0;
-}
-
-// The one item in the bar that carries weight — everything else around it is set
-// at a single weight, so the title is the only thing the eye is pulled to.
-.trackName {
-  color: $widget-text-primary;
-  font-family: $font-widget;
-  font-size: fs(md);
-  font-weight: 400;
-  letter-spacing: 0.03em;
-  text-transform: none;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.sessionType {
-  font-weight: 400;
-}
-
-.sessionTypePractice {
-  color: $race-blue;
-}
-
-.sessionTypeQualify {
-  color: $race-purple;
-}
-
-.sessionTypeRace {
-  color: $race-green;
-}
-
-.sessionTypeOther {
-  color: $widget-text-secondary;
-}
-
-.stat {
-  display: inline-flex;
-  align-items: center;
-  gap: sp(xxs);
-  flex-shrink: 0;
-}
-
-.statIcon {
-  width: ws(11);
-  height: ws(11);
-  flex-shrink: 0;
-  color: $widget-text-secondary;
-}
-
-// Each icon carries the color of what it counts: the field is information, the
-// SOF is the trophy, and the lap/clock pair shares one hue so it reads as a
-// single readout — which is also why neither is yellow or red at rest.
-.statIconAccent {
-  color: $race-gold;
-}
-
-.statIconField {
-  color: $race-blue;
-}
-
-.statIconProgress {
-  color: $race-green;
-}
-
-.statLabel {
-  color: $widget-text-secondary;
-  font-size: fs(xxs);
-  letter-spacing: 0.06em;
-}
-
-.statValue {
-  color: $widget-text-primary;
-  font-size: fs(sm);
-  font-variant-numeric: tabular-nums;
-}
-
-.laps {
-  display: inline-flex;
-  align-items: center;
-  gap: sp(xxs);
-  flex-shrink: 0;
-  color: $widget-text-primary;
-}
-
-// Lap count and clock are the two numbers read mid-corner — one step over the
-// footer, and matched to each other so the pair reads as one readout.
-.lapsValue {
-  display: inline-block;
-  text-align: right;
-  font-size: fs(sm);
-  font-variant-numeric: tabular-nums;
-}
-
-// The value that ends the session leads the header; the other one recedes. Held
-// apart by opacity alone — weight is spent on the track name and nothing else.
-.lapsMuted {
-  opacity: 0.7;
-}
-
-// The flag goes warning-colored with the count it belongs to.
-.lapsFinal {
-  color: $widget-status-warning;
-  opacity: 1;
-
-  .statIcon {
-    color: $widget-status-warning;
-  }
 }
 
 .sessionRight {
-  display: flex;
-  gap: sp(sm);
-  align-items: center;
   justify-self: end;
-  flex-shrink: 0;
+}
+
+.trackName {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
   white-space: nowrap;
+  text-align: center;
+  color: $widget-text-primary;
+  font-family: $font-widget;
+  font-size: fs(md);
+  font-weight: 700;
+  letter-spacing: 0.02em;
 }

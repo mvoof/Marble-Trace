@@ -40,7 +40,7 @@ const meta: Meta<StoryArgs> = {
   title: 'Widgets/StandingsWidget',
   ...defineWidgetStories<StoryArgs>({
     widget: StandingsWidget,
-    size: { width: 796, height: 500 },
+    size: { width: 1010, height: 500 },
     seedSnapshot: true,
     seed: (store, args, scenarioId) => {
       // A scenario has already spaced the field the way it means to show it, so
@@ -157,8 +157,12 @@ export const TeamRaceWideRows: Story = {
   args: { settings: { rowPadding: 'wide' } },
 };
 
+/** The pit rows sit around the player, below the top block: opened up to show them. */
 export const WithPitBadges: Story = {
-  args: { rows: MOCK_PIT_ROWS },
+  args: {
+    rows: MOCK_PIT_ROWS,
+    settings: { driversAhead: 3, driversBehind: 3 },
+  },
 };
 
 export const WithDriverFlags: Story = {
