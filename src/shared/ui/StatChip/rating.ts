@@ -20,7 +20,7 @@ export const formatIr = (ir: number, abbreviate = true): string => {
 };
 
 /** What the rating chip shows of the safety rating. */
-export type RatingChipSr = 'none' | 'withLetter' | 'ratingOnly';
+export type RatingChipSr = 'none' | 'withLetter' | 'letterOnly' | 'ratingOnly';
 
 /** What the rating chip shows of the iRating. */
 export type RatingChipIr = 'none' | 'abbreviated' | 'full';
@@ -29,14 +29,17 @@ export type RatingChipIr = 'none' | 'abbreviated' | 'full';
 export const ratingChipParts = (settings: {
   showLicBadge: boolean;
   showLicenseLetter: boolean;
+  showSafetyRatingValue: boolean;
   showIRating: boolean;
   abbreviateIRating: boolean;
 }): { sr: RatingChipSr; ir: RatingChipIr } => ({
   sr: !settings.showLicBadge
     ? 'none'
-    : settings.showLicenseLetter
-      ? 'withLetter'
-      : 'ratingOnly',
+    : !settings.showLicenseLetter
+      ? 'ratingOnly'
+      : settings.showSafetyRatingValue
+        ? 'withLetter'
+        : 'letterOnly',
   ir: !settings.showIRating
     ? 'none'
     : settings.abbreviateIRating
@@ -56,6 +59,7 @@ const CHIP_EDGE_PX = 2; // 1px on either side
 const SR_CHARS: Record<RatingChipSr, number> = {
   none: 0,
   withLetter: 6, // "A 4.99"
+  letterOnly: 1, // "A"
   ratingOnly: 4, // "4.99"
 };
 

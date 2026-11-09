@@ -54,6 +54,11 @@ const COLUMNS = {
    * says, so dropping it costs the column nothing but its width.
    */
   showLicenseLetter: bool(true),
+  /**
+   * Keep the safety rating beside the class letter ("A 4.99"), or show the
+   * letter alone ("A"). Without the letter the rating always shows.
+   */
+  showSafetyRatingValue: bool(true),
   licBadgeStyle: choice(LIC_BADGE_STYLE, 'badge', {
     label: 'common.licBadgeStyle',
   }),
@@ -64,6 +69,8 @@ const COLUMNS = {
    * toggling a column does.
    */
   abbreviateIRating: bool(true),
+  /** The iRating on its white chip, or as a plain white number. */
+  showIRatingChip: bool(true),
   /** Projected iR change column (Elo-based estimate, not real SDK data). */
   showIrChange: bool(true),
   /** Gap to the leader of the table's current reference (overall or class). */

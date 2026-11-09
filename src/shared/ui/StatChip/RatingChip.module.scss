@@ -31,6 +31,17 @@ $seam-half: 0.33em;
   }
 }
 
+// Without the rating, the iRating's number alone: no chip around it, the full
+// white the row's names are in. Its edges stay, unseen, so the column keeps
+// its width.
+.iRating.iRatingPlain {
+  --chip-border: transparent;
+  --chip-value-bg: transparent;
+  --chip-value-text: #{$widget-text-primary};
+
+  background: transparent;
+}
+
 .split {
   --chip-lead-padding: 0;
   --chip-solid-padding-x: 0;
@@ -64,4 +75,9 @@ $seam-half: 0.33em;
 
 .rating {
   padding-inline: $seam-half var(--chip-split-padding-x, #{sp(sm)});
+}
+
+// The letter with no rating beside it: the lead's padding on both sides.
+.letterAlone {
+  padding-inline: var(--chip-split-padding-x, #{sp(sm)});
 }

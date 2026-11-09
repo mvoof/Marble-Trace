@@ -15,6 +15,7 @@ import { CountryFlag } from '@shared/ui/CountryFlag/CountryFlag';
 import { DriverFlagBadge } from '@shared/ui/DriverFlagBadge/DriverFlagBadge';
 import { StatChip } from '@shared/ui/StatChip/StatChip';
 import { IRatingChip, SafetyRatingChip } from '@shared/ui/StatChip/RatingChip';
+import { ratingChipParts } from '@shared/ui/StatChip/rating';
 import {
   buildRelativeGridTemplate,
   resolveRowPosition,
@@ -131,6 +132,8 @@ export const DriverRow = observer(({ carIdx, index }: DriverRowProps) => {
 
   // Read from the identity, so the list changes with the row's own render and
   // adds none: a pit stop or a tow is the rare event the row redraws for.
+  // What the SR chip shows; 'none' only with the column off.
+  const srContent = ratingChipParts(settings).sr;
   const statusChips = resolveDriverStatuses({
     flagType,
     isTowed,
@@ -235,13 +238,13 @@ export const DriverRow = observer(({ carIdx, index }: DriverRowProps) => {
       </div>
 
       {/* The rule closes the rating group after whichever of the two ends it. */}
-      {settings.showLicBadge && (
+      {srContent !== 'none' && (
         <div
           className={`${styles.colRating} ${settings.showIRating ? '' : styles.blockEnd}`}
         >
           <SafetyRatingChip
             licString={driver.licString}
-            showLicenseLetter={settings.showLicenseLetter}
+            content={srContent}
             badgeStyle={settings.licBadgeStyle}
           />
         </div>
@@ -252,6 +255,7 @@ export const DriverRow = observer(({ carIdx, index }: DriverRowProps) => {
           <IRatingChip
             iRating={driver.iRating}
             abbreviate={settings.abbreviateIRating}
+            hasBackground={settings.showIRatingChip}
           />
         </div>
       )}

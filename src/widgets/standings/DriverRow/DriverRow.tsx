@@ -19,6 +19,7 @@ import { getContrastTextColor, playerRowStyle } from '@shared/lib/colors';
 import { CountryFlag } from '@shared/ui/CountryFlag/CountryFlag';
 import { DriverFlagBadge } from '@shared/ui/DriverFlagBadge/DriverFlagBadge';
 import { IRatingChip, SafetyRatingChip } from '@shared/ui/StatChip/RatingChip';
+import { ratingChipParts } from '@shared/ui/StatChip/rating';
 import { StatChip, writeStatChip } from '@shared/ui/StatChip/StatChip';
 import { TireBadge } from '@shared/ui/TireBadge/TireBadge';
 import {
@@ -275,6 +276,8 @@ export const DriverRow = observer(
 
     // Read from the identity, so the list changes with the row's own render and
     // adds none: a pit stop or a tow is the rare event the row redraws for.
+    // What the SR chip shows; 'none' only with the column off.
+    const srContent = ratingChipParts(settings).sr;
     const statusChips = resolveDriverStatuses({
       flagType,
       isTowed,
@@ -371,11 +374,11 @@ export const DriverRow = observer(
           ))}
         </div>
 
-        {settings.showLicBadge && (
+        {srContent !== 'none' && (
           <div className={cellClass('sr', styles.cellCenter)}>
             <SafetyRatingChip
               licString={driver.licString}
-              showLicenseLetter={settings.showLicenseLetter}
+              content={srContent}
               badgeStyle={settings.licBadgeStyle}
             />
           </div>
@@ -386,6 +389,7 @@ export const DriverRow = observer(
             <IRatingChip
               iRating={driver.iRating}
               abbreviate={settings.abbreviateIRating}
+              hasBackground={settings.showIRatingChip}
             />
           </div>
         )}

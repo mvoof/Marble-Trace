@@ -473,8 +473,10 @@ describe('columns sized by their format', () => {
       showTire: false,
       showLicBadge: true,
       showLicenseLetter: true,
+      showSafetyRatingValue: true,
       showIRating: true,
       abbreviateIRating: true,
+      showIRatingChip: true,
       ...partial,
     }) as unknown as StandingsWidgetSettings;
 
@@ -494,6 +496,24 @@ describe('columns sized by their format', () => {
     );
 
     expect(withoutLetter).toBeLessThan(withLetter);
+  });
+
+  it('narrows the SR column further to the letter alone', () => {
+    const withoutLetter = computeStandingsDesignWidth(
+      settingsWith({ showLicenseLetter: false })
+    );
+    const letterAlone = computeStandingsDesignWidth(
+      settingsWith({ showSafetyRatingValue: false })
+    );
+
+    expect(letterAlone).toBeLessThan(withoutLetter);
+  });
+
+  // The plain iRating keeps its chip's unseen edges, so the column holds.
+  it('keeps the width when the iRating loses its background', () => {
+    expect(
+      computeStandingsDesignWidth(settingsWith({ showIRatingChip: false }))
+    ).toBe(computeStandingsDesignWidth(settingsWith({})));
   });
 
   // A format only pays for itself while its column is on screen.
