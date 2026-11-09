@@ -1,4 +1,6 @@
 .driverRow {
+  --chip-line: #{$table-chip-line};
+
   display: grid;
   // Cells fill the row's height so a column's stripe runs edge to edge; each
   // cell centres its own content.

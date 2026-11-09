@@ -1,6 +1,8 @@
 // Driver row — grid layout for strict column alignment
 // Columns: pos | car# | name+badges(1fr) | lic? | iR? | gap
 .driverRow {
+  --chip-line: #{$table-chip-line};
+
   display: grid;
   // Cells fill the row's height so a column's stripe runs edge to edge; each
   // cell centres its own content.

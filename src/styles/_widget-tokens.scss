@@ -187,9 +187,11 @@ $pit-readout-seam: 82%;
 // palette of its own: every lead is a dark ground of its color with the color
 // as text, so a row full of chips stays one tone darker than its values.
 $chip-bg: #111317;
-// A reading chip's full height: its 16px line, the lead's padding, the edges.
-// A table row holds at least this much, so a row without one is no shorter.
-$chip-outer-height: calc(#{wfs(16)} + #{sp(xxxs)} * 2 + 2px);
+// A chip in a table row sits on a 14px line — 20px in all with its padding and
+// edges — a step tighter than the bars' 16px. A row holds at least that much,
+// so a row without a chip is no shorter.
+$table-chip-line: wfs(14);
+$chip-outer-height: calc(#{$table-chip-line} + #{sp(xxxs)} * 2 + 2px);
 // The darkest ground — the iRating beside its license.
 $chip-value-dark: #0e1013;
 $chip-border: #262932;
