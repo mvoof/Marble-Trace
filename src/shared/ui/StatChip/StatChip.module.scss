@@ -8,6 +8,9 @@ $lead-text: var(--chip-lead-text, #{$chip-neutral-text});
 $solid-bg: var(--chip-solid-bg, #{$chip-neutral-text});
 $on-solid: var(--chip-on-solid, #{$chip-bg});
 $edge: var(--chip-edge, #{$chip-border});
+// The room above and below the text; a table row sets it to 0 for a chip that
+// spans its name's capitals and descenders and no more.
+$pad-y: var(--chip-pad-y, #{sp(xxxs)});
 
 .chip {
   display: inline-flex;
@@ -51,8 +54,8 @@ $edge: var(--chip-edge, #{$chip-border});
   display: inline-flex;
   align-items: center;
   gap: sp(xxs);
-  min-height: calc(var(--chip-line, #{wfs(16)}) + #{sp(xxxs)} * 2);
-  padding: var(--chip-lead-padding, #{sp(xxxs) sp(xs)});
+  min-height: calc(var(--chip-line, #{wfs(16)}) + #{$pad-y} * 2);
+  padding: var(--chip-lead-padding, #{$pad-y sp(xs)});
   background: $lead-bg;
   color: $lead-text;
 }
@@ -60,7 +63,7 @@ $edge: var(--chip-edge, #{$chip-border});
 // A chip written outside React is its lead in one box, its edge inside that
 // box's height — counted back in so it is one height with the others.
 .chipSingle.lead {
-  min-height: calc(var(--chip-line, #{wfs(16)}) + #{sp(xxxs)} * 2 + 2px);
+  min-height: calc(var(--chip-line, #{wfs(16)}) + #{$pad-y} * 2 + 2px);
 }
 
 // A word set in the widget face sits high in its line box — the face's ascent
@@ -111,7 +114,7 @@ $edge: var(--chip-edge, #{$chip-border});
   display: inline-flex;
   align-items: center;
   min-width: 0;
-  padding: sp(xxxs) var(--chip-value-padding-x, #{sp(sm)});
+  padding: $pad-y var(--chip-value-padding-x, #{sp(sm)});
   background: var(--chip-value-bg, transparent);
   color: var(--chip-value-text, #{$widget-text-primary});
   font-family: $font-mono;

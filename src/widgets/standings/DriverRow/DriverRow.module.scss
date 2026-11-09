@@ -1,5 +1,6 @@
 .driverRow {
-  --chip-line: #{$table-chip-line};
+  --chip-line: #{$table-row-chip-line};
+  --chip-pad-y: 0;
   // The chips are notes on the driver: a weight under the position, the number
   // and the name, and the readings in the secondary white, so the row reads
   // by who first.
@@ -215,8 +216,9 @@
   font-family: $font-mono;
   font-size: fs(xs);
   font-weight: 800;
-  line-height: 1.25;
-  padding: sp(xxxs) sp(xxs);
+  // One height with the row's chips: their line and their two edges.
+  line-height: calc(#{$table-row-chip-line} + 2px);
+  padding: 0 sp(xxs);
   border-radius: radius(sm);
   white-space: nowrap;
 
@@ -236,6 +238,11 @@
   font-weight: 800;
   font-size: fs(sm);
   color: $widget-text-primary;
+  // Inter keeps more room over its capitals than under its descenders, so a
+  // centred line box sits the ink low; lifted, the name's capitals and
+  // descenders are centred in the row as the chips are.
+  position: relative;
+  top: $name-ink-lift;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -259,6 +266,7 @@
 
   .driverName {
     flex: none;
+    top: 0;
     font-size: fs(xxs);
   }
 }

@@ -22,7 +22,7 @@ $seam-half: 0.33em;
 // A filled chip has no edge, so it would sit 2px shorter than the chips beside
 // it; its line takes the 2px back.
 .srSolid {
-  --chip-line: calc(#{$table-chip-line} + 2px);
+  --chip-line: calc(#{$table-row-chip-line} + 2px);
 }
 
 // The iRating on a white chip, its number dark — set apart from the colored SR

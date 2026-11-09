@@ -192,6 +192,12 @@ $chip-bg: #111317;
 // so a row without a chip is no shorter.
 $table-chip-line: wfs(14);
 $chip-outer-height: calc(#{$table-chip-line} + #{sp(xxxs)} * 2 + 2px);
+// A row's own chips are smaller than the line the row is sized by: no room
+// above or below the text, so a chip runs from just over the name's capitals
+// to just under its descenders. The row keeps its height ($chip-outer-height).
+$table-row-chip-line: wfs(12);
+// How far the widget face sits its ink below the centre of its line box.
+$name-ink-lift: -0.115em;
 // The darkest ground — the iRating beside its license.
 $chip-value-dark: #0e1013;
 $chip-border: #262932;
