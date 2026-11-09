@@ -2,9 +2,21 @@ import type { LicBadgeStyle } from '@shared/contracts/widget-choices';
 
 import type { StatChipTone } from './StatChip';
 
+const IR_THOUSAND = 1000;
+// From here "9.95k" would round to "10.0k" — five characters, one more than
+// the chip reserves — so the decimal goes.
+const IR_WHOLE_THOUSANDS_FROM = 9950;
+
 export const formatIr = (ir: number, abbreviate = true): string => {
-  if (abbreviate && ir >= 1000) return `${(ir / 1000).toFixed(1)}k`;
-  return String(ir);
+  if (!abbreviate || ir < IR_THOUSAND) {
+    return String(ir);
+  }
+
+  if (ir >= IR_WHOLE_THOUSANDS_FROM) {
+    return `${Math.round(ir / IR_THOUSAND)}k`;
+  }
+
+  return `${(ir / IR_THOUSAND).toFixed(1)}k`;
 };
 
 /** What the rating chip shows of the safety rating. */
