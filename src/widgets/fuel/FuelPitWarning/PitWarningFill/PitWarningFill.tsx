@@ -43,24 +43,22 @@ export const PitWarningFill = observer(() => {
       </div>
 
       <div className={styles.chips}>
-        {isMultiStop && (
-          <StatChip lead="STOPS" tone="neutral">
-            {plan.stops}
-          </StatChip>
-        )}
-
-        {isMultiStop && fuelToAdd !== null && (
-          <StatChip lead="TOTAL" tone="neutral">
-            {formatFuel(fuelToAdd, unitSystem)}
-          </StatChip>
-        )}
-
         <StatChip
           lead="+1 LAP BUFFER"
           leadKind="number"
           tone="accent"
           className={styles.bufferChip}
         />
+
+        {/* More than one stop to go: how many, and what they add up to — one
+          chip under the buffer, so the plan never pushes the amount aside. */}
+        {isMultiStop && (
+          <StatChip lead={`${plan.stops} STOPS`} tone="neutral">
+            {fuelToAdd !== null
+              ? formatFuel(fuelToAdd, unitSystem)
+              : NO_FUEL_DATA_PLACEHOLDER}
+          </StatChip>
+        )}
       </div>
     </div>
   );

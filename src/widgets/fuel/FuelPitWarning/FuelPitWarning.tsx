@@ -11,10 +11,10 @@ import type { FuelWidgetSettings } from '../settings-schema';
 
 /**
  * The header row of chips and its rule, then the fill with a multi-stop
- * plan's three chips stacked beside it — the tallest the block gets — plus
+ * plan's stops chip under the buffer beside it — the tallest the block gets — plus
  * `sp(sm)` of padding at each end, at design scale.
  */
-const PIT_WARNING_HEIGHT_PX = 129;
+const PIT_WARNING_HEIGHT_PX = 103;
 
 export const FuelPitWarning = observer(() => {
   const { fuel } = useBackendComputedStore();

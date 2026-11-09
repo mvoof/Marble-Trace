@@ -51,12 +51,12 @@
   gap: sp(xxs);
 }
 
-// The buffer is a note on the amount, not a state: the chip's own ground with
-// the accent written on it.
+// The buffer is a note on the amount, not a state: the accent written on the
+// chip's dark ground, standing out of the block's red tint.
 .bufferChip {
   --chip-lead-size: #{fs(xxxs)};
   --chip-lead-padding: #{sp(xxs) sp(sm)};
-  --chip-lead-bg: transparent;
+  --chip-lead-bg: #{$chip-bg};
 
   --chip-edge: #{$chip-accent-bg};
 }
