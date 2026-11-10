@@ -13,8 +13,11 @@ import type { LapHistoryEntry } from '@shared/contracts/generated/bindings';
 import { formatLapTimeOrDash } from '@shared/lib/telemetry-format';
 import { averageValidLapTime } from './lap-log-utils';
 import { LapRow, type LapRowKind } from './LapRow/LapRow';
-import type { RowPadding } from '@shared/contracts/widget-choices';
-import type { LapLogVisibility, LapLogWidgetSettings } from './settings-schema';
+import type {
+  RowPadding,
+  TimeVisibility,
+} from '@shared/contracts/widget-choices';
+import type { LapLogWidgetSettings } from './settings-schema';
 
 import styles from './LapLogWidget.module.scss';
 
@@ -50,7 +53,7 @@ const entryKind = (entry: LapHistoryEntry): LapRowKind => {
   return 'lap';
 };
 
-const isShown = (visibility: LapLogVisibility, hasTime: boolean): boolean =>
+const isShown = (visibility: TimeVisibility, hasTime: boolean): boolean =>
   visibility === 'always' || (visibility === 'withTime' && hasTime);
 
 /**

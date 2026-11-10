@@ -14,6 +14,9 @@
   --chip-lead-size: #{wfs(9)};
 }
 
+// Alone in the bar, BEST keeps its place on the right.
 .bestChip {
   --chip-value-text: #{$chip-special};
+
+  margin-left: auto;
 }

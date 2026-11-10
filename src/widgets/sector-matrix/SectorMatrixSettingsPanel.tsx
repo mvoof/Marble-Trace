@@ -24,6 +24,11 @@ export const SectorMatrixSettingsPanel = observer(() => {
       <div className={styles.fieldGroup}>
         <Row setting="showPredicted" />
       </div>
+
+      <div className={styles.fieldGroup}>
+        <Row setting="lastLapChip" />
+        <Row setting="bestLapChip" />
+      </div>
     </Card>
   );
 });

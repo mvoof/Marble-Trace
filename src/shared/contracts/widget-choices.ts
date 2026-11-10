@@ -13,6 +13,10 @@
 export const QUALIFYING_VISIBILITY = ['always', 'auto', 'never'] as const;
 export type QualifyingVisibility = (typeof QUALIFYING_VISIBILITY)[number];
 
+/** When a timed part of a widget shows: always, once it has a time, or never. */
+export const TIME_VISIBILITY = ['always', 'withTime', 'never'] as const;
+export type TimeVisibility = (typeof TIME_VISIBILITY)[number];
+
 export const ROW_PADDING = ['narrow', 'medium', 'wide'] as const;
 export type RowPadding = (typeof ROW_PADDING)[number];
 

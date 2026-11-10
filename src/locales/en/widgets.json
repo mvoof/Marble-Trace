@@ -544,7 +544,17 @@
       "showSectors": "Show Sector Times",
       "showSectorsDesc": "Display per-sector timing grid. Disable for a compact view with just the progress bar and lap times.",
       "showPredicted": "Show Predicted Lap",
-      "showPredictedDesc": "Estimated finish time displayed in the header."
+      "showPredictedDesc": "Estimated finish time displayed in the header.",
+      "lastLapChip": "Last lap chip",
+      "lastLapChipDesc": "The LAST chip in the footer: always, only once there is a last lap, or never. With both chips hidden, the footer goes.",
+      "lastLapChip_always": "Always",
+      "lastLapChip_withTime": "With a time",
+      "lastLapChip_never": "Never",
+      "bestLapChip": "Best lap chip",
+      "bestLapChipDesc": "The BEST chip in the footer: always, only once there is a best lap, or never. With both chips hidden, the footer goes.",
+      "bestLapChip_always": "Always",
+      "bestLapChip_withTime": "With a time",
+      "bestLapChip_never": "Never"
     },
     "standings": {
       "appearance": "Appearance",

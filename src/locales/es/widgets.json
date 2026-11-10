@@ -544,7 +544,17 @@
       "showSectors": "Mostrar los tiempos por sector",
       "showSectorsDesc": "Muestra la cuadrícula de tiempos por sector. Desactívalo para una vista compacta con solo la barra de progreso y los tiempos por vuelta.",
       "showPredicted": "Mostrar la vuelta prevista",
-      "showPredictedDesc": "Tiempo final estimado, mostrado en la cabecera."
+      "showPredictedDesc": "Tiempo final estimado, mostrado en la cabecera.",
+      "lastLapChip": "Chip de última vuelta",
+      "lastLapChipDesc": "El chip LAST en el pie: siempre, solo cuando ya hay última vuelta, o nunca. Con ambos chips ocultos, el pie desaparece.",
+      "lastLapChip_always": "Siempre",
+      "lastLapChip_withTime": "Con tiempo",
+      "lastLapChip_never": "Nunca",
+      "bestLapChip": "Chip de mejor vuelta",
+      "bestLapChipDesc": "El chip BEST en el pie: siempre, solo cuando ya hay mejor vuelta, o nunca. Con ambos chips ocultos, el pie desaparece.",
+      "bestLapChip_always": "Siempre",
+      "bestLapChip_withTime": "Con tiempo",
+      "bestLapChip_never": "Nunca"
     },
     "standings": {
       "appearance": "Apariencia",

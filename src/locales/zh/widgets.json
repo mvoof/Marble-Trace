@@ -544,7 +544,17 @@
       "showSectors": "显示分段时间",
       "showSectorsDesc": "显示逐分段计时网格。禁用后为仅含进度条和圈速的紧凑视图。",
       "showPredicted": "显示预测圈速",
-      "showPredictedDesc": "在标题栏中显示预计完成时间。"
+      "showPredictedDesc": "在标题栏中显示预计完成时间。",
+      "lastLapChip": "上一圈标签",
+      "lastLapChipDesc": "页脚中的 LAST 标签：始终显示、仅在已有上一圈时显示，或从不显示。两个标签都隐藏时，页脚也会隐藏。",
+      "lastLapChip_always": "始终",
+      "lastLapChip_withTime": "有时间时",
+      "lastLapChip_never": "从不",
+      "bestLapChip": "最佳圈标签",
+      "bestLapChipDesc": "页脚中的 BEST 标签：始终显示、仅在已有最佳圈时显示，或从不显示。两个标签都隐藏时，页脚也会隐藏。",
+      "bestLapChip_always": "始终",
+      "bestLapChip_withTime": "有时间时",
+      "bestLapChip_never": "从不"
     },
     "standings": {
       "appearance": "外观",
