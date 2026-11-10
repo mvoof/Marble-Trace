@@ -1,24 +1,35 @@
 import { observer } from 'mobx-react-lite';
 import { usePlayerStore } from '@entities/player/player-context';
 import { FixedDigits } from '@shared/ui/FixedDigits/FixedDigits';
+import { StatChip, type StatChipTone } from '@shared/ui/StatChip/StatChip';
 import {
   formatLapDeployMj,
-  formatMguPowerKw,
+  formatMguPowerMagnitude,
+  formatMguPowerSign,
   mguPowerState,
+  type MguPowerState,
 } from './battery-utils';
 import styles from './BatteryWidget.module.scss';
 
-const STATE_LABEL = {
+const STATE_LABEL: Record<MguPowerState, string> = {
   deploy: 'DEPLOY',
   regen: 'REGEN',
   idle: 'IDLE',
-} as const;
+};
 
-const STATE_CLASS = {
-  deploy: styles.stateDeploy,
-  regen: styles.stateRegen,
-  idle: styles.stateIdle,
-} as const;
+// Regen is energy gained; deploy is energy spent on purpose, a fact rather
+// than a loss; idle has nothing to say.
+const STATE_TONE: Record<MguPowerState, StatChipTone> = {
+  deploy: 'info',
+  regen: 'positive',
+  idle: 'muted',
+};
+
+const POWER_CLASS: Record<MguPowerState, string> = {
+  deploy: styles.powerDeploy,
+  regen: styles.powerRegen,
+  idle: styles.powerIdle,
+};
 
 interface StatusRowProps {
   showPower: boolean;
@@ -26,10 +37,9 @@ interface StatusRowProps {
 }
 
 /**
- * What the MGU-K is doing and the energy sent to it this lap, as one line of
- * text — a debrief readout, not a control, so it takes no bar and no icon of
- * its own. Each half carries its label on the left and its value on the right,
- * so the two values land in columns rather than drifting with the label width.
+ * What the MGU-K is doing, as a bright chip on the left — it changes from
+ * corner to corner, so it is the signal — and its power on the right — coloured by the state while it flows, white at
+ * rest. The energy sent to it this lap rides beside the state as a chip.
  */
 export const StatusRow = observer(
   ({ showPower, showLapDeploy }: StatusRowProps) => {
@@ -41,31 +51,33 @@ export const StatusRow = observer(
 
     return (
       <div className={styles.statusRow}>
-        {showPower ? (
-          <div className={styles.statusItem}>
-            <span className={`${styles.powerState} ${STATE_CLASS[state]}`}>
-              {STATE_LABEL[state]}
-            </span>
-            <span className={`${styles.powerValue} ${STATE_CLASS[state]}`}>
-              <FixedDigits text={formatMguPowerKw(watts)} />
-              <span className={styles.powerUnit}> kW</span>
-            </span>
-          </div>
-        ) : null}
+        <div className={styles.statusChips}>
+          {showPower ? (
+            <StatChip
+              lead={STATE_LABEL[state]}
+              look="mark"
+              tone={STATE_TONE[state]}
+            />
+          ) : null}
 
-        {showPower && showLapDeploy ? (
-          <div className={styles.statusDivider} />
-        ) : null}
-
-        {showLapDeploy ? (
-          <div className={styles.statusItem}>
-            <span className={`${styles.powerState} ${styles.lapLabel}`}>
-              LAP
-            </span>
-            <span className={`${styles.powerValue} ${styles.lapValue}`}>
+          {showLapDeploy ? (
+            <StatChip lead="LAP" look="reading" tone="neutral">
               <FixedDigits text={formatLapDeployMj(joules)} />
-              <span className={styles.powerUnit}> MJ</span>
+              <span className={styles.chipUnit}>MJ</span>
+            </StatChip>
+          ) : null}
+        </div>
+
+        {showPower ? (
+          <div className={`${styles.power} ${POWER_CLASS[state]}`}>
+            <span className={styles.powerSign}>
+              {formatMguPowerSign(watts)}
             </span>
+            <FixedDigits
+              className={styles.powerValue}
+              text={formatMguPowerMagnitude(watts)}
+            />
+            <span className={styles.powerUnit}>kW</span>
           </div>
         ) : null}
       </div>

@@ -64,19 +64,27 @@ export const mguPowerState = (watts: number | null): MguPowerState => {
 };
 
 /**
- * Watts to kilowatts, padded to a fixed slot. The sign is always drawn and the
- * magnitude always three characters wide, so the readout never re-centres as
- * the car swings between harvesting and deploying.
+ * The sign of the MGU-K power, drawn a step smaller beside its magnitude. Always
+ * drawn, so the readout keeps its width as the car swings between harvesting
+ * and deploying.
  */
-export const formatMguPowerKw = (watts: number | null): string => {
+export const formatMguPowerSign = (watts: number | null): string => {
   if (watts === null) {
-    return '····';
+    return '+';
   }
 
-  const kw = Math.round(watts / 1000);
-  const sign = kw < 0 ? '−' : '+';
+  return Math.round(watts / 1000) < 0 ? '−' : '+';
+};
 
-  return `${sign}${Math.abs(kw).toString().padStart(3, ' ')}`;
+/** Watts to whole kilowatts, unsigned, always three characters wide. */
+export const formatMguPowerMagnitude = (watts: number | null): string => {
+  if (watts === null) {
+    return '···';
+  }
+
+  const kw = Math.abs(Math.round(watts / 1000));
+
+  return kw.toString().padStart(3, ' ');
 };
 
 /** Charge as a whole percent; the readout reserves the three-digit slot. */
@@ -90,13 +98,24 @@ export const formatChargePct = (fraction: number | null): string => {
   return pct.toString().padStart(2, ' ');
 };
 
+/**
+ * The widest the per-lap figure gets: a sign or a tens digit before "0.00". A
+ * lap that harvests more than it deploys reads negative, and a long lap can
+ * pass 10 MJ, so the slot is held at this width and the chip never resizes.
+ */
+const LAP_DEPLOY_CHARS = 5;
+
+/** The figure space: as wide as a digit, so padding holds the digits' place. */
+const FIGURE_SPACE = ' ';
+
 /** Joules to megajoules — what the per-lap deploy counter is read in. */
 export const formatLapDeployMj = (joules: number | null): string => {
-  if (joules === null) {
-    return '·.··';
-  }
+  const text =
+    joules === null
+      ? '·.··'
+      : (joules / 1_000_000).toFixed(2).replace('-', '−');
 
-  return (joules / 1_000_000).toFixed(2);
+  return text.padStart(LAP_DEPLOY_CHARS, FIGURE_SPACE);
 };
 
 /**
