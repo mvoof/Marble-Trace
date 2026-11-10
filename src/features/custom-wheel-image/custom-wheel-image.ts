@@ -32,23 +32,31 @@ export class WheelImageImportError extends Error {
   }
 }
 
-const loadImage = (file: File): Promise<HTMLImageElement> =>
+const readAsDataUrl = (file: File): Promise<string> =>
   new Promise((resolve, reject) => {
-    const url = URL.createObjectURL(file);
+    const reader = new FileReader();
+
+    reader.onload = () =>
+      typeof reader.result === 'string'
+        ? resolve(reader.result)
+        : reject(new WheelImageImportError('unreadable'));
+    reader.onerror = () => reject(new WheelImageImportError('unreadable'));
+    reader.readAsDataURL(file);
+  });
+
+// Through a `data:` URL rather than a `blob:` one: the app's CSP lets images
+// load from `data:` but not from `blob:`.
+const loadImage = async (file: File): Promise<HTMLImageElement> => {
+  const dataUrl = await readAsDataUrl(file);
+
+  return new Promise((resolve, reject) => {
     const image = new Image();
 
-    image.onload = () => {
-      URL.revokeObjectURL(url);
-      resolve(image);
-    };
-
-    image.onerror = () => {
-      URL.revokeObjectURL(url);
-      reject(new WheelImageImportError('unreadable'));
-    };
-
-    image.src = url;
+    image.onload = () => resolve(image);
+    image.onerror = () => reject(new WheelImageImportError('unreadable'));
+    image.src = dataUrl;
   });
+};
 
 const encode = (canvas: HTMLCanvasElement): Promise<Blob> =>
   new Promise((resolve, reject) => {
