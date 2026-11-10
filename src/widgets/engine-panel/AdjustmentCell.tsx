@@ -4,7 +4,9 @@ import { FixedDigits } from '@shared/ui/FixedDigits/FixedDigits';
 import { usePlayerStore } from '@entities/player/player-context';
 import { useEnginePanelWidgetStore } from '@widgets/engine-panel/engine-panel.store';
 import { useWidgetSettings } from '@entities/layout/useWidgetSettings';
+import type { StatChipTone } from '@shared/ui/StatChip/StatChip';
 import { EngineCell } from './EngineCell';
+import { AdjustmentChip } from './AdjustmentChip';
 import {
   ADJUSTMENT_SPECS,
   formatAdjustment,
@@ -12,6 +14,13 @@ import {
 } from './engine-panel-utils';
 import styles from './EnginePanelWidget.module.scss';
 import type { EnginePanelWidgetSettings } from './settings-schema';
+
+// Traction control keeps the blue it has in every in-car box; the rest are
+// plain readings.
+const CHIP_TONE: Partial<Record<AdjustmentKey, StatChipTone>> = {
+  showTc: 'info',
+  showTc2: 'info',
+};
 
 export interface AdjustmentCellProps {
   cellId: AdjustmentKey;
@@ -39,6 +48,7 @@ export const AdjustmentCell = observer(
     const raw = carStatus?.[spec.field];
     const value = typeof raw === 'number' ? raw : null;
     const unit = 'unit' in spec ? spec.unit : undefined;
+    const text = value === null ? '--' : formatAdjustment(value, spec.format);
 
     return (
       <EngineCell
@@ -49,17 +59,15 @@ export const AdjustmentCell = observer(
           enginePanel.isChanged(spec.field)
         }
       >
-        <WidgetValue
-          value={
-            <FixedDigits
-              text={
-                value === null ? '--' : formatAdjustment(value, spec.format)
-              }
-            />
-          }
-          unit={unit}
-          className={`${styles.value} ${value === null ? styles.valueEmpty : ''}`}
-        />
+        {lead ? (
+          <WidgetValue
+            value={<FixedDigits text={text} />}
+            unit={unit}
+            className={`${styles.value} ${value === null ? styles.valueEmpty : ''}`}
+          />
+        ) : (
+          <AdjustmentChip text={text} tone={CHIP_TONE[cellId]} />
+        )}
       </EngineCell>
     );
   }

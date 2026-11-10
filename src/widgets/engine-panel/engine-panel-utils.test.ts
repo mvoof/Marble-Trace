@@ -3,7 +3,8 @@ import { describe, expect, it } from 'vitest';
 import { ENGINE_PANEL_MANIFEST } from './manifest';
 import {
   CELL_SLOTS,
-  STRIP_MIN_WIDTH,
+  COLUMN_WIDTH,
+  MIN_COLUMNS,
   enabledCellSlots,
   formatAdjustment,
   panelHeight,
@@ -105,7 +106,7 @@ describe('planEnginePanel', () => {
 
   it('never draws narrower than the floor', () => {
     expect(panelWidth(planEnginePanel(cellsOf(['showTc'])))).toBe(
-      STRIP_MIN_WIDTH
+      MIN_COLUMNS * COLUMN_WIDTH
     );
   });
 });

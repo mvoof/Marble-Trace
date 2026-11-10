@@ -45,12 +45,22 @@ export const GROUP_ORDER: readonly CellGroup[] = [
 ];
 
 /**
- * Strip heights, in design px, the rule between strips included. A strip
- * carrying a lead — brake bias, traction control, ABS, the map — holds its
- * larger figure; the rest read at the base size.
+ * Strip heights, in design px, the rule above the strip included: the brake
+ * strip holds the bias at headline size, the traction strip its larger chips,
+ * the engine readings sit tightest.
  */
-export const STRIP_HEIGHT_LEAD = 38;
-export const STRIP_HEIGHT_PLAIN = 30;
+export const STRIP_HEIGHTS: Record<CellGroup, number> = {
+  brake: 36,
+  traction: 32,
+  trim: 30,
+  diff: 30,
+  chassis: 30,
+  engine: 28,
+};
+
+/** The panel's full width in design px, cut into twelve columns. */
+export const PANEL_COLUMNS = 12;
+export const COLUMN_WIDTH = 332 / PANEL_COLUMNS;
 
 /**
  * An in-car adjustment cell: one field, one label, one format.
@@ -174,14 +184,14 @@ export type CellId = AdjustmentKey | SpecialCellId;
 export interface CellSlot {
   id: CellId;
   group: CellGroup;
-  /** Drawn at the larger size: what the hands move mid-corner. */
+  /** The panel's headline figure, drawn large and unframed: the brake bias. */
   lead?: boolean;
   /**
-   * The design px the cell needs with its label and value on one line. A strip
-   * shares its width in proportion to these, and the widest strip is the
-   * panel's width.
+   * The columns, of twelve, the cell takes. A strip shares its width in
+   * proportion to these, and the widest strip is the panel's width — a strip
+   * of fewer columns stretches its cells to fill it.
    */
-  width: number;
+  columns: number;
   /** The cell is drawn while any of these is on. */
   settingKeys: readonly (keyof EnginePanelWidgetSettings)[];
 }
@@ -191,106 +201,106 @@ export const CELL_SLOTS: readonly CellSlot[] = [
     id: 'showBrakeBias',
     group: 'brake',
     lead: true,
-    width: 110,
+    columns: 7,
     settingKeys: ['showBrakeBias'],
   },
   {
     id: 'showBrakeMisc',
     group: 'brake',
-    width: 100,
+    columns: 5,
     settingKeys: ['showBrakeMisc'],
   },
 
   {
     id: 'showTc',
     group: 'traction',
-    lead: true,
-    width: 60,
+
+    columns: 4,
     settingKeys: ['showTc'],
   },
   {
     id: 'abs',
     group: 'traction',
-    lead: true,
-    width: 66,
+
+    columns: 4,
     settingKeys: ['showAbs'],
   },
   {
     id: 'showEngineMap',
     group: 'traction',
-    lead: true,
-    width: 66,
+
+    columns: 4,
     settingKeys: ['showEngineMap'],
   },
 
-  { id: 'showTc2', group: 'trim', width: 60, settingKeys: ['showTc2'] },
+  { id: 'showTc2', group: 'trim', columns: 2, settingKeys: ['showTc2'] },
   {
     id: 'showEngineBraking',
     group: 'trim',
-    width: 54,
+    columns: 2,
     settingKeys: ['showEngineBraking'],
   },
   {
     id: 'showPeakBrakeBias',
     group: 'trim',
-    width: 90,
+    columns: 4,
     settingKeys: ['showPeakBrakeBias'],
   },
   {
     id: 'showBrakeBiasFine',
     group: 'trim',
-    width: 90,
+    columns: 4,
     settingKeys: ['showBrakeBiasFine'],
   },
 
   {
     id: 'showDiffEntry',
     group: 'diff',
-    width: 84,
+    columns: 5,
     settingKeys: ['showDiffEntry'],
   },
   {
     id: 'showDiffMiddle',
     group: 'diff',
-    width: 54,
+    columns: 3,
     settingKeys: ['showDiffMiddle'],
   },
   {
     id: 'showDiffExit',
     group: 'diff',
-    width: 54,
+    columns: 4,
     settingKeys: ['showDiffExit'],
   },
 
   {
     id: 'showAntiRollFront',
     group: 'chassis',
-    width: 60,
+    columns: 6,
     settingKeys: ['showAntiRollFront'],
   },
   {
     id: 'showAntiRollRear',
     group: 'chassis',
-    width: 60,
+    columns: 6,
     settingKeys: ['showAntiRollRear'],
   },
 
   {
     id: 'temps',
     group: 'engine',
-    width: 150,
+    columns: 5,
     settingKeys: ['showOilTemp', 'showWaterTemp'],
   },
   {
     id: 'oilPress',
     group: 'engine',
-    width: 96,
+    columns: 4,
     settingKeys: ['showOilPress'],
   },
   {
     id: 'voltage',
     group: 'engine',
-    width: 86,
+    columns: 3,
     settingKeys: ['showVoltage'],
   },
 ];
@@ -326,12 +336,11 @@ export const formatAdjustment = (value: number, format: CellFormat): string => {
   return value.toFixed(decimals);
 };
 
-/** One strip as it is drawn: its cells, in order, and the width they need. */
+/** One strip as it is drawn: its cells, in order, and the columns they take. */
 export interface PlannedStrip {
   group: CellGroup;
   cells: CellSlot[];
-  width: number;
-  hasLead: boolean;
+  columns: number;
 }
 
 /** The strips the drawn cells make, in the fixed order, empty ones left out. */
@@ -347,28 +356,27 @@ export const planEnginePanel = (cells: readonly CellSlot[]): PlannedStrip[] =>
       {
         group,
         cells: members,
-        width: members.reduce((total, cell) => total + cell.width, 0),
-        hasLead: members.some((cell) => cell.lead === true),
+        columns: members.reduce((total, cell) => total + cell.columns, 0),
       },
     ];
   });
 
 /** One strip's height in design px. */
 export const stripHeight = (strip: PlannedStrip): number =>
-  strip.hasLead ? STRIP_HEIGHT_LEAD : STRIP_HEIGHT_PLAIN;
+  STRIP_HEIGHTS[strip.group];
 
 /** The height the panel draws at. */
 export const panelHeight = (strips: readonly PlannedStrip[]): number =>
   strips.length === 0
-    ? STRIP_HEIGHT_PLAIN
+    ? STRIP_HEIGHTS.engine
     : strips.reduce((total, strip) => total + stripHeight(strip), 0);
 
-/** The narrowest the panel gets, so a lone cell is not a sliver. */
-export const STRIP_MIN_WIDTH = 160;
+/** The fewest columns the panel takes, so a lone cell is not a sliver. */
+export const MIN_COLUMNS = 6;
 
-/** The width the panel draws at: its widest strip's. */
+/** The width the panel draws at, in design px: its widest strip's. */
 export const panelWidth = (strips: readonly PlannedStrip[]): number =>
-  Math.max(STRIP_MIN_WIDTH, ...strips.map((strip) => strip.width));
+  Math.max(MIN_COLUMNS, ...strips.map((strip) => strip.columns)) * COLUMN_WIDTH;
 
 /** What a cell is called, for anything drawing the panel without telemetry. */
 export const CELL_LABELS: Record<CellId, string> = {
@@ -386,7 +394,7 @@ export const CELL_LABELS: Record<CellId, string> = {
   showAntiRollRear: ADJUSTMENT_SPECS.showAntiRollRear.label,
   showBrakeMisc: ADJUSTMENT_SPECS.showBrakeMisc.label,
   abs: 'ABS',
-  temps: 'OIL / WATER',
+  temps: 'OIL / W',
   oilPress: 'OIL P',
   voltage: 'VOLT',
 };

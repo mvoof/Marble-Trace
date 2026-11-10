@@ -81,7 +81,7 @@ export const ENGINE_PANEL_MANIFEST: WidgetManifest = {
   requiredCapabilities: ['playerDynamics'],
   autoHeight: true,
   designWidth: 332,
-  designHeight: 196,
+  designHeight: 186,
   resolveLayoutChange: resolveEnginePanelLayout,
   deriveDesignWidth: designWidthOf,
   userSettings: {
@@ -89,7 +89,7 @@ export const ENGINE_PANEL_MANIFEST: WidgetManifest = {
     x: 400,
     y: 400,
     currentWidth: 332,
-    currentHeight: 196,
+    currentHeight: 186,
     ...COMMON_WIDGET_DEFAULTS,
     ...PANEL_APPEARANCE_DEFAULTS,
     ...ENGINE_PANEL_SETTINGS.defaults,

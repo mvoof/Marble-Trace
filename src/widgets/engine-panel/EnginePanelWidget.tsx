@@ -27,6 +27,11 @@ import type { EnginePanelWidgetSettings } from './settings-schema';
 const OIL_TEMP_LIMIT_C = 135;
 const WATER_TEMP_LIMIT_C = 120;
 
+// Below these the engine is not running — stalled, or the ignition off — and
+// the reading turns red: no oil pressure is a call, not a quiet zero.
+const OIL_PRESS_DEAD_KPA = 1;
+const VOLTAGE_DEAD_V = 1;
+
 const isAdjustmentId = (id: CellId): id is AdjustmentKey =>
   id in ADJUSTMENT_SPECS;
 
@@ -43,6 +48,15 @@ const formatPressure = (
   }
 
   return { value: (kpa * 0.145038).toFixed(0), unit: 'psi' };
+};
+
+/** Grey with nothing to show, red below the dead line, white otherwise. */
+const valueStateClass = (value: number | null, deadBelow: number): string => {
+  if (value === null) {
+    return styles.valueEmpty;
+  }
+
+  return value < deadBelow ? styles.valueDanger : '';
 };
 
 const formatTempInt = (celsius: number | null, system: UnitSystem): string => {
@@ -80,8 +94,7 @@ const TemperaturesCell = observer(
       (showOil && oilTemp !== null && oilTemp >= OIL_TEMP_LIMIT_C) ||
       (showWater && waterTemp !== null && waterTemp >= WATER_TEMP_LIMIT_C);
 
-    const label =
-      showOil && showWater ? 'OIL / WATER' : showOil ? 'OIL' : 'WATER';
+    const label = showOil && showWater ? 'OIL / W' : showOil ? 'OIL' : 'WATER';
 
     const text = [
       showOil ? formatTempInt(oilTemp, system) : null,
@@ -150,7 +163,7 @@ export const EnginePanelWidget = observer(() => {
     }
 
     if (slot.id === 'abs') {
-      nodes.abs = <AbsCell lead={lead} />;
+      nodes.abs = <AbsCell />;
 
       continue;
     }
@@ -174,7 +187,7 @@ export const EnginePanelWidget = observer(() => {
           <WidgetValue
             value={<FixedDigits text={oilPress.value} />}
             unit={oilPress.unit}
-            className={`${styles.value} ${carStatus?.oil_press == null ? styles.valueEmpty : ''}`}
+            className={`${styles.value} ${valueStateClass(carStatus?.oil_press ?? null, OIL_PRESS_DEAD_KPA)}`}
           />
         </EngineCell>
       );
@@ -191,7 +204,7 @@ export const EnginePanelWidget = observer(() => {
             />
           }
           unit="V"
-          className={`${styles.value} ${voltage === null ? styles.valueEmpty : ''}`}
+          className={`${styles.value} ${valueStateClass(voltage, VOLTAGE_DEAD_V)}`}
         />
       </EngineCell>
     );

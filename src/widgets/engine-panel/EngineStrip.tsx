@@ -19,19 +19,18 @@ const STRIP_CLASS: Record<CellGroup, string> = {
 
 /**
  * One strip of the panel: a system's cells side by side, ruled apart as a
- * table's columns are, a marker in the system's tone down its left edge.
+ * table's columns are, a marker in the system's tone down its left edge. Its
+ * height is fixed per strip in the stylesheet, as `STRIP_HEIGHTS` measures it.
  */
 export const EngineStrip = observer(({ strip, nodes }: EngineStripProps) => {
-  const leadClass = strip.hasLead ? styles.stripLead : styles.stripPlain;
-
   return (
-    <div className={`${styles.strip} ${leadClass} ${STRIP_CLASS[strip.group]}`}>
+    <div className={`${styles.strip} ${STRIP_CLASS[strip.group]}`}>
       {strip.cells.map((cell) => (
         <div
           className={styles.slot}
           // Data-driven: each cell takes the strip's width in proportion to
-          // what its label and value need.
-          style={{ flexGrow: cell.width }}
+          // the columns it takes.
+          style={{ flexGrow: cell.columns }}
           key={cell.id}
         >
           {nodes[cell.id]}

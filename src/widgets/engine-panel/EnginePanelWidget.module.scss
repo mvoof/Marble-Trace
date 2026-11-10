@@ -1,8 +1,9 @@
-// The panel is a table of strips, one per system, always in the same order:
+// The panel is a stack of strips, one per system, always in the same order:
 // brake, traction, the GTP and formula trim, the differential, the anti-roll
-// bars, the engine at the bottom. Values are white; color is spent on a knob
-// that just moved, an active ABS, and a temperature over the line — the one
-// call loud enough to fill its cell.
+// bars, the engine at the bottom. The brake bias is the headline figure; every
+// other adjustment sits in a quiet chip, the engine readings bare. Bright color
+// is kept for a knob that just moved, an active ABS, a dead engine and a
+// temperature over the line.
 .root {
   width: 100%;
   height: 100%;
@@ -11,65 +12,88 @@
   flex-direction: column;
 }
 
-// The strip's tone, quiet: a marker down its left edge and the ground a cell
-// lights in when its knob moves. Its height is fixed, rule included, so the
-// panel draws at the height the manifest measured — `autoHeight` sizes the
-// frame from this content.
-$strip-marker: 2px;
+// The strip's tone is a marker down its left edge and the ground a cell lights
+// in when its knob moves. Its height is fixed, rule included, as
+// `STRIP_HEIGHTS` measures it — `autoHeight` sizes the frame from this content.
+$strip-marker: 3px;
 
 .strip {
-  --strip-tone: #{$chip-neutral-border};
+  --strip-tone: #{$table-empty-text};
+  // Label and chip sizes the narrower strips step down from.
+  --cell-pad-x: #{sp(md)};
+  --label-size: #{wfs(9)};
+  --chip-size: #{wfs(12)};
+  --chip-line-size: #{wfs(14)};
 
   position: relative;
   display: flex;
   flex: 0 0 auto;
   box-sizing: border-box;
   padding-left: $strip-marker;
-  background: $table-row-bg;
 
   &::before {
     content: '';
     position: absolute;
     inset: 0 auto 0 0;
     width: $strip-marker;
-    background: color-mix(in srgb, var(--strip-tone) 70%, transparent);
+    background: var(--strip-tone);
   }
 }
 
 .strip + .strip {
-  border-top: 1px solid $table-rule;
-}
-
-.stripLead {
-  height: ws(38);
-}
-
-.stripPlain {
-  height: ws(30);
+  border-top: 1px solid $strip-rule;
 }
 
 .stripBrake {
   --strip-tone: #{$chip-positive};
+  --label-size: #{wfs(10)};
+  --chip-size: #{wfs(13)};
+  --chip-line-size: #{wfs(15)};
+
+  height: ws(36);
+  background: $strip-ground-deep;
 }
 
 .stripTraction {
   --strip-tone: #{$chip-accent};
+  --label-size: #{wfs(10)};
+  --chip-size: #{wfs(13)};
+  --chip-line-size: #{wfs(15)};
+
+  height: ws(32);
+  background: $strip-ground;
 }
 
 .stripTrim {
-  --strip-tone: #{$chip-text-muted};
+  --strip-tone: #{$race-amber};
+  --cell-pad-x: #{sp(xs)};
+
+  height: ws(30);
+  background: $strip-ground-deep;
 }
 
 .stripDiff {
   --strip-tone: #{$chip-info};
+  --cell-pad-x: #{sp(sm)};
+
+  height: ws(30);
+  background: $strip-ground;
 }
 
 .stripChassis {
-  --strip-tone: #{$race-lilac};
+  --strip-tone: #{$chip-special-edge};
+  --label-size: #{wfs(10)};
+
+  height: ws(30);
+  background: $strip-ground;
 }
 
 .stripEngine {
-  --strip-tone: #{$chip-neutral-border};
+  --strip-tone: #{$table-empty-text};
+  --cell-pad-x: #{sp(sm)};
+
+  height: ws(28);
+  background: $strip-ground-raised;
 }
 
 .slot {
@@ -91,8 +115,8 @@ $strip-marker: 2px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: sp(xs);
-  padding: 0 sp(sm);
+  gap: sp(xxs);
+  padding: 0 var(--cell-pad-x);
 }
 
 // Above the change light, which is positioned and would otherwise paint over.
@@ -101,18 +125,22 @@ $strip-marker: 2px;
   position: relative;
 }
 
-// One label size across the panel: the strip and the value size already say
-// what a cell is.
 .label {
   font-family: $font-widget;
-  font-size: wfs(9);
-  font-weight: 700;
+  font-size: var(--label-size);
+  font-weight: 800;
   line-height: 1;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.05em;
   text-transform: uppercase;
-  color: $table-head-text;
+  color: $table-dim-text;
   // A two-word label must not wrap: the cell is sized for one line.
   white-space: nowrap;
+}
+
+// The engine readings are sensors, not knobs: their labels step back.
+.stripEngine .label {
+  font-weight: 700;
+  color: $chip-text-muted;
 }
 
 .cellValues {
@@ -121,9 +149,10 @@ $strip-marker: 2px;
   min-width: 0;
 }
 
+// A bare figure: the brake bias, the engine readings.
 .value {
   font-family: $font-mono;
-  font-size: fs(sm);
+  font-size: wfs(12);
   font-weight: 800;
   line-height: 1;
   color: $widget-text-primary;
@@ -131,23 +160,44 @@ $strip-marker: 2px;
 
   :global(.unit) {
     margin-left: 1px;
-    font-size: 0.65em;
+    font-size: 0.75em;
     font-weight: 600;
     color: $chip-text-muted;
   }
 }
 
 .lead .value {
-  font-size: fs(lg);
+  font-size: wfs(19);
+  letter-spacing: -0.02em;
+
+  :global(.unit) {
+    font-size: 0.58em;
+    letter-spacing: 0;
+  }
 }
 
 .valueEmpty {
   color: $table-empty-text;
 }
 
-// A temperature over the line: the one alarm the panel has, so it is the one
-// cell that fills. Static, not a pulse — an always-on-top overlay should not
-// keep the compositor awake for a warning that reads just as well held still.
+// No oil pressure, no voltage: the engine is not running.
+.valueDanger {
+  color: $chip-danger;
+}
+
+// An adjustment's chip, sized by its strip through the chip's own variables.
+.chip {
+  --chip-lead-size: var(--chip-size);
+  --chip-line: var(--chip-line-size);
+  --chip-pad-y: #{sp(xxxs)};
+  --chip-solid-padding-x: #{sp(xs)};
+  --chip-lead-weight: 800;
+  --chip-solid-weight: 800;
+}
+
+// A temperature over the line: the one alarm that fills its cell. Static, not a
+// pulse — an always-on-top overlay should not keep the compositor awake for a
+// warning that reads just as well held still.
 .overLimit {
   background-color: rgba($chip-danger, 0.28);
   box-shadow: inset 0 0 0 1px rgba($chip-danger, 0.7);
@@ -171,11 +221,7 @@ $strip-marker: 2px;
   pointer-events: none;
 }
 
-// ABS working: an event, so the figure takes the traction tone.
+// ABS working: the cell takes a shade of the traction tone, the chip its mark.
 .absActive {
-  background-color: rgba($chip-accent, 0.16);
-
-  .value {
-    color: $chip-accent;
-  }
+  background-color: rgba($chip-accent, 0.12);
 }
