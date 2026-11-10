@@ -54,7 +54,8 @@ const writeDelta = (slot: HTMLElement, state: SectorChipState): void => {
     slot,
     delta.tone,
     delta.isLive ? 'label' : 'number',
-    delta.text
+    delta.text,
+    'reading'
   );
   slot.classList.add(styles.deltaSlot, styles.deltaChip);
 

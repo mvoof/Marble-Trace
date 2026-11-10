@@ -1,10 +1,12 @@
+// A flag's own shape, the size of the country flag beside it — set in the
+// widget's scale, never the font size of whatever cell holds it.
 .flagBadge {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 0.9em;
-  height: 0.9em;
-  border-radius: radius(sm);
+  width: ws(18);
+  height: ws(13);
+  border-radius: 2px;
   flex-shrink: 0;
   border: 1px solid transparent;
 }
@@ -42,8 +44,8 @@
   border-color: rgba(255, 255, 255, 0.25);
 
   .orangeCircle {
-    width: 0.35em;
-    height: 0.35em;
+    width: ws(7);
+    height: ws(7);
     background-color: #ff5500;
     border-radius: 50%;
     display: block;
@@ -76,7 +78,7 @@
       position: absolute;
       top: 50%;
       left: 50%;
-      width: 65%;
+      width: ws(10);
       height: 2px;
       background: $race-red;
       border-radius: 1px;

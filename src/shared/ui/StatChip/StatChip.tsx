@@ -96,15 +96,20 @@ export const writeStatChip = (
   element: HTMLElement,
   tone: StatChipTone,
   kind: StatChipLeadKind,
-  text: string
+  text: string,
+  look: StatChipLook = 'plain'
 ): void => {
   element.className = [
     styles.chip,
     styles.chipSingle,
     TONE_CLASS[tone],
+    LOOK_CLASS[look],
     styles.lead,
     kind === 'label' ? styles.leadLabel : styles.leadNumber,
-  ].join(' ');
+    FILLED_LOOKS.has(look) ? styles.leadSolid : '',
+  ]
+    .filter(Boolean)
+    .join(' ');
 
   const textElement = document.createElement('span');
   textElement.className = styles.leadText;
