@@ -143,7 +143,9 @@ export const schemaRows = <Shape extends SettingsShape>(
         return (
           <SettingRow title={title} desc={desc} stacked={stacked}>
             <Slider
-              style={stacked ? undefined : { width: SLIDER_WIDTH_PX }}
+              // A stacked row is a column aligned to the start, where a slider
+              // has no width of its own and collapses to nothing.
+              style={{ width: stacked ? '100%' : SLIDER_WIDTH_PX }}
               min={field.min}
               max={field.max}
               step={field.step ?? 1}
