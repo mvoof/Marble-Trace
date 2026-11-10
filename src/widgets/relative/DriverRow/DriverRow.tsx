@@ -26,6 +26,7 @@ import styles from './DriverRow.module.scss';
 import { useBackendComputedStore } from '@entities/cars/computed-context';
 import { usePlayerStore } from '@entities/player/player-context';
 import { TowTime } from '@entities/player/TowTime/TowTime';
+import { TrackDistance } from '../TrackDistance/TrackDistance';
 import type { RelativeWidgetSettings } from '../settings-schema';
 
 interface DriverRowProps {
@@ -268,6 +269,10 @@ export const DriverRow = observer(({ carIdx, index }: DriverRowProps) => {
       <div className={styles.f2Block}>
         <span ref={gapRef} className={styles.f2Time} />
       </div>
+
+      {settings.showDistance && (
+        <TrackDistance carIdx={driver.carIdx} isPaceCar={false} />
+      )}
     </div>
   );
 });

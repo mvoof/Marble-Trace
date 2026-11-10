@@ -57,6 +57,8 @@ const COLUMNS = {
   showIRatingChip: bool(true),
   /** Driver's profile country flag, in its own column before the name. */
   showCountryFlag: bool(false),
+  /** Meters or feet along the track to each car, after the gap. */
+  showDistance: bool(false),
 } as const;
 
 export const RELATIVE_COLUMN_KEYS = Object.keys(COLUMNS) as Array<

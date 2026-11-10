@@ -197,6 +197,9 @@ $chip-value-dark: #0e1013;
 $chip-border: #262932;
 $chip-text: #e5e7eb;
 $chip-text-muted: #7e828a;
+// The pace car's number badge: it has no class color, so black with white digits.
+$pace-car-number-bg: #000000;
+$pace-car-number-text: #ffffff;
 
 // A filled chip lead that stays quiet: a deep shade of its color written light
 // in a regular weight, where full fills would outshine what they sit beside.

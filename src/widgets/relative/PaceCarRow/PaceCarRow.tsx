@@ -9,6 +9,7 @@ import styles from './PaceCarRow.module.scss';
 import { useBackendComputedStore } from '@entities/cars/computed-context';
 import { useRelativeWidgetStore } from '@widgets/relative/relative.store';
 import type { RelativeWidgetSettings } from '../settings-schema';
+import { TrackDistance } from '../TrackDistance/TrackDistance';
 
 interface PaceCarRowProps {
   carIdx: number;
@@ -69,6 +70,7 @@ export const PaceCarRow = observer(({ carIdx, index }: PaceCarRowProps) => {
     settings.rowPadding === 'medium' ? styles.rowPaddingMedium : '',
     settings.rowPadding === 'wide' ? styles.rowPaddingWide : '',
     index % 2 !== 0 ? styles.rowOdd : '',
+    settings.showDistance ? styles.withDistance : '',
   ]
     .filter(Boolean)
     .join(' ');
@@ -86,7 +88,7 @@ export const PaceCarRow = observer(({ carIdx, index }: PaceCarRowProps) => {
 
       {settings.showCarNumber && (
         <div className={styles.carNumberCell}>
-          <span className={styles.carNumber}>#{formattedCarNumber}</span>
+          <span className={styles.carNumber}>{formattedCarNumber}</span>
         </div>
       )}
 
@@ -106,6 +108,10 @@ export const PaceCarRow = observer(({ carIdx, index }: PaceCarRowProps) => {
       <div className={styles.gapBlock}>
         <span ref={gapRef} className={styles.gap} />
       </div>
+
+      {settings.showDistance && (
+        <TrackDistance carIdx={driver.carIdx} isPaceCar />
+      )}
     </div>
   );
 });

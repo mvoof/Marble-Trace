@@ -526,6 +526,8 @@
       "showCountryFlagDesc": "Show the driver's profile country flag before the name.",
       "showDriverFlags": "Driver Flags",
       "showDriverFlagsDesc": "Show active warning flags next to driver name.",
+      "showDistance": "Distance",
+      "showDistanceDesc": "Distance along the track to each car, after the gap — in meters or feet, following the unit system setting.",
       "useLivePositions": "Use Live Positions",
       "useLivePositionsDesc": "Rank by position on track, recomputed every tick. Off: the sim's official number, which only updates when a car crosses start/finish. Row order always follows the gap on track.",
       "showCarNumber": "Car Number",

@@ -45,3 +45,20 @@ describe('name column width', () => {
     expect(template).not.toContain('fr');
   });
 });
+
+describe('distance column', () => {
+  it('widens the widget and adds a column when shown', () => {
+    const base = settingsWith(NAME_COLUMN_DEFAULT_PX);
+    const withDistance = {
+      ...base,
+      showDistance: true,
+    } as RelativeWidgetSettings;
+
+    expect(computeRelativeDesignWidth(withDistance)).toBeGreaterThan(
+      computeRelativeDesignWidth(base)
+    );
+    expect(buildRelativeGridTemplate(withDistance).split(' calc').length).toBe(
+      buildRelativeGridTemplate(base).split(' calc').length + 1
+    );
+  });
+});

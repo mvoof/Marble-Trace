@@ -77,13 +77,24 @@
   grid-column: 2;
   display: flex;
   align-items: center;
-  padding: 0 sp(xxxs);
+  justify-content: flex-end;
 }
 
+// The same badge a driver's number sits on.
 .carNumber {
+  display: inline-block;
+  box-sizing: border-box;
+  min-width: ws(30);
+  padding: ws(1) sp(xxs);
+  border-radius: radius(sm);
   font-size: fs(xs);
+  font-weight: 800;
   font-family: $font-mono;
-  color: $widget-text-primary;
+  line-height: calc(#{$table-chip-line} + 2px);
+  text-align: center;
+  white-space: nowrap;
+  background-color: $pace-car-number-bg;
+  color: $pace-car-number-text;
 }
 
 // Spans from the name column through wherever lic/iR would be, so the label
@@ -118,6 +129,26 @@
   justify-content: flex-end;
   align-items: center;
   padding-right: sp(xxxs);
+}
+
+// With the distance column last, the label and the gap each step one column left.
+.withDistance {
+  .centerLabel {
+    grid-column: 3 / -3;
+  }
+
+  .centerLabelWithFlag {
+    grid-column: 4 / -3;
+  }
+
+  .gapBlock {
+    grid-column: -3 / -2;
+  }
+
+  // The distance cell, placed explicitly like every other cell of this row.
+  > :last-child {
+    grid-column: -2 / -1;
+  }
 }
 
 .gap {

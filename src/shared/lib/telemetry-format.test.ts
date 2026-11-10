@@ -6,9 +6,17 @@ import {
   formatGear,
   formatPercent,
   formatLapTimeOrDash,
+  formatWidgetDistance,
 } from './telemetry-format';
 
 describe('telemetry-format', () => {
+  describe('formatWidgetDistance', () => {
+    it('prints whole meters or feet with the unit', () => {
+      expect(formatWidgetDistance(123.6, 'metric')).toBe('124 m');
+      expect(formatWidgetDistance(100, 'imperial')).toBe('328 ft');
+    });
+  });
+
   describe('formatSpeed', () => {
     it('formats metric speed correctly', () => {
       expect(formatSpeed(10, 'metric')).toBe('36');

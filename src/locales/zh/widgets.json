@@ -526,6 +526,8 @@
       "showCountryFlagDesc": "在车手姓名前显示其资料中的国家旗帜。",
       "showDriverFlags": "车手旗帜",
       "showDriverFlagsDesc": "在车手姓名旁显示激活的警告旗帜。",
+      "showDistance": "距离",
+      "showDistanceDesc": "在差距之后显示沿赛道到每辆车的距离——按单位制设置以米或英尺显示。",
       "useLivePositions": "使用实时名次",
       "useLivePositionsDesc": "按赛道上的位置排名，每帧重算。关闭时使用模拟器的官方名次，仅在通过起终点线时更新。行排序始终按赛道上的间隔。",
       "showCarNumber": "赛车号码",

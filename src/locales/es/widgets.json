@@ -526,6 +526,8 @@
       "showCountryFlagDesc": "Muestra la bandera del país del perfil del piloto antes del nombre.",
       "showDriverFlags": "Banderas del piloto",
       "showDriverFlagsDesc": "Muestra las banderas de aviso activas junto al nombre del piloto.",
+      "showDistance": "Distancia",
+      "showDistanceDesc": "Distancia por la pista hasta cada coche, tras la diferencia — en metros o pies, según el sistema de unidades.",
       "useLivePositions": "Usar posiciones en vivo",
       "useLivePositionsDesc": "Ordena por la posición en pista, recalculada en cada tick. Desactivado: el número oficial del simulador, que solo se actualiza cuando un coche cruza la meta. El orden de las filas siempre sigue la diferencia en pista.",
       "showCarNumber": "Número del Coche",
