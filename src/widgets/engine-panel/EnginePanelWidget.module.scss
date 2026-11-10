@@ -180,7 +180,8 @@ $strip-marker: 3px;
   color: $table-empty-text;
 }
 
-// No oil pressure, no voltage: the engine is not running.
+// A figure past its line — a temperature over the limit, no oil pressure or no
+// voltage with the engine dead — turns red; the cell around it stays quiet.
 .valueDanger {
   color: $chip-danger;
 }
@@ -193,22 +194,6 @@ $strip-marker: 3px;
   --chip-solid-padding-x: #{sp(xs)};
   --chip-lead-weight: 800;
   --chip-solid-weight: 800;
-}
-
-// A temperature over the line: the one alarm that fills its cell. Static, not a
-// pulse — an always-on-top overlay should not keep the compositor awake for a
-// warning that reads just as well held still.
-.overLimit {
-  background-color: rgba($chip-danger, 0.28);
-  box-shadow: inset 0 0 0 1px rgba($chip-danger, 0.7);
-
-  .label {
-    color: $chip-danger-soft;
-  }
-
-  .value {
-    color: $widget-text-primary;
-  }
 }
 
 // A knob just moved: the cell lights in its strip's tone, under the figure, so

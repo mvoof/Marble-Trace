@@ -90,28 +90,49 @@ const TemperaturesCell = observer(
     const oilTemp = carStatus?.oil_temp ?? null;
     const waterTemp = carStatus?.water_temp ?? null;
 
-    const overLimit =
-      (showOil && oilTemp !== null && oilTemp >= OIL_TEMP_LIMIT_C) ||
-      (showWater && waterTemp !== null && waterTemp >= WATER_TEMP_LIMIT_C);
-
     const label = showOil && showWater ? 'OIL / W' : showOil ? 'OIL' : 'WATER';
 
-    const text = [
-      showOil ? formatTempInt(oilTemp, system) : null,
-      showWater ? formatTempInt(waterTemp, system) : null,
-    ]
-      .filter((part) => part !== null)
-      .join('/');
+    // Each temperature turns red on its own: the one over its line is the one
+    // the driver has to act on.
+    const temperatureClass = (
+      celsius: number | null,
+      limit: number
+    ): string => {
+      if (celsius === null) {
+        return styles.valueEmpty;
+      }
 
-    const empty =
-      (!showOil || oilTemp === null) && (!showWater || waterTemp === null);
+      return celsius >= limit ? styles.valueDanger : '';
+    };
+
+    const parts = [
+      showOil
+        ? {
+            key: 'oil',
+            text: formatTempInt(oilTemp, system),
+            className: temperatureClass(oilTemp, OIL_TEMP_LIMIT_C),
+          }
+        : null,
+      showWater
+        ? {
+            key: 'water',
+            text: formatTempInt(waterTemp, system),
+            className: temperatureClass(waterTemp, WATER_TEMP_LIMIT_C),
+          }
+        : null,
+    ].filter((part) => part !== null);
 
     return (
-      <EngineCell label={label} className={overLimit ? styles.overLimit : ''}>
+      <EngineCell label={label}>
         <WidgetValue
-          value={<FixedDigits text={text} />}
+          value={parts.map((part, partIndex) => (
+            <span className={part.className} key={part.key}>
+              {partIndex > 0 ? '/' : null}
+              <FixedDigits text={part.text} />
+            </span>
+          ))}
           unit="°"
-          className={`${styles.value} ${empty ? styles.valueEmpty : ''}`}
+          className={styles.value}
         />
       </EngineCell>
     );
