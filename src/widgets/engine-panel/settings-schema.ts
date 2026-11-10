@@ -5,7 +5,7 @@ import {
   type SettingsOf,
 } from '@shared/lib/widget-settings-dsl';
 
-export const HORIZONTAL_ROWS = ['auto', 1, 2, 3] as const;
+export const HORIZONTAL_ROWS = ['auto', 2, 3] as const;
 export type HorizontalRows = (typeof HORIZONTAL_ROWS)[number];
 
 export const ENGINE_PANEL_SETTINGS = defineSettings('enginePanel', {
@@ -47,8 +47,8 @@ export const ENGINE_PANEL_SETTINGS = defineSettings('enginePanel', {
    */
   horizontal: bool(true),
   /**
-   * How many rows the horizontal layout splits the systems into. `auto` keeps
-   * one row while it fits and balances the systems across two otherwise.
+   * How many rows the horizontal layout splits the systems into. `auto` takes
+   * two, or three once two would run long.
    */
   horizontalRows: choice(HORIZONTAL_ROWS, 'auto'),
 });

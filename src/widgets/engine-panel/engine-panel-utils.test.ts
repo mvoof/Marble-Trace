@@ -4,6 +4,7 @@ import { ENGINE_PANEL_MANIFEST } from './manifest';
 import {
   CELL_SLOTS,
   UNIT_WIDTH,
+  VERTICAL_UNIT_WIDTH,
   enabledCellSlots,
   formatAdjustment,
   panelHeight,
@@ -38,7 +39,7 @@ describe('planGroupSlots', () => {
     const slots = planGroupSlots(slotsOf('brake'));
 
     expect(slots).toEqual([
-      { kind: 'lead', ids: ['showBrakeBias'], units: 2 },
+      { kind: 'lead', ids: ['showBrakeBias'], units: 1 },
       {
         kind: 'stack',
         ids: ['showBrakeBiasFine', 'showPeakBrakeBias'],
@@ -116,14 +117,32 @@ describe('planEnginePanel', () => {
     ]);
   });
 
-  it('keeps brake bias, TC and ABS on one row on auto', () => {
+  it('splits brake bias, TC and ABS over two rows on auto', () => {
     const cells = CELL_SLOTS.filter((slot) =>
       ['showBrakeBias', 'showTc', 'abs'].includes(slot.id)
     );
 
     expect(groupsOf(planEnginePanel(cells, AUTO))).toEqual([
-      ['brake', 'traction'],
+      ['brake'],
+      ['traction'],
     ]);
+  });
+
+  it('draws every horizontal cell one column wide, the lead included', () => {
+    const units = planEnginePanel(CELL_SLOTS, AUTO)
+      .flat()
+      .flatMap((group) => group.slots.map((slot) => slot.units));
+
+    expect(new Set(units)).toEqual(new Set([1]));
+  });
+
+  it('takes a third row on auto once two would run long', () => {
+    const wide = [
+      ...CELL_SLOTS,
+      ...CELL_SLOTS.filter((slot) => slot.group === 'diff'),
+    ];
+
+    expect(planEnginePanel(wide, AUTO)).toHaveLength(3);
   });
 
   it('keeps the groups in their fixed order whatever the car leaves out', () => {
@@ -190,13 +209,15 @@ describe('design width', () => {
   });
 
   it('measures the widest row of the rows asked for', () => {
-    // [brake 4] [traction 7] [diff 3, chassis 2, engine 4]
-    expect(derive(settingsWith({ horizontalRows: 3 }))).toBe(9 * UNIT_WIDTH);
+    // [brake 3, traction 4] [diff 3, chassis 2] [engine 3]
+    expect(derive(settingsWith({ horizontalRows: 3 }))).toBe(7 * UNIT_WIDTH);
   });
 
   it('measures the widest tier when vertical', () => {
     // traction: TC 2, TC2 1, EB 1, ABS 2, MAP 2
-    expect(derive(settingsWith({ horizontal: false }))).toBe(8 * UNIT_WIDTH);
+    expect(derive(settingsWith({ horizontal: false }))).toBe(
+      8 * VERTICAL_UNIT_WIDTH
+    );
   });
 
   it('keeps the scale when a cell is turned off', () => {

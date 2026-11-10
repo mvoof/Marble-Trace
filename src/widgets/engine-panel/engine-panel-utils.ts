@@ -49,31 +49,37 @@ export const GROUP_ORDER: readonly CellGroup[] = [
 ];
 
 /**
- * Width units. A lead cell is two, a column of satellites one. A cell that
- * reads its label and value on one line — the vertical tiers with no lead —
- * takes two, and a wide one (the temperature pair) a step more.
+ * Width units. Every horizontal cell is one column — a lead is told by its
+ * larger figure, not a wider cell, so the columns of one row stand over the
+ * columns of the next. The vertical tiers are each a line of their own and
+ * align with nothing: there a lead takes two, a cell that reads its label and
+ * value on one line two, and the temperature pair three.
  */
-export const LEAD_UNITS = 2;
-export const SATELLITE_UNITS = 1;
-export const WIDE_UNITS = 2;
+export const COLUMN_UNITS = 1;
+export const VERTICAL_LEAD_UNITS = 2;
 export const INLINE_UNITS = 2;
 export const WIDE_INLINE_UNITS = 3;
 
 /** At most two satellites share one stacked column. */
 export const MAX_STACK = 2;
 
-/** Design px per width unit: one satellite column. */
-export const UNIT_WIDTH = 62.5;
+/**
+ * Design px per width unit. A horizontal column is wide enough for a lead's
+ * figure and the temperature pair; a vertical unit is narrower, since its
+ * cells span two or three.
+ */
+export const UNIT_WIDTH = 72;
+export const VERTICAL_UNIT_WIDTH = 62.5;
+
+/** The width of one unit, in the given orientation. */
+export const unitWidth = (horizontal: boolean): number =>
+  horizontal ? UNIT_WIDTH : VERTICAL_UNIT_WIDTH;
 
 /**
- * In `auto`, a row holds up to this many units before the systems are split
- * over two. A GT3's brake, traction and engine readings make one strip; a
- * formula car's five systems do not.
+ * In `auto`, the systems are split over two rows, or three once two would
+ * leave a row of more than this many columns.
  */
-export const AUTO_ROW_UNITS = 12;
-
-/** The most rows the horizontal layout splits into. */
-export const MAX_ROWS = 3;
+export const AUTO_ROW_UNITS = 8;
 
 /**
  * Row heights, in design px, the rules between rows included. The horizontal
@@ -424,18 +430,20 @@ export const planGroupSlots = (
       return cell.wide ? WIDE_INLINE_UNITS : INLINE_UNITS;
     }
 
-    return cell.wide ? WIDE_UNITS : SATELLITE_UNITS;
+    return COLUMN_UNITS;
   };
+
+  const leadUnits = horizontal ? COLUMN_UNITS : VERTICAL_LEAD_UNITS;
 
   for (const cell of cells) {
     if (cell.weight === 'lead') {
       leadSeen = true;
-      slots.push({ kind: 'lead', ids: [cell.id], units: LEAD_UNITS });
+      slots.push({ kind: 'lead', ids: [cell.id], units: leadUnits });
 
       continue;
     }
 
-    if (!horizontal || !hasLead || !leadSeen || cell.wide) {
+    if (!horizontal || !hasLead || !leadSeen) {
       slots.push({ kind: 'plain', ids: [cell.id], units: plainUnits(cell) });
 
       continue;
@@ -449,7 +457,7 @@ export const planGroupSlots = (
       continue;
     }
 
-    slots.push({ kind: 'stack', ids: [cell.id], units: SATELLITE_UNITS });
+    slots.push({ kind: 'stack', ids: [cell.id], units: COLUMN_UNITS });
   }
 
   return slots.map((slot) =>
@@ -467,10 +475,10 @@ const unitsOf = (groups: readonly PlannedGroup[]): number =>
  * Split the groups, in order, into `rowCount` rows as even in width as they
  * can be — never through the middle of a group.
  *
- * Even is the point: a row narrower than its neighbour is stretched to the
- * panel's width, and a lone brake bias above traction control and ABS came out
- * twice its size. The narrowest widest row wins; between equals, the earlier
- * rows take more, so the systems the hands move sit in the first row.
+ * Rows are not stretched to one width — a short row ends early, so its columns
+ * stay over the columns below — and an even split keeps that ragged edge
+ * short. The narrowest widest row wins; between equals, the earlier rows take
+ * more, so the systems the hands move sit in the first row.
  */
 export const splitGroups = (
   groups: readonly PlannedGroup[],
@@ -501,9 +509,15 @@ export const splitGroups = (
   return best;
 };
 
-/** The rows `auto` asks for: one while everything fits, then as few as hold it. */
-export const autoRowCount = (groups: readonly PlannedGroup[]): number =>
-  Math.min(MAX_ROWS, Math.max(1, Math.ceil(unitsOf(groups) / AUTO_ROW_UNITS)));
+/**
+ * The rows `auto` asks for: two, or three once two would leave a row longer
+ * than `AUTO_ROW_UNITS`. One long strip reads worse than a block at any count.
+ */
+export const autoRowCount = (groups: readonly PlannedGroup[]): number => {
+  const widestOfTwo = Math.max(0, ...splitGroups(groups, 2).map(unitsOf));
+
+  return widestOfTwo > AUTO_ROW_UNITS ? 3 : 2;
+};
 
 /** How the settings lay the panel out. */
 export interface PanelLayout {

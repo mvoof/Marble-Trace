@@ -15,6 +15,7 @@ import {
   planEnginePanel,
   renderCells,
   rowHasLead,
+  rowUnits,
   type AdjustmentKey,
   type CellId,
   type CellRender,
@@ -218,6 +219,8 @@ export const EnginePanelWidget = observer(() => {
     );
   }
 
+  const widestUnits = Math.max(1, ...rows.map(rowUnits));
+
   const rowClassOf = (hasLead: boolean): string => {
     if (layout.horizontal) {
       return hasLead ? styles.rowLead : styles.rowPlain;
@@ -239,7 +242,12 @@ export const EnginePanelWidget = observer(() => {
           key={rowIndex}
         >
           {row.map((group) => (
-            <GroupPlate group={group} nodes={nodes} key={group.group} />
+            <GroupPlate
+              group={group}
+              nodes={nodes}
+              widestUnits={layout.horizontal ? widestUnits : undefined}
+              key={group.group}
+            />
           ))}
         </div>
       ))}

@@ -116,7 +116,7 @@ const meta: Meta<StoryArgs> = {
       horizontalRows: 'auto',
     },
     argTypes: {
-      horizontalRows: { control: 'inline-radio', options: ['auto', 1, 2, 3] },
+      horizontalRows: { control: 'inline-radio', options: ['auto', 2, 3] },
     },
   }),
 };

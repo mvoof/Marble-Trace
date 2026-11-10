@@ -50,6 +50,7 @@ $group-marker: 2px;
   --group-tone: #{$chip-neutral-border};
 
   position: relative;
+  box-sizing: border-box;
   display: flex;
   flex: 1 1 0;
   min-width: 0;

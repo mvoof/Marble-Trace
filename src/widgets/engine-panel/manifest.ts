@@ -8,12 +8,12 @@ import {
 } from '@widgets/widget-manifest';
 import {
   CELL_SETTING_KEYS,
-  UNIT_WIDTH,
   enabledCellSlots,
   panelHeight,
   panelLayoutOf,
   planEnginePanel,
   rowUnits,
+  unitWidth,
 } from './engine-panel-utils';
 import { ENGINE_PANEL_SETTINGS } from './settings-schema';
 
@@ -33,7 +33,7 @@ const measure = (
   const widest = Math.max(1, ...rows.map(rowUnits));
 
   return {
-    width: widest * UNIT_WIDTH,
+    width: widest * unitWidth(layout.horizontal),
     height: panelHeight(rows, layout.horizontal),
     rows: Math.max(1, rows.length),
   };
@@ -134,7 +134,7 @@ export const ENGINE_PANEL_MANIFEST: WidgetManifest = {
     'Liquid temperatures, pressures, and every in-car adjustment the car exposes — ABS, traction control, brake bias, engine map, engine braking and the differential, grouped by system.',
   requiredCapabilities: ['playerDynamics'],
   autoHeight: true,
-  designWidth: 687.5,
+  designWidth: 576,
   designHeight: 92,
   resolveLayoutChange: resolveEnginePanelLayout,
   deriveDesignWidth: designWidthOf,
@@ -142,7 +142,7 @@ export const ENGINE_PANEL_MANIFEST: WidgetManifest = {
     enabled: false,
     x: 400,
     y: 400,
-    currentWidth: 687.5,
+    currentWidth: 576,
     currentHeight: 92,
     ...COMMON_WIDGET_DEFAULTS,
     ...PANEL_APPEARANCE_DEFAULTS,
