@@ -89,7 +89,10 @@
   --chip-value-text: #{$chip-info};
 }
 
-.cornerTime {
+// Quiet, as the speed gap over the chart is, and bold the same way: set past
+// the quiet look's own light weight, which a plain class would tie with.
+.groupEnd .cornerTime {
   --chip-lead-size: #{fs(xxxs)};
-  --chip-lead-weight: 800;
+  --chip-solid-weight: 800;
+  --chip-solid-padding-x: #{sp(xs)};
 }

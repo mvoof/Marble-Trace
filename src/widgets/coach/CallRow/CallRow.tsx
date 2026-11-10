@@ -19,6 +19,8 @@ import {
   useDrivingCoachWidgetStore,
 } from '@widgets/coach/coach-stores';
 
+import { SpeedGapChip } from './SpeedGapChip/SpeedGapChip';
+
 import styles from './CallRow.module.scss';
 import type { CoachWidgetSettings } from '../settings-schema';
 
@@ -200,6 +202,10 @@ export const CallRow = observer(() => {
     <div className={styles.root}>
       <div className={styles.row}>
         <div className={styles.callCell}>
+          {inactiveReason === null && settings.showSpeed ? (
+            <SpeedGapChip />
+          ) : null}
+
           <StatChip
             className={callClass}
             lead={callText}

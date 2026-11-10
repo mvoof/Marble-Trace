@@ -130,6 +130,7 @@ export const InfoRow = observer(() => {
           <StatChip
             className={styles.cornerTime}
             leadKind="number"
+            look="reading"
             tone={cornerTimeTone(cornerTimeS)}
             lead={
               cornerTimeS === null

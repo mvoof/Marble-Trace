@@ -17,26 +17,3 @@
   // attribute (backing-store size) and overflows the container.
   height: 100%;
 }
-
-// How far off the reference's speed this lap is here, over the chart's top
-// left corner.
-.speedGap {
-  position: absolute;
-  top: sp(xs);
-  left: sp(sm);
-  display: flex;
-  pointer-events: none;
-
-  // Set on the chip itself: its quiet look sets a light weight of its own,
-  // which a value inherited from here would lose to. The figure is the
-  // chart's one reading, so it is bold and a step up from a row's chip.
-  > span {
-    --chip-lead-size: #{fs(xs)};
-    --chip-solid-weight: 800;
-    --chip-solid-padding-x: #{sp(sm)};
-
-    justify-content: center;
-    // Wide enough for −00, so the chip holds its width as the gap changes.
-    min-width: ws(40);
-  }
-}
