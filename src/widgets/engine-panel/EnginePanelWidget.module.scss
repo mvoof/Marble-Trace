@@ -1,7 +1,8 @@
-// The panel is a table: rows ruled apart, a system's cells ruled into columns,
-// the systems told apart by a quiet marker in their tone. Values are white;
-// color is spent on a knob that just moved, an active ABS, and a temperature
-// over the line — the one call loud enough to fill its cell.
+// The panel is a table of strips, one per system, always in the same order:
+// brake, traction, the GTP and formula trim, the differential, the anti-roll
+// bars, the engine at the bottom. Values are white; color is spent on a knob
+// that just moved, an active ABS, and a temperature over the line — the one
+// call loud enough to fill its cell.
 .root {
   width: 100%;
   height: 100%;
@@ -10,164 +11,98 @@
   flex-direction: column;
 }
 
-// A row holds whole systems. Its height is fixed, rule included, so the panel
-// draws at the height the manifest measured — `autoHeight` sizes the frame from
-// this content.
-.row {
+// The strip's tone, quiet: a marker down its left edge and the ground a cell
+// lights in when its knob moves. Its height is fixed, rule included, so the
+// panel draws at the height the manifest measured — `autoHeight` sizes the
+// frame from this content.
+$strip-marker: 2px;
+
+.strip {
+  --strip-tone: #{$chip-neutral-border};
+
+  position: relative;
   display: flex;
   flex: 0 0 auto;
   box-sizing: border-box;
-  min-height: 0;
+  padding-left: $strip-marker;
   background: $table-row-bg;
-}
-
-.row + .row {
-  border-top: 1px solid $table-rule;
-}
-
-.rowLead {
-  height: ws(52);
-}
-
-.rowPlain {
-  height: ws(40);
-}
-
-.tierLead {
-  height: ws(38);
-}
-
-.tierPlain {
-  height: ws(30);
-}
-
-// The system's tone, quiet: a marker at the plate's edge and the ground a cell
-// lights in when its knob moves. The marker lies over the cells, so it takes
-// no room from them — across the top of a row's plate, down the side of a tier.
-$group-marker: 2px;
-
-.plate {
-  --group-tone: #{$chip-neutral-border};
-
-  position: relative;
-  box-sizing: border-box;
-  display: flex;
-  flex: 1 1 0;
-  min-width: 0;
 
   &::before {
     content: '';
     position: absolute;
-    z-index: 1;
-    background: color-mix(in srgb, var(--group-tone) 70%, transparent);
-    pointer-events: none;
-  }
-}
-
-.plate + .plate {
-  border-left: 1px solid $table-rule;
-}
-
-.horizontal .plate::before {
-  inset: 0 0 auto;
-  height: $group-marker;
-}
-
-.vertical .plate {
-  padding-left: $group-marker;
-
-  &::before {
     inset: 0 auto 0 0;
-    width: $group-marker;
+    width: $strip-marker;
+    background: color-mix(in srgb, var(--strip-tone) 70%, transparent);
   }
 }
 
-.plateBrake {
-  --group-tone: #{$chip-positive};
+.strip + .strip {
+  border-top: 1px solid $table-rule;
 }
 
-.plateTraction {
-  --group-tone: #{$chip-accent};
+.stripLead {
+  height: ws(38);
 }
 
-.plateDiff {
-  --group-tone: #{$chip-info};
+.stripPlain {
+  height: ws(30);
 }
 
-.plateChassis {
-  --group-tone: #{$race-lilac};
+.stripBrake {
+  --strip-tone: #{$chip-positive};
 }
 
-.plateEngine {
-  --group-tone: #{$chip-text-muted};
+.stripTraction {
+  --strip-tone: #{$chip-accent};
 }
 
-.slot,
-.stack {
+.stripTrim {
+  --strip-tone: #{$chip-text-muted};
+}
+
+.stripDiff {
+  --strip-tone: #{$chip-info};
+}
+
+.stripChassis {
+  --strip-tone: #{$race-lilac};
+}
+
+.stripEngine {
+  --strip-tone: #{$chip-neutral-border};
+}
+
+.slot {
   display: flex;
   flex: 1 1 0;
   min-width: 0;
 }
 
-.stack {
-  flex-direction: column;
-  background: $table-row-bg-alt;
-}
-
-.stackItem {
-  display: flex;
-  flex: 1 1 0;
-  min-height: 0;
-}
-
-// Hairlines stay inside a plate, between the cells of one system.
-.slot + .slot,
-.slot + .stack,
-.stack + .slot,
-.stack + .stack {
+// Hairlines stay inside a strip, between the cells of one system.
+.slot + .slot {
   border-left: 1px solid $table-row-rule;
 }
 
-.stackItem + .stackItem {
-  border-top: 1px solid $table-row-rule;
-}
-
-// Label over value, centred: every cell of a horizontal row, and the
-// satellites beside a lead in a vertical tier.
+// A label and its value on one line, the value at the far end.
 .cell {
   position: relative;
   flex: 1 1 auto;
   min-width: 0;
   display: flex;
-  flex-direction: column;
   align-items: center;
-  justify-content: center;
-  gap: sp(xxxs);
-  padding: sp(xxs) sp(xxs);
-  text-align: center;
-}
-
-// Label and value on one line, the value at the far end — a vertical tier.
-.inline {
-  flex-direction: row;
   justify-content: space-between;
   gap: sp(xs);
   padding: 0 sp(sm);
 }
 
-.satellite {
-  gap: 0;
-  padding: sp(xxxs) sp(xxs);
-}
-
-// One label size across the panel: the plate and the value size already say
-// what a cell is.
 // Above the change light, which is positioned and would otherwise paint over.
 .label,
 .cellValues {
   position: relative;
 }
 
+// One label size across the panel: the strip and the value size already say
+// what a cell is.
 .label {
   font-family: $font-widget;
   font-size: wfs(9);
@@ -180,14 +115,9 @@ $group-marker: 2px;
   white-space: nowrap;
 }
 
-.satellite .label {
-  font-size: wfs(8);
-}
-
 .cellValues {
   display: flex;
   align-items: center;
-  justify-content: center;
   min-width: 0;
 }
 
@@ -211,10 +141,6 @@ $group-marker: 2px;
   font-size: fs(lg);
 }
 
-.satellite .value {
-  font-size: wfs(10);
-}
-
 .valueEmpty {
   color: $table-empty-text;
 }
@@ -235,13 +161,13 @@ $group-marker: 2px;
   }
 }
 
-// A knob just moved: the cell lights in its system's tone, under the figure,
-// so the number the driver is reading keeps its color. No animation — the
-// store holds the light for a trailing second after the last click.
+// A knob just moved: the cell lights in its strip's tone, under the figure, so
+// the number the driver is reading keeps its color. No animation — the store
+// holds the light for a trailing second after the last click.
 .changeFlash {
   position: absolute;
   inset: 0;
-  background: color-mix(in srgb, var(--group-tone) 22%, transparent);
+  background: color-mix(in srgb, var(--strip-tone) 22%, transparent);
   pointer-events: none;
 }
 

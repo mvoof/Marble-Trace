@@ -9,14 +9,13 @@ import {
   ADJUSTMENT_SPECS,
   formatAdjustment,
   type AdjustmentKey,
-  type CellRender,
 } from './engine-panel-utils';
 import styles from './EnginePanelWidget.module.scss';
 import type { EnginePanelWidgetSettings } from './settings-schema';
 
 export interface AdjustmentCellProps {
   cellId: AdjustmentKey;
-  render: CellRender;
+  lead: boolean;
 }
 
 /**
@@ -30,7 +29,7 @@ export interface AdjustmentCellProps {
  * which the group sets.
  */
 export const AdjustmentCell = observer(
-  ({ cellId, render }: AdjustmentCellProps) => {
+  ({ cellId, lead }: AdjustmentCellProps) => {
     const { carStatus } = usePlayerStore();
     const enginePanel = useEnginePanelWidgetStore();
     const settings =
@@ -44,7 +43,7 @@ export const AdjustmentCell = observer(
     return (
       <EngineCell
         label={spec.label}
-        render={render}
+        lead={lead}
         lit={
           settings.highlightChanges !== false &&
           enginePanel.isChanged(spec.field)

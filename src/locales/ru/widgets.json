@@ -212,13 +212,6 @@
     },
     "enginePanel": {
       "moduleParameters": "Параметры модуля",
-      "horizontal": "Горизонтальное расположение",
-      "horizontalDesc": "Системы рядом, рядами. Выкл.: по ярусу на систему, друг под другом.",
-      "horizontalRows": "Ряды",
-      "horizontalRowsDesc": "Авто — два ряда, или три, если в двух выходит слишком длинно.",
-      "horizontalRows_auto": "Авто",
-      "horizontalRows_2": "2",
-      "horizontalRows_3": "3",
       "showOilTemp": "Температура масла",
       "showOilTempDesc": "Показать температуру масла двигателя.",
       "showWaterTemp": "Температура воды",

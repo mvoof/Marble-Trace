@@ -9,7 +9,6 @@ import {
 import { mockCarInputs } from '@features/preview/mocks/inputs';
 import { whenSet } from '@/storybook/story-overrides';
 import { EnginePanelWidget } from './EnginePanelWidget';
-import type { HorizontalRows } from './settings-schema';
 import {
   defineWidgetStories,
   previewScenario,
@@ -41,8 +40,6 @@ interface StoryArgs {
   showTc: boolean;
   showBrakeBias: boolean;
   showEngineMap: boolean;
-  horizontal: boolean;
-  horizontalRows: HorizontalRows;
 }
 
 const meta: Meta<StoryArgs> = {
@@ -50,7 +47,7 @@ const meta: Meta<StoryArgs> = {
   ...defineWidgetStories<StoryArgs>({
     widget: EnginePanelWidget,
     // No height: the panel is autoHeight and sizes itself from its rows.
-    size: { width: 480 },
+    size: { width: 332 },
     seedSnapshot: true,
     seed: (store, args, scenarioId) => {
       store.units.setSystem(args.system);
@@ -92,8 +89,6 @@ const meta: Meta<StoryArgs> = {
         showDiffMiddle: true,
         showDiffExit: true,
         highlightChanges: true,
-        horizontal: args.horizontal,
-        horizontalRows: args.horizontalRows,
       });
     },
     args: {
@@ -112,11 +107,6 @@ const meta: Meta<StoryArgs> = {
       showTc: true,
       showBrakeBias: true,
       showEngineMap: true,
-      horizontal: true,
-      horizontalRows: 'auto',
-    },
-    argTypes: {
-      horizontalRows: { control: 'inline-radio', options: ['auto', 2, 3] },
     },
   }),
 };
@@ -167,10 +157,7 @@ export const MinimalLayout: Story = {
   },
 };
 
-/**
- * Brake bias, traction control and ABS alone: one strip, not a lone bias
- * stretched over the two below it.
- */
+/** Brake bias, traction control and ABS alone. */
 export const BiasTcAbs: Story = {
   args: {
     showOilTemp: false,
@@ -181,25 +168,14 @@ export const BiasTcAbs: Story = {
   },
 };
 
-/** Variant A: one tier per system. */
-export const Vertical: Story = {
-  args: {
-    horizontal: false,
-  },
-  parameters: { widgetFrame: { width: 300 } },
+export const Gt3Car: Story = {
+  parameters: previewScenario('engine-gt3-car'),
 };
 
-export const VerticalFormulaCar: Story = {
-  args: {
-    car: 'formula',
-    horizontal: false,
-  },
-  parameters: { widgetFrame: { width: 360 } },
+export const GtpCar: Story = {
+  parameters: previewScenario('engine-gtp-car'),
 };
 
-export const FormulaCarThreeRows: Story = {
-  args: {
-    car: 'formula',
-    horizontalRows: 3,
-  },
+export const FormulaCarScenario: Story = {
+  parameters: previewScenario('engine-formula-car'),
 };

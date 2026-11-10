@@ -1,12 +1,8 @@
 import {
   bool,
-  choice,
   defineSettings,
   type SettingsOf,
 } from '@shared/lib/widget-settings-dsl';
-
-export const HORIZONTAL_ROWS = ['auto', 2, 3] as const;
-export type HorizontalRows = (typeof HORIZONTAL_ROWS)[number];
 
 export const ENGINE_PANEL_SETTINGS = defineSettings('enginePanel', {
   showOilTemp: bool(true),
@@ -37,20 +33,10 @@ export const ENGINE_PANEL_SETTINGS = defineSettings('enginePanel', {
    */
   showBrakeMisc: bool(true),
   /**
-   * Flash a cell's background when the driver moves that adjustment. The brake
-   * cells flash green and the differential cells blue, so the colour says which
-   * system moved before the label is read.
+   * Light a cell when the driver moves that adjustment, in its strip's tone,
+   * so the colour says which system moved before the label is read.
    */
   highlightChanges: bool(true),
-  /**
-   * Systems side by side in rows; off, one tier per system, stacked.
-   */
-  horizontal: bool(true),
-  /**
-   * How many rows the horizontal layout splits the systems into. `auto` takes
-   * two, or three once two would run long.
-   */
-  horizontalRows: choice(HORIZONTAL_ROWS, 'auto'),
 });
 
 export type EnginePanelWidgetSettings = SettingsOf<

@@ -5,19 +5,18 @@ import { EngineCell } from './EngineCell';
 import { usePlayerStore } from '@entities/player/player-context';
 import { useEnginePanelWidgetStore } from '@widgets/engine-panel/engine-panel.store';
 import { useWidgetSettings } from '@entities/layout/useWidgetSettings';
-import type { CellRender } from './engine-panel-utils';
 import styles from './EnginePanelWidget.module.scss';
 import type { EnginePanelWidgetSettings } from './settings-schema';
 
 export interface AbsCellProps {
-  render: CellRender;
+  lead: boolean;
 }
 
 // Separate from the root on purpose: the ABS light lives in the 60 Hz carInputs
 // frame, and reading it in EnginePanelWidget would re-render every cell at
 // physics rate. It is read through `isAbsActive`, which is the light itself
 // rather than the frame carrying it, so a burst of inputs wakes nothing here.
-export const AbsCell = observer(({ render }: AbsCellProps) => {
+export const AbsCell = observer(({ lead }: AbsCellProps) => {
   const { carStatus, isAbsActive } = usePlayerStore();
   const enginePanel = useEnginePanelWidgetStore();
   const settings = useWidgetSettings<EnginePanelWidgetSettings>('engine-panel');
@@ -29,7 +28,7 @@ export const AbsCell = observer(({ render }: AbsCellProps) => {
   return (
     <EngineCell
       label="ABS"
-      render={render}
+      lead={lead}
       lit={
         settings.highlightChanges !== false && enginePanel.isChanged('dc_abs')
       }

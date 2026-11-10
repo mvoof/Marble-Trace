@@ -1,45 +1,27 @@
 import { type ReactNode } from 'react';
 import { observer } from 'mobx-react-lite';
-import type { CellRender, CellRenderWeight } from './engine-panel-utils';
 import styles from './EnginePanelWidget.module.scss';
 
 export interface EngineCellProps {
   label: string;
-  /**
-   * How the cell is drawn: its weight — `lead` large, `plain` at reading size,
-   * `satellite` small because it stands two to a column beside a lead — and
-   * whether the label and the value share one line. It is the slot the cell
-   * landed in, not what its spec asked for.
-   */
-  render?: CellRender;
-  /** A knob just moved: the cell lights in its system's tone. */
+  /** Drawn at the larger size: what the hands move mid-corner. */
+  lead?: boolean;
+  /** A knob just moved: the cell lights in its strip's tone. */
   lit?: boolean;
   className?: string;
   children: ReactNode;
 }
 
-const WEIGHT_CLASS: Record<CellRenderWeight, string> = {
-  lead: styles.lead,
-  plain: styles.plain,
-  satellite: styles.satellite,
-};
-
-const DEFAULT_RENDER: CellRender = { weight: 'plain', inline: false };
-
+/** A label and its value on one line, the value at the far end. */
 export const EngineCell = observer(
   ({
     label,
-    render = DEFAULT_RENDER,
+    lead = false,
     lit = false,
     className = '',
     children,
   }: EngineCellProps) => {
-    const classes = [
-      styles.cell,
-      WEIGHT_CLASS[render.weight],
-      render.inline ? styles.inline : '',
-      className,
-    ]
+    const classes = [styles.cell, lead ? styles.lead : '', className]
       .filter(Boolean)
       .join(' ');
 

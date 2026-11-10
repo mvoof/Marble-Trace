@@ -212,13 +212,6 @@
     },
     "enginePanel": {
       "moduleParameters": "Module Parameters",
-      "horizontal": "Horizontal Layout",
-      "horizontalDesc": "Systems side by side in rows. Off: one tier per system, stacked.",
-      "horizontalRows": "Rows",
-      "horizontalRowsDesc": "Auto takes two rows, or three once two would run long.",
-      "horizontalRows_auto": "Auto",
-      "horizontalRows_2": "2",
-      "horizontalRows_3": "3",
       "showOilTemp": "Oil Temperature",
       "showOilTempDesc": "Show engine oil temperature.",
       "showWaterTemp": "Water Temperature",

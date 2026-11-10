@@ -212,13 +212,6 @@
     },
     "enginePanel": {
       "moduleParameters": "模块参数",
-      "horizontal": "水平布局",
-      "horizontalDesc": "各系统按行并排。关闭：每个系统一层，上下堆叠。",
-      "horizontalRows": "行数",
-      "horizontalRowsDesc": "自动：两行；两行过长时用三行。",
-      "horizontalRows_auto": "自动",
-      "horizontalRows_2": "2",
-      "horizontalRows_3": "3",
       "showOilTemp": "机油温度",
       "showOilTempDesc": "显示发动机机油温度。",
       "showWaterTemp": "水温",

@@ -212,13 +212,6 @@
     },
     "enginePanel": {
       "moduleParameters": "Parámetros del módulo",
-      "horizontal": "Disposición horizontal",
-      "horizontalDesc": "Sistemas lado a lado en filas. Desactivado: un nivel por sistema, apilados.",
-      "horizontalRows": "Filas",
-      "horizontalRowsDesc": "Auto usa dos filas, o tres si con dos quedan demasiado largas.",
-      "horizontalRows_auto": "Auto",
-      "horizontalRows_2": "2",
-      "horizontalRows_3": "3",
       "showOilTemp": "Temperatura del aceite",
       "showOilTempDesc": "Muestra la temperatura del aceite del motor.",
       "showWaterTemp": "Temperatura del agua",

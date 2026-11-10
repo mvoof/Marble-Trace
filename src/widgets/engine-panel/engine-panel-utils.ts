@@ -1,9 +1,5 @@
 import type { CarStatusFrame } from '@shared/contracts/generated/bindings';
-import {
-  HORIZONTAL_ROWS,
-  type EnginePanelWidgetSettings,
-  type HorizontalRows,
-} from './settings-schema';
+import type { EnginePanelWidgetSettings } from './settings-schema';
 
 /** How a value is turned into the string the cell draws. */
 type CellFormat =
@@ -14,111 +10,47 @@ type CellFormat =
   | 'signedTwoDecimal';
 
 /**
- * Which system a cell belongs to.
+ * The strip a cell sits on. The panel is one fixed stack of strips, so a value
+ * is found in the same place in every car:
  *
- * The group is what carries the layout: cells of one group sit together in one
- * plate, and the plates are separated by a gap rather than by a hairline. A gap
- * is what the eye reads as a break — fifteen cells behind identical dividers
- * read as one run, which is why a value took so long to find.
+ * - `brake` — the bias and the spare brake rotary (the GTP's migration);
+ * - `traction` — traction control, ABS and the engine map: what a GT3 and a GTP
+ *   both carry, so the strip reads the same in either;
+ * - `trim` — what only the GTP and the formula cars expose on top of that: the
+ *   second traction channel, engine braking, the peak and fine bias;
+ * - `diff` — the formula cars' three differentials;
+ * - `chassis` — the GTP's anti-roll bars;
+ * - `engine` — the liquids and the battery, always at the bottom.
  *
- * The group's colour is a two-pixel edge on top of the plate, nothing more. It
- * confirms a boundary the gap already drew; it never carries the meaning on its
- * own. An overlay lies over a moving track, and the saturated colours are
- * already spoken for — blue is traction control, amber an active ABS, red a
- * temperature over the line.
+ * A car without a strip's controls simply has no strip; the others keep their
+ * order. The strip's tone is a marker at its edge and the color a cell lights
+ * in when its knob moves, never the values'.
  */
-export type CellGroup = 'brake' | 'traction' | 'diff' | 'chassis' | 'engine';
+export type CellGroup =
+  | 'brake'
+  | 'traction'
+  | 'trim'
+  | 'diff'
+  | 'chassis'
+  | 'engine';
 
-/**
- * How much of the group's width and type size a cell gets.
- *
- * `lead` is what the hands move mid-corner and the eye picks up without
- * reading: brake bias, traction control, ABS, engine map. `satellite` is the
- * trim beside it — the fine bias, the peak, the second traction channel — still
- * on screen, but not competing for the glance.
- */
-export type CellWeight = 'lead' | 'satellite';
-
-/** The order the groups are always drawn in, whatever the car publishes. */
+/** The order the strips are always drawn in, top to bottom. */
 export const GROUP_ORDER: readonly CellGroup[] = [
   'brake',
   'traction',
+  'trim',
   'diff',
   'chassis',
   'engine',
 ];
 
 /**
- * Width units. Every horizontal cell is one column — a lead is told by its
- * larger figure, not a wider cell, so the columns of one row stand over the
- * columns of the next. The vertical tiers are each a line of their own and
- * align with nothing: there a lead takes two, a cell that reads its label and
- * value on one line two, and the temperature pair three.
+ * Strip heights, in design px, the rule between strips included. A strip
+ * carrying a lead — brake bias, traction control, ABS, the map — holds its
+ * larger figure; the rest read at the base size.
  */
-export const COLUMN_UNITS = 1;
-export const VERTICAL_LEAD_UNITS = 2;
-export const INLINE_UNITS = 2;
-export const WIDE_INLINE_UNITS = 3;
-
-/** At most two satellites share one stacked column. */
-export const MAX_STACK = 2;
-
-/**
- * Design px per width unit. A horizontal column is wide enough for a lead's
- * figure and the temperature pair; a vertical unit is narrower, since its
- * cells span two or three.
- */
-export const UNIT_WIDTH = 72;
-export const VERTICAL_UNIT_WIDTH = 62.5;
-
-/** The width of one unit, in the given orientation. */
-export const unitWidth = (horizontal: boolean): number =>
-  horizontal ? UNIT_WIDTH : VERTICAL_UNIT_WIDTH;
-
-/**
- * In `auto`, the systems are split over two rows, or three once two would
- * leave a row of more than this many columns.
- */
-export const AUTO_ROW_UNITS = 8;
-
-/**
- * Row heights, in design px, the rules between rows included. The horizontal
- * rows set the label over the value; a row with a lead holds its larger figure
- * or two satellites one above the other. The vertical tiers read in one line,
- * except beside a lead, where the satellites stand label over value.
- */
-export const ROW_HEIGHT_LEAD = 52;
-export const ROW_HEIGHT_PLAIN = 40;
-export const TIER_HEIGHT_LEAD = 38;
-export const TIER_HEIGHT_PLAIN = 30;
-
-/** Whether a row or tier carries a lead cell. */
-export const rowHasLead = (row: readonly PlannedGroup[]): boolean =>
-  row.some((group) => group.hasLead);
-
-/** One row's height in design px, in the given orientation. */
-export const rowHeight = (
-  row: readonly PlannedGroup[],
-  horizontal: boolean
-): number => {
-  if (horizontal) {
-    return rowHasLead(row) ? ROW_HEIGHT_LEAD : ROW_HEIGHT_PLAIN;
-  }
-
-  return rowHasLead(row) ? TIER_HEIGHT_LEAD : TIER_HEIGHT_PLAIN;
-};
-
-/** The height the panel draws at. */
-export const panelHeight = (
-  rows: readonly PlannedGroup[][],
-  horizontal: boolean
-): number => {
-  if (rows.length === 0) {
-    return horizontal ? ROW_HEIGHT_PLAIN : TIER_HEIGHT_PLAIN;
-  }
-
-  return rows.reduce((total, row) => total + rowHeight(row, horizontal), 0);
-};
+export const STRIP_HEIGHT_LEAD = 38;
+export const STRIP_HEIGHT_PLAIN = 30;
 
 /**
  * An in-car adjustment cell: one field, one label, one format.
@@ -135,9 +67,9 @@ export interface AdjustmentCellSpec {
 }
 
 /**
- * Labels are short because the plate already says the rest. Three cells reading
+ * Labels are short because the strip already says the rest. Three cells reading
  * `DIFF ENTRY`, `DIFF MID` and `DIFF HISPD` spend the whole cell width on a word
- * stated once — the first cell of the differential plate carries `DIFF`, the
+ * stated once — the first cell of the differential strip carries `DIFF`, the
  * other two are `MID` and `HSP`.
  *
  * `HSP` is high speed, which is what the formula cars call this differential in
@@ -225,8 +157,7 @@ export type AdjustmentKey = keyof typeof ADJUSTMENT_SPECS;
 /**
  * The cells that are not a plain adjustment read: ABS has its own component
  * because its light lives in the 60 Hz frame, and the two temperatures share
- * one cell — they are read together and they move slowly, so two plates for
- * them were two plates the eye had to cross.
+ * one cell — they are read together and they move slowly.
  */
 export type SpecialCellId = 'abs' | 'temps' | 'oilPress' | 'voltage';
 
@@ -238,16 +169,19 @@ export type CellId = AdjustmentKey | SpecialCellId;
  * One ordered list is the point. The widget walks it to place the nodes it
  * built, and the manifest's resolver walks it to size the widget from the
  * settings alone — so the shape the resolver measures is the shape the widget
- * renders. It is also what makes the panel findable across cars: the groups
- * keep their order whatever a car leaves out, so brake bias sits in the same
- * corner in a formula car and in a GT3.
+ * renders.
  */
 export interface CellSlot {
   id: CellId;
   group: CellGroup;
-  weight: CellWeight;
-  /** Its value runs longer than one column holds: the temperature pair. */
-  wide?: boolean;
+  /** Drawn at the larger size: what the hands move mid-corner. */
+  lead?: boolean;
+  /**
+   * The design px the cell needs with its label and value on one line. A strip
+   * shares its width in proportion to these, and the widest strip is the
+   * panel's width.
+   */
+  width: number;
   /** The cell is drawn while any of these is on. */
   settingKeys: readonly (keyof EnginePanelWidgetSettings)[];
 }
@@ -256,98 +190,107 @@ export const CELL_SLOTS: readonly CellSlot[] = [
   {
     id: 'showBrakeBias',
     group: 'brake',
-    weight: 'lead',
+    lead: true,
+    width: 110,
     settingKeys: ['showBrakeBias'],
-  },
-  {
-    id: 'showBrakeBiasFine',
-    group: 'brake',
-    weight: 'satellite',
-    settingKeys: ['showBrakeBiasFine'],
-  },
-  {
-    id: 'showPeakBrakeBias',
-    group: 'brake',
-    weight: 'satellite',
-    settingKeys: ['showPeakBrakeBias'],
   },
   {
     id: 'showBrakeMisc',
     group: 'brake',
-    weight: 'satellite',
+    width: 100,
     settingKeys: ['showBrakeMisc'],
   },
 
-  { id: 'showTc', group: 'traction', weight: 'lead', settingKeys: ['showTc'] },
   {
-    id: 'showTc2',
+    id: 'showTc',
     group: 'traction',
-    weight: 'satellite',
-    settingKeys: ['showTc2'],
+    lead: true,
+    width: 60,
+    settingKeys: ['showTc'],
   },
   {
-    id: 'showEngineBraking',
+    id: 'abs',
     group: 'traction',
-    weight: 'satellite',
-    settingKeys: ['showEngineBraking'],
+    lead: true,
+    width: 66,
+    settingKeys: ['showAbs'],
   },
-  { id: 'abs', group: 'traction', weight: 'lead', settingKeys: ['showAbs'] },
   {
     id: 'showEngineMap',
     group: 'traction',
-    weight: 'lead',
+    lead: true,
+    width: 66,
     settingKeys: ['showEngineMap'],
+  },
+
+  { id: 'showTc2', group: 'trim', width: 60, settingKeys: ['showTc2'] },
+  {
+    id: 'showEngineBraking',
+    group: 'trim',
+    width: 54,
+    settingKeys: ['showEngineBraking'],
+  },
+  {
+    id: 'showPeakBrakeBias',
+    group: 'trim',
+    width: 90,
+    settingKeys: ['showPeakBrakeBias'],
+  },
+  {
+    id: 'showBrakeBiasFine',
+    group: 'trim',
+    width: 90,
+    settingKeys: ['showBrakeBiasFine'],
   },
 
   {
     id: 'showDiffEntry',
     group: 'diff',
-    weight: 'satellite',
+    width: 84,
     settingKeys: ['showDiffEntry'],
   },
   {
     id: 'showDiffMiddle',
     group: 'diff',
-    weight: 'satellite',
+    width: 54,
     settingKeys: ['showDiffMiddle'],
   },
   {
     id: 'showDiffExit',
     group: 'diff',
-    weight: 'satellite',
+    width: 54,
     settingKeys: ['showDiffExit'],
   },
 
   {
     id: 'showAntiRollFront',
     group: 'chassis',
-    weight: 'satellite',
+    width: 60,
     settingKeys: ['showAntiRollFront'],
   },
   {
     id: 'showAntiRollRear',
     group: 'chassis',
-    weight: 'satellite',
+    width: 60,
     settingKeys: ['showAntiRollRear'],
   },
 
   {
     id: 'temps',
     group: 'engine',
-    weight: 'satellite',
-    wide: true,
+    width: 150,
     settingKeys: ['showOilTemp', 'showWaterTemp'],
   },
   {
     id: 'oilPress',
     group: 'engine',
-    weight: 'satellite',
+    width: 96,
     settingKeys: ['showOilPress'],
   },
   {
     id: 'voltage',
     group: 'engine',
-    weight: 'satellite',
+    width: 86,
     settingKeys: ['showVoltage'],
   },
 ];
@@ -383,249 +326,49 @@ export const formatAdjustment = (value: number, format: CellFormat): string => {
   return value.toFixed(decimals);
 };
 
-/**
- * A slot as it is drawn: one lead cell, one plain cell, or a column of up to
- * two satellites standing beside a lead.
- */
-export interface PlannedSlot {
-  kind: 'lead' | 'plain' | 'stack';
-  ids: CellId[];
-  units: number;
-}
-
-export interface PlannedGroup {
+/** One strip as it is drawn: its cells, in order, and the width they need. */
+export interface PlannedStrip {
   group: CellGroup;
-  slots: PlannedSlot[];
-  units: number;
+  cells: CellSlot[];
+  width: number;
   hasLead: boolean;
 }
 
-/**
- * Turn one group's cells into slots.
- *
- * A satellite only shrinks into a stacked column when it stands next to a lead
- * — that is what the size difference is for. A group of nothing but satellites
- * (the differential, the engine readings) has no lead to be secondary to, so
- * every cell is drawn plain and the group reads as an even row.
- *
- * A stack of one is not a stack. On a car with a second traction channel but no
- * engine braking, TC2 would otherwise stand alone at half the height of the
- * cell beside it, reading as a scrap of a column rather than a value — so a
- * column that ends up holding one cell is drawn plain, level with the rest.
- *
- * The vertical tiers stack nothing: a tier is one line of the panel, and two
- * satellites one above the other would make it two. A tier with no lead reads
- * each cell's label and value on one line, which takes the wider share.
- */
-export const planGroupSlots = (
-  cells: readonly CellSlot[],
-  horizontal = true
-): PlannedSlot[] => {
-  const hasLead = cells.some((cell) => cell.weight === 'lead');
-  const slots: PlannedSlot[] = [];
-  let leadSeen = false;
-
-  const plainUnits = (cell: CellSlot): number => {
-    if (!horizontal && !hasLead) {
-      return cell.wide ? WIDE_INLINE_UNITS : INLINE_UNITS;
-    }
-
-    return COLUMN_UNITS;
-  };
-
-  const leadUnits = horizontal ? COLUMN_UNITS : VERTICAL_LEAD_UNITS;
-
-  for (const cell of cells) {
-    if (cell.weight === 'lead') {
-      leadSeen = true;
-      slots.push({ kind: 'lead', ids: [cell.id], units: leadUnits });
-
-      continue;
-    }
-
-    if (!horizontal || !hasLead || !leadSeen) {
-      slots.push({ kind: 'plain', ids: [cell.id], units: plainUnits(cell) });
-
-      continue;
-    }
-
-    const last = slots[slots.length - 1];
-
-    if (last?.kind === 'stack' && last.ids.length < MAX_STACK) {
-      last.ids.push(cell.id);
-
-      continue;
-    }
-
-    slots.push({ kind: 'stack', ids: [cell.id], units: COLUMN_UNITS });
-  }
-
-  return slots.map((slot) =>
-    slot.kind === 'stack' && slot.ids.length === 1
-      ? { ...slot, kind: 'plain' as const }
-      : slot
-  );
-};
-
-/** The groups' total width, in units. */
-const unitsOf = (groups: readonly PlannedGroup[]): number =>
-  groups.reduce((total, group) => total + group.units, 0);
-
-/**
- * Split the groups, in order, into `rowCount` rows as even in width as they
- * can be — never through the middle of a group.
- *
- * Rows are not stretched to one width — a short row ends early, so its columns
- * stay over the columns below — and an even split keeps that ragged edge
- * short. The narrowest widest row wins; between equals, the earlier rows take
- * more, so the systems the hands move sit in the first row.
- */
-export const splitGroups = (
-  groups: readonly PlannedGroup[],
-  rowCount: number
-): PlannedGroup[][] => {
-  const count = Math.max(1, Math.min(rowCount, groups.length));
-
-  if (count === 1) {
-    return groups.length === 0 ? [] : [[...groups]];
-  }
-
-  let best: PlannedGroup[][] = [];
-  let bestWidest = Infinity;
-
-  // The first row takes `take` groups, the rest are split the same way. Five
-  // groups into three rows is a handful of tries.
-  for (let take = groups.length - count + 1; take >= 1; take -= 1) {
-    const head = groups.slice(0, take);
-    const tail = splitGroups(groups.slice(take), count - 1);
-    const widest = Math.max(unitsOf(head), ...tail.map(unitsOf));
-
-    if (widest < bestWidest) {
-      best = [head, ...tail];
-      bestWidest = widest;
-    }
-  }
-
-  return best;
-};
-
-/**
- * The rows `auto` asks for: two, or three once two would leave a row longer
- * than `AUTO_ROW_UNITS`. One long strip reads worse than a block at any count.
- */
-export const autoRowCount = (groups: readonly PlannedGroup[]): number => {
-  const widestOfTwo = Math.max(0, ...splitGroups(groups, 2).map(unitsOf));
-
-  return widestOfTwo > AUTO_ROW_UNITS ? 3 : 2;
-};
-
-/** How the settings lay the panel out. */
-export interface PanelLayout {
-  horizontal: boolean;
-  rows: HorizontalRows;
-}
-
-/** The layout a settings blob asks for, an unknown row count read as `auto`. */
-export const panelLayoutOf = (
-  settings: Partial<Record<keyof EnginePanelWidgetSettings, unknown>>
-): PanelLayout => {
-  const rows = HORIZONTAL_ROWS.find(
-    (option) => option === settings.horizontalRows
-  );
-
-  return {
-    horizontal: settings.horizontal !== false,
-    rows: rows ?? 'auto',
-  };
-};
-
-/**
- * The whole layout: the cells that are drawn, grouped in the fixed order,
- * sliced into slots and laid into rows — one tier per group when vertical,
- * balanced rows when horizontal.
- */
-export const planEnginePanel = (
-  cells: readonly CellSlot[],
-  layout: PanelLayout
-): PlannedGroup[][] => {
-  const groups: PlannedGroup[] = [];
-
-  for (const group of GROUP_ORDER) {
+/** The strips the drawn cells make, in the fixed order, empty ones left out. */
+export const planEnginePanel = (cells: readonly CellSlot[]): PlannedStrip[] =>
+  GROUP_ORDER.flatMap((group) => {
     const members = cells.filter((cell) => cell.group === group);
 
     if (members.length === 0) {
-      continue;
+      return [];
     }
 
-    const slots = planGroupSlots(members, layout.horizontal);
+    return [
+      {
+        group,
+        cells: members,
+        width: members.reduce((total, cell) => total + cell.width, 0),
+        hasLead: members.some((cell) => cell.lead === true),
+      },
+    ];
+  });
 
-    groups.push({
-      group,
-      slots,
-      units: slots.reduce((total, slot) => total + slot.units, 0),
-      hasLead: slots.some((slot) => slot.kind === 'lead'),
-    });
-  }
+/** One strip's height in design px. */
+export const stripHeight = (strip: PlannedStrip): number =>
+  strip.hasLead ? STRIP_HEIGHT_LEAD : STRIP_HEIGHT_PLAIN;
 
-  if (!layout.horizontal) {
-    return groups.map((group) => [group]);
-  }
+/** The height the panel draws at. */
+export const panelHeight = (strips: readonly PlannedStrip[]): number =>
+  strips.length === 0
+    ? STRIP_HEIGHT_PLAIN
+    : strips.reduce((total, strip) => total + stripHeight(strip), 0);
 
-  const rowCount = layout.rows === 'auto' ? autoRowCount(groups) : layout.rows;
+/** The narrowest the panel gets, so a lone cell is not a sliver. */
+export const STRIP_MIN_WIDTH = 160;
 
-  return splitGroups(groups, rowCount);
-};
-
-/**
- * How a cell is drawn, which is the slot it landed in rather than the weight it
- * asked for. A group with no lead has nobody to be secondary to, so its cells
- * are drawn `plain` at reading size — the satellite's small type is only for a
- * cell standing two-to-a-column beside a lead.
- */
-export type CellRenderWeight = 'lead' | 'plain' | 'satellite';
-
-const SLOT_RENDER_WEIGHT: Record<PlannedSlot['kind'], CellRenderWeight> = {
-  lead: 'lead',
-  plain: 'plain',
-  stack: 'satellite',
-};
-
-/**
- * How a cell is drawn: its weight, and whether its label and value share one
- * line. The vertical tiers read in one line — a lead beside its satellites,
- * and every cell of a tier with no lead; the satellites beside a lead stand
- * label over value, as every cell of the horizontal rows does.
- */
-export interface CellRender {
-  weight: CellRenderWeight;
-  inline: boolean;
-}
-
-/** What each drawn cell is rendered as, read off the finished plan. */
-export const renderCells = (
-  rows: readonly (readonly PlannedGroup[])[],
-  horizontal: boolean
-): Map<CellId, CellRender> => {
-  const renders = new Map<CellId, CellRender>();
-
-  for (const row of rows) {
-    for (const group of row) {
-      for (const slot of group.slots) {
-        const inline = !horizontal && (slot.kind === 'lead' || !group.hasLead);
-
-        for (const id of slot.ids) {
-          renders.set(id, { weight: SLOT_RENDER_WEIGHT[slot.kind], inline });
-        }
-      }
-    }
-  }
-
-  return renders;
-};
-
-/** A row's width in units — what the design width is measured from. */
-export const rowUnits = (row: readonly PlannedGroup[]): number =>
-  row.reduce((total, group) => total + group.units, 0);
+/** The width the panel draws at: its widest strip's. */
+export const panelWidth = (strips: readonly PlannedStrip[]): number =>
+  Math.max(STRIP_MIN_WIDTH, ...strips.map((strip) => strip.width));
 
 /** What a cell is called, for anything drawing the panel without telemetry. */
 export const CELL_LABELS: Record<CellId, string> = {

@@ -7,18 +7,13 @@ import { FixedDigits } from '@shared/ui/FixedDigits/FixedDigits';
 import { EngineCell } from './EngineCell';
 import { AbsCell } from './AbsCell';
 import { AdjustmentCell } from './AdjustmentCell';
-import { GroupPlate } from './GroupPlate';
+import { EngineStrip } from './EngineStrip';
 import {
   ADJUSTMENT_SPECS,
   CELL_SLOTS,
-  panelLayoutOf,
   planEnginePanel,
-  renderCells,
-  rowHasLead,
-  rowUnits,
   type AdjustmentKey,
   type CellId,
-  type CellRender,
   type CellSlot,
 } from './engine-panel-utils';
 import { usePlayerStore } from '@entities/player/player-context';
@@ -70,13 +65,11 @@ const TemperaturesCell = observer(
   ({
     carStatus,
     system,
-    render,
     showOil,
     showWater,
   }: {
     carStatus: CarStatusFrame | null | undefined;
     system: UnitSystem;
-    render: CellRender;
     showOil: boolean;
     showWater: boolean;
   }) => {
@@ -101,11 +94,7 @@ const TemperaturesCell = observer(
       (!showOil || oilTemp === null) && (!showWater || waterTemp === null);
 
     return (
-      <EngineCell
-        label={label}
-        render={render}
-        className={overLimit ? styles.overLimit : ''}
-      >
+      <EngineCell label={label} className={overLimit ? styles.overLimit : ''}>
         <WidgetValue
           value={<FixedDigits text={text} />}
           unit="°"
@@ -149,29 +138,19 @@ export const EnginePanelWidget = observer(() => {
 
   const drawn = CELL_SLOTS.filter(isDrawn);
 
-  // A horizontal panel balances the systems over its rows, a vertical one gives
-  // each its own tier; either way a system's cells are never found in two
-  // places.
-  const layout = panelLayoutOf(settings);
-  const rows = planEnginePanel(drawn, layout);
-
-  // A cell is drawn as the slot it landed in, which the plan knows and the
-  // spec does not: the differential's cells are satellites by weight, but with
-  // no lead in their plate they are drawn plain, at reading size.
-  const renders = renderCells(rows, layout.horizontal);
-  const fallbackRender: CellRender = { weight: 'plain', inline: false };
+  const strips = planEnginePanel(drawn);
 
   for (const slot of drawn) {
-    const render = renders.get(slot.id) ?? fallbackRender;
+    const lead = slot.lead === true;
 
     if (isAdjustmentId(slot.id)) {
-      nodes[slot.id] = <AdjustmentCell cellId={slot.id} render={render} />;
+      nodes[slot.id] = <AdjustmentCell cellId={slot.id} lead={lead} />;
 
       continue;
     }
 
     if (slot.id === 'abs') {
-      nodes.abs = <AbsCell render={render} />;
+      nodes.abs = <AbsCell lead={lead} />;
 
       continue;
     }
@@ -181,7 +160,6 @@ export const EnginePanelWidget = observer(() => {
         <TemperaturesCell
           carStatus={carStatus}
           system={system}
-          render={render}
           showOil={settings.showOilTemp !== false}
           showWater={settings.showWaterTemp !== false}
         />
@@ -192,7 +170,7 @@ export const EnginePanelWidget = observer(() => {
 
     if (slot.id === 'oilPress') {
       nodes.oilPress = (
-        <EngineCell label="OIL P" render={render}>
+        <EngineCell label="OIL P">
           <WidgetValue
             value={<FixedDigits text={oilPress.value} />}
             unit={oilPress.unit}
@@ -205,7 +183,7 @@ export const EnginePanelWidget = observer(() => {
     }
 
     nodes.voltage = (
-      <EngineCell label="VOLT" render={render}>
+      <EngineCell label="VOLT">
         <WidgetValue
           value={
             <FixedDigits
@@ -219,37 +197,15 @@ export const EnginePanelWidget = observer(() => {
     );
   }
 
-  const widestUnits = Math.max(1, ...rows.map(rowUnits));
-
-  const rowClassOf = (hasLead: boolean): string => {
-    if (layout.horizontal) {
-      return hasLead ? styles.rowLead : styles.rowPlain;
-    }
-
-    return hasLead ? styles.tierLead : styles.tierPlain;
-  };
-
   return (
     <WidgetPanel
       direction="column"
       gap={0}
       minWidth={0}
-      className={`${styles.root} ${layout.horizontal ? styles.horizontal : styles.vertical}`}
+      className={styles.root}
     >
-      {rows.map((row, rowIndex) => (
-        <div
-          className={`${styles.row} ${rowClassOf(rowHasLead(row))}`}
-          key={rowIndex}
-        >
-          {row.map((group) => (
-            <GroupPlate
-              group={group}
-              nodes={nodes}
-              widestUnits={layout.horizontal ? widestUnits : undefined}
-              key={group.group}
-            />
-          ))}
-        </div>
+      {strips.map((strip) => (
+        <EngineStrip strip={strip} nodes={nodes} key={strip.group} />
       ))}
     </WidgetPanel>
   );

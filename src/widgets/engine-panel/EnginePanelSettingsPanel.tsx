@@ -10,26 +10,26 @@ export const PANEL_WIDGET_IDS = ['engine-panel'];
 
 const { Row } = schemaRows(ENGINE_PANEL_SETTINGS);
 
-// In the order the panel lists them, which is not the order the cells draw in.
+// In the order the strips draw them, top to bottom.
 const CELL_TOGGLES = [
+  'showBrakeBias',
+  'showBrakeMisc',
+  'showTc',
+  'showAbs',
+  'showEngineMap',
+  'showTc2',
+  'showEngineBraking',
+  'showPeakBrakeBias',
+  'showBrakeBiasFine',
+  'showDiffEntry',
+  'showDiffMiddle',
+  'showDiffExit',
+  'showAntiRollFront',
+  'showAntiRollRear',
   'showOilTemp',
   'showWaterTemp',
   'showOilPress',
   'showVoltage',
-  'showAbs',
-  'showTc',
-  'showBrakeBias',
-  'showEngineMap',
-  'showTc2',
-  'showEngineBraking',
-  'showBrakeBiasFine',
-  'showPeakBrakeBias',
-  'showDiffEntry',
-  'showDiffMiddle',
-  'showAntiRollFront',
-  'showAntiRollRear',
-  'showBrakeMisc',
-  'showDiffExit',
 ] as const;
 
 export const EnginePanelSettingsPanel = observer(() => {
@@ -39,14 +39,6 @@ export const EnginePanelSettingsPanel = observer(() => {
     <Card title={t('settingsPanels.enginePanel.moduleParameters')}>
       <div className={styles.fieldGroup}>
         <Row setting="highlightChanges" />
-      </div>
-
-      <div className={styles.fieldGroup}>
-        <Row setting="horizontal" />
-      </div>
-
-      <div className={styles.fieldGroup}>
-        <Row setting="horizontalRows" dependsOn="horizontal" stacked />
       </div>
 
       {CELL_TOGGLES.map((setting) => (
