@@ -269,7 +269,9 @@ Building one from an idea? Follow the route first —
 [`docs/widget-authoring.md`](docs/widget-authoring.md) orders these steps by cost
 (telemetry before markup, boilerplate last) and says what enforces each one, and
 [`docs/widget-toolbox.md`](docs/widget-toolbox.md) lists every helper, shared
-component, hook and design token that already exists. The skill
+component, hook and design token that already exists, and
+[`docs/design/widget-design-guide.md`](../design/widget-design-guide.md) says
+which color and chip look goes where. The skill
 `.claude/skills/new-widget/` walks the same route and writes the files. The
 checklist below is what a reviewer applies to code that already exists.
 
@@ -289,7 +291,7 @@ checklist below is what a reviewer applies to code that already exists.
    one or two elements and pass the static part in as `children` — splitting into
    smaller components does not help, the parent still allocates every child
    element. There is no test for this; get it right by review. See `docs/rendering.md`
-9. Use `fs()`/`sp()`/`radius()` tokens, `$font-widget`, `$widget-text-primary/secondary`, `$race-*` palette
+9. Use `fs()`/`sp()`/`radius()` tokens, `$font-widget`, `$widget-text-primary/secondary`, `$race-*` palette; colors, chip looks and text styles by `docs/design/widget-design-guide.md` — quiet labels and statuses, one bright figure per row or block, vivid only for a call
 10. Document it: a picture in `site/assets/widgets/` taken from its story (a line in `SHOTS` in `scripts/capture-widgets.mjs`, then `npm run capture:widgets` with Storybook up — it also refreshes the site's WebP copies in `site/assets/img/`), a section in `README.md`, and one card in the site gallery (`site/index.html`) with its line in the catalogue and in `site/i18n/` — one set of pictures serves both; see `docs/widget-authoring.md` step 12
 
 ## Storybook

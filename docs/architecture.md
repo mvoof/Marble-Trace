@@ -1482,6 +1482,9 @@ not hand-roll either.
 > `widgets/g-meter/g-meter-utils.ts`, `shared/lib/weather-utils.ts` and
 > `shared/lib/colors.ts`, using the same palette hexes.
 
+Which color and how bright — quiet, bright or vivid — is in
+[design/widget-design-guide.md](design/widget-design-guide.md).
+
 ### Code style
 
 - Arrow functions everywhere, always assigned to a named `const`. No anonymous
@@ -1512,7 +1515,8 @@ not hand-roll either.
 8. Create `manifest.ts` and `mount.ts` in the slice — both are collected by
    glob, so no shared file is edited.
 9. Use the `fs()` / `sp()` / `radius()` tokens, `$font-widget`, the
-   `$widget-text-*` tokens and the `$race-*` palette.
+   `$widget-text-*` tokens and the `$race-*` palette; colors and chip looks by
+   [the design guide](design/widget-design-guide.md).
 
 ---
 

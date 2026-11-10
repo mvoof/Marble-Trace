@@ -161,6 +161,10 @@ which cannot read SCSS, repeat the same palette hexes in JS: the widget
 manifests, `widgets/g-meter/g-meter-utils.ts`, `shared/lib/weather-utils.ts` and
 `shared/lib/colors.ts`.
 
+Which token where — what each chip tone means, and what is quiet, bright or
+vivid — is [design/widget-design-guide.md](design/widget-design-guide.md), with
+the palette drawn in [design/colors.html](design/colors.html).
+
 Fonts: `$font-widget` (`Inter`) for everything, `$font-mono` (`JetBrains Mono`) for
 figures that must not jitter between frames.
 

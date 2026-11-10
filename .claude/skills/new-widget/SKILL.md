@@ -117,6 +117,12 @@ helper, shared component and hook with one line on when to use it, plus the
 `fs()` / `sp()` / `radius()` / `ws()` tokens and the rule for where a new helper
 belongs.
 
+Before the first color or `StatChip`, read
+**[docs/design/widget-design-guide.md](../../../docs/design/widget-design-guide.md)**:
+what each tone means, and which reading is quiet (`reading` / `state`), bright
+(`plain` / `mark`) or vivid. Labels and statuses are quiet; at most one bright
+figure per row or block.
+
 ## Step 5 — Settings
 
 **Ask** which settings the widget actually needs. Then write
