@@ -2,8 +2,10 @@ import { describe, expect, it } from 'vitest';
 
 import type { ReferenceLapSample } from '@shared/contracts/generated/bindings';
 import {
+  cornerTimeS,
   createTraceWindowBuffers,
   fillTraceWindow,
+  formatSignedSeconds,
   integrateBucketTimes,
   type LapSource,
   NO_VALUE,
@@ -618,6 +620,30 @@ describe('phaseTime', () => {
     const justOver = { ...losing, currentDistPct: 0.002 };
 
     expect(phaseTime(justOver, -40, -2)).toBeNull();
+  });
+});
+
+describe('cornerTimeS', () => {
+  it('adds up the phases that have a time', () => {
+    const total = cornerTimeS([
+      { kind: 'settled', deltaS: 0.04 },
+      { kind: 'running', deltaS: -0.06 },
+      null,
+    ]);
+
+    expect(total).toBeCloseTo(-0.02, 6);
+  });
+
+  it('is null until a phase has a time', () => {
+    expect(cornerTimeS([null, null, null])).toBeNull();
+  });
+});
+
+describe('formatSignedSeconds', () => {
+  it('signs a loss and a gain, and leaves an even time bare', () => {
+    expect(formatSignedSeconds(0.04)).toBe('+0.04');
+    expect(formatSignedSeconds(-0.11)).toBe('−0.11');
+    expect(formatSignedSeconds(0.004)).toBe('0.00');
   });
 });
 

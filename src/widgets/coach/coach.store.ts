@@ -7,6 +7,7 @@ import type {
   TrackCondition,
 } from '@shared/contracts/generated/bindings';
 import {
+  cornerTimeS,
   createTraceWindowBuffers,
   EMPTY_TRACE_STATS,
   fillTraceWindow,
@@ -626,6 +627,15 @@ export class CoachWidgetStore {
       this.ownTimeByBucket
     );
     this.rebuildWindow();
+  }
+
+  /** What the corner has cost so far — the three phase figures added up. */
+  get displayedCornerTimeS(): number | null {
+    return cornerTimeS([
+      this.displayedBrakeTime,
+      this.displayedApexTime,
+      this.displayedThrottleTime,
+    ]);
   }
 
   get referenceSamples(): ReferenceLapSample[] | null {

@@ -1,11 +1,12 @@
 // Grows into whatever height the plate has left once the call row is placed —
-// the widget is autoHeight, so the plate itself is sized by designHeight.
+// the widget is autoHeight, so the plate itself is sized by designHeight. The
+// ground is a shade under the plate, as a table's head is.
 .container {
   position: relative;
   flex: 1 1 0;
-  min-height: ws(84);
+  min-height: ws(108);
   width: 100%;
-  border-top: 1px solid $widget-border-subtle;
+  background: $table-head-bg;
   overflow: hidden;
 }
 
@@ -15,4 +16,27 @@
   // Without this the element height falls back to the pixel-buffer `height`
   // attribute (backing-store size) and overflows the container.
   height: 100%;
+}
+
+// How far off the reference's speed this lap is here, over the chart's top
+// left corner.
+.speedGap {
+  position: absolute;
+  top: sp(xs);
+  left: sp(sm);
+  display: flex;
+  pointer-events: none;
+
+  // Set on the chip itself: its quiet look sets a light weight of its own,
+  // which a value inherited from here would lose to. The figure is the
+  // chart's one reading, so it is bold and a step up from a row's chip.
+  > span {
+    --chip-lead-size: #{fs(xs)};
+    --chip-solid-weight: 800;
+    --chip-solid-padding-x: #{sp(sm)};
+
+    justify-content: center;
+    // Wide enough for −00, so the chip holds its width as the gap changes.
+    min-width: ws(40);
+  }
 }

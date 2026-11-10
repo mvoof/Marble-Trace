@@ -4,117 +4,121 @@
   width: 100%;
 }
 
-// The phase cells: a label line, the gap, a value line.
-$phase-block-height: calc(#{fs(xxxs)} + #{sp(xxxs)} + #{fs(md)});
+// A phase cell: the marker over it, a label line, the gap, a value line.
+$phase-marker: 2px;
+$phase-label-line: ws(16);
+$phase-cell-height: calc(
+  #{$phase-marker} + #{sp(xs)} * 2 + #{$phase-label-line} + #{sp(xxxs)} +
+    #{fs(sm)}
+);
 
+// Held at the phase cells' height whatever is in it — the hint, a call with
+// the figures switched off — so the trace under it never moves.
 .row {
+  display: flex;
+  align-items: stretch;
+  min-height: $phase-cell-height;
+  border-bottom: 1px solid $chip-neutral-border;
+}
+
+// The call's side, on the tables' bar ground. Without the figures it is the
+// whole row.
+.callCell {
+  flex: 5 1 0;
   display: flex;
   align-items: center;
   gap: sp(sm);
-  padding: sp(xs) sp(md);
-
-  // Holds the row at the phase cells' height whatever is in it — the hint, a
-  // call with the figures switched off — so the trace under it never moves.
-  &::after {
-    content: '';
-    height: $phase-block-height;
-  }
+  min-width: 0;
+  padding: sp(sm) sp(md);
+  background: $table-bar-bg;
 }
 
-.call {
-  font-family: $font-widget;
-  font-size: fs(xl);
-  font-weight: 800;
-  line-height: 1;
-  letter-spacing: 0.07em;
+// The call is the row's headline: a step up from any reading's chip.
+.callCell .call {
+  --chip-lead-size: #{fs(sm)};
+  --chip-pad-y: #{sp(xxs)};
+  --chip-solid-weight: 800;
+  --chip-solid-padding-x: #{sp(sm)};
+  --chip-lead-weight: 800;
+  --chip-lead-padding: #{sp(xxs) sp(sm)};
 }
 
-.callActive {
-  color: $widget-text-primary;
-}
-
-// The warning step between PACE and BRAKE. Amber is fixed rather than taken
-// from user settings so the three steps always read as one sequence.
-.callSoon {
-  color: $race-amber;
-}
-
-// GRIP is not an instruction either — the car is being corrected, so no pedal
-// advice applies. Muted on purpose: it must not read as loud as BRAKE or GAS.
-.callGrip {
-  color: $widget-text-secondary;
+// A pedal call is filled from the color the user set for that pedal.
+.callCell .callPedal {
+  --chip-solid-bg: var(--chip-data);
 }
 
 // Without a reference lap there is no call to make — the word is a status, not
-// an instruction, so it drops to label weight.
-.callIdle {
-  color: $widget-text-muted;
-  font-size: fs(sm);
-  font-weight: 600;
-  letter-spacing: 0.14em;
+// an instruction, so it stays a reading's size.
+.status {
+  --chip-lead-padding: #{sp(xxxs) sp(sm)};
 }
 
-// The corner in three figures, pushed to the right edge. Only the figures are
-// divided — the call on the left is set apart by the space between them.
-.phases {
+.hint {
+  min-width: 0;
   margin-left: auto;
-  display: flex;
+  font-family: $font-widget;
+  font-size: fs(xxs);
+  line-height: 1.2;
+  text-align: right;
+  color: $chip-text-muted;
 }
 
-// Fixed width, wide enough for −0.00 under the label: a cell that followed
-// its content would shift its neighbours every time a digit changed.
+// The corner in three cells, ruled apart as a table's columns are.
+.phases {
+  flex: 7 1 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  border-left: 1px solid $table-row-rule;
+}
+
 .phase {
   display: flex;
   flex-direction: column;
-  gap: sp(xxxs);
-  width: ws(60);
-  padding-left: sp(sm);
+  justify-content: space-between;
+  padding: sp(xs) sp(sm);
+  border-top: $phase-marker solid transparent;
 
   & + & {
-    border-left: 1px solid $widget-border-subtle;
+    border-left: 1px solid $table-row-rule;
   }
+}
+
+// The phase the car is in.
+.phaseActive {
+  border-top-color: var(--phase-tone);
+  background: color-mix(in srgb, var(--phase-tone) 8%, transparent);
 }
 
 .phaseLabel {
   font-family: $font-widget;
-  font-size: fs(xxxs);
-  font-weight: 700;
-  line-height: 1;
-  letter-spacing: 0.1em;
+  font-size: wfs(9);
+  font-weight: 800;
+  line-height: $phase-label-line;
+  letter-spacing: 0.05em;
+  color: var(--phase-tone);
 }
 
 // A fixed height, so a dash and a figure take the same room.
 .phaseValue {
-  height: fs(md);
+  height: fs(sm);
+  margin-top: sp(xxxs);
   font-family: $font-mono;
-  font-size: fs(md);
-  font-weight: 700;
+  font-size: fs(sm);
+  font-weight: 800;
   line-height: 1;
   font-variant-numeric: tabular-nums;
   color: $widget-text-primary;
 }
 
 .phaseValueEmpty {
-  color: $widget-text-muted;
-}
-
-// The car is still inside the phase: the figure is a running total, not yet
-// what the phase cost — dimmed until it settles.
-.phaseValueRunning {
-  opacity: 0.6;
-}
-
-.hint {
-  margin-left: auto;
-  font-family: $font-widget;
-  font-size: fs(xxs);
-  color: $widget-text-muted;
+  color: $table-empty-text;
 }
 
 .urgencyTrack {
   width: 100%;
   height: 3px;
-  background: $widget-border-subtle;
+  background: $table-head-bg;
 }
 
 .urgencyFill {
@@ -122,11 +126,11 @@ $phase-block-height: calc(#{fs(xxxs)} + #{sp(xxxs)} + #{fs(md)});
 }
 
 .urgencyFillSoon {
-  background: $race-amber;
+  background: $chip-accent;
 }
 
 // Approaching a braking zone with no call out yet: the bar still grows, but in
 // a neutral tone so it never reads as an instruction.
 .urgencyFillIdle {
-  background: $widget-text-muted;
+  background: $chip-text-muted;
 }
