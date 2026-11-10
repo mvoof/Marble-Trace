@@ -46,16 +46,17 @@ const formatPressure = (
 };
 
 /**
- * Grey with nothing to show, red at zero, white otherwise. The sim reads oil
- * pressure and voltage as zero with the ignition off and never below it, so a
- * zero is the one reading worth a colour.
+ * Grey with nothing to show, red when the figure reads zero, white otherwise.
+ * The figure, not the raw value: with the engine off the sim leaves a trace of
+ * oil pressure — 0.0085 kPa — that draws as 0.0 bar and is a dead engine all
+ * the same.
  */
-const gaugeStateClass = (value: number | null): string => {
-  if (value === null) {
+const gaugeStateClass = (shown: string | null): string => {
+  if (shown === null) {
     return styles.valueEmpty;
   }
 
-  return value <= 0 ? styles.valueDanger : '';
+  return Number.parseFloat(shown) === 0 ? styles.valueDanger : '';
 };
 
 const formatTempInt = (celsius: number | null, system: UnitSystem): string => {
@@ -148,6 +149,8 @@ export const EnginePanelWidget = observer(() => {
 
   const oilPress = formatPressure(carStatus?.oil_press ?? null, system);
   const voltage = carStatus?.voltage ?? null;
+  const voltageText = voltage === null ? null : voltage.toFixed(1);
+  const oilPressText = carStatus?.oil_press == null ? null : oilPress.value;
 
   const nodes: Partial<Record<CellId, ReactNode>> = {};
 
@@ -207,7 +210,7 @@ export const EnginePanelWidget = observer(() => {
           <WidgetValue
             value={<FixedDigits text={oilPress.value} />}
             unit={oilPress.unit}
-            className={`${styles.value} ${gaugeStateClass(carStatus?.oil_press ?? null)}`}
+            className={`${styles.value} ${gaugeStateClass(oilPressText)}`}
           />
         </EngineCell>
       );
@@ -218,13 +221,9 @@ export const EnginePanelWidget = observer(() => {
     nodes.voltage = (
       <EngineCell label="VOLT">
         <WidgetValue
-          value={
-            <FixedDigits
-              text={voltage === null ? '--.-' : voltage.toFixed(1)}
-            />
-          }
+          value={<FixedDigits text={voltageText ?? '--.-'} />}
           unit="V"
-          className={`${styles.value} ${gaugeStateClass(voltage)}`}
+          className={`${styles.value} ${gaugeStateClass(voltageText)}`}
         />
       </EngineCell>
     );
