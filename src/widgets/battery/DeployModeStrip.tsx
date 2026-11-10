@@ -6,8 +6,9 @@ import styles from './BatteryWidget.module.scss';
 
 /**
  * The deploy-mode selector as a strip, so the driver reads the position rather
- * than the word. The active mode is the strip's one bright figure; the others
- * are bare text in the same slot. The parent decides whether the strip exists.
+ * than the word. The active mode is a quiet chip — a setting the driver chose,
+ * not news — and the others are bare text in the same slot. The parent decides
+ * whether the strip exists.
  */
 export const DeployModeStrip = observer(() => {
   const { carStatus } = usePlayerStore();
@@ -21,7 +22,7 @@ export const DeployModeStrip = observer(() => {
           {index === active ? (
             <StatChip
               lead={mode}
-              look="mark"
+              look="state"
               tone="accent"
               className={styles.modeChip}
             />

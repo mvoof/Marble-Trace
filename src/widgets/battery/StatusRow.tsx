@@ -37,8 +37,8 @@ interface StatusRowProps {
 }
 
 /**
- * What the MGU-K is doing, as a quiet chip on the left, and its power as the
- * block's figure on the right — coloured by the state while it flows, white at
+ * What the MGU-K is doing, as a bright chip on the left — it changes from
+ * corner to corner, so it is the signal — and its power on the right — coloured by the state while it flows, white at
  * rest. The energy sent to it this lap rides beside the state as a chip.
  */
 export const StatusRow = observer(
@@ -55,7 +55,7 @@ export const StatusRow = observer(
           {showPower ? (
             <StatChip
               lead={STATE_LABEL[state]}
-              look="reading"
+              look="mark"
               tone={STATE_TONE[state]}
             />
           ) : null}

@@ -188,7 +188,8 @@ $mode-pad-y: ws(4);
   --chip-line: #{$mode-line};
   --chip-pad-y: #{$mode-pad-y};
   --chip-lead-size: #{fs(xxs)};
-  --chip-lead-weight: 800;
+  // The weight of the bare modes beside it, so only the fill tells it apart.
+  --chip-solid-weight: 800;
 }
 
 .statusStrip {
