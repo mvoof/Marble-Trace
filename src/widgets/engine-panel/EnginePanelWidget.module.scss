@@ -180,8 +180,8 @@ $strip-marker: 3px;
   color: $table-empty-text;
 }
 
-// A figure past its line — a temperature over the limit, no oil pressure or no
-// voltage with the engine dead — turns red; the cell around it stays quiet.
+// A figure past its line — a temperature over the limit, oil pressure or
+// voltage at zero — turns red; the cell around it stays quiet.
 .valueDanger {
   color: $chip-danger;
 }

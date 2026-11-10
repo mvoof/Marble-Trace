@@ -27,11 +27,6 @@ import type { EnginePanelWidgetSettings } from './settings-schema';
 const OIL_TEMP_LIMIT_C = 135;
 const WATER_TEMP_LIMIT_C = 120;
 
-// Below these the engine is not running — stalled, or the ignition off — and
-// the reading turns red: no oil pressure is a call, not a quiet zero.
-const OIL_PRESS_DEAD_KPA = 1;
-const VOLTAGE_DEAD_V = 1;
-
 const isAdjustmentId = (id: CellId): id is AdjustmentKey =>
   id in ADJUSTMENT_SPECS;
 
@@ -50,13 +45,17 @@ const formatPressure = (
   return { value: (kpa * 0.145038).toFixed(0), unit: 'psi' };
 };
 
-/** Grey with nothing to show, red below the dead line, white otherwise. */
-const valueStateClass = (value: number | null, deadBelow: number): string => {
+/**
+ * Grey with nothing to show, red at zero, white otherwise. The sim reads oil
+ * pressure and voltage as zero with the ignition off and never below it, so a
+ * zero is the one reading worth a colour.
+ */
+const gaugeStateClass = (value: number | null): string => {
   if (value === null) {
     return styles.valueEmpty;
   }
 
-  return value < deadBelow ? styles.valueDanger : '';
+  return value <= 0 ? styles.valueDanger : '';
 };
 
 const formatTempInt = (celsius: number | null, system: UnitSystem): string => {
@@ -208,7 +207,7 @@ export const EnginePanelWidget = observer(() => {
           <WidgetValue
             value={<FixedDigits text={oilPress.value} />}
             unit={oilPress.unit}
-            className={`${styles.value} ${valueStateClass(carStatus?.oil_press ?? null, OIL_PRESS_DEAD_KPA)}`}
+            className={`${styles.value} ${gaugeStateClass(carStatus?.oil_press ?? null)}`}
           />
         </EngineCell>
       );
@@ -225,7 +224,7 @@ export const EnginePanelWidget = observer(() => {
             />
           }
           unit="V"
-          className={`${styles.value} ${valueStateClass(voltage, VOLTAGE_DEAD_V)}`}
+          className={`${styles.value} ${gaugeStateClass(voltage)}`}
         />
       </EngineCell>
     );
