@@ -1022,7 +1022,7 @@ const WIDGET_SCENARIOS: PreviewScenario[] = [
       // the reading carries three digits — the widest the oil cell ever gets.
       applyEngine(store, {
         oil_temp: OIL_TEMP_WARNING_C + 12,
-        oil_press: 286,
+        oil_press: 2.86,
         water_temp: 108,
       });
     },
@@ -1143,8 +1143,8 @@ const WIDGET_SCENARIOS: PreviewScenario[] = [
     label: 'Engine — GTP prototype',
     apply: (store) => {
       seedSampleTelemetry(store);
-      // Between the two: ABS and engine braking a formula car has no cell for,
-      // and no differential to adjust from the wheel.
+      // Between the two: ABS and the anti-roll bars a formula car has no cell
+      // for, and no differential, engine braking or map to adjust.
       store.player.updateCarStatus(mockGtpCarStatus());
     },
   },

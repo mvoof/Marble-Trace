@@ -7,15 +7,13 @@ import { FixedDigits } from '@shared/ui/FixedDigits/FixedDigits';
 import { EngineCell } from './EngineCell';
 import { AbsCell } from './AbsCell';
 import { AdjustmentCell } from './AdjustmentCell';
-import { GroupPlate } from './GroupPlate';
+import { EngineStrip } from './EngineStrip';
 import {
   ADJUSTMENT_SPECS,
   CELL_SLOTS,
   planEnginePanel,
-  renderWeights,
   type AdjustmentKey,
   type CellId,
-  type CellRenderWeight,
   type CellSlot,
 } from './engine-panel-utils';
 import { usePlayerStore } from '@entities/player/player-context';
@@ -32,19 +30,37 @@ const WATER_TEMP_LIMIT_C = 120;
 const isAdjustmentId = (id: CellId): id is AdjustmentKey =>
   id in ADJUSTMENT_SPECS;
 
+const PSI_PER_BAR = 14.5038;
+
+// The sim gives oil pressure in bar — a running GTP reads 3.81 — whatever the
+// contract's doc comment says.
 const formatPressure = (
-  kpa: number | null,
+  bar: number | null,
   unitSystem: UnitSystem
 ): { value: string; unit: string } => {
-  if (kpa === null) {
+  if (bar === null) {
     return { value: '--.-', unit: unitSystem === 'metric' ? 'bar' : 'psi' };
   }
 
   if (unitSystem === 'metric') {
-    return { value: (kpa / 100).toFixed(1), unit: 'bar' };
+    return { value: bar.toFixed(1), unit: 'bar' };
   }
 
-  return { value: (kpa * 0.145038).toFixed(0), unit: 'psi' };
+  return { value: (bar * PSI_PER_BAR).toFixed(0), unit: 'psi' };
+};
+
+/**
+ * Grey with nothing to show, red when the figure reads zero, white otherwise.
+ * The figure, not the raw value: with the engine off the sim leaves a trace of
+ * oil pressure — 0.0085 kPa — that draws as 0.0 bar and is a dead engine all
+ * the same.
+ */
+const gaugeStateClass = (shown: string | null): string => {
+  if (shown === null) {
+    return styles.valueEmpty;
+  }
+
+  return Number.parseFloat(shown) === 0 ? styles.valueDanger : '';
 };
 
 const formatTempInt = (celsius: number | null, system: UnitSystem): string => {
@@ -67,41 +83,58 @@ const TemperaturesCell = observer(
   ({
     carStatus,
     system,
-    weight,
     showOil,
     showWater,
   }: {
     carStatus: CarStatusFrame | null | undefined;
     system: UnitSystem;
-    weight: CellRenderWeight;
     showOil: boolean;
     showWater: boolean;
   }) => {
     const oilTemp = carStatus?.oil_temp ?? null;
     const waterTemp = carStatus?.water_temp ?? null;
 
-    const overLimit =
-      (showOil && oilTemp !== null && oilTemp >= OIL_TEMP_LIMIT_C) ||
-      (showWater && waterTemp !== null && waterTemp >= WATER_TEMP_LIMIT_C);
+    const label = showOil && showWater ? 'OIL / W' : showOil ? 'OIL' : 'WATER';
 
-    const label =
-      showOil && showWater ? 'OIL / WATER' : showOil ? 'OIL' : 'WATER';
+    // Each temperature turns red on its own: the one over its line is the one
+    // the driver has to act on.
+    const temperatureClass = (
+      celsius: number | null,
+      limit: number
+    ): string => {
+      if (celsius === null) {
+        return styles.valueEmpty;
+      }
 
-    const text = [
-      showOil ? formatTempInt(oilTemp, system) : null,
-      showWater ? formatTempInt(waterTemp, system) : null,
-    ]
-      .filter((part) => part !== null)
-      .join('/');
+      return celsius >= limit ? styles.valueDanger : '';
+    };
+
+    const parts = [
+      showOil
+        ? {
+            key: 'oil',
+            text: formatTempInt(oilTemp, system),
+            className: temperatureClass(oilTemp, OIL_TEMP_LIMIT_C),
+          }
+        : null,
+      showWater
+        ? {
+            key: 'water',
+            text: formatTempInt(waterTemp, system),
+            className: temperatureClass(waterTemp, WATER_TEMP_LIMIT_C),
+          }
+        : null,
+    ].filter((part) => part !== null);
 
     return (
-      <EngineCell
-        label={label}
-        weight={weight}
-        className={overLimit ? styles.overLimit : ''}
-      >
+      <EngineCell label={label}>
         <WidgetValue
-          value={<FixedDigits text={text} />}
+          value={parts.map((part, partIndex) => (
+            <span className={part.className} key={part.key}>
+              {partIndex > 0 ? '/' : null}
+              <FixedDigits text={part.text} />
+            </span>
+          ))}
           unit="°"
           className={styles.value}
         />
@@ -120,6 +153,8 @@ export const EnginePanelWidget = observer(() => {
 
   const oilPress = formatPressure(carStatus?.oil_press ?? null, system);
   const voltage = carStatus?.voltage ?? null;
+  const voltageText = voltage === null ? null : voltage.toFixed(1);
+  const oilPressText = carStatus?.oil_press == null ? null : oilPress.value;
 
   const nodes: Partial<Record<CellId, ReactNode>> = {};
 
@@ -143,33 +178,19 @@ export const EnginePanelWidget = observer(() => {
 
   const drawn = CELL_SLOTS.filter(isDrawn);
 
-  // The column setting is a ceiling in width units, not a cell count: the rows
-  // break between plates and never through one, so a system's cells are never
-  // found in two places.
-  const maxCols = settings.horizontal
-    ? Math.max(1, settings.horizontalColumns ?? 12)
-    : (settings.verticalColumns ?? 3);
-
-  const rows = planEnginePanel(drawn, maxCols);
-
-  // A cell is drawn as the slot it landed in, which the plan knows and the
-  // spec does not: the differential's cells are satellites by weight, but with
-  // no lead in their plate they are drawn plain, at reading size.
-  const weights = renderWeights(rows);
+  const strips = planEnginePanel(drawn);
 
   for (const slot of drawn) {
-    const weight = weights.get(slot.id) ?? 'plain';
+    const lead = slot.lead === true;
 
     if (isAdjustmentId(slot.id)) {
-      nodes[slot.id] = (
-        <AdjustmentCell cellId={slot.id} group={slot.group} weight={weight} />
-      );
+      nodes[slot.id] = <AdjustmentCell cellId={slot.id} lead={lead} />;
 
       continue;
     }
 
     if (slot.id === 'abs') {
-      nodes.abs = <AbsCell weight={weight} />;
+      nodes.abs = <AbsCell />;
 
       continue;
     }
@@ -179,7 +200,6 @@ export const EnginePanelWidget = observer(() => {
         <TemperaturesCell
           carStatus={carStatus}
           system={system}
-          weight={weight}
           showOil={settings.showOilTemp !== false}
           showWater={settings.showWaterTemp !== false}
         />
@@ -190,11 +210,11 @@ export const EnginePanelWidget = observer(() => {
 
     if (slot.id === 'oilPress') {
       nodes.oilPress = (
-        <EngineCell label="OIL P" weight={weight}>
+        <EngineCell label="OIL P">
           <WidgetValue
             value={<FixedDigits text={oilPress.value} />}
             unit={oilPress.unit}
-            className={styles.value}
+            className={`${styles.value} ${gaugeStateClass(oilPressText)}`}
           />
         </EngineCell>
       );
@@ -203,15 +223,11 @@ export const EnginePanelWidget = observer(() => {
     }
 
     nodes.voltage = (
-      <EngineCell label="VOLT" weight={weight}>
+      <EngineCell label="VOLT">
         <WidgetValue
-          value={
-            <FixedDigits
-              text={voltage === null ? '--.-' : voltage.toFixed(1)}
-            />
-          }
+          value={<FixedDigits text={voltageText ?? '--.-'} />}
           unit="V"
-          className={styles.value}
+          className={`${styles.value} ${gaugeStateClass(voltageText)}`}
         />
       </EngineCell>
     );
@@ -224,12 +240,8 @@ export const EnginePanelWidget = observer(() => {
       minWidth={0}
       className={styles.root}
     >
-      {rows.map((row, rowIndex) => (
-        <div className={styles.row} key={rowIndex}>
-          {row.map((group) => (
-            <GroupPlate group={group} nodes={nodes} key={group.group} />
-          ))}
-        </div>
+      {strips.map((strip) => (
+        <EngineStrip strip={strip} nodes={nodes} key={strip.group} />
       ))}
     </WidgetPanel>
   );

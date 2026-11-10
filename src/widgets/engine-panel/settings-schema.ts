@@ -1,7 +1,6 @@
 import {
   bool,
   defineSettings,
-  num,
   type SettingsOf,
 } from '@shared/lib/widget-settings-dsl';
 
@@ -34,16 +33,10 @@ export const ENGINE_PANEL_SETTINGS = defineSettings('enginePanel', {
    */
   showBrakeMisc: bool(true),
   /**
-   * Flash a cell's background when the driver moves that adjustment. The brake
-   * cells flash green and the differential cells blue, so the colour says which
-   * system moved before the label is read.
+   * Light a cell when the driver moves that adjustment, in its strip's tone,
+   * so the colour says which system moved before the label is read.
    */
   highlightChanges: bool(true),
-  horizontal: bool(true),
-  /** Cells per row in the vertical layout. */
-  verticalColumns: num(3, { min: 1, max: 4, step: 1 }),
-  /** Cells per row in the horizontal layout; the shipped 12 fits them all. */
-  horizontalColumns: num(12, { min: 1, max: 12, step: 1 }),
 });
 
 export type EnginePanelWidgetSettings = SettingsOf<

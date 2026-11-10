@@ -29,7 +29,7 @@ export const mockCarStatus = (
   fuel_level_pct: 0.52,
   fuel_use_per_hour: 9.4,
   oil_temp: 104,
-  oil_press: 412,
+  oil_press: 4.12,
   water_temp: 91,
   voltage: 13.8,
   on_pit_road: false,
@@ -75,34 +75,35 @@ export const mockCarStatus = (
 /**
  * A hybrid prototype — GTP or LMDh.
  *
- * It is not the formula car with the hybrid bolted on: a prototype keeps its
- * ABS and its engine braking and has no differential to adjust from the wheel,
- * which is a different engine panel from either a formula car or a GT3. The
- * deploy mode rides along because the battery widget beside the panel reads it.
+ * The in-car adjustments are a live GTP's, read off the sim on 2026-11-10:
+ * bias, the spare brake rotary, both traction channels, ABS and both anti-roll
+ * bars — no engine braking, no peak or fine bias, no map, no differential. The
+ * values are that frame's too. The deploy mode rides along because the battery
+ * widget beside the panel reads it.
  */
 export const mockGtpCarStatus = (
   overrides: Partial<CarStatusFrame> = {}
 ): CarStatusFrame =>
   mockCarStatus({
-    dc_abs: 4,
-    dc_brake_bias: 53.5,
-    dc_brake_bias_fine: -0.2,
-    dc_peak_brake_bias: 58,
-    dc_traction_control: 3,
-    dc_traction_control_2: 2,
-    dc_throttle_shape: 4,
-    dc_engine_braking: 5,
-    dc_anti_roll_front: 4,
-    dc_anti_roll_rear: 3,
+    dc_abs: 3,
+    dc_brake_bias: 52.25,
+    dc_brake_bias_fine: null,
+    dc_peak_brake_bias: null,
+    dc_traction_control: 6,
+    dc_traction_control_2: 4,
+    dc_throttle_shape: null,
+    dc_engine_braking: null,
+    dc_anti_roll_front: 3,
+    dc_anti_roll_rear: 4,
     // The spare brake rotary. On these cars it is the bias migration.
-    dc_brake_misc: 6,
+    dc_brake_misc: -0.5,
     dc_diff_entry: null,
     dc_diff_middle: null,
     dc_diff_exit: null,
     energy_ers_battery_pct: 0.64,
     power_mgu_k: 88_400,
     energy_battery_to_mgu_k_lap: 1_420_000,
-    dc_mguk_deploy_mode: 2,
+    dc_mguk_deploy_mode: 3,
     ...overrides,
   });
 

@@ -279,3 +279,10 @@ $sector-live-ground: rgba(#1b4c47, 0.75);
 $sector-upcoming-ground: rgba(0, 0, 0, 0.12);
 $sector-empty-ground: rgba(0, 0, 0, 0.2);
 $sector-upcoming-text: #686c75;
+// The engine panel's strips: one system a strip, each a step lighter or darker
+// than its neighbour so the rows part without a heavy rule. Faded with the
+// user's background opacity, like the plate under them.
+$strip-ground-deep: plate(#121417);
+$strip-ground: plate(#15171c);
+$strip-ground-raised: plate(#181a1f);
+$strip-rule: #242730;

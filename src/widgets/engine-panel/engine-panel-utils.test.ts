@@ -3,121 +3,124 @@ import { describe, expect, it } from 'vitest';
 import { ENGINE_PANEL_MANIFEST } from './manifest';
 import {
   CELL_SLOTS,
-  UNIT_WIDTH,
+  COLUMN_WIDTH,
+  MIN_COLUMNS,
   enabledCellSlots,
   formatAdjustment,
-  packGroups,
   panelHeight,
+  panelWidth,
   planEnginePanel,
-  planGroupSlots,
-  rowUnits,
-  type CellSlot,
-  type PlannedGroup,
+  type CellId,
+  type PlannedStrip,
 } from './engine-panel-utils';
 import type { EnginePanelWidgetSettings } from './settings-schema';
-
-const slotsOf = (group: CellSlot['group']) =>
-  CELL_SLOTS.filter((slot) => slot.group === group);
 
 const shipped =
   ENGINE_PANEL_MANIFEST.userSettings as unknown as EnginePanelWidgetSettings;
 
-const stubGroup = (group: PlannedGroup['group'], units: number) =>
-  ({ group, slots: [], units }) as PlannedGroup;
+const cellsOf = (ids: readonly CellId[]) =>
+  CELL_SLOTS.filter((slot) => ids.includes(slot.id));
 
-describe('planGroupSlots', () => {
-  it('stands the satellites beside their lead', () => {
-    const slots = planGroupSlots(slotsOf('brake'));
+const layoutOf = (strips: PlannedStrip[]) =>
+  strips.map((strip) => strip.cells.map((cell) => cell.id));
 
-    expect(slots).toEqual([
-      { kind: 'lead', ids: ['showBrakeBias'], units: 2 },
-      {
-        kind: 'stack',
-        ids: ['showBrakeBiasFine', 'showPeakBrakeBias'],
-        units: 1,
-      },
-      // The third satellite starts a column of its own, and a column of one is
-      // drawn level with the rest.
-      { kind: 'plain', ids: ['showBrakeMisc'], units: 1 },
-    ]);
-  });
-
-  it('draws a group with no lead as an even row', () => {
-    const slots = planGroupSlots(slotsOf('diff'));
-
-    expect(slots.map((slot) => slot.kind)).toEqual(['plain', 'plain', 'plain']);
-  });
-
-  it('draws a lone satellite level with the rest instead of half a column', () => {
-    const [lead, satellite] = slotsOf('traction');
-
-    const slots = planGroupSlots([lead, satellite]);
-
-    expect(slots.map((slot) => slot.kind)).toEqual(['lead', 'plain']);
-  });
-
-  it('never puts more than two satellites in one stack', () => {
-    const lead = slotsOf('traction')[0];
-    const satellite = slotsOf('traction')[1];
-
-    const slots = planGroupSlots([lead, satellite, satellite, satellite]);
-
-    expect(slots.map((slot) => slot.ids.length)).toEqual([1, 2, 1]);
-    expect(slots.map((slot) => slot.kind)).toEqual(['lead', 'stack', 'plain']);
-  });
-});
-
-describe('packGroups', () => {
-  it('breaks between groups, never through one', () => {
-    const rows = packGroups(
-      [stubGroup('brake', 3), stubGroup('traction', 7), stubGroup('diff', 3)],
-      10
-    );
-
-    expect(rows.map((row) => row.map((group) => group.group))).toEqual([
-      ['brake', 'traction'],
-      ['diff'],
-    ]);
-  });
-
-  it('gives a group wider than the ceiling its own row rather than splitting it', () => {
-    const rows = packGroups([stubGroup('traction', 7)], 4);
-
-    expect(rows).toHaveLength(1);
-    expect(rows[0][0].units).toBe(7);
-  });
-});
+// The in-car controls each class exposes, as the preview scenarios record them
+// (the GTP's read off a live session).
+const GT3: CellId[] = ['showBrakeBias', 'showTc', 'abs', 'showEngineMap'];
+const GTP: CellId[] = [
+  'showBrakeBias',
+  'showBrakeMisc',
+  'showTc',
+  'showTc2',
+  'abs',
+  'showAntiRollFront',
+  'showAntiRollRear',
+];
+const FORMULA: CellId[] = [
+  'showBrakeBias',
+  'showTc',
+  'showTc2',
+  'showEngineBraking',
+  'showPeakBrakeBias',
+  'showBrakeBiasFine',
+  'showDiffEntry',
+  'showDiffMiddle',
+  'showDiffExit',
+];
 
 describe('planEnginePanel', () => {
-  it('lays a full formula car out in two rows at the shipped ceiling', () => {
-    const rows = planEnginePanel(CELL_SLOTS, shipped.horizontalColumns);
-
-    expect(rows.map((row) => row.map((group) => group.group))).toEqual([
-      ['brake', 'traction'],
-      ['diff', 'chassis', 'engine'],
+  it('draws every strip in its fixed order', () => {
+    expect(planEnginePanel(CELL_SLOTS).map((strip) => strip.group)).toEqual([
+      'brake',
+      'traction',
+      'trim',
+      'diff',
+      'chassis',
+      'engine',
     ]);
   });
 
-  it('keeps the groups in their fixed order whatever the car leaves out', () => {
-    const gt3 = CELL_SLOTS.filter(
-      (slot) => slot.group !== 'diff' && slot.id !== 'showTc2'
-    );
+  it('keeps traction control first in every car', () => {
+    expect(layoutOf(planEnginePanel(cellsOf(GT3)))[1]).toEqual([
+      'showTc',
+      'abs',
+      'showEngineMap',
+    ]);
+    expect(layoutOf(planEnginePanel(cellsOf(GTP)))[1]).toEqual([
+      'showTc',
+      'showTc2',
+      'abs',
+    ]);
+    expect(layoutOf(planEnginePanel(cellsOf(FORMULA)))[1]).toEqual([
+      'showTc',
+      'showTc2',
+    ]);
+  });
 
-    const rows = planEnginePanel(gt3, shipped.horizontalColumns);
+  it('draws the GTP without a trim strip', () => {
+    expect(planEnginePanel(cellsOf(GTP)).map((strip) => strip.group)).toEqual([
+      'brake',
+      'traction',
+      'chassis',
+    ]);
+  });
 
-    expect(rows[0].map((group) => group.group)).toEqual(['brake', 'traction']);
+  it('puts what only the formula cars carry on one strip', () => {
+    expect(layoutOf(planEnginePanel(cellsOf(FORMULA)))[2]).toEqual([
+      'showEngineBraking',
+      'showPeakBrakeBias',
+      'showBrakeBiasFine',
+    ]);
+  });
+
+  it('leaves out a strip the car has nothing for', () => {
+    expect(planEnginePanel(cellsOf(GT3)).map((strip) => strip.group)).toEqual([
+      'brake',
+      'traction',
+    ]);
+  });
+
+  it('keeps the engine readings at the bottom', () => {
+    const strips = planEnginePanel(CELL_SLOTS);
+
+    expect(strips.at(-1)?.cells.map((cell) => cell.id)).toEqual([
+      'temps',
+      'oilPress',
+      'voltage',
+    ]);
   });
 
   it('sizes the shipped manifest', () => {
-    const rows = planEnginePanel(
-      enabledCellSlots(shipped),
-      shipped.horizontalColumns
+    const strips = planEnginePanel(enabledCellSlots(shipped));
+
+    expect(panelWidth(strips)).toBe(ENGINE_PANEL_MANIFEST.designWidth);
+    expect(panelHeight(strips)).toBe(ENGINE_PANEL_MANIFEST.designHeight);
+  });
+
+  it('never draws narrower than the floor', () => {
+    expect(panelWidth(planEnginePanel(cellsOf(['showTc'])))).toBe(
+      MIN_COLUMNS * COLUMN_WIDTH
     );
-
-    const widest = Math.max(...rows.map(rowUnits));
-
-    expect(widest * UNIT_WIDTH).toBe(ENGINE_PANEL_MANIFEST.designWidth);
-    expect(panelHeight(rows)).toBe(ENGINE_PANEL_MANIFEST.designHeight);
   });
 });
 
@@ -134,14 +137,9 @@ describe('design width', () => {
     expect(derive(settingsWith({}))).toBe(ENGINE_PANEL_MANIFEST.designWidth);
   });
 
-  it('measures the widest row under the column ceiling', () => {
-    // [brake 4] [traction 7] [diff 3, chassis 2, engine 3]
-    expect(derive(settingsWith({ horizontalColumns: 8 }))).toBe(8 * UNIT_WIDTH);
-  });
-
   it('keeps the scale when a cell is turned off', () => {
     const prev = settingsWith({});
-    const next = settingsWith({ showEngineMap: false });
+    const next = settingsWith({ showOilTemp: false, showWaterTemp: false });
     const designWidth = derive(prev);
 
     const result = resolve(prev, next, {

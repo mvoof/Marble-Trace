@@ -692,12 +692,15 @@ describe('engine scenarios', () => {
     expect(carStatus?.dc_abs).toBeNull();
   });
 
-  it('gives the prototype its ABS and engine braking but no differential', () => {
+  it('gives the prototype ABS, TC2 and the anti-roll bars, and nothing a formula car has', () => {
     const carStatus = seed('engine-gtp-car').player.carStatus;
 
     expect(carStatus?.dc_abs ?? 0).toBeGreaterThan(0);
-    expect(carStatus?.dc_engine_braking ?? 0).toBeGreaterThan(0);
-    expect(carStatus?.dc_peak_brake_bias ?? 0).toBeGreaterThan(0);
+    expect(carStatus?.dc_traction_control_2 ?? 0).toBeGreaterThan(0);
+    expect(carStatus?.dc_anti_roll_front ?? 0).toBeGreaterThan(0);
+    expect(carStatus?.dc_engine_braking).toBeNull();
+    expect(carStatus?.dc_peak_brake_bias).toBeNull();
+    expect(carStatus?.dc_throttle_shape).toBeNull();
     expect(carStatus?.dc_diff_middle).toBeNull();
   });
 
