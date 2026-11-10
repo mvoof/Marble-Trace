@@ -35,26 +35,12 @@
   gap: sp(xs);
 }
 
-.lapProgress {
-  display: flex;
-  align-items: baseline;
-  gap: sp(xs);
-  white-space: nowrap;
-}
-
 .percent {
   font-family: $font-mono;
   font-size: fs(xs);
   font-weight: 800;
   color: $widget-text-primary;
-}
-
-.caption {
-  font-family: $font-widget;
-  font-size: fs(xxxs);
-  font-weight: 600;
-  letter-spacing: 0.05em;
-  color: $chip-text-muted;
+  white-space: nowrap;
 }
 
 .counter {

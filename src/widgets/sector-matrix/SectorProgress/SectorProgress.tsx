@@ -41,14 +41,10 @@ export const SectorProgress = observer(({ sectors }: Props) => {
       </div>
 
       <div className={styles.meta}>
-        <span className={styles.lapProgress}>
-          <FixedDigits
-            className={styles.percent}
-            text={`${Math.round(lapDistPct * PERCENT)}%`}
-          />
-
-          <span className={styles.caption}>LAP PROGRESS</span>
-        </span>
+        <FixedDigits
+          className={styles.percent}
+          text={`${Math.round(lapDistPct * PERCENT)}%`}
+        />
 
         <StatChip
           lead={`S${sectorNumber}/${fills.length}`}
