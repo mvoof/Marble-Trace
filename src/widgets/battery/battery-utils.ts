@@ -98,13 +98,24 @@ export const formatChargePct = (fraction: number | null): string => {
   return pct.toString().padStart(2, ' ');
 };
 
+/**
+ * The widest the per-lap figure gets: a sign or a tens digit before "0.00". A
+ * lap that harvests more than it deploys reads negative, and a long lap can
+ * pass 10 MJ, so the slot is held at this width and the chip never resizes.
+ */
+const LAP_DEPLOY_CHARS = 5;
+
+/** The figure space: as wide as a digit, so padding holds the digits' place. */
+const FIGURE_SPACE = ' ';
+
 /** Joules to megajoules — what the per-lap deploy counter is read in. */
 export const formatLapDeployMj = (joules: number | null): string => {
-  if (joules === null) {
-    return '·.··';
-  }
+  const text =
+    joules === null
+      ? '·.··'
+      : (joules / 1_000_000).toFixed(2).replace('-', '−');
 
-  return (joules / 1_000_000).toFixed(2);
+  return text.padStart(LAP_DEPLOY_CHARS, FIGURE_SPACE);
 };
 
 /**
