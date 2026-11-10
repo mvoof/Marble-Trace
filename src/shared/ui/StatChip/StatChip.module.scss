@@ -60,6 +60,11 @@ $pad-y: var(--chip-pad-y, #{sp(xxxs)});
   background: $lead-bg;
 }
 
+// A lead alone fills a chip held wider than it, so its text centres.
+.chipSingle > .lead {
+  flex: 1 1 auto;
+}
+
 // The lead is at least the value's height, so a chip of its lead alone — LDR,
 // a best lap — is one height with the two-part chips beside it.
 .lead {

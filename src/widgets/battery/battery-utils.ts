@@ -64,19 +64,27 @@ export const mguPowerState = (watts: number | null): MguPowerState => {
 };
 
 /**
- * Watts to kilowatts, padded to a fixed slot. The sign is always drawn and the
- * magnitude always three characters wide, so the readout never re-centres as
- * the car swings between harvesting and deploying.
+ * The sign of the MGU-K power, drawn a step smaller beside its magnitude. Always
+ * drawn, so the readout keeps its width as the car swings between harvesting
+ * and deploying.
  */
-export const formatMguPowerKw = (watts: number | null): string => {
+export const formatMguPowerSign = (watts: number | null): string => {
   if (watts === null) {
-    return '····';
+    return '+';
   }
 
-  const kw = Math.round(watts / 1000);
-  const sign = kw < 0 ? '−' : '+';
+  return Math.round(watts / 1000) < 0 ? '−' : '+';
+};
 
-  return `${sign}${Math.abs(kw).toString().padStart(3, ' ')}`;
+/** Watts to whole kilowatts, unsigned, always three characters wide. */
+export const formatMguPowerMagnitude = (watts: number | null): string => {
+  if (watts === null) {
+    return '···';
+  }
+
+  const kw = Math.abs(Math.round(watts / 1000));
+
+  return kw.toString().padStart(3, ' ');
 };
 
 /** Charge as a whole percent; the readout reserves the three-digit slot. */

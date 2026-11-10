@@ -57,18 +57,14 @@ export const BatteryWidget = observer(() => {
       minWidth={0}
       className={styles.root}
     >
-      <div className={styles.chargeBlock}>
+      <div className={styles.chargeStrip}>
         <ChargeRow />
       </div>
 
-      {showModeStrip ? (
-        <div className={styles.section}>
-          <DeployModeStrip />
-        </div>
-      ) : null}
+      {showModeStrip ? <DeployModeStrip /> : null}
 
       {showStatusRow ? (
-        <div className={styles.section}>
+        <div className={styles.statusStrip}>
           <StatusRow showPower={showPower} showLapDeploy={showLapDeploy} />
         </div>
       ) : null}

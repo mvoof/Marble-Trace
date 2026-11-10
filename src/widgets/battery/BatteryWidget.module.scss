@@ -1,7 +1,20 @@
-// How far a cell's top edge leans ahead of its foot: the bar's height × tan 8°.
-// One value, declared once: the cells lean along the direction of travel, and a
-// second value anywhere would show up as a cell out of step with its neighbours.
-$cell-slant: ws(1.25);
+// Three strips, one per question: how much charge, which mode, what the MGU-K
+// is doing. The charge and the active mode are the bright figures; every label
+// and status is a quiet chip.
+
+// How far a cell's top edge leans ahead of its foot. One value, declared once:
+// a second value anywhere would show up as a cell out of step with its
+// neighbours.
+$cell-slant: ws(2);
+
+// The seam between two cells, measured across. The cells overlap by their
+// slant, so the flex gap is the seam with the slant taken back out.
+$cell-seam: ws(2);
+
+// One line box for the mode cells, active or not, so the strip keeps its
+// height as the selector moves.
+$mode-line: wfs(16);
+$mode-pad-y: ws(4);
 
 .root {
   width: 100%;
@@ -11,28 +24,14 @@ $cell-slant: ws(1.25);
   flex-direction: column;
 }
 
-.chargeBlock {
-  display: flex;
-  flex-direction: column;
-  padding: sp(xs) sp(sm);
+.chargeStrip {
+  padding: sp(sm) sp(lg);
+  background: $strip-ground-raised;
 }
 
-// Every block below the charge sits under a hairline rule that stops short of
-// both edges: a rule running edge to edge cuts the plate into separate cards,
-// and these are sections of one readout.
-.section {
-  position: relative;
-  padding: sp(xs) sp(sm);
-}
-
-.section::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: sp(sm);
-  right: sp(sm);
-  height: 1px;
-  background: $widget-border-default;
+.modeStrip,
+.statusStrip {
+  border-top: 1px solid $strip-rule;
 }
 
 // Label over the bar it names, the percentage beside both — the number is read
@@ -40,7 +39,7 @@ $cell-slant: ws(1.25);
 .chargeRow {
   display: flex;
   align-items: center;
-  gap: sp(sm);
+  gap: sp(md);
   min-width: 0;
 }
 
@@ -49,52 +48,41 @@ $cell-slant: ws(1.25);
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: sp(xxs);
+  gap: sp(xs);
 }
 
-// The bar's own caption, and nothing more: it names the row once and is never
-// read again, so it sits a step below the readouts rather than competing with
-// them. Slanted to sit with the cells under it.
-.label {
-  font-size: fs(xxxs);
-  font-style: italic;
-  font-weight: 600;
-  letter-spacing: 0.1em;
-  color: $widget-label;
-  flex: 0 0 auto;
-  white-space: nowrap;
+.chargeLabel {
+  display: flex;
 }
 
-// Lit in the charge's own colour, not a neutral hairline: it is the end of the
-// bar as much as the edge of the number, and it carries the state to the side
-// of the widget the eye lands on first.
-.chargeDivider {
-  flex: 0 0 auto;
-  align-self: stretch;
-  width: 2px;
-  border-radius: 1px;
+.batChip {
+  --chip-line: #{wfs(14)};
+  --chip-pad-y: 0px;
 }
 
-.chargeDividerFull {
-  background: $race-green;
-}
-
-.chargeDividerLow {
-  background: $race-amber;
-}
-
-.chargeDividerCritical {
-  background: $race-red;
-}
-
+// The rule before the number is lit in the charge's own colour: it is the end
+// of the bar as much as the edge of the number.
 .chargeValue {
   flex: 0 0 auto;
+  display: flex;
+  align-items: baseline;
+  padding-left: sp(md);
+  border-left: 2px solid transparent;
   font-family: $font-mono;
-  font-size: fs(xxxl);
-  font-weight: 700;
-  color: $widget-text-primary;
   line-height: 1;
   white-space: nowrap;
+}
+
+.chargeValueFull {
+  border-left-color: $chip-positive;
+}
+
+.chargeValueLow {
+  border-left-color: $chip-accent;
+}
+
+.chargeValueCritical {
+  border-left-color: $chip-danger;
 }
 
 // Three digit cells whatever the charge, so 100 and 9 sit in the same slot and
@@ -103,24 +91,26 @@ $cell-slant: ws(1.25);
   display: inline-block;
   min-width: 3ch;
   text-align: right;
+  font-size: fs(xxl);
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  color: $widget-text-primary;
 }
 
 .chargeUnit {
-  font-size: 0.5em;
-  opacity: 0.6;
+  margin-left: ws(2);
+  font-size: fs(sm);
+  font-weight: 700;
+  color: $chip-text-muted;
 }
 
-// The gap is a seam between cells, not a space they sit in: hold it near a
-// sixth of the cell pitch and the bar reads as one lit strip divided up, let it
-// grow and the same cells read as hatching with the bar missing. The slant is
-// taken back out of it, so the seam between two cut cells stays ws(1.5).
 .bar {
   display: flex;
   align-items: stretch;
-  gap: calc(#{ws(1.5)} - #{$cell-slant});
+  gap: calc(#{$cell-seam} - #{$cell-slant});
   flex: 1 1 auto;
   min-width: 0;
-  height: ws(9);
+  height: ws(12);
 }
 
 .cell {
@@ -138,111 +128,136 @@ $cell-slant: ws(1.25);
 }
 
 .cellFull {
-  background: $race-green;
+  background: $chip-positive;
 }
 
 .cellLow {
-  background: $race-amber;
+  background: $chip-accent;
 }
 
 .cellCritical {
-  background: $race-red;
+  background: $chip-danger;
 }
 
 .cellEmpty {
-  background: rgba(255, 255, 255, 0.14);
+  background: $chip-neutral-border;
 }
 
 .modeStrip {
-  display: flex;
-  gap: ws(6);
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: sp(xxs);
+  padding: sp(xxs);
+  background: $strip-ground-deep;
 }
 
-// Plain text, nothing else: the active position is a colour. No box, no wash
-// and no rule under the word — the strip mirrors a selector, it is not one.
+// Each slot holds a word or the active chip in the same box, a hairline in the
+// gap between slots.
 .mode {
-  flex: 1 1 0;
+  position: relative;
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
   min-width: 0;
-  text-align: center;
+  min-height: calc(#{$mode-line} + #{$mode-pad-y} * 2 + 2px);
+}
+
+.mode + .mode::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: calc(#{sp(xxs)} / -2);
+  width: 1px;
+  background: $table-row-rule;
+}
+
+.modeText {
+  align-self: center;
   font-size: fs(xxs);
-  font-weight: 600;
-  letter-spacing: 0.06em;
-  color: $widget-label;
+  font-weight: 800;
+  line-height: $mode-line;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: $chip-text-muted;
+  text-box: trim-both cap alphabetic;
 }
 
-.modeActive {
-  font-weight: 700;
-  color: $race-amber;
+.modeChip {
+  --chip-min-width: 100%;
+  --chip-line: #{$mode-line};
+  --chip-pad-y: #{$mode-pad-y};
+  --chip-lead-size: #{fs(xxs)};
+  --chip-lead-weight: 800;
 }
 
-// DEPLOY/REGEN and the per-lap energy as one text line, not two rows.
+.statusStrip {
+  padding: sp(xs) sp(lg);
+  background: $strip-ground;
+}
+
 .statusRow {
   display: flex;
-  align-items: baseline;
-  gap: sp(md);
+  align-items: center;
+  justify-content: space-between;
+  gap: sp(sm);
   min-width: 0;
 }
 
-// Label left, value right — the values land in columns instead of drifting
-// with however wide the label beside them happens to be.
-//
-// Sized from its own content, never to an even half: DEPLOY carries a longer
-// word and a signed three-digit value, so an even split hands it less than it
-// needs and the reading runs out under the divider and into the lap beside it.
-// The halves take what they need first and share what is left over.
-.statusItem {
-  flex: 1 1 auto;
+.statusChips {
+  display: flex;
+  align-items: center;
+  gap: sp(xs);
+  min-width: 0;
+}
+
+.chipUnit {
+  margin-left: ws(3);
+  color: $chip-text-muted;
+  font-weight: 600;
+}
+
+.power {
   display: flex;
   align-items: baseline;
-  justify-content: space-between;
-  gap: sp(sm);
-  min-width: max-content;
-}
-
-.statusDivider {
-  align-self: stretch;
-  width: 1px;
-  background: $widget-border-default;
-}
-
-.powerState {
-  font-size: fs(xxs);
-  font-weight: 700;
-  letter-spacing: 0.1em;
+  gap: sp(xxs);
+  font-family: $font-mono;
+  line-height: 1;
   white-space: nowrap;
 }
 
-// The two numbers the row exists for: set larger, heavier and slanted, so they
-// carry against the labels beside them instead of reading as more of the same
-// line. The slant is the bar's, so the plate leans one way throughout.
+.powerSign {
+  font-size: fs(md);
+  font-weight: 800;
+}
+
 .powerValue {
-  font-family: $font-mono;
   font-size: fs(lg);
   font-weight: 800;
-  white-space: nowrap;
-}
-
-.lapValue {
-  color: $widget-text-primary;
-}
-
-.lapLabel {
-  color: $widget-label;
+  letter-spacing: -0.025em;
 }
 
 .powerUnit {
-  font-size: 0.7em;
-  opacity: 0.65;
+  margin-left: ws(2);
+  font-family: $font-widget;
+  font-size: fs(xxxs);
+  font-weight: 800;
+  color: $chip-text-muted;
 }
 
-.stateDeploy {
-  color: $race-amber;
+// White at rest; while power flows, the figure takes the state's colour.
+.powerIdle {
+  color: $widget-text-primary;
+
+  .powerSign {
+    color: $chip-text-muted;
+  }
 }
 
-.stateRegen {
-  color: $race-blue;
+.powerDeploy {
+  color: $chip-info;
 }
 
-.stateIdle {
-  color: $widget-label;
+.powerRegen {
+  color: $chip-positive;
 }
