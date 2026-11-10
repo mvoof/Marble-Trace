@@ -3,14 +3,12 @@ import { observer } from 'mobx-react-lite';
 
 import { FixedDigits } from '@shared/ui/FixedDigits/FixedDigits';
 import { StatChip } from '@shared/ui/StatChip/StatChip';
-import { NO_TIME_DATA_PLACEHOLDER } from '@shared/lib/telemetry-format';
+import { EMPTY_VALUE } from '@shared/lib/telemetry-format';
 import { computeNextStopForecast, formatCountdown } from '../fuel-utils';
 import styles from './FuelNextStop.module.scss';
 import { useBackendComputedStore } from '@entities/cars/computed-context';
 import { usePlayerStore } from '@entities/player/player-context';
 import type { FuelWidgetSettings } from '../settings-schema';
-
-const NO_LAP_PLACEHOLDER = '--';
 
 /** The footer bar: the laps the next window spans and the time until it opens. */
 export const FuelNextStop = observer(() => {
@@ -49,8 +47,13 @@ export const FuelNextStop = observer(() => {
       <span className={styles.label}>NEXT PIT</span>
 
       <div className={styles.chips}>
-        <StatChip lead="LAP" tone="positive" className={styles.chip}>
-          {forecast.targetLap ?? NO_LAP_PLACEHOLDER}
+        <StatChip
+          lead="LAP"
+          look="reading"
+          tone="positive"
+          className={styles.chip}
+        >
+          {forecast.targetLap ?? EMPTY_VALUE}
 
           {forecast.windowEndLap !== null && (
             <span className={styles.lapRangeEnd}>–{forecast.windowEndLap}</span>
@@ -59,6 +62,7 @@ export const FuelNextStop = observer(() => {
 
         <StatChip
           lead="EST"
+          look="reading"
           tone="accent"
           className={`${styles.chip} ${hasCountdown ? styles.countdown : styles.countdownEmpty}`}
         >
@@ -66,7 +70,7 @@ export const FuelNextStop = observer(() => {
             text={
               forecast.secondsUntil !== null
                 ? formatCountdown(forecast.secondsUntil)
-                : NO_TIME_DATA_PLACEHOLDER
+                : EMPTY_VALUE
             }
           />
         </StatChip>

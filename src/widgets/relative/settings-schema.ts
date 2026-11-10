@@ -42,12 +42,19 @@ const COLUMNS = {
   showLicBadge: bool(true),
   /** Keep the class letter in the SR badge ("A 4.99") or the rating alone ("4.99"). */
   showLicenseLetter: bool(true),
+  /**
+   * Keep the safety rating beside the class letter ("A 4.99"), or show the
+   * letter alone ("A"). Without the letter the rating always shows.
+   */
+  showSafetyRatingValue: bool(true),
   licBadgeStyle: choice(LIC_BADGE_STYLE, 'badge', {
     label: 'common.licBadgeStyle',
   }),
   showIRating: bool(true),
   /** Round the iRating to a thousand ("9.9k") or spell it out ("9873"), which widens the column. */
   abbreviateIRating: bool(true),
+  /** The iRating on its white chip, or as a plain white number. */
+  showIRatingChip: bool(true),
   /** Driver's profile country flag, in its own column before the name. */
   showCountryFlag: bool(false),
 } as const;

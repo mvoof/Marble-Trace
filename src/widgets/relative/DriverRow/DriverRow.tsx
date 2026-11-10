@@ -14,12 +14,8 @@ import { getContrastTextColor, playerRowStyle } from '@shared/lib/colors';
 import { CountryFlag } from '@shared/ui/CountryFlag/CountryFlag';
 import { DriverFlagBadge } from '@shared/ui/DriverFlagBadge/DriverFlagBadge';
 import { StatChip } from '@shared/ui/StatChip/StatChip';
-import {
-  formatIr,
-  iRatingChars,
-  licenseTone,
-  safetyRatingLabel,
-} from '@shared/ui/StatChip/rating';
+import { IRatingChip, SafetyRatingChip } from '@shared/ui/StatChip/RatingChip';
+import { ratingChipParts } from '@shared/ui/StatChip/rating';
 import {
   buildRelativeGridTemplate,
   resolveRowPosition,
@@ -136,6 +132,8 @@ export const DriverRow = observer(({ carIdx, index }: DriverRowProps) => {
 
   // Read from the identity, so the list changes with the row's own render and
   // adds none: a pit stop or a tow is the rare event the row redraws for.
+  // What the SR chip shows; 'none' only with the column off.
+  const srContent = ratingChipParts(settings).sr;
   const statusChips = resolveDriverStatuses({
     flagType,
     isTowed,
@@ -234,9 +232,8 @@ export const DriverRow = observer(({ carIdx, index }: DriverRowProps) => {
           <StatChip
             key={chip.status}
             lead={chip.label}
-            leadVariant={chip.lead}
+            look="reading"
             tone={chip.tone}
-            emphasized={chip.lead === 'solid'}
           >
             {chip.status === 'tow' && driver.isPlayer && player.isTowing ? (
               <TowTime />
@@ -245,26 +242,26 @@ export const DriverRow = observer(({ carIdx, index }: DriverRowProps) => {
         ))}
       </div>
 
-      {(settings.showLicBadge || settings.showIRating) && (
+      {/* The rule closes the rating group after whichever of the two ends it. */}
+      {srContent !== 'none' && (
+        <div
+          className={`${styles.colRating} ${settings.showIRating ? '' : styles.blockEnd}`}
+        >
+          <SafetyRatingChip
+            licString={driver.licString}
+            content={srContent}
+            badgeStyle={settings.licBadgeStyle}
+          />
+        </div>
+      )}
+
+      {settings.showIRating && (
         <div className={`${styles.colRating} ${styles.blockEnd}`}>
-          <StatChip
-            lead={
-              settings.showLicBadge
-                ? safetyRatingLabel(
-                    driver.licString,
-                    settings.showLicenseLetter
-                  )
-                : undefined
-            }
-            leadKind="number"
-            leadVariant={settings.licBadgeStyle === 'dark' ? 'tint' : 'solid'}
-            tone={licenseTone(driver.licString)}
-            valueChars={iRatingChars(settings.abbreviateIRating)}
-          >
-            {settings.showIRating
-              ? formatIr(driver.iRating, settings.abbreviateIRating)
-              : undefined}
-          </StatChip>
+          <IRatingChip
+            iRating={driver.iRating}
+            abbreviate={settings.abbreviateIRating}
+            hasBackground={settings.showIRatingChip}
+          />
         </div>
       )}
 

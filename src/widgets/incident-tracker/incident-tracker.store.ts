@@ -117,17 +117,6 @@ export class IncidentTrackerWidgetStore {
     return this.isDisqualified || this.isNearLimit;
   }
 
-  /** How much of the limit is used, 0..1; `null` in a session without one. */
-  get limitShare(): number | null {
-    const limit = this.incidentLimit;
-
-    if (limit === null || limit <= 0) {
-      return null;
-    }
-
-    return Math.min(1, this.countedIncidents / limit);
-  }
-
   private get playerCar() {
     const sessionInfo = this.root.session.sessionInfo;
 

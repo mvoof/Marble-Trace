@@ -8,6 +8,8 @@ $lead-text: var(--chip-lead-text, #{$chip-neutral-text});
 $solid-bg: var(--chip-solid-bg, #{$chip-neutral-text});
 $on-solid: var(--chip-on-solid, #{$chip-bg});
 $edge: var(--chip-edge, #{$chip-border});
+// The room above and below the text; a table row sets it lower.
+$pad-y: var(--chip-pad-y, #{sp(xxxs)});
 
 .chip {
   display: inline-flex;
@@ -28,8 +30,20 @@ $edge: var(--chip-edge, #{$chip-border});
   vertical-align: middle;
 }
 
-// Only a chip whose state asks for a look takes its color on the edge.
-.chipEmphasized {
+// `reading`: the label light on a deep shade of its color, framed in it.
+.lookReading {
+  @include chip-muted-solid;
+
+  border-color: $edge;
+}
+
+// `state`: the same deep shade, a label alone and unframed.
+.lookState {
+  @include chip-muted-solid;
+}
+
+// `mark`: the plain label, framed bright.
+.lookMark {
   border-color: $edge;
 }
 
@@ -51,8 +65,8 @@ $edge: var(--chip-edge, #{$chip-border});
   display: inline-flex;
   align-items: center;
   gap: sp(xxs);
-  min-height: calc(var(--chip-line, #{wfs(16)}) + #{sp(xxxs)} * 2);
-  padding: var(--chip-lead-padding, #{sp(xxxs) sp(xs)});
+  min-height: calc(var(--chip-line, #{wfs(16)}) + #{$pad-y} * 2);
+  padding: var(--chip-lead-padding, #{$pad-y sp(xs)});
   background: $lead-bg;
   color: $lead-text;
 }
@@ -60,7 +74,7 @@ $edge: var(--chip-edge, #{$chip-border});
 // A chip written outside React is its lead in one box, its edge inside that
 // box's height — counted back in so it is one height with the others.
 .chipSingle.lead {
-  min-height: calc(var(--chip-line, #{wfs(16)}) + #{sp(xxxs)} * 2 + 2px);
+  min-height: calc(var(--chip-line, #{wfs(16)}) + #{$pad-y} * 2 + 2px);
 }
 
 // A word set in the widget face sits high in its line box — the face's ascent
@@ -75,7 +89,7 @@ $edge: var(--chip-edge, #{$chip-border});
 .leadLabel {
   font-family: $font-widget;
   font-size: var(--chip-lead-size, #{fs(xxxs)});
-  font-weight: 700;
+  font-weight: var(--chip-lead-weight, 700);
   letter-spacing: 0.04em;
   text-transform: uppercase;
 }
@@ -89,9 +103,15 @@ $edge: var(--chip-edge, #{$chip-border});
 
 .leadSolid {
   padding-inline: var(--chip-solid-padding-x, #{sp(sm)});
-  background: $solid-bg;
-  color: $on-solid;
-  font-weight: 800;
+  // A caller can take the fill down toward the chip's ground and write on it
+  // in its own color — a bar where full fills would outshine the table.
+  background: color-mix(
+    in srgb,
+    #{$solid-bg} var(--chip-solid-strength, 100%),
+    #{$chip-bg}
+  );
+  color: var(--chip-solid-text, #{$on-solid});
+  font-weight: var(--chip-solid-weight, 800);
   letter-spacing: 0.06em;
 }
 
@@ -105,12 +125,12 @@ $edge: var(--chip-edge, #{$chip-border});
   display: inline-flex;
   align-items: center;
   min-width: 0;
-  padding: sp(xxxs) sp(sm);
+  padding: $pad-y var(--chip-value-padding-x, #{sp(sm)});
   background: var(--chip-value-bg, transparent);
   color: var(--chip-value-text, #{$widget-text-primary});
   font-family: $font-mono;
-  font-size: fs(xxs);
-  font-weight: 800;
+  font-size: var(--chip-value-size, #{fs(xxs)});
+  font-weight: var(--chip-value-weight, 800);
 }
 
 // A step up for the bar over the table.
@@ -192,7 +212,7 @@ $edge: var(--chip-edge, #{$chip-border});
   --chip-lead-text: #{$chip-danger};
   --chip-solid-bg: #{$chip-pit};
   --chip-on-solid: #{$widget-text-primary};
-  --chip-edge: #{$chip-danger-border};
+  --chip-edge: #{rgba($chip-danger, 0.4)};
 }
 
 .toneLapped {
@@ -233,6 +253,7 @@ $edge: var(--chip-edge, #{$chip-border});
   --chip-on-solid: #{$widget-text-primary};
   --chip-lead-bg: #{$chip-value-dark};
   --chip-lead-text: #{$tier};
+  --chip-lic-bright: #{$tier};
   --chip-value-bg: #{$chip-value-dark};
 }
 

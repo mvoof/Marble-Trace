@@ -2,10 +2,7 @@ import { observer } from 'mobx-react-lite';
 
 import { FixedDigits } from '@shared/ui/FixedDigits/FixedDigits';
 import { StatChip } from '@shared/ui/StatChip/StatChip';
-import {
-  formatFuel,
-  NO_FUEL_DATA_PLACEHOLDER,
-} from '@shared/lib/telemetry-format';
+import { formatFuel, EMPTY_VALUE } from '@shared/lib/telemetry-format';
 import { useBackendComputedStore } from '@entities/cars/computed-context';
 import { useUnitsStore } from '@entities/app-settings/units-context';
 import { fuelUnitShort } from '../../fuel-utils';
@@ -32,9 +29,7 @@ export const PitWarningFill = observer(() => {
           <FixedDigits
             className={styles.amountValue}
             text={
-              plan !== null
-                ? formatFuel(plan.fillNow, unitSystem)
-                : NO_FUEL_DATA_PLACEHOLDER
+              plan !== null ? formatFuel(plan.fillNow, unitSystem) : EMPTY_VALUE
             }
           />
 
@@ -56,7 +51,7 @@ export const PitWarningFill = observer(() => {
           <StatChip lead={`${plan.stops} STOPS`} tone="neutral">
             {fuelToAdd !== null
               ? formatFuel(fuelToAdd, unitSystem)
-              : NO_FUEL_DATA_PLACEHOLDER}
+              : EMPTY_VALUE}
           </StatChip>
         )}
       </div>

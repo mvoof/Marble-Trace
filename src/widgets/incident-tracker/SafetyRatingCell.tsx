@@ -38,7 +38,7 @@ export const SafetyRatingCell = observer(() => {
         <StatChip
           className={styles.badge}
           lead="SR"
-          leadVariant="solid"
+          look="state"
           tone={licenseTone(store.licString ?? UNKNOWN_LICENSE)}
         />
         <FixedDigits
@@ -50,6 +50,7 @@ export const SafetyRatingCell = observer(() => {
       {store.isRated ? (
         <StatChip
           className={styles.delta}
+          look="reading"
           leadKind="number"
           tone={DELTA_TONE[deltaDirection(store.srDelta)]}
           lead={
@@ -61,7 +62,12 @@ export const SafetyRatingCell = observer(() => {
           }
         />
       ) : (
-        <StatChip className={styles.delta} lead={UNRATED_LABEL} tone="muted" />
+        <StatChip
+          className={styles.delta}
+          look="reading"
+          lead={UNRATED_LABEL}
+          tone="muted"
+        />
       )}
     </div>
   );

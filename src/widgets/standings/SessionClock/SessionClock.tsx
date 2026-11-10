@@ -1,6 +1,5 @@
 import { useWidgetSettings } from '@entities/layout/useWidgetSettings';
 import { observer } from 'mobx-react-lite';
-import { Timer } from 'lucide-react';
 
 import {
   isLapLimitedSession,
@@ -76,7 +75,7 @@ export const SessionClock = observer(() => {
 
   if (isEnded) {
     return (
-      <StatChip icon={Timer} lead="TIME" tone="muted">
+      <StatChip lead="TIME" look="reading" tone="muted">
         END
       </StatChip>
     );
@@ -91,7 +90,7 @@ export const SessionClock = observer(() => {
   const prefix = isCountdown ? '' : '+';
 
   return (
-    <StatChip icon={Timer} lead="TIME" tone={URGENCY_TONE[urgency]} emphasized>
+    <StatChip lead="TIME" look="reading" tone={URGENCY_TONE[urgency]}>
       <span
         ref={clockRef}
         className={[

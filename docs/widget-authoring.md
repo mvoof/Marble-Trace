@@ -238,6 +238,11 @@ helper belongs.
 
 Read it. The cost of not reading it is a fifth lap-time formatter.
 
+Before the first color or chip, read
+[**docs/design/widget-design-guide.md**](design/widget-design-guide.md): which
+tone means what, and what is quiet, bright or vivid.
+[colors.html](design/colors.html) beside it draws the palette.
+
 > _Enforced by:_ `src/docs/widget-toolbox.test.ts` keeps the catalogue complete — a
 > module in the tree and not on the page fails `npm test`. Nothing stops you
 > writing a duplicate helper.
@@ -450,6 +455,10 @@ Look for the four failures that only appear here — one per quiet step:
 3. **No settings panel**, or the wrong one (step 8).
 4. **Wrong scale** — a `rem`, a `vw`, a raw px where a token belonged, or a
    `WidgetPanel` pinned at its default 200px `minWidth` (steps 3 and 4).
+
+And one that is a matter of judgement: **too much color**. Labels and statuses
+quiet, at most one bright figure per row or block, a full fill only for a call —
+the checklist closing [the design guide](design/widget-design-guide.md).
 
 > _Enforced by:_ nothing. This step is a habit, and it is the one that catches
 > what the suite cannot.

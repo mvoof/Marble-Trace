@@ -5,7 +5,7 @@ import { StatChip } from '@shared/ui/StatChip/StatChip';
 import {
   formatFuel,
   litersToDisplayFuel,
-  NO_FUEL_DATA_PLACEHOLDER,
+  EMPTY_VALUE,
 } from '@shared/lib/telemetry-format';
 import type { UnitSystem } from '@shared/contracts/domain';
 import { usePlayerStore } from '@entities/player/player-context';
@@ -35,7 +35,7 @@ export const FuelHeader = observer(() => {
       <div className={styles.title}>
         <StatChip
           lead={isLow ? 'FUEL LOW' : 'FUEL'}
-          leadVariant="solid"
+          look="state"
           tone={isLow ? 'danger' : 'positive'}
         />
 
@@ -46,9 +46,7 @@ export const FuelHeader = observer(() => {
         <FixedDigits
           className={styles.levelValue}
           text={
-            fuelLevel !== null
-              ? formatFuel(fuelLevel, unitSystem)
-              : NO_FUEL_DATA_PLACEHOLDER
+            fuelLevel !== null ? formatFuel(fuelLevel, unitSystem) : EMPTY_VALUE
           }
         />
 

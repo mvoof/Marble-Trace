@@ -1,7 +1,7 @@
 import type { FlagType } from '@shared/contracts/domain';
 import type { PitState } from '@shared/contracts/generated/bindings';
 
-import type { StatChipLead, StatChipTone } from './StatChip';
+import type { StatChipTone } from './StatChip';
 
 export type DriverStatus =
   | 'pit'
@@ -12,24 +12,23 @@ export type DriverStatus =
   | 'dnf'
   | 'tow';
 
-/** One status as a row draws it: a StatChip's lead, tone and fill. */
+/** One status as a row draws it: a StatChip's lead and tone. */
 export interface DriverStatusChip {
   status: DriverStatus;
   label: string;
   tone: StatChipTone;
-  lead: StatChipLead;
 }
 
-// A stop and a tow are filled — they change the race. Garage, off-track and a
-// disqualification are tinted: they are states, not events.
+// Every status is tinted, never filled: it qualifies the driver, so it stays
+// quieter than the position, the number and the name it sits beside.
 const CHIP_BY_STATUS: Record<DriverStatus, Omit<DriverStatusChip, 'status'>> = {
-  dnf: { label: 'DNF', tone: 'danger', lead: 'tint' },
-  pit_in: { label: 'IN', tone: 'info', lead: 'solid' },
-  pit_exit: { label: 'OUT', tone: 'accent', lead: 'solid' },
-  tow: { label: 'TOW', tone: 'lapped', lead: 'solid' },
-  out: { label: 'GAR', tone: 'muted', lead: 'tint' },
-  off_track: { label: 'OT', tone: 'muted', lead: 'tint' },
-  pit: { label: 'PIT', tone: 'danger', lead: 'solid' },
+  dnf: { label: 'DNF', tone: 'danger' },
+  pit_in: { label: 'IN', tone: 'info' },
+  pit_exit: { label: 'OUT', tone: 'accent' },
+  tow: { label: 'TOW', tone: 'lapped' },
+  out: { label: 'GAR', tone: 'muted' },
+  off_track: { label: 'OT', tone: 'muted' },
+  pit: { label: 'PIT', tone: 'danger' },
 };
 
 export interface DriverStatusState {

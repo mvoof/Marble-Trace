@@ -1,6 +1,8 @@
 // Two groups pulled to the ends: track conditions at the left, the player's own
 // counts at the right.
 .sessionFooter {
+  @include table-bar-chips;
+
   display: flex;
   align-items: center;
   justify-content: space-between;

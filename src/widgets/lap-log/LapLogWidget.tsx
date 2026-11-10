@@ -10,7 +10,8 @@ import { useWidgetSettings } from '@entities/layout/useWidgetSettings';
 import { usePlayerStore } from '@entities/player/player-context';
 import { useSimStore } from '@entities/sim/sim-context';
 import type { LapHistoryEntry } from '@shared/contracts/generated/bindings';
-import { averageValidLapTime, formatLapTimeOrDash } from './lap-log-utils';
+import { formatLapTimeOrDash } from '@shared/lib/telemetry-format';
+import { averageValidLapTime } from './lap-log-utils';
 import { LapRow, type LapRowKind } from './LapRow/LapRow';
 import type { RowPadding } from '@shared/contracts/widget-choices';
 import type { LapLogVisibility, LapLogWidgetSettings } from './settings-schema';
@@ -120,8 +121,8 @@ export const LapLogWidget = observer(() => {
               <StatChip
                 // Without the delta column the card is too narrow for the word.
                 lead={showDelta ? 'BEST' : '★'}
+                look="reading"
                 tone="special"
-                emphasized
                 className={styles.bestChip}
               >
                 <FixedDigits text={formatLapTimeOrDash(bestLapTime)} />

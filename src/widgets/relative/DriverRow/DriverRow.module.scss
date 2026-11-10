@@ -2,6 +2,20 @@
 // Columns: pos | car# | name+badges(1fr) | lic? | iR? | gap
 .driverRow {
   --chip-line: #{$table-chip-line};
+  // A row's chips are a step lower than the bars' — 18px over the line's 14 —
+  // and tight at the sides, so they sit beside the name instead of over it.
+  // The row keeps its height ($chip-outer-height).
+  --chip-pad-y: #{ws(1)};
+  --chip-lead-padding: #{ws(1) sp(xxs)};
+  --chip-solid-padding-x: #{sp(xs)};
+  --chip-value-padding-x: #{sp(xs)};
+  // The chips are notes on the driver: a weight under the position, the number
+  // and the name, and the readings in the secondary white, so the row reads
+  // by who first.
+  --chip-lead-weight: 600;
+  --chip-solid-weight: 700;
+  --chip-value-weight: 600;
+  --chip-value-text: #{$widget-text-secondary};
 
   display: grid;
   // Cells fill the row's height so a column's stripe runs edge to edge; each
@@ -121,7 +135,7 @@
 .driverPosition {
   font-family: $font-mono;
   font-weight: 800;
-  font-size: fs(xs);
+  font-size: fs(sm);
   color: $widget-text-primary;
 }
 
@@ -145,11 +159,12 @@
 
 // Car number — the badge carries the class color
 .driverCarNumber {
-  font-size: fs(xxs);
+  font-size: fs(xs);
   font-weight: 800;
-  line-height: 1.25;
+  // One height with the row's chips: their line, edges and 1px padding.
+  line-height: calc(#{$table-chip-line} + 2px);
   font-family: $font-mono;
-  padding: sp(xxxs) sp(xxs);
+  padding: ws(1) sp(xxs);
   border-radius: radius(sm);
   white-space: nowrap;
 
@@ -159,7 +174,7 @@
   // sits outside the three digits.
   display: inline-block;
   box-sizing: border-box;
-  min-width: ws(28);
+  min-width: ws(30);
   text-align: center;
 }
 
@@ -177,8 +192,8 @@
 
 .driverName {
   font-family: $font-widget;
-  font-weight: 700;
-  font-size: fs(xs);
+  font-weight: 800;
+  font-size: fs(sm);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;

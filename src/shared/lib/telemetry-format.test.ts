@@ -5,6 +5,7 @@ import {
   formatSessionTime,
   formatGear,
   formatPercent,
+  formatLapTimeOrDash,
 } from './telemetry-format';
 
 describe('telemetry-format', () => {
@@ -58,5 +59,16 @@ describe('telemetry-format', () => {
       expect(formatPercent(0.999)).toBe('100%');
       expect(formatPercent(null)).toBe('--%');
     });
+  });
+});
+
+describe('formatLapTimeOrDash', () => {
+  it('writes a dash where there is no time, never the template', () => {
+    expect(formatLapTimeOrDash(null)).toBe('-');
+    expect(formatLapTimeOrDash(0)).toBe('-');
+  });
+
+  it('writes a time as the tables do', () => {
+    expect(formatLapTimeOrDash(90.412)).toBe('1:30.412');
   });
 });

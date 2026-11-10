@@ -5,7 +5,6 @@ import { useWidgetSettings } from '@entities/layout/useWidgetSettings';
 import type { IncidentTrackerWidgetSettings } from './settings-schema';
 import { useIncidentTrackerStore } from './incident-tracker-context';
 import { SafetyRatingCell } from './SafetyRatingCell';
-import { IncidentLimitBar } from './IncidentLimitBar';
 import { IncidentsCell } from './IncidentsCell';
 import { PenaltiesCell } from './PenaltiesCell';
 import { CleanCornersCell } from './CleanCornersCell';
@@ -38,9 +37,8 @@ const plateMinWidthPx = (
 
 /**
  * Two tiers: the rating the session is heading for on top, the counters under
- * it, and between them how much of the incident limit is used. Everything
- * rides the 4 Hz `safetyRating` frame and the session YAML, so nothing here is
- * on a hot tier.
+ * it. Everything rides the 4 Hz `safetyRating` frame and the session YAML, so
+ * nothing here is on a hot tier.
  */
 export const IncidentTrackerWidget = observer(() => {
   const settings =
@@ -57,8 +55,6 @@ export const IncidentTrackerWidget = observer(() => {
       className={`${styles.root} ${store.isLimitAlarm ? styles.rootAlarm : ''}`}
     >
       {settings.showProjectedSr ? <SafetyRatingCell /> : null}
-
-      <IncidentLimitBar />
 
       <div className={styles.counters}>
         <IncidentsCell />

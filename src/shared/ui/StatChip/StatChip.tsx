@@ -40,11 +40,37 @@ const TONE_CLASS: Record<StatChipTone, string> = {
 };
 
 /**
- * `tint` writes the lead in its color on a dark ground of it; `solid` fills it
- * with the color — kept for what names a state: the session type, a license
- * class, a pit badge.
+ * How the chip draws itself — the one place a widget picks it, never its own
+ * CSS:
+ * - `reading` — a label and its value: the label light on a deep shade of the
+ *   color, framed in it (the tables' bars, a lap time, a pit status);
+ * - `state` — a label alone in the same deep shade, unframed (the session
+ *   type, the lap a sector counts);
+ * - `mark` — the label in its color on a dark ground of it, framed bright: a
+ *   figure that stands out from its column (a best lap, the leader);
+ * - `vivid` — the label filled in the full color: only where the color is the
+ *   reading (a license class) or a call (PIT NOW);
+ * - `plain` — the label in its color, an unlit frame.
  */
-export type StatChipLead = 'tint' | 'solid';
+export type StatChipLook = 'plain' | 'reading' | 'state' | 'mark' | 'vivid';
+
+const LOOK_CLASS: Record<StatChipLook, string> = {
+  plain: '',
+  reading: styles.lookReading,
+  state: styles.lookState,
+  mark: styles.lookMark,
+  vivid: '',
+};
+
+/** The looks whose label is filled. */
+const FILLED_LOOKS: ReadonlySet<StatChipLook> = new Set([
+  'reading',
+  'state',
+  'vivid',
+]);
+
+/** The filled looks that drop their frame when the label is all they hold. */
+const UNFRAMED_ALONE: ReadonlySet<StatChipLook> = new Set(['state', 'vivid']);
 
 /** A word set as a label, or a number set in the mono face. */
 export type StatChipLeadKind = 'label' | 'number';
@@ -70,15 +96,20 @@ export const writeStatChip = (
   element: HTMLElement,
   tone: StatChipTone,
   kind: StatChipLeadKind,
-  text: string
+  text: string,
+  look: StatChipLook = 'plain'
 ): void => {
   element.className = [
     styles.chip,
     styles.chipSingle,
     TONE_CLASS[tone],
+    LOOK_CLASS[look],
     styles.lead,
     kind === 'label' ? styles.leadLabel : styles.leadNumber,
-  ].join(' ');
+    FILLED_LOOKS.has(look) ? styles.leadSolid : '',
+  ]
+    .filter(Boolean)
+    .join(' ');
 
   const textElement = document.createElement('span');
   textElement.className = styles.leadText;
@@ -93,7 +124,7 @@ interface StatChipProps {
   /** The lead part: a label, a status, a rating. */
   lead?: ReactNode;
   leadKind?: StatChipLeadKind;
-  leadVariant?: StatChipLead;
+  look?: StatChipLook;
   size?: StatChipSize;
   /** The value part, on the chip's dark ground. */
   children?: ReactNode;
@@ -107,8 +138,6 @@ interface StatChipProps {
   tone?: StatChipTone;
   /** A data-driven color (temperature, wetness); wins over `tone`. */
   toneColor?: string;
-  /** The chip's state asks for a look: its edge takes the color. */
-  emphasized?: boolean;
   /** The value in the danger color — a limit is close. */
   valueDanger?: boolean;
   className?: string;
@@ -124,14 +153,13 @@ export const StatChip = observer(
     icon: Icon,
     lead,
     leadKind = 'label',
-    leadVariant = 'tint',
+    look = 'plain',
     size = 'sm',
     children,
     limit,
     valueChars,
     tone,
     toneColor,
-    emphasized = false,
     valueDanger = false,
     className,
   }: StatChipProps) => {
@@ -149,16 +177,17 @@ export const StatChip = observer(
 
     const hasLead = Icon !== undefined || lead !== undefined;
     const hasValue = children !== undefined;
+    const isFilled = FILLED_LOOKS.has(look);
 
     return (
       <span
         className={[
           styles.chip,
           hasValue ? '' : styles.chipSingle,
-          !hasValue && leadVariant === 'solid' ? styles.chipSolid : '',
+          !hasValue && UNFRAMED_ALONE.has(look) ? styles.chipSolid : '',
           SIZE_CLASS[size],
           toneClass,
-          emphasized ? styles.chipEmphasized : '',
+          LOOK_CLASS[look],
           className ?? '',
         ]
           .filter(Boolean)
@@ -170,7 +199,7 @@ export const StatChip = observer(
             className={[
               styles.lead,
               leadKind === 'label' ? styles.leadLabel : styles.leadNumber,
-              leadVariant === 'solid' ? styles.leadSolid : '',
+              isFilled ? styles.leadSolid : '',
             ]
               .filter(Boolean)
               .join(' ')}

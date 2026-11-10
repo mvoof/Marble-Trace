@@ -77,8 +77,15 @@ export const RelativeSettingsPanel = observer(() => {
         <Row setting="showLicBadge" />
         <Row setting="licBadgeStyle" dependsOn="showLicBadge" />
         <Row setting="showLicenseLetter" dependsOn="showLicBadge" />
+        <Row
+          setting="showSafetyRatingValue"
+          dependsOn={(settings) =>
+            settings.showLicBadge && settings.showLicenseLetter
+          }
+        />
         <Row setting="showIRating" />
         <Row setting="abbreviateIRating" dependsOn="showIRating" />
+        <Row setting="showIRatingChip" dependsOn="showIRating" />
         <Row setting="showPitIndicator" />
         <Row setting="showRadioMark" />
         <Row setting="abbreviateNames" />

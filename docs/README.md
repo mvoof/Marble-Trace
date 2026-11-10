@@ -31,13 +31,14 @@ for the shape of the app.
 
 ### Build a widget
 
-| …                                                   | Read                                                 |
-| --------------------------------------------------- | ---------------------------------------------------- |
-| go from an idea to a merged widget, step by step    | [widget-authoring.md](widget-authoring.md)           |
-| find a helper, component, hook or token that exists | [widget-toolbox.md](widget-toolbox.md)               |
-| write its Storybook stories                         | [widget-stories.md](widget-stories.md)               |
-| take its pictures for the README and the site       | [widget-screenshots.md](widget-screenshots.md)       |
-| add a steering wheel silhouette to Input Trace      | [steering-wheel-assets.md](steering-wheel-assets.md) |
+| …                                                   | Read                                                                                              |
+| --------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| go from an idea to a merged widget, step by step    | [widget-authoring.md](widget-authoring.md)                                                        |
+| find a helper, component, hook or token that exists | [widget-toolbox.md](widget-toolbox.md)                                                            |
+| pick a color, a chip look or a text style           | [design/widget-design-guide.md](design/widget-design-guide.md), [colors.html](design/colors.html) |
+| write its Storybook stories                         | [widget-stories.md](widget-stories.md)                                                            |
+| take its pictures for the README and the site       | [widget-screenshots.md](widget-screenshots.md)                                                    |
+| add a steering wheel silhouette to Input Trace      | [steering-wheel-assets.md](steering-wheel-assets.md)                                              |
 
 With an agent, the `new-widget` skill (`.claude/skills/new-widget/`) walks the
 same route and writes the files.
@@ -63,20 +64,21 @@ same route and writes the files.
 
 ## Every page
 
-| Page                                                 | Holds                                                                                                  |
-| ---------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
-| [architecture.md](architecture.md)                   | the full architecture: backend layers, frontend layers, the IPC, settings                              |
-| [rendering.md](rendering.md)                         | what the game and the app each pay for, hot/cold split, `useReactiveDomWrite`, `useReactiveCanvasLoop` |
-| [settings-schema.md](settings-schema.md)             | the settings load pipeline and how to write a migration                                                |
-| [widget-authoring.md](widget-authoring.md)           | the route for a new widget, ordered by cost                                                            |
-| [widget-toolbox.md](widget-toolbox.md)               | every module of `shared/lib`, `shared/ui`, `shared/hooks` (test-checked)                               |
-| [widget-stories.md](widget-stories.md)               | `defineWidgetStories`, seeding, controls                                                               |
-| [widget-screenshots.md](widget-screenshots.md)       | `capture:widgets`, `SHOTS`, the site's WebP copies                                                     |
-| [steering-wheel-assets.md](steering-wheel-assets.md) | tracing a wheel photo into an SVG and registering it                                                   |
-| [telemetry-tapes.md](telemetry-tapes.md)             | recording, replaying, `npm run perf`                                                                   |
-| [perf-baseline.md](perf-baseline.md)                 | measured numbers, append-only                                                                          |
-| [perf-methodology.md](perf-methodology.md)           | what the overlay costs the game: the bundle and the clock, metrics, protocol, `npm run perf:game`      |
-| [adr/](adr/README.md)                                | architecture decision records                                                                          |
-| [research/](research/)                               | investigations kept for reference (WebView2 flags)                                                     |
-| [agents/](agents/)                                   | how an agent uses the issue tracker, the domain docs, React Doctor                                     |
-| [rules/](rules/layers.md)                            | the full rules by area — layers, backend, telemetry, stores, widgets, style — with what holds each     |
+| Page                                                 | Holds                                                                                                                      |
+| ---------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| [architecture.md](architecture.md)                   | the full architecture: backend layers, frontend layers, the IPC, settings                                                  |
+| [rendering.md](rendering.md)                         | what the game and the app each pay for, hot/cold split, `useReactiveDomWrite`, `useReactiveCanvasLoop`                     |
+| [settings-schema.md](settings-schema.md)             | the settings load pipeline and how to write a migration                                                                    |
+| [widget-authoring.md](widget-authoring.md)           | the route for a new widget, ordered by cost                                                                                |
+| [widget-toolbox.md](widget-toolbox.md)               | every module of `shared/lib`, `shared/ui`, `shared/hooks` (test-checked)                                                   |
+| [design/](design/widget-design-guide.md)             | the widget design guide — quiet, bright and vivid color, what each tone means, text — and `colors.html`, the palette drawn |
+| [widget-stories.md](widget-stories.md)               | `defineWidgetStories`, seeding, controls                                                                                   |
+| [widget-screenshots.md](widget-screenshots.md)       | `capture:widgets`, `SHOTS`, the site's WebP copies                                                                         |
+| [steering-wheel-assets.md](steering-wheel-assets.md) | tracing a wheel photo into an SVG and registering it                                                                       |
+| [telemetry-tapes.md](telemetry-tapes.md)             | recording, replaying, `npm run perf`                                                                                       |
+| [perf-baseline.md](perf-baseline.md)                 | measured numbers, append-only                                                                                              |
+| [perf-methodology.md](perf-methodology.md)           | what the overlay costs the game: the bundle and the clock, metrics, protocol, `npm run perf:game`                          |
+| [adr/](adr/README.md)                                | architecture decision records                                                                                              |
+| [research/](research/)                               | investigations kept for reference (WebView2 flags)                                                                         |
+| [agents/](agents/)                                   | how an agent uses the issue tracker, the domain docs, React Doctor                                                         |
+| [rules/](rules/layers.md)                            | the full rules by area — layers, backend, telemetry, stores, widgets, style — with what holds each                         |

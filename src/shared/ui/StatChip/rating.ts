@@ -20,7 +20,7 @@ export const formatIr = (ir: number, abbreviate = true): string => {
 };
 
 /** What the rating chip shows of the safety rating. */
-export type RatingChipSr = 'none' | 'withLetter' | 'ratingOnly';
+export type RatingChipSr = 'none' | 'withLetter' | 'letterOnly' | 'ratingOnly';
 
 /** What the rating chip shows of the iRating. */
 export type RatingChipIr = 'none' | 'abbreviated' | 'full';
@@ -29,14 +29,17 @@ export type RatingChipIr = 'none' | 'abbreviated' | 'full';
 export const ratingChipParts = (settings: {
   showLicBadge: boolean;
   showLicenseLetter: boolean;
+  showSafetyRatingValue: boolean;
   showIRating: boolean;
   abbreviateIRating: boolean;
 }): { sr: RatingChipSr; ir: RatingChipIr } => ({
   sr: !settings.showLicBadge
     ? 'none'
-    : settings.showLicenseLetter
-      ? 'withLetter'
-      : 'ratingOnly',
+    : !settings.showLicenseLetter
+      ? 'ratingOnly'
+      : settings.showSafetyRatingValue
+        ? 'withLetter'
+        : 'letterOnly',
   ir: !settings.showIRating
     ? 'none'
     : settings.abbreviateIRating
@@ -49,15 +52,13 @@ export const ratingChipParts = (settings: {
 // scale, so the two are kept apart and the column grows with the text.
 const CHIP_FONT_PX = 11; // fs(xxs)
 export const MONO_ADVANCE_EM = 0.6; // JetBrains Mono
-const SOLID_TRACKING_EM = 0.06; // .leadSolid letter-spacing
-const SOLID_LEAD_PAD_PX = 16; // sp(sm) on both sides
-const TINT_LEAD_PAD_PX = 12; // sp(xs) on both sides
 const VALUE_PAD_PX = 16; // sp(sm) on both sides
 const CHIP_EDGE_PX = 2; // 1px on either side
 
 const SR_CHARS: Record<RatingChipSr, number> = {
   none: 0,
   withLetter: 6, // "A 4.99"
+  letterOnly: 1, // "A"
   ratingOnly: 4, // "4.99"
 };
 
@@ -67,7 +68,7 @@ const IR_CHARS: Record<RatingChipIr, number> = {
   full: 5, // "12345"
 };
 
-/** The characters the iRating half always holds: "9.9k", or "12345". */
+/** The characters the iRating chip always holds: "9.9k", or "12345". */
 export const iRatingChars = (abbreviate: boolean): number =>
   abbreviate ? IR_CHARS.abbreviated : IR_CHARS.full;
 
@@ -79,27 +80,48 @@ export interface ChipWidth {
   textPx: number;
 }
 
-/** The rating chip's width for the parts it shows and the badge style. */
-export const ratingChipWidth = (
-  sr: RatingChipSr,
-  ir: RatingChipIr,
-  badgeStyle: LicBadgeStyle
-): ChipWidth => {
-  const isSolid = badgeStyle !== 'dark';
-  const advancePx = MONO_ADVANCE_EM * CHIP_FONT_PX;
-  const srAdvancePx = isSolid
-    ? (MONO_ADVANCE_EM + SOLID_TRACKING_EM) * CHIP_FONT_PX
-    : advancePx;
+// A row's own chips are tighter at the sides than a bar's (the rows'
+// `--chip-*-padding-x` and `--chip-lead-padding`).
+// A filled SR chip is the tinted one's size: its padding takes back the edges it
+// lacks, and its figures are untracked.
+const ROW_SOLID_PAD_PX = 10; // sp(xxs) + 1px on both sides
+const ROW_TINT_PAD_PX = 8; // sp(xxs) on both sides
+const ROW_VALUE_PAD_PX = 8; // sp(xxs) on both sides — the SR chip's
 
-  const srPadPx =
-    sr === 'none' ? 0 : isSolid ? SOLID_LEAD_PAD_PX : TINT_LEAD_PAD_PX;
-  const irPadPx = ir === 'none' ? 0 : VALUE_PAD_PX;
+/**
+ * The SR chip's width, or null when it is off. Filled it has no edge; its
+ * letter and rating together hold the six characters "A 4.99" would, the
+ * space split between their two boxes.
+ */
+export const srChipWidth = (
+  sr: RatingChipSr,
+  badgeStyle: LicBadgeStyle
+): ChipWidth | null => {
+  if (sr === 'none') {
+    return null;
+  }
+
+  if (badgeStyle !== 'dark') {
+    return {
+      fixedPx: ROW_SOLID_PAD_PX,
+      textPx: SR_CHARS[sr] * MONO_ADVANCE_EM * CHIP_FONT_PX,
+    };
+  }
 
   return {
-    fixedPx: srPadPx + irPadPx + CHIP_EDGE_PX,
-    textPx: SR_CHARS[sr] * srAdvancePx + IR_CHARS[ir] * advancePx,
+    fixedPx: ROW_TINT_PAD_PX + CHIP_EDGE_PX,
+    textPx: SR_CHARS[sr] * MONO_ADVANCE_EM * CHIP_FONT_PX,
   };
 };
+
+/** The iRating chip's width, or null when it is off. */
+export const irChipWidth = (ir: RatingChipIr): ChipWidth | null =>
+  ir === 'none'
+    ? null
+    : {
+        fixedPx: ROW_VALUE_PAD_PX + CHIP_EDGE_PX,
+        textPx: IR_CHARS[ir] * MONO_ADVANCE_EM * CHIP_FONT_PX,
+      };
 
 /**
  * A chip holding a value alone — a lap time — of `chars` characters: its
@@ -152,6 +174,14 @@ const licenseLetter = (licString: string): string =>
 export const licenseTone = (licString: string): StatChipTone =>
   LICENSE_TONE[licenseLetter(licString)] ?? 'licenseR';
 
+/** "A 4.99" as its class letter and its rating; the rating may be empty. */
+export const safetyRatingParts = (
+  licString: string
+): { letter: string; rating: string } => ({
+  letter: licenseLetter(licString),
+  rating: licString?.slice(1).trim() || '',
+});
+
 /**
  * The safety rating as the chip writes it: "A 4.99", or "4.99" without the
  * class letter. A license with no rating keeps its letter rather than leaving
@@ -161,8 +191,7 @@ export const safetyRatingLabel = (
   licString: string,
   showLetter: boolean
 ): string => {
-  const letter = licenseLetter(licString);
-  const rating = licString?.slice(1).trim() || '';
+  const { letter, rating } = safetyRatingParts(licString);
 
   return showLetter || !rating ? `${letter} ${rating}`.trim() : rating;
 };

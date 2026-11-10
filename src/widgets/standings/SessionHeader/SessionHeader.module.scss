@@ -2,6 +2,8 @@
 // the laps and the clock at the right. The middle one is the elastic one — the
 // track name ends in an ellipsis before a chip is ever pushed out.
 .sessionHeader {
+  @include table-bar-chips;
+
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;

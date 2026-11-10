@@ -18,12 +18,8 @@ import { RadioMark } from '@entities/cars/RadioMark/RadioMark';
 import { getContrastTextColor, playerRowStyle } from '@shared/lib/colors';
 import { CountryFlag } from '@shared/ui/CountryFlag/CountryFlag';
 import { DriverFlagBadge } from '@shared/ui/DriverFlagBadge/DriverFlagBadge';
-import {
-  formatIr,
-  iRatingChars,
-  licenseTone,
-  safetyRatingLabel,
-} from '@shared/ui/StatChip/rating';
+import { IRatingChip, SafetyRatingChip } from '@shared/ui/StatChip/RatingChip';
+import { ratingChipParts } from '@shared/ui/StatChip/rating';
 import { StatChip, writeStatChip } from '@shared/ui/StatChip/StatChip';
 import { TireBadge } from '@shared/ui/TireBadge/TireBadge';
 import {
@@ -280,6 +276,8 @@ export const DriverRow = observer(
 
     // Read from the identity, so the list changes with the row's own render and
     // adds none: a pit stop or a tow is the rare event the row redraws for.
+    // What the SR chip shows; 'none' only with the column off.
+    const srContent = ratingChipParts(settings).sr;
     const statusChips = resolveDriverStatuses({
       flagType,
       isTowed,
@@ -369,9 +367,8 @@ export const DriverRow = observer(
             <StatChip
               key={chip.status}
               lead={chip.label}
-              leadVariant={chip.lead}
+              look="reading"
               tone={chip.tone}
-              emphasized={chip.lead === 'solid'}
             >
               {chip.status === 'tow'
                 ? towDetail
@@ -382,26 +379,23 @@ export const DriverRow = observer(
           ))}
         </div>
 
-        {(settings.showLicBadge || settings.showIRating) && (
-          <div className={cellClass('rating', styles.cellCenter)}>
-            <StatChip
-              lead={
-                settings.showLicBadge
-                  ? safetyRatingLabel(
-                      driver.licString,
-                      settings.showLicenseLetter
-                    )
-                  : undefined
-              }
-              leadKind="number"
-              leadVariant={settings.licBadgeStyle === 'dark' ? 'tint' : 'solid'}
-              tone={licenseTone(driver.licString)}
-              valueChars={iRatingChars(settings.abbreviateIRating)}
-            >
-              {settings.showIRating
-                ? formatIr(driver.iRating, settings.abbreviateIRating)
-                : undefined}
-            </StatChip>
+        {srContent !== 'none' && (
+          <div className={cellClass('sr', styles.cellCenter)}>
+            <SafetyRatingChip
+              licString={driver.licString}
+              content={srContent}
+              badgeStyle={settings.licBadgeStyle}
+            />
+          </div>
+        )}
+
+        {settings.showIRating && (
+          <div className={cellClass('ir', styles.cellCenter)}>
+            <IRatingChip
+              iRating={driver.iRating}
+              abbreviate={settings.abbreviateIRating}
+              hasBackground={settings.showIRatingChip}
+            />
           </div>
         )}
 

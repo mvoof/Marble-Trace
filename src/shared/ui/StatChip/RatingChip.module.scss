@@ -1,0 +1,91 @@
+// A filled SR chip's lead gives up its padding and gap: the letter and the
+// rating each pad themselves, edge to edge. Together they hold what "A 4.99" in
+// one box would — the space between them (one mono advance, 0.6em) split
+// across the seam (`srChipWidth`).
+$seam-half: 0.3em;
+
+// A filled SR chip the size of the tinted one: it has no edge, so its line
+// and its side padding each take the 1px edges back, and its figures go
+// untracked as the tinted chip's are.
+.srSolid {
+  --chip-line: calc(#{$table-chip-line} + 2px);
+  --chip-solid-padding-x: calc(#{sp(xxs)} + 1px);
+  --chip-split-padding-x: calc(#{sp(xxs)} + 1px);
+
+  > span:first-child {
+    letter-spacing: 0;
+  }
+}
+
+// The iRating on a white chip, its number dark — set apart from the colored SR
+// beside it, and from the rows' quieted chips.
+.iRating {
+  --chip-border: #{$chip-text};
+  --chip-value-bg: #{$chip-text};
+  --chip-value-text: #{$chip-bg};
+  // The SR chip's side padding, so the two chips are one shape.
+  --chip-value-padding-x: #{sp(xxs)};
+  // A step over the SR's 700: dark on white reads thinner than white on a
+  // fill, so the two figures look one weight.
+  --chip-value-weight: 800;
+
+  // The number centred in the box its widest format reserves.
+  > span {
+    justify-content: center;
+
+    > span {
+      text-align: center;
+    }
+  }
+}
+
+// Without the rating, the iRating's number alone: no chip around it, the full
+// white the row's names are in. Its edges stay, unseen, so the column keeps
+// its width.
+.iRating.iRatingPlain {
+  --chip-border: transparent;
+  --chip-value-bg: transparent;
+  --chip-value-text: #{$widget-text-primary};
+
+  background: transparent;
+}
+
+.split {
+  --chip-lead-padding: 0;
+  --chip-solid-padding-x: 0;
+
+  // The lead and the text box inside it run the chip's full height, so the
+  // letter's fill does too.
+  > span:first-child {
+    gap: 0;
+    align-items: stretch;
+
+    > span {
+      display: flex;
+    }
+  }
+}
+
+.letter,
+.rating {
+  display: inline-flex;
+  align-self: stretch;
+  align-items: center;
+}
+
+// The class on the license's bright color, written white; the rating stays
+// on the deeper shade the lead is filled with.
+.letter {
+  padding-inline: var(--chip-split-padding-x, #{sp(sm)}) $seam-half;
+  background: var(--chip-lic-bright);
+  color: $widget-text-primary;
+}
+
+.rating {
+  padding-inline: $seam-half var(--chip-split-padding-x, #{sp(sm)});
+}
+
+// The letter with no rating beside it: the lead's padding on both sides.
+.letterAlone {
+  padding-inline: var(--chip-split-padding-x, #{sp(sm)});
+}

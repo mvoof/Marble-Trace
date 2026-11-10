@@ -85,25 +85,18 @@
 .deltaChip {
   --chip-line: #{$table-chip-line};
   --chip-lead-size: #{fs(xxxs)};
-  --chip-lead-weight: 800;
+  --chip-solid-padding-x: #{sp(xs)};
 }
 
-// The delta filled in its tone, the tone's own text on it — a tint of green
-// over a green-shaded cell does not read.
-.deltaSlot.deltaChip {
-  --chip-lead-bg: var(--chip-solid-bg);
-  --chip-lead-text: var(--chip-on-solid);
-  --chip-edge: var(--chip-solid-bg);
-}
-
-// LIVE on the running sector: filled in the deep green, white on it.
+// LIVE on the running sector: filled in the deep green, white on it — the
+// quiet shade of green would sink into the running cell's own green ground.
 .deltaSlot.deltaChip.deltaLive {
-  --chip-lead-bg: #{$chip-lic-b};
-  --chip-lead-text: #{$widget-text-primary};
+  --chip-solid-bg: #{$chip-lic-b};
+  --chip-solid-strength: 100%;
+  --chip-solid-text: #{$widget-text-primary};
+  --chip-solid-weight: 800;
   --chip-lead-size: #{wfs(9)};
   --chip-edge: #{$chip-lic-b};
-
-  font-weight: 800;
 }
 
 .time {

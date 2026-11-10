@@ -52,8 +52,8 @@ export const OrderChips = observer(() => {
       >
         <StatChip
           lead="FAST REP"
+          look={isFastRepairOrdered ? 'mark' : 'plain'}
           tone={isFastRepairOrdered ? 'positive' : 'muted'}
-          emphasized={isFastRepairOrdered}
         >
           {used}/{available + used}
         </StatChip>

@@ -1,4 +1,6 @@
 .header {
+  @include table-bar-chips;
+
   display: flex;
   align-items: center;
   justify-content: space-between;

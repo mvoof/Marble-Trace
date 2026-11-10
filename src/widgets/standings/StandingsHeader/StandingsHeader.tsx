@@ -24,13 +24,6 @@ export const StandingsHeader = observer(() => {
   // The rules between groups of columns run up through the header too.
   const endsBlock = (column: StandingsColumn): boolean => blockEnds.has(column);
 
-  const ratingLabel = [
-    settings.showLicBadge ? 'SR' : null,
-    settings.showIRating ? 'iR' : null,
-  ]
-    .filter(Boolean)
-    .join(' / ');
-
   return (
     <div
       className={styles.headerRow}
@@ -58,9 +51,15 @@ export const StandingsHeader = observer(() => {
         Driver
       </StandingsHeaderCell>
 
-      {(settings.showLicBadge || settings.showIRating) && (
-        <StandingsHeaderCell align="center" endsBlock={endsBlock('rating')}>
-          {ratingLabel}
+      {settings.showLicBadge && (
+        <StandingsHeaderCell align="center" endsBlock={endsBlock('sr')}>
+          SR
+        </StandingsHeaderCell>
+      )}
+
+      {settings.showIRating && (
+        <StandingsHeaderCell align="center" endsBlock={endsBlock('ir')}>
+          iR
         </StandingsHeaderCell>
       )}
 

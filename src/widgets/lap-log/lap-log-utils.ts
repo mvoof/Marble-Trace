@@ -1,6 +1,5 @@
 import type { LapHistoryEntry } from '@shared/contracts/generated/bindings';
 import type { StatChipTone } from '@shared/ui/StatChip/StatChip';
-import { formatLapTime } from '@shared/lib/telemetry-format';
 
 /** The StatChip tones a lap's delta takes. */
 export type PaceLossTone = Extract<
@@ -57,18 +56,6 @@ export const averageValidLapTime = (
   const total = times.reduce((sum, time) => sum + time, 0);
 
   return { average: total / times.length, count: times.length };
-};
-
-/** What the log writes where it has no time or delta: a dash, never a template. */
-export const EMPTY_VALUE = '-';
-
-/** A lap time, or a dash when there is none yet. */
-export const formatLapTimeOrDash = (seconds: number | null): string => {
-  if (seconds === null || seconds <= 0) {
-    return EMPTY_VALUE;
-  }
-
-  return formatLapTime(seconds);
 };
 
 /** The mockup card's width, every column shown. */

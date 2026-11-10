@@ -1,6 +1,6 @@
 import { useWidgetSettings } from '@entities/layout/useWidgetSettings';
 import { observer } from 'mobx-react-lite';
-import { Flag, Trophy, Users } from 'lucide-react';
+import { Users } from 'lucide-react';
 
 import { formatIRating } from '@shared/lib/driver';
 import { resolveSessionLaps } from '@shared/lib/telemetry-format';
@@ -101,7 +101,7 @@ export const SessionHeader = observer(() => {
             lead={(
               currentSession.sessionTypeLabel ?? currentSession.sessionType
             ).toUpperCase()}
-            leadVariant="solid"
+            look="state"
             size="md"
             tone={
               SESSION_TYPE_TONE[
@@ -112,13 +112,13 @@ export const SessionHeader = observer(() => {
         )}
 
         {settings.showTotalDrivers && (
-          <StatChip icon={Users} lead="DRIVERS" tone="info">
+          <StatChip icon={Users} look="reading" tone="info">
             {driverIdentities.length}
           </StatChip>
         )}
 
         {showSof && (
-          <StatChip icon={Trophy} lead="SOF" tone="accent">
+          <StatChip lead="SOF" look="reading" tone="accent">
             {formatIRating(overallSof, settings.abbreviateSof)}
           </StatChip>
         )}
@@ -129,10 +129,9 @@ export const SessionHeader = observer(() => {
       <div className={styles.sessionRight}>
         {lapProgress && (
           <StatChip
-            icon={Flag}
             lead="LAPS"
+            look="reading"
             tone={lapProgress.isFinalLap ? 'accent' : 'positive'}
-            emphasized={lapProgress.isFinalLap}
           >
             <span
               className={[
