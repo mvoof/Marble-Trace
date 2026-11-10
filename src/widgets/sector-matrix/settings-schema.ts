@@ -7,7 +7,10 @@ import {
 import { TIME_VISIBILITY } from '@shared/contracts/widget-choices';
 
 export const SECTOR_MATRIX_SETTINGS = defineSettings('sectorMatrix', {
-  showPredicted: bool(true),
+  /** The PRED chip in the header. */
+  predictedLap: choice(TIME_VISIBILITY, 'always'),
+  /** The band of sector segments, the lap percent and the sector counter. */
+  showProgress: bool(true),
   showSectors: bool(true),
   /** The LAST chip in the footer. */
   lastLapChip: choice(TIME_VISIBILITY, 'always'),

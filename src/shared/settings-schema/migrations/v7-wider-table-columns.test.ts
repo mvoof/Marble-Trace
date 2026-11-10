@@ -264,6 +264,52 @@ describe('v7 — table frames widened with their columns', () => {
     );
   });
 
+  it('turns the predicted lap switch into its visibility choice', () => {
+    const migrated = v7WiderTableColumns.migrate(
+      fileWith(
+        [
+          instance('sector-matrix', 330, {
+            id: 'on',
+            settings: { showPredicted: true, showSectors: false },
+          }),
+          instance('sector-matrix', 330, {
+            id: 'off',
+            settings: { showPredicted: false },
+          }),
+          instance('sector-matrix', 330, {
+            id: 'broken',
+            settings: { showPredicted: 'yes' },
+          }),
+          instance('sector-matrix', 330, { id: 'untouched' }),
+        ],
+        {
+          'sector-matrix': {
+            enabled: true,
+            size: { width: 330, height: 180 },
+            settings: { showPredicted: false },
+          },
+        }
+      )
+    );
+
+    const settingsOf = migrated['widgetTemplates'] as Record<
+      string,
+      { settings: Record<string, unknown> }
+    >;
+
+    expect(
+      widgetsOf(migrated).map((widget) => widget['settings'])
+    ).toStrictEqual([
+      { predictedLap: 'always', showSectors: false },
+      { predictedLap: 'never' },
+      {},
+      {},
+    ]);
+    expect(settingsOf['sector-matrix'].settings).toStrictEqual({
+      predictedLap: 'never',
+    });
+  });
+
   it('survives a frame that is not a number', () => {
     const broken = { ...instance('relative', 0), frame: { width: 'wide' } };
 

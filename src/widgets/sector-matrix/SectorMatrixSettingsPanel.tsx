@@ -16,13 +16,14 @@ export const SectorMatrixSettingsPanel = observer(() => {
   return (
     <Card title={t('settingsPanels.sectorMatrix.options')}>
       <div className={styles.fieldGroup}>
+        <Row setting="showProgress" />
         <Row setting="showSectors" />
       </div>
 
       {/* Not a dependant of the sector times: the predicted lap is drawn in
           the header, which stays when the sector grid is switched off. */}
       <div className={styles.fieldGroup}>
-        <Row setting="showPredicted" />
+        <Row setting="predictedLap" />
       </div>
 
       <div className={styles.fieldGroup}>

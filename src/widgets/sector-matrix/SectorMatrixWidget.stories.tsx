@@ -33,7 +33,7 @@ const meta: Meta<StoryArgs> = {
     seedSnapshot: true,
     seed: (store, args, scenarioId) => {
       const settings: Partial<SectorMatrixWidgetSettings> = {
-        showPredicted: true,
+        predictedLap: 'always',
       };
 
       store.liveWidgets.updateUserSettings('sector-matrix', settings);

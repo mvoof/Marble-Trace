@@ -14,7 +14,7 @@ export const SectorMatrixWidget = observer(() => {
   const { sessionInfo } = useSessionStore();
   const sim = useSimStore();
 
-  const { showSectors } =
+  const { showSectors, showProgress } =
     useWidgetSettings<SectorMatrixWidgetSettings>('sector-matrix');
 
   const sectors = sessionInfo?.sectors ?? [];
@@ -28,7 +28,7 @@ export const SectorMatrixWidget = observer(() => {
         <>
           <SectorHeader />
 
-          <SectorProgress sectors={sectors} />
+          {showProgress && <SectorProgress sectors={sectors} />}
 
           {showSectors && <SectorGrid sectorCount={sectors.length} />}
 

@@ -14,7 +14,7 @@ import styles from './SectorHeader.module.scss';
 export const SectorHeader = observer(() => {
   const { lapTiming } = usePlayerStore();
 
-  const { showPredicted } =
+  const { predictedLap } =
     useWidgetSettings<SectorMatrixWidgetSettings>('sector-matrix');
 
   const lapNum = lapTiming?.lap ?? null;
@@ -26,6 +26,10 @@ export const SectorHeader = observer(() => {
     bestLapTime !== null && bestLapTime > 0 && liveDelta !== null
       ? bestLapTime + liveDelta
       : null;
+
+  const showsPredicted =
+    predictedLap === 'always' ||
+    (predictedLap === 'withTime' && predictedTime !== null);
 
   return (
     <div className={styles.header}>
@@ -43,7 +47,7 @@ export const SectorHeader = observer(() => {
         />
       </div>
 
-      {showPredicted && (
+      {showsPredicted && (
         <StatChip
           lead="PRED"
           look="reading"

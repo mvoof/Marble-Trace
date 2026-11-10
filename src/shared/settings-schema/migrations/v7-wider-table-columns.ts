@@ -1,5 +1,10 @@
 import type { Migration, SettingsBlob } from '../types';
-import { asObject, mapEveryStoredWidget, type StoredBlobWidget } from '../blob';
+import {
+  asObject,
+  mapEveryStoredWidget,
+  patchStoredWidgetSettings,
+  type StoredBlobWidget,
+} from '../blob';
 
 /**
  * v6 → v7. The Standings and Relative columns grew wider.
@@ -31,6 +36,11 @@ import { asObject, mapEveryStoredWidget, type StoredBlobWidget } from '../blob';
  * height it had on disk, never its own, gives way to its design height of 385
  * at the frame's scale. The sector matrix moved too: its design width became
  * its mockup card, 330 instead of 320, and its frame widens by that ratio.
+ *
+ * The sector matrix's predicted lap also stopped being a switch: `showPredicted`
+ * became `predictedLap`, shown always, once it has a time, or never. On is
+ * `always`, off is `never`; a value that is no boolean is dropped, so the
+ * default takes it.
  */
 
 type TableSettings = Record<string, unknown>;
@@ -396,12 +406,32 @@ const widenTemplates = (blob: SettingsBlob): SettingsBlob => {
   return { ...blob, widgetTemplates: widened };
 };
 
+const predictedLapVisibility = (
+  settings: Record<string, unknown>
+): Record<string, unknown> => {
+  if (!('showPredicted' in settings)) {
+    return settings;
+  }
+
+  const { showPredicted, ...rest } = settings;
+
+  if (typeof showPredicted !== 'boolean') {
+    return rest;
+  }
+
+  return { ...rest, predictedLap: showPredicted ? 'always' : 'never' };
+};
+
 export const v7WiderTableColumns: Migration = {
   to: 7,
   describe:
-    'Standings and Relative frames widened with their columns; Fuel, Lap Log and Sector Matrix widened to their new design widths',
+    'Standings and Relative frames widened with their columns; Fuel, Lap Log and Sector Matrix widened to their new design widths; Sector Matrix predicted lap became a visibility choice',
   migrate: (blob: SettingsBlob): SettingsBlob =>
-    widenTemplates(
-      mapEveryStoredWidget(blob, (widgets) => widgets.map(widenInstance))
+    patchStoredWidgetSettings(
+      widenTemplates(
+        mapEveryStoredWidget(blob, (widgets) => widgets.map(widenInstance))
+      ),
+      'sector-matrix',
+      predictedLapVisibility
     ),
 };
