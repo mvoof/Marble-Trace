@@ -147,7 +147,9 @@ git push --force-with-lease       # after a rebase of an already pushed branch
 
 ### 6. Open a pull request
 
-Against `main`, saying what changed and why. A new widget comes with its
+Against `main`, saying what changed and why. Just before opening it, add the
+branch's entry to `CHANGELOG.md` under `## [Unreleased]` — one per new feature,
+visible change or fix of a bug that shipped earlier, not one per commit. A new widget comes with its
 pictures, its README section and its site card
 ([widget-authoring.md → Step 12](docs/widget-authoring.md#step-12--put-it-in-the-readme-and-on-the-site)).
 

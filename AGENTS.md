@@ -36,6 +36,13 @@ Environment variables: `CONTRIBUTING.md` → Environment variables.
 - Object when a proposed solution seems wrong: give arguments, wait for confirmation.
 - Work on a branch. Commit when the work is done and the hooks pass, Conventional
   Commits style. **Pushing is the user's call, every time** — a new branch too.
+- **Changelog, once per branch, right before the pull request** — not on every
+  commit. `CHANGELOG.md` → `## [Unreleased]`, under Added / Changed / Removed /
+  Fixed, in the user's words. Entry for a new feature, a change users see, or a
+  fix of a bug that shipped earlier — even one met on an unrelated branch. A bug
+  the branch's own unreleased feature brought in gets no Fixed entry; that
+  feature's entry describes the result. A release renames `[Unreleased]` to
+  `## [x.y.z] — YYYY-MM-DD` and opens a new empty `[Unreleased]` above it.
 - Read external library docs through `context7`.
 - Check UI in the real app: Tauri MCP Bridge, `driver_session` (start, port 9223)
   with `tauri:dev` running, then `webview_screenshot` / `webview_find_element` /
