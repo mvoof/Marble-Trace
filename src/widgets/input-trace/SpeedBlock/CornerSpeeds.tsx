@@ -64,7 +64,8 @@ export const CornerSpeeds = observer(() => {
 
           const signature = `${row.text}|${row.look}|${row.color}`;
 
-          if (chip.dataset.shown === signature) {
+          // The class is checked too: a chip React rebuilt has lost it.
+          if (chip.dataset.shown === signature && chip.className !== '') {
             return;
           }
 

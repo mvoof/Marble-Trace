@@ -1,10 +1,11 @@
 // Entry, apex and exit side by side under the speed and gear, as wide as that
-// block and off the same right edge. Each chip sits in a cell of its own
-// width, so a two-digit speed does not move its neighbours.
+// block and off the same right edge, with air between them so they read as
+// three figures, not one strip. Each chip sits in a cell of its own width, so
+// a two-digit speed does not move its neighbours.
 .corners {
   display: flex;
   justify-content: flex-end;
-  gap: ws(2);
+  gap: ws(8);
   width: ws(116);
   box-sizing: border-box;
   padding-right: sp(sm);
@@ -13,7 +14,7 @@
 .cell {
   display: flex;
   justify-content: center;
-  width: ws(34);
+  width: ws(30);
 }
 
 // Every figure but the one to read now, dimmed as a whole — the quiet chip's
