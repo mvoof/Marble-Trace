@@ -4,11 +4,22 @@ import type { CSSProperties } from 'react';
 import { observer } from 'mobx-react-lite';
 
 import type { CoachInactiveReason } from '@shared/contracts/generated/bindings';
-import type { PhaseTime } from '@widgets/coach/coach-trace-utils';
+import {
+  StatChip,
+  type StatChipLook,
+  type StatChipTone,
+} from '@shared/ui/StatChip/StatChip';
+import {
+  EVEN_TIME_S,
+  formatSignedSeconds,
+  type PhaseTime,
+} from '@widgets/coach/coach-trace-utils';
 import {
   useCoachWidgetStore,
   useDrivingCoachWidgetStore,
 } from '@widgets/coach/coach-stores';
+
+import { SpeedGapChip } from './SpeedGapChip/SpeedGapChip';
 
 import styles from './CallRow.module.scss';
 import type { CoachWidgetSettings } from '../settings-schema';
@@ -46,16 +57,7 @@ const INACTIVE_HINT: Record<CoachInactiveReason, string> = {
   'no-telemetry': 'waiting for telemetry',
 };
 
-/** Below this (seconds) a phase is called even — neither gained nor lost. */
-const EVEN_TIME_S = 0.005;
-
-const signedSeconds = (deltaS: number): string => {
-  const sign = deltaS >= EVEN_TIME_S ? '+' : deltaS <= -EVEN_TIME_S ? '−' : '';
-
-  return `${sign}${Math.abs(deltaS).toFixed(2)}`;
-};
-
-interface PhaseReadoutProps {
+interface PhaseCellProps {
   label: string;
   color: string;
   gainColor: string;
@@ -64,14 +66,15 @@ interface PhaseReadoutProps {
 }
 
 /**
- * One phase of the reference's corner, as two lines: the phase in its colour,
- * and the time this lap gained (−, gain colour) or lost (+, loss colour) inside
- * it. While the car is still in the phase the figure runs, dimmed; past it,
- * it settles. Every cell has the same fixed width, so a changing figure never
- * moves its neighbours.
+ * One phase of the reference's corner, as a cell of two lines: the phase in
+ * its colour, and the time this lap gained (−, gain colour) or lost (+, loss
+ * colour) inside it. The cell the car is in is lit — a marker over it and a
+ * shade of its colour under the figure, which is still running. The cells
+ * share the row in equal parts, so a changing figure never moves its
+ * neighbours.
  */
-const PhaseReadout = observer(
-  ({ label, color, gainColor, lossColor, time }: PhaseReadoutProps) => {
+const PhaseCell = observer(
+  ({ label, color, gainColor, lossColor, time }: PhaseCellProps) => {
     const deltaColor =
       time === null || Math.abs(time.deltaS) < EVEN_TIME_S
         ? undefined
@@ -79,39 +82,53 @@ const PhaseReadout = observer(
           ? lossColor
           : gainColor;
 
+    const cellClass = [
+      styles.phase,
+      time?.kind === 'running' ? styles.phaseActive : '',
+    ]
+      .filter(Boolean)
+      .join(' ');
+
     const valueClass = [
       styles.phaseValue,
       time === null ? styles.phaseValueEmpty : '',
-      time?.kind === 'running' ? styles.phaseValueRunning : '',
     ]
       .filter(Boolean)
       .join(' ');
 
     return (
-      <span className={styles.phase}>
-        <span className={styles.phaseLabel} style={{ color } as CSSProperties}>
-          {label}
-        </span>
+      <span
+        className={cellClass}
+        style={{ '--phase-tone': color } as CSSProperties}
+      >
+        <span className={styles.phaseLabel}>{label}</span>
         <span
           className={valueClass}
           style={
             deltaColor ? ({ color: deltaColor } as CSSProperties) : undefined
           }
         >
-          {time === null ? NO_VALUE_TEXT : signedSeconds(time.deltaS)}
+          {time === null ? NO_VALUE_TEXT : formatSignedSeconds(time.deltaS)}
         </span>
       </span>
     );
   }
 );
 
+/** How the call's chip is drawn: a fixed tone, or the color the user set for the pedal. */
+interface CallChip {
+  look: StatChipLook;
+  tone?: StatChipTone;
+  toneColor?: string;
+}
+
 /**
- * The advisory call on the left, and on the right where the corner's time went:
- * gained or lost IN (the braking zone), at the APEX (off the brakes until the
- * throttle opens) and OUT (until full throttle), each part as the reference
- * drove it — the shaded zones on the chart below. The three
- * add up to what the corner cost. The advisory comes from the
- * shared coach store; the figures from this widget's trace window.
+ * The advisory call on the left as a chip, and on the right where the corner's
+ * time went: gained or lost IN (the braking zone), at the APEX (off the brakes
+ * until the throttle opens) and OUT (until full throttle), each part as the
+ * reference drove it — the shaded zones on the chart below. The three add up to
+ * what the corner cost. The advisory comes from the shared coach store; the
+ * figures from this widget's trace window.
  */
 export const CallRow = observer(() => {
   const coach = useDrivingCoachWidgetStore();
@@ -137,26 +154,23 @@ export const CallRow = observer(() => {
           : PACE_LABEL
         : ADVISORY_LABEL[advisory];
 
-  // SOON is neither the hard call nor the all-clear, so it takes neither of
-  // their colors: amber is the warning step between them, and it is fixed
-  // rather than configurable so the three steps always read as a sequence.
-  const callColor =
-    inactiveReason !== null || brakeSoon
-      ? undefined
-      : advisory === 'brake'
-        ? settings.brakeColor
-        : advisory === 'gas'
-          ? settings.gasColor
-          : undefined;
+  // A pedal call is a deep shade of the pedal's color. SOON is neither the
+  // hard call nor the all-clear, so it takes neither of their colors: the
+  // warning tone is fixed rather than configurable so the three steps always
+  // read as a sequence. GRIP is no instruction — the car is being corrected —
+  // and a status is no call at all, so both stay unlit.
+  const callChip: CallChip =
+    inactiveReason !== null || advisory === 'grip'
+      ? { look: 'plain', tone: 'muted' }
+      : brakeSoon
+        ? { look: 'state', tone: 'accent' }
+        : advisory === 'brake'
+          ? { look: 'state', toneColor: settings.brakeColor }
+          : advisory === 'gas'
+            ? { look: 'state', toneColor: settings.gasColor }
+            : { look: 'state', tone: 'muted' };
 
-  const callClass = [
-    styles.call,
-    inactiveReason !== null ? styles.callIdle : styles.callActive,
-    brakeSoon ? styles.callSoon : '',
-    advisory === 'grip' && inactiveReason === null ? styles.callGrip : '',
-  ]
-    .filter(Boolean)
-    .join(' ');
+  const callClass = inactiveReason !== null ? styles.status : styles.call;
 
   // The bar is the continuous signal behind the discrete call: how close the
   // last possible braking point is, and — once the call is GAS — how much of
@@ -182,20 +196,27 @@ export const CallRow = observer(() => {
   return (
     <div className={styles.root}>
       <div className={styles.row}>
-        <span
-          className={callClass}
-          style={
-            callColor ? ({ color: callColor } as CSSProperties) : undefined
-          }
-        >
-          {callText}
-        </span>
+        <div className={styles.callCell}>
+          {inactiveReason === null && settings.showSpeed ? (
+            <SpeedGapChip />
+          ) : null}
 
-        {inactiveReason !== null ? (
-          <span className={styles.hint}>{INACTIVE_HINT[inactiveReason]}</span>
-        ) : settings.showPhaseFigures ? (
+          <StatChip
+            className={callClass}
+            lead={callText}
+            look={callChip.look}
+            tone={callChip.tone}
+            toneColor={callChip.toneColor}
+          />
+
+          {inactiveReason !== null ? (
+            <span className={styles.hint}>{INACTIVE_HINT[inactiveReason]}</span>
+          ) : null}
+        </div>
+
+        {inactiveReason === null && settings.showPhaseFigures ? (
           <span className={styles.phases}>
-            <PhaseReadout
+            <PhaseCell
               label="IN"
               color={settings.brakeColor}
               gainColor={settings.gainColor}
@@ -204,14 +225,14 @@ export const CallRow = observer(() => {
             />
             {/* Mid-corner has no pedal of its own: it takes the reference
                 lap's colour, the same as its zone on the chart. */}
-            <PhaseReadout
+            <PhaseCell
               label="APEX"
               color={settings.referenceColor}
               gainColor={settings.gainColor}
               lossColor={settings.lossColor}
               time={trace.displayedApexTime}
             />
-            <PhaseReadout
+            <PhaseCell
               label="OUT"
               color={settings.gasColor}
               gainColor={settings.gainColor}

@@ -1,0 +1,16 @@
+.root {
+  display: flex;
+  flex-shrink: 0;
+}
+
+// Set on the chip itself: its quiet look sets a light weight of its own, which
+// a value inherited from here would lose to. The figure is bold and a step up
+// from a row's chip, the height of the call beside it.
+.root > span {
+  --chip-lead-size: #{fs(xs)};
+  --chip-solid-weight: 800;
+  --chip-solid-padding-x: #{sp(sm)};
+  --chip-pad-y: #{sp(xxs)};
+  // Wide enough for −00, so the chip holds its width as the gap changes.
+  --chip-min-width: #{ws(40)};
+}

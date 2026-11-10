@@ -720,6 +720,32 @@ export interface PhaseTime {
   deltaS: number;
 }
 
+/** Below this (seconds) a time is called even — neither gained nor lost. */
+export const EVEN_TIME_S = 0.005;
+
+/** A time against the reference to the hundredth, signed unless it is even. */
+export const formatSignedSeconds = (deltaS: number): string => {
+  const sign = deltaS >= EVEN_TIME_S ? '+' : deltaS <= -EVEN_TIME_S ? '−' : '';
+
+  return `${sign}${Math.abs(deltaS).toFixed(2)}`;
+};
+
+/**
+ * What the corner has cost so far: the phases measured, added up. Null until
+ * one of them has a time.
+ */
+export const cornerTimeS = (
+  phaseTimes: readonly (PhaseTime | null)[]
+): number | null => {
+  const measured = phaseTimes.filter((time) => time !== null);
+
+  if (measured.length === 0) {
+    return null;
+  }
+
+  return measured.reduce((total, time) => total + time.deltaS, 0);
+};
+
 /**
  * Where `atM` falls on the window's sample grid, as a fractional index;
  * `NO_VALUE` outside the window.

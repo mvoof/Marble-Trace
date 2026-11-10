@@ -7,7 +7,12 @@ import {
   speedUnit,
 } from '@shared/lib/telemetry-format';
 import { useReactiveDomWrite } from '@shared/hooks/useReactiveDomWrite';
+import { StatChip, type StatChipTone } from '@shared/ui/StatChip/StatChip';
 import { useUnitsStore } from '@entities/app-settings/units-context';
+import {
+  EVEN_TIME_S,
+  formatSignedSeconds,
+} from '@widgets/coach/coach-trace-utils';
 import {
   useCoachWidgetStore,
   useDrivingCoachWidgetStore,
@@ -17,14 +22,25 @@ import styles from './InfoRow.module.scss';
 import type { CoachWidgetSettings } from '../settings-schema';
 
 const NO_VALUE_TEXT = '—';
+const REFERENCE_LABEL = 'REF LAP';
+const SECONDS_UNIT = 's';
+
+const cornerTimeTone = (cornerTimeS: number | null): StatChipTone => {
+  if (cornerTimeS === null || Math.abs(cornerTimeS) < EVEN_TIME_S) {
+    return 'muted';
+  }
+
+  return cornerTimeS > 0 ? 'danger' : 'positive';
+};
 
 /**
- * Reference lap time, the speed pair at the car's current position, and which
- * of the two stored references is in use. All optional — the curves carry the
- * shape, this row carries the values for anyone who wants them.
+ * The footer bar: the speed pair at the car's current position, the stored
+ * reference lap the trace is compared against, and what the corner has cost so
+ * far — the gap between the two speeds sits on the chart above. All optional — the curves carry the shape,
+ * this row carries the values for anyone who wants them.
  *
- * The speed pair moves with the car and is written straight to its two spans;
- * the rest of the row changes once a lap and is rendered by React. See
+ * The speed pair moves with the car and is written straight to its spans; the
+ * rest of the row changes far less often and is rendered by React. See
  * `docs/rendering.md`.
  */
 export const InfoRow = observer(() => {
@@ -59,22 +75,30 @@ export const InfoRow = observer(() => {
     [coach, units]
   );
 
-  const showsAnything =
-    settings.showSpeed ||
-    settings.showReferenceLapTime ||
-    settings.showTrackCondition;
+  const showsReference =
+    settings.showReferenceLapTime || settings.showTrackCondition;
 
-  if (!showsAnything) {
+  if (!settings.showSpeed && !showsReference) {
     return null;
   }
 
   const referenceLapTimeS = trace.referenceLapTimeS;
   const condition = trace.referenceCondition;
+  const cornerTimeS = trace.displayedCornerTimeS;
+
+  // Lap time and condition are one fact — which stored reference is being
+  // compared against — so they are one chip: REF DRY 1:47.48. Dry is the
+  // best lap's own tone; wet is the exception worth noticing.
+  const namesCondition = settings.showTrackCondition && condition !== null;
+  const isWet = namesCondition && condition === 'wet';
+  const referenceLead = namesCondition
+    ? `REF ${condition.toUpperCase()}`
+    : REFERENCE_LABEL;
 
   return (
     <div ref={rootRef} className={styles.root}>
       {settings.showSpeed ? (
-        <span className={styles.group}>
+        <span className={styles.speed}>
           <span className={styles.value} />
           <span className={styles.separator}>/</span>
           <span className={styles.reference} />
@@ -82,37 +106,40 @@ export const InfoRow = observer(() => {
         </span>
       ) : null}
 
-      {/* Lap time and condition are one fact — which stored reference is being
-          compared against — so they read as one line: 1:47.48 · DRY. */}
-      {settings.showReferenceLapTime || settings.showTrackCondition ? (
-        <span className={`${styles.group} ${styles.groupEnd}`}>
-          <span className={styles.label}>REF LAP</span>
-
-          {settings.showReferenceLapTime ? (
-            <span className={styles.referenceLapTime}>
-              {referenceLapTimeS === null
+      <span className={`${styles.group} ${styles.groupEnd}`}>
+        {showsReference ? (
+          <StatChip
+            className={
+              isWet
+                ? `${styles.referenceChip} ${styles.referenceChipWet}`
+                : styles.referenceChip
+            }
+            lead={referenceLead}
+            look="reading"
+            tone={isWet ? 'info' : 'special'}
+          >
+            {settings.showReferenceLapTime
+              ? referenceLapTimeS === null
                 ? NO_VALUE_TEXT
-                : formatLapTime(referenceLapTimeS)}
-            </span>
-          ) : null}
+                : formatLapTime(referenceLapTimeS)
+              : undefined}
+          </StatChip>
+        ) : null}
 
-          {settings.showReferenceLapTime && settings.showTrackCondition ? (
-            <span className={styles.separator}>·</span>
-          ) : null}
-
-          {settings.showTrackCondition ? (
-            <span
-              className={
-                condition === 'wet'
-                  ? `${styles.condition} ${styles.conditionWet}`
-                  : styles.condition
-              }
-            >
-              {condition === null ? NO_VALUE_TEXT : condition.toUpperCase()}
-            </span>
-          ) : null}
-        </span>
-      ) : null}
+        {settings.showCallRow && settings.showPhaseFigures ? (
+          <StatChip
+            className={styles.cornerTime}
+            leadKind="number"
+            look="reading"
+            tone={cornerTimeTone(cornerTimeS)}
+            lead={
+              cornerTimeS === null
+                ? NO_VALUE_TEXT
+                : `${formatSignedSeconds(cornerTimeS)}${SECONDS_UNIT}`
+            }
+          />
+        ) : null}
+      </span>
     </div>
   );
 });

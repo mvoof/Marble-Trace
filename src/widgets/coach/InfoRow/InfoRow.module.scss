@@ -1,81 +1,98 @@
+// The table's footer bar: the live speed at the left, the reference and the
+// corner's cost at the right.
 .root {
   display: flex;
-  align-items: baseline;
-  gap: sp(md);
+  align-items: center;
+  justify-content: space-between;
+  gap: sp(sm);
   padding: sp(xs) sp(md);
-  border-top: 1px solid $widget-border-subtle;
+  background: $table-bar-bg;
+  border-top: 1px solid $chip-neutral-border;
 }
 
 .group {
   display: flex;
-  align-items: baseline;
-  gap: sp(xxs);
+  align-items: center;
+  gap: sp(xs);
 }
 
 .groupEnd {
+  gap: sp(xxs);
   margin-left: auto;
 }
 
-.label {
-  font-family: $font-widget;
-  font-size: fs(xxs);
-  font-weight: 600;
-  letter-spacing: 0.14em;
-  color: $widget-text-muted;
+// The speed pair as one chip: this lap, the reference, then the unit on the
+// chip's label ground — a label that trails its value, which StatChip has no
+// shape for, so it is drawn here from the chip's own tokens.
+.speed {
+  display: inline-flex;
+  align-items: stretch;
+  overflow: hidden;
+  border: 1px solid $chip-border;
+  border-radius: radius(sm);
+  background: $chip-bg;
+  font-family: $font-mono;
+  font-size: fs(xs);
+  line-height: wfs(16);
+  white-space: nowrap;
 }
 
+// Three digits wide whatever the speed, so the pair never shifts.
 .value {
-  font-family: $font-mono;
-  font-size: fs(md);
-  font-weight: 700;
-  font-variant-numeric: tabular-nums;
+  box-sizing: content-box;
+  min-width: 3ch;
+  padding: sp(xxxs) sp(xs);
+  font-weight: 800;
+  text-align: right;
   color: $widget-text-primary;
 }
 
 // The reference speed at the car's position shares the best-lap color, the way
-// the trace line does.
+// the reference chip beside it does.
 .reference {
-  font-family: $font-mono;
-  font-size: fs(md);
-  font-weight: 600;
-  font-variant-numeric: tabular-nums;
-  color: $widget-text-best-lap;
-}
-
-// The stored lap's time is context, not a live reading, so it is a weight
-// lighter than the speed pair it balances — the same size, and the best-lap
-// color the reference trace is drawn in.
-.referenceLapTime {
-  font-family: $font-mono;
-  font-size: fs(md);
-  font-weight: 600;
-  font-variant-numeric: tabular-nums;
-  color: $widget-text-best-lap;
+  box-sizing: content-box;
+  min-width: 3ch;
+  padding: sp(xxxs) sp(xs);
+  font-weight: 800;
+  text-align: right;
+  color: $chip-special;
 }
 
 .separator {
-  font-family: $font-mono;
-  font-size: fs(sm);
-  color: $widget-text-muted;
+  display: inline-flex;
+  align-items: center;
+  font-weight: 700;
+  color: $table-empty-text;
 }
 
 .unit {
+  display: inline-flex;
+  align-items: center;
+  padding: sp(xxxs) sp(xxs);
+  background: $chip-neutral-bg;
   font-family: $font-widget;
-  font-size: fs(xxs);
-  letter-spacing: 0.1em;
-  color: $widget-text-muted;
+  font-size: wfs(9);
+  font-weight: 700;
+  color: $chip-text-muted;
 }
 
-// Which stored reference is in use. Dry is inert; wet is the exception worth
-// noticing, so only it takes a color.
-.condition {
-  font-family: $font-widget;
-  font-size: fs(xxs);
-  font-weight: 500;
-  letter-spacing: 0.12em;
-  color: $widget-text-muted;
+// The stored lap's time is context, not a live reading: its caption a step
+// under a reading's, the time in the best-lap color.
+.referenceChip {
+  --chip-lead-size: #{wfs(9)};
+  --chip-solid-padding-x: #{sp(xs)};
+  --chip-value-padding-x: #{sp(xs)};
+  --chip-value-text: #{$chip-special};
 }
 
-.conditionWet {
-  color: $race-blue;
+.referenceChipWet {
+  --chip-value-text: #{$chip-info};
+}
+
+// Quiet, as the speed gap over the chart is, and bold the same way: set past
+// the quiet look's own light weight, which a plain class would tie with.
+.groupEnd .cornerTime {
+  --chip-lead-size: #{fs(xxxs)};
+  --chip-solid-weight: 800;
+  --chip-solid-padding-x: #{sp(xs)};
 }
