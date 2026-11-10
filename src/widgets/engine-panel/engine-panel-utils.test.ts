@@ -24,15 +24,15 @@ const cellsOf = (ids: readonly CellId[]) =>
 const layoutOf = (strips: PlannedStrip[]) =>
   strips.map((strip) => strip.cells.map((cell) => cell.id));
 
-// The in-car controls each class exposes, as the preview scenarios record them.
+// The in-car controls each class exposes, as the preview scenarios record them
+// (the GTP's read off a live session).
 const GT3: CellId[] = ['showBrakeBias', 'showTc', 'abs', 'showEngineMap'];
 const GTP: CellId[] = [
-  ...GT3,
+  'showBrakeBias',
   'showBrakeMisc',
+  'showTc',
   'showTc2',
-  'showEngineBraking',
-  'showPeakBrakeBias',
-  'showBrakeBiasFine',
+  'abs',
   'showAntiRollFront',
   'showAntiRollRear',
 ];
@@ -60,24 +60,37 @@ describe('planEnginePanel', () => {
     ]);
   });
 
-  it('gives a GT3 and a GTP the same traction strip', () => {
-    const gt3 = layoutOf(planEnginePanel(cellsOf(GT3)));
-    const gtp = layoutOf(planEnginePanel(cellsOf(GTP)));
-
-    expect(gt3[1]).toEqual(['showTc', 'abs', 'showEngineMap']);
-    expect(gtp[1]).toEqual(gt3[1]);
+  it('keeps traction control first in every car', () => {
+    expect(layoutOf(planEnginePanel(cellsOf(GT3)))[1]).toEqual([
+      'showTc',
+      'abs',
+      'showEngineMap',
+    ]);
+    expect(layoutOf(planEnginePanel(cellsOf(GTP)))[1]).toEqual([
+      'showTc',
+      'showTc2',
+      'abs',
+    ]);
+    expect(layoutOf(planEnginePanel(cellsOf(FORMULA)))[1]).toEqual([
+      'showTc',
+      'showTc2',
+    ]);
   });
 
-  it('puts what only the GTP and the formula cars carry on one strip', () => {
-    const trim = [
-      'showTc2',
+  it('draws the GTP without a trim strip', () => {
+    expect(planEnginePanel(cellsOf(GTP)).map((strip) => strip.group)).toEqual([
+      'brake',
+      'traction',
+      'chassis',
+    ]);
+  });
+
+  it('puts what only the formula cars carry on one strip', () => {
+    expect(layoutOf(planEnginePanel(cellsOf(FORMULA)))[2]).toEqual([
       'showEngineBraking',
       'showPeakBrakeBias',
       'showBrakeBiasFine',
-    ];
-
-    expect(layoutOf(planEnginePanel(cellsOf(GTP)))[2]).toEqual(trim);
-    expect(layoutOf(planEnginePanel(cellsOf(FORMULA)))[2]).toEqual(trim);
+    ]);
   });
 
   it('leaves out a strip the car has nothing for', () => {

@@ -14,10 +14,10 @@ type CellFormat =
  * is found in the same place in every car:
  *
  * - `brake` — the bias and the spare brake rotary (the GTP's migration);
- * - `traction` — traction control, ABS and the engine map: what a GT3 and a GTP
- *   both carry, so the strip reads the same in either;
- * - `trim` — what only the GTP and the formula cars expose on top of that: the
- *   second traction channel, engine braking, the peak and fine bias;
+ * - `traction` — traction control, its second channel, ABS and the engine map:
+ *   a GT3 reads TC · ABS · MAP, a GTP TC · TC2 · ABS, a formula car TC · TC2;
+ * - `trim` — what only the formula cars expose: engine braking, the peak and
+ *   fine bias;
  * - `diff` — the formula cars' three differentials;
  * - `chassis` — the GTP's anti-roll bars;
  * - `engine` — the liquids and the battery, always at the bottom.
@@ -211,33 +211,20 @@ export const CELL_SLOTS: readonly CellSlot[] = [
     settingKeys: ['showBrakeMisc'],
   },
 
-  {
-    id: 'showTc',
-    group: 'traction',
-
-    columns: 4,
-    settingKeys: ['showTc'],
-  },
-  {
-    id: 'abs',
-    group: 'traction',
-
-    columns: 4,
-    settingKeys: ['showAbs'],
-  },
+  { id: 'showTc', group: 'traction', columns: 3, settingKeys: ['showTc'] },
+  { id: 'showTc2', group: 'traction', columns: 3, settingKeys: ['showTc2'] },
+  { id: 'abs', group: 'traction', columns: 3, settingKeys: ['showAbs'] },
   {
     id: 'showEngineMap',
     group: 'traction',
-
-    columns: 4,
+    columns: 3,
     settingKeys: ['showEngineMap'],
   },
 
-  { id: 'showTc2', group: 'trim', columns: 2, settingKeys: ['showTc2'] },
   {
     id: 'showEngineBraking',
     group: 'trim',
-    columns: 2,
+    columns: 3,
     settingKeys: ['showEngineBraking'],
   },
   {
@@ -249,7 +236,7 @@ export const CELL_SLOTS: readonly CellSlot[] = [
   {
     id: 'showBrakeBiasFine',
     group: 'trim',
-    columns: 4,
+    columns: 5,
     settingKeys: ['showBrakeBiasFine'],
   },
 

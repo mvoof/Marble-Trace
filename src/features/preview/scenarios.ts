@@ -1143,8 +1143,8 @@ const WIDGET_SCENARIOS: PreviewScenario[] = [
     label: 'Engine — GTP prototype',
     apply: (store) => {
       seedSampleTelemetry(store);
-      // Between the two: ABS and engine braking a formula car has no cell for,
-      // and no differential to adjust from the wheel.
+      // Between the two: ABS and the anti-roll bars a formula car has no cell
+      // for, and no differential, engine braking or map to adjust.
       store.player.updateCarStatus(mockGtpCarStatus());
     },
   },
