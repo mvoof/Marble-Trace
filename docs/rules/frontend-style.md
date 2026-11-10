@@ -45,6 +45,8 @@ _Held by: review._
 
 Never hardcode hex/rgba in widgets. Use semantic tokens from `_widget-tokens.scss`. The `$race-*` palette follows Tailwind 500/600. JS-side canvas colors live in the widget manifests, `widgets/g-meter/g-meter-utils.ts`, `shared/lib/weather-utils.ts` and `shared/lib/colors.ts` — same palette hexes.
 
+Which color, and how bright — quiet for labels and statuses, bright for the one figure that stands out, vivid for a call — is in [design/widget-design-guide.md](../design/widget-design-guide.md).
+
 ## Numbers must not shuffle
 
 _Held by: review._

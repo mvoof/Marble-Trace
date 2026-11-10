@@ -1,0 +1,739 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Marble Trace — widget colors</title>
+    <!--
+      A picture of the palette in src/styles/_widget-tokens.scss, for
+      docs/design/widget-design-guide.md. The hexes are copied from the tokens:
+      when a token changes, change it in the data at the bottom of this file.
+    -->
+    <style>
+      :root {
+        --page: #0b0c0f;
+        --panel: #17181c;
+        --rule: #262932;
+        --text: #e5e7eb;
+        --text-dim: #8e9299;
+        --chip-bg: #111317;
+        --mono:
+          'JetBrains Mono', ui-monospace, 'Cascadia Mono', Consolas, monospace;
+        --sans: Inter, system-ui, 'Segoe UI', sans-serif;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        padding: 32px 16px 64px;
+        background: var(--page);
+        color: var(--text);
+        font: 14px/1.5 var(--sans);
+      }
+
+      main {
+        max-width: 1080px;
+        margin: 0 auto;
+      }
+
+      h1 {
+        margin: 0 0 4px;
+        font-size: 24px;
+      }
+
+      h2 {
+        margin: 48px 0 4px;
+        font-size: 16px;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+      }
+
+      p {
+        max-width: 72ch;
+        margin: 0 0 16px;
+        color: var(--text-dim);
+      }
+
+      code {
+        font: 12px var(--mono);
+        color: var(--text);
+      }
+
+      .levels {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 12px;
+      }
+
+      .level {
+        padding: 16px;
+        border: 1px solid var(--rule);
+        border-radius: 6px;
+        background: var(--panel);
+      }
+
+      .level h3 {
+        margin: 0 0 2px;
+        font-size: 15px;
+      }
+
+      .level small {
+        display: block;
+        margin-bottom: 12px;
+        color: var(--text-dim);
+        font: 11px var(--mono);
+      }
+
+      .level ul {
+        margin: 12px 0 0;
+        padding-left: 18px;
+        color: var(--text-dim);
+        font-size: 13px;
+      }
+
+      .samples {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+      }
+
+      .scroll {
+        overflow-x: auto;
+        border: 1px solid var(--rule);
+        border-radius: 6px;
+        background: var(--panel);
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        white-space: nowrap;
+      }
+
+      th,
+      td {
+        padding: 10px 12px;
+        border-bottom: 1px solid var(--rule);
+        text-align: left;
+        vertical-align: middle;
+      }
+
+      tr:last-child td {
+        border-bottom: 0;
+      }
+
+      th {
+        color: var(--text-dim);
+        font: 700 10px var(--mono);
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+      }
+
+      td.meaning {
+        white-space: normal;
+        min-width: 220px;
+        color: var(--text-dim);
+        font-size: 13px;
+      }
+
+      td.name {
+        font: 700 12px var(--mono);
+      }
+
+      /* The chip, drawn as StatChip draws it at scale 1. */
+      .chip {
+        display: inline-flex;
+        align-items: stretch;
+        overflow: hidden;
+        border: 1px solid var(--rule);
+        border-radius: 3px;
+        background: var(--chip-bg);
+        line-height: 16px;
+        vertical-align: middle;
+      }
+
+      .lead {
+        display: inline-flex;
+        align-items: center;
+        padding: 2px 6px;
+        font: 700 10px/16px var(--sans);
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+      }
+
+      .lead.number {
+        font: 700 11px/16px var(--mono);
+        letter-spacing: 0;
+        text-transform: none;
+      }
+
+      .lead.filled {
+        padding-inline: 8px;
+        letter-spacing: 0.06em;
+      }
+
+      .value {
+        padding: 2px 8px;
+        color: #fff;
+        font: 800 11px/16px var(--mono);
+      }
+
+      .swatches {
+        display: flex;
+        gap: 6px;
+      }
+
+      .swatch {
+        display: inline-flex;
+        flex-direction: column;
+        gap: 4px;
+        color: var(--text-dim);
+        font: 10px var(--mono);
+      }
+
+      .swatch i {
+        display: block;
+        width: 64px;
+        height: 28px;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 3px;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        gap: 10px;
+      }
+
+      .card {
+        overflow: hidden;
+        border: 1px solid var(--rule);
+        border-radius: 6px;
+        background: var(--panel);
+      }
+
+      .card i {
+        display: block;
+        height: 48px;
+      }
+
+      .card div {
+        padding: 8px 10px;
+        font: 11px var(--mono);
+      }
+
+      .card span {
+        display: block;
+        color: var(--text-dim);
+        font-family: var(--sans);
+        font-size: 12px;
+        white-space: normal;
+      }
+
+      .rows {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 12px;
+      }
+
+      .demo {
+        border: 1px solid var(--rule);
+        border-radius: 6px;
+        background: var(--panel);
+        overflow: hidden;
+      }
+
+      .demo header {
+        padding: 8px 12px;
+        border-bottom: 1px solid var(--rule);
+        font-size: 12px;
+        font-weight: 700;
+      }
+
+      .demo .ok {
+        color: #19b394;
+      }
+
+      .demo .bad {
+        color: #ef4444;
+      }
+
+      .lap {
+        display: grid;
+        grid-template-columns: 3fr 5fr 4fr;
+        align-items: center;
+        border-bottom: 1px solid #1e2025;
+        font-family: var(--mono);
+      }
+
+      .lap:last-child {
+        border-bottom: 0;
+      }
+
+      .lap > span {
+        padding: 6px 10px;
+      }
+
+      .lap > span:first-child {
+        color: #7e828a;
+        font-size: 11px;
+        font-weight: 700;
+      }
+
+      .lap > span:nth-child(2) {
+        color: #fff;
+        font-size: 13px;
+        font-weight: 800;
+      }
+
+      .lap > span:last-child {
+        text-align: right;
+      }
+
+      .lap.best {
+        background: rgba(156, 100, 254, 0.16);
+      }
+
+      .lap.best > span:nth-child(-n + 2) {
+        color: #c49bff;
+      }
+    </style>
+  </head>
+
+  <body>
+    <main>
+      <h1>Widget colors</h1>
+      <p>
+        The palette of <code>src/styles/_widget-tokens.scss</code>, drawn. When
+        to use which is in
+        <a href="widget-design-guide.md" style="color: inherit"
+          >widget-design-guide.md</a
+        >.
+      </p>
+
+      <h2>Three levels</h2>
+      <p>
+        Color names the kind of thing; brightness says how much it matters right
+        now.
+      </p>
+      <div class="levels" id="levels"></div>
+
+      <h2>Chip tones</h2>
+      <p>
+        Every tone at each level. Quiet is the tone's fill at 40&nbsp;% over the
+        chip ground <code>#111317</code>, written in <code>#e5e7eb</code>.
+      </p>
+      <div class="scroll">
+        <table>
+          <thead>
+            <tr>
+              <th>Tone</th>
+              <th>Means</th>
+              <th>Quiet</th>
+              <th>Bright</th>
+              <th>Vivid</th>
+              <th>Quiet fill · color · ground · fill</th>
+            </tr>
+          </thead>
+          <tbody id="tones"></tbody>
+        </table>
+      </div>
+
+      <h2>In a column</h2>
+      <p>
+        A figure that repeats down a column is quiet; the tone alone says gain
+        or loss. Bright is left for the one row that is a record.
+      </p>
+      <div class="rows" id="columns"></div>
+
+      <h2>License classes</h2>
+      <p>
+        Vivid by nature: the color is the reading. The fill carries white
+        digits; the tier color is the text of the tinted variant.
+      </p>
+      <div class="grid" id="licenses"></div>
+
+      <h2>Neutrals — grounds, edges, text</h2>
+      <div class="grid" id="neutrals"></div>
+
+      <h2>Race palette — graphics</h2>
+      <p>
+        <code>$race-*</code>: traces, gauges, maps and canvas, where a line has
+        to carry on its own. Not for chips or table text.
+      </p>
+      <div class="grid" id="race"></div>
+
+      <h2>Flags and LEDs</h2>
+      <p>
+        Imitations of real marshalling lights, fully saturated on purpose. Used
+        by the flag widgets only.
+      </p>
+      <div class="grid" id="flags"></div>
+    </main>
+
+    <script>
+      const CHIP_BG = '#111317';
+      const QUIET_TEXT = '#e5e7eb';
+      const QUIET_STRENGTH = 0.4;
+
+      // tone: text color, dark ground, full fill, text on the fill, edge.
+      const TONES = [
+        {
+          name: 'positive',
+          means:
+            'A gain, a margin, faster than the reference; the running lap.',
+          color: '#19b394',
+          ground: '#11312a',
+          fill: '#19b394',
+          onFill: '#091f1a',
+          edge: 'rgba(25, 179, 148, 0.4)',
+          label: 'LAPS',
+          value: '12/30',
+          figure: '-0.214',
+          call: 'GO',
+        },
+        {
+          name: 'accent',
+          means:
+            'Worth a look, no judgement: the leader, SOF, a small loss, a warning before red.',
+          color: '#e5b822',
+          ground: '#382b14',
+          fill: '#e5b822',
+          onFill: '#111317',
+          edge: 'rgba(229, 184, 34, 0.35)',
+          label: 'SOF',
+          value: '2.4k',
+          figure: 'LEADER',
+          call: 'BOX',
+        },
+        {
+          name: 'danger',
+          means: 'A loss, a limit about to be crossed, a stop, an invalid lap.',
+          color: '#ef4444',
+          ground: '#3b1a1e',
+          fill: '#a82424',
+          onFill: '#ffffff',
+          edge: 'rgba(239, 68, 68, 0.4)',
+          label: 'INC',
+          value: '15/17',
+          figure: '+1.482',
+          call: 'PIT NOW',
+        },
+        {
+          name: 'info',
+          means:
+            'A neutral fact: the field size, track temperature, pit entry.',
+          color: '#4a85e8',
+          ground: '#182945',
+          fill: '#4a85e8',
+          onFill: '#111317',
+          edge: 'rgba(74, 133, 232, 0.4)',
+          label: 'TRACK',
+          value: '31°C',
+          figure: 'IN',
+          call: 'INFO',
+        },
+        {
+          name: 'special',
+          means: 'The best lap, and nothing else.',
+          color: '#c49bff',
+          ground: '#2b174d',
+          fill: '#9c64fe',
+          onFill: '#111317',
+          edge: 'rgba(156, 100, 254, 0.6)',
+          label: 'BEST',
+          value: '1:32.415',
+          figure: '1:32.415',
+          call: 'BEST',
+        },
+        {
+          name: 'lapped',
+          means: 'A lap down, a tow — out of the fight.',
+          color: '#d99b26',
+          ground: '#262015',
+          fill: '#d99b26',
+          onFill: '#111317',
+          edge: 'rgba(124, 77, 25, 0.5)',
+          label: 'TOW',
+          value: '0:42',
+          figure: '-2 L',
+          call: 'TOW',
+        },
+        {
+          name: 'neutral',
+          means: 'A value with nothing to say about it.',
+          color: '#e5e7eb',
+          ground: '#181b20',
+          fill: '#8e9299',
+          onFill: '#111317',
+          edge: '#252830',
+          label: 'LAST',
+          value: '1:33.020',
+          figure: '1:33.020',
+          call: null,
+        },
+        {
+          name: 'muted',
+          means: 'Inactive, ended, not set, not applicable.',
+          color: '#8e9299',
+          ground: '#181b20',
+          fill: '#8e9299',
+          onFill: '#111317',
+          edge: '#252830',
+          label: 'TIME',
+          value: 'END',
+          figure: 'OFF',
+          call: null,
+        },
+      ];
+
+      const LICENSES = [
+        { name: 'A', fill: '#1f4f8f', tier: '#3b82f6' },
+        { name: 'B', fill: '#107c65', tier: '#10b981' },
+        { name: 'C', fill: '#7c5a12', tier: '#f59e0b' },
+        { name: 'D', fill: '#7c4d19', tier: '#f97316' },
+        { name: 'R', fill: '#8a2222', tier: '#ef4444' },
+      ];
+
+      const NEUTRALS = [
+        ['$chip-bg', '#111317', 'the chip ground'],
+        ['$chip-value-dark', '#0e1013', 'the darkest ground'],
+        ['$chip-neutral-bg', '#181b20', 'a neutral lead'],
+        ['$chip-border', '#262932', 'a chip edge'],
+        ['$table-rule', '#1c1e24', 'a column rule'],
+        ['$table-bar-border', '#282b33', 'a bar edge'],
+        ['$widget-text-primary', '#ffffff', 'the value'],
+        ['$chip-text', '#e5e7eb', 'a quiet chip label'],
+        ['$table-dim-text', '#9ca3af', 'dimmed row text'],
+        ['$chip-neutral-text', '#8e9299', 'a muted label'],
+        ['$chip-text-muted', '#7e828a', 'a caption, a unit'],
+        ['$table-empty-text', '#52565e', 'nothing to show'],
+      ];
+
+      const RACE = [
+        ['$race-red', '#ef4444', 'danger · loss · brake'],
+        ['$race-orange', '#f97316', 'license D'],
+        ['$race-amber', '#f59e0b', 'pit entry'],
+        ['$race-yellow', '#eab308', 'warning · caution'],
+        ['$race-gold', '#facc15', 'position gain'],
+        ['$race-green', '#10b981', 'gain · throttle'],
+        ['$race-blue', '#3b82f6', 'info · clutch · wet'],
+        ['$race-lilac', '#8b5cf6', 'SOF · elite'],
+        ['$race-purple', '#a855f7', 'best lap (delta)'],
+        ['$race-neutral', '#9ca3af', 'rookie · inert'],
+      ];
+
+      const FLAGS = [
+        ['$led-green', '#22ff00', 'LED'],
+        ['$led-yellow', '#ffe600', 'LED'],
+        ['$led-red', '#ff0a33', 'LED'],
+        ['$led-blue', '#33aaff', 'LED'],
+        ['$led-orange', '#ff5500', 'LED'],
+        ['$flag-band-green', '#16e86a', 'band'],
+        ['$flag-band-yellow', '#ffe62e', 'band'],
+        ['$flag-band-red', '#ff2233', 'band'],
+        ['$flag-band-blue', '#0a8cff', 'band'],
+        ['$flag-band-orange', '#ff8a0f', 'band'],
+      ];
+
+      const channelsOf = (hex) =>
+        [1, 3, 5].map((start) => parseInt(hex.slice(start, start + 2), 16));
+
+      const mixOverChip = (hex) => {
+        const top = channelsOf(hex);
+        const base = channelsOf(CHIP_BG);
+
+        return (
+          '#' +
+          top
+            .map((channel, index) =>
+              Math.round(
+                channel * QUIET_STRENGTH + base[index] * (1 - QUIET_STRENGTH)
+              )
+                .toString(16)
+                .padStart(2, '0')
+            )
+            .join('')
+        );
+      };
+
+      const isNumber = (text) => /\d/.test(text);
+
+      const chip = ({ lead, value, leadStyle, edge, filled }) =>
+        `<span class="chip" style="border-color:${edge}">` +
+        `<span class="lead ${isNumber(lead) ? 'number' : ''} ${filled ? 'filled' : ''}" style="${leadStyle}">${lead}</span>` +
+        (value ? `<span class="value">${value}</span>` : '') +
+        '</span>';
+
+      const quietChip = (tone, lead, value) =>
+        chip({
+          lead,
+          value,
+          filled: true,
+          edge: value ? tone.edge : 'transparent',
+          leadStyle: `background:${mixOverChip(tone.fill)};color:${QUIET_TEXT};font-weight:500`,
+        });
+
+      const quietFigure = (tone, lead) =>
+        chip({
+          lead,
+          filled: true,
+          edge: tone.edge,
+          leadStyle: `background:${mixOverChip(tone.fill)};color:${QUIET_TEXT};font-weight:500`,
+        });
+
+      const brightChip = (tone, lead) =>
+        chip({
+          lead,
+          edge: tone.edge,
+          leadStyle: `background:${tone.ground};color:${tone.color}`,
+        });
+
+      const vividChip = (tone, lead) =>
+        chip({
+          lead,
+          filled: true,
+          edge: 'transparent',
+          leadStyle: `background:${tone.fill};color:${tone.onFill};font-weight:800`,
+        });
+
+      const swatch = (hex) =>
+        `<span class="swatch"><i style="background:${hex}"></i>${hex}</span>`;
+
+      const card = ([name, hex, note]) =>
+        `<div class="card"><i style="background:${hex}"></i><div>${name}<br />${hex}<span>${note}</span></div></div>`;
+
+      const toneNamed = (name) => TONES.find((tone) => tone.name === name);
+
+      const fill = (id, html) => {
+        document.getElementById(id).innerHTML = html;
+      };
+
+      fill(
+        'levels',
+        [
+          {
+            title: 'Quiet',
+            look: 'look="reading" · look="state"',
+            samples: [
+              quietChip(toneNamed('accent'), 'SOF', '2.4k'),
+              quietChip(toneNamed('positive'), 'LAPS', '12/30'),
+              quietChip(toneNamed('danger'), 'PIT', '0:18'),
+              quietChip(toneNamed('positive'), 'FUEL'),
+              quietFigure(toneNamed('danger'), '+1.482'),
+            ],
+            uses: [
+              'a label beside its value',
+              'a status',
+              'the name of a widget or a block',
+              'a figure that repeats down a column',
+            ],
+          },
+          {
+            title: 'Bright',
+            look: 'look="plain" (lead alone) · look="mark"',
+            samples: [
+              brightChip(toneNamed('special'), '1:32.415'),
+              brightChip(toneNamed('accent'), 'LEADER'),
+              brightChip(toneNamed('lapped'), '-2 L'),
+              brightChip(toneNamed('positive'), '14.2'),
+            ],
+            uses: [
+              'a record: the best lap, a personal best',
+              'a place in the order: leader, laps down',
+              'the headline reading, colored by urgency: fuel laps left',
+              'one per row or block',
+            ],
+          },
+          {
+            title: 'Vivid',
+            look: 'look="vivid"',
+            samples: [
+              vividChip(toneNamed('danger'), 'PIT NOW'),
+              vividChip(toneNamed('danger'), 'TOW TIME'),
+              chip({
+                lead: 'A 4.99',
+                filled: true,
+                edge: 'transparent',
+                leadStyle: 'background:#1f4f8f;color:#fff;font-weight:800',
+              }),
+            ],
+            uses: [
+              'a call to act now',
+              'a color that is the reading: license, flag, class',
+              'never a label, a status or a heading',
+            ],
+          },
+        ]
+          .map(
+            (level) =>
+              `<section class="level"><h3>${level.title}</h3><small>${level.look}</small>` +
+              `<div class="samples">${level.samples.join('')}</div>` +
+              `<ul>${level.uses.map((use) => `<li>${use}</li>`).join('')}</ul></section>`
+          )
+          .join('')
+      );
+
+      fill(
+        'tones',
+        TONES.map(
+          (tone) =>
+            '<tr>' +
+            `<td class="name">${tone.name}</td>` +
+            `<td class="meaning">${tone.means}</td>` +
+            `<td><div class="samples">${quietChip(tone, tone.label, tone.value)}${quietChip(tone, tone.label)}</div></td>` +
+            `<td>${brightChip(tone, tone.figure)}</td>` +
+            `<td>${tone.call ? vividChip(tone, tone.call) : '—'}</td>` +
+            `<td><div class="swatches">${[mixOverChip(tone.fill), tone.color, tone.ground, tone.fill].map(swatch).join('')}</div></td>` +
+            '</tr>'
+        ).join('')
+      );
+
+      const LAPS = [
+        { lap: 'L7', time: '1:33.020', delta: '+0.605', tone: 'danger' },
+        { lap: 'L6', time: '1:32.415', best: true },
+        { lap: 'L5', time: '1:32.790', delta: '+0.375', tone: 'accent' },
+        { lap: 'L4', time: '1:34.102', delta: '+1.687', tone: 'danger' },
+      ];
+
+      const lapColumn = (title, verdict, drawDelta) =>
+        `<div class="demo"><header class="${verdict}">${title}</header>` +
+        LAPS.map(
+          (row) =>
+            `<div class="lap ${row.best ? 'best' : ''}"><span>${row.lap}</span><span>${row.time}</span><span>` +
+            (row.best
+              ? quietFigure(toneNamed('special'), '★ BEST')
+              : drawDelta(toneNamed(row.tone), row.delta)) +
+            '</span></div>'
+        ).join('') +
+        '</div>';
+
+      fill(
+        'columns',
+        lapColumn(
+          'Do — quiet deltas, the best row stands out',
+          'ok',
+          quietFigure
+        ) + lapColumn('Don’t — every delta bright', 'bad', brightChip)
+      );
+
+      fill(
+        'licenses',
+        LICENSES.map((license) =>
+          card([
+            `$chip-lic-${license.name.toLowerCase()}`,
+            license.fill,
+            `tier color ${license.tier}`,
+          ])
+        ).join('')
+      );
+
+      fill('neutrals', NEUTRALS.map(card).join(''));
+      fill('race', RACE.map(card).join(''));
+      fill('flags', FLAGS.map(card).join(''));
+    </script>
+  </body>
+</html>

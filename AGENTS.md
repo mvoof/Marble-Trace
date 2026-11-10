@@ -57,6 +57,7 @@ compiler, test, or review). Read the file for the area before editing it.
 | any widget: system, instances, appearance, panel, story, checklist           | `docs/rules/widgets.md`; building one: `docs/widget-authoring.md`    |
 | a component reading telemetry or a computed frame; blinking, transitions     | `docs/rendering.md`, `docs/adr/0009-…` — before writing it           |
 | code style, SCSS, tokens, `ws()`, live numbers                               | `docs/rules/frontend-style.md`, `docs/widget-toolbox.md`             |
+| a widget's colors, chip looks, text styles                                   | `docs/design/widget-design-guide.md`                                 |
 | why something is built this way                                              | `docs/architecture.md`, `docs/adr/`                                  |
 
 ## Rules that apply everywhere
