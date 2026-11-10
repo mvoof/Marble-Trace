@@ -62,7 +62,9 @@ const DeltaCell = observer(({ delta, paceLossBars }: DeltaCellProps) => {
   const text = formatDelta(delta).trim();
 
   if (!paceLossBars) {
-    return <StatChip lead={text} leadKind="number" look="mark" tone={tone} />;
+    return (
+      <StatChip lead={text} leadKind="number" look="reading" tone={tone} />
+    );
   }
 
   const fraction = paceLossFraction(delta);
