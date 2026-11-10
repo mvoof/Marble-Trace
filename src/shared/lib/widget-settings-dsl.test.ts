@@ -4,6 +4,7 @@ import {
   choice,
   color,
   defineSettings,
+  fileName,
   isValidDefault,
   nullable,
   num,
@@ -88,6 +89,22 @@ describe('defineSettings', () => {
       'tint',
       'widths',
     ]);
+  });
+
+  it('keeps a bare file name and refuses anything a path could be built from', () => {
+    const files = defineSettings('example', {
+      image: nullable(fileName(''), null),
+    });
+
+    expect(
+      files.parseOverrides({ image: 'wheel-3f2a.webp' }).overrides
+    ).toEqual({ image: 'wheel-3f2a.webp' });
+
+    ['../settings.json', '..', 'a/b.webp', 'a\\b.webp', '.hidden', ''].forEach(
+      (image) => {
+        expect(files.parseOverrides({ image }).rejected).toEqual(['image']);
+      }
+    );
   });
 
   it('clamps a number into its bounds', () => {

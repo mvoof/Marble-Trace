@@ -77,7 +77,11 @@
       "dangerousDisableAssetCspModification": ["style-src"],
       "assetProtocol": {
         "enable": true,
-        "scope": ["$APPDATA/backgrounds/*", "$APPDATA/backgrounds/**"]
+        "scope": [
+          "$APPDATA/backgrounds/*",
+          "$APPDATA/backgrounds/**",
+          "$APPDATA/wheels/*"
+        ]
       }
     }
   },

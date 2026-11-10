@@ -300,7 +300,18 @@
         "formula-compact": "Fórmula compacto",
         "formula-conspit": "Fórmula ancho",
         "formula-conspit-pro": "Fórmula ancho pro",
-        "formula-gt-hybrid": "Fórmula GT híbrido"
+        "formula-gt-hybrid": "Fórmula GT híbrido",
+        "custom": "Imagen propia"
+      },
+      "customWheelImage": "Imagen del volante",
+      "customWheelImageDesc": "Elige una imagen de tu volante: PNG, JPG, WebP, SVG, GIF o BMP, hasta 20 MB. Se reduce a 384 px y se guarda junto al archivo de ajustes.",
+      "customWheelImageSet": "Se está usando tu imagen. Elige otra para reemplazarla.",
+      "customWheelPick": "Elegir imagen",
+      "customWheelRemove": "Quitar imagen",
+      "customWheelErrors": {
+        "unsupported": "Este tipo de archivo no es compatible. Usa PNG, JPG, WebP, SVG, GIF o BMP.",
+        "tooLarge": "El archivo supera los 20 MB.",
+        "unreadable": "No se pudo leer la imagen."
       },
       "steeringCenterDisplay": "Indicador central",
       "steeringCenterDisplayDesc": "Qué mostrar en el centro del volante.",

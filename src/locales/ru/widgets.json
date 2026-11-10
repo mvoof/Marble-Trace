@@ -300,7 +300,18 @@
         "formula-compact": "Формула компактный",
         "formula-conspit": "Формула широкий",
         "formula-conspit-pro": "Формула широкий Pro",
-        "formula-gt-hybrid": "Формула GT гибрид"
+        "formula-gt-hybrid": "Формула GT гибрид",
+        "custom": "Своя картинка"
+      },
+      "customWheelImage": "Картинка руля",
+      "customWheelImageDesc": "Выберите изображение своего руля: PNG, JPG, WebP, SVG, GIF или BMP, до 20 МБ. Оно уменьшается до 384 px и хранится рядом с файлом настроек.",
+      "customWheelImageSet": "Используется ваша картинка. Выберите другую, чтобы заменить.",
+      "customWheelPick": "Выбрать картинку",
+      "customWheelRemove": "Убрать картинку",
+      "customWheelErrors": {
+        "unsupported": "Этот тип файла не поддерживается. Используйте PNG, JPG, WebP, SVG, GIF или BMP.",
+        "tooLarge": "Файл больше 20 МБ.",
+        "unreadable": "Не удалось прочитать изображение."
       },
       "steeringCenterDisplay": "Центральный дисплей",
       "steeringCenterDisplayDesc": "Что показывать в центре руля.",

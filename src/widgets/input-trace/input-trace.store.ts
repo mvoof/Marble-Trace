@@ -9,6 +9,7 @@ import type { WidgetInstanceContext } from '@entities/widget/widget-instances.st
 import { useWidgetInstanceStore } from '@entities/widget/widget-instance-context';
 import type { PlayerStore } from '@entities/player/player.store';
 import type { LiveWidgetsView } from '@entities/layout/live-widgets.store';
+import { resolveCustomWheelSrc } from '@features/custom-wheel-image/custom-wheel-image';
 import type { InputTraceSettings } from './settings-schema';
 import type {
   CarDynamicsFrame,
@@ -68,6 +69,15 @@ export class InputTraceWidgetStore {
   // whatever the clock is.
   frameSamples: TraceSample[] = [];
 
+  /**
+   * Where the webview loads the user's own wheel picture from. `null` with no
+   * picture set, and on a remote screen, which cannot reach the app's files —
+   * the wheel then falls back to the drawn dial.
+   */
+  customWheelSrc: string | null = null;
+
+  private customWheelRequest = 0;
+
   private readonly disposers: IReactionDisposer[] = [];
 
   private readonly root: InputTraceDeps;
@@ -81,10 +91,29 @@ export class InputTraceWidgetStore {
     this.root = core;
     this.instanceId = instanceId;
 
-    makeAutoObservable<InputTraceWidgetStore, 'root' | 'disposers'>(
+    makeAutoObservable<
+      InputTraceWidgetStore,
+      'root' | 'disposers' | 'customWheelRequest' | 'resolveCustomWheel'
+    >(
       this,
-      { root: false, disposers: false, frameSamples: observableRef },
+      {
+        root: false,
+        disposers: false,
+        customWheelRequest: false,
+        resolveCustomWheel: false,
+        frameSamples: observableRef,
+      },
       { autoBind: true }
+    );
+
+    this.disposers.push(
+      reaction(
+        () =>
+          this.root.liveWidgets.getSettings<InputTraceSettings>(this.instanceId)
+            .customWheelImage,
+        (name) => void this.resolveCustomWheel(name),
+        { fireImmediately: true }
+      )
     );
 
     this.disposers.push(
@@ -129,6 +158,20 @@ export class InputTraceWidgetStore {
         }
       )
     );
+  }
+
+  private async resolveCustomWheel(name: string | null) {
+    // A later pick may resolve first; only the newest one is kept.
+    const request = ++this.customWheelRequest;
+    const src = name ? await resolveCustomWheelSrc(name) : null;
+
+    if (request === this.customWheelRequest) {
+      this.setCustomWheelSrc(src);
+    }
+  }
+
+  setCustomWheelSrc(src: string | null) {
+    this.customWheelSrc = src;
   }
 
   // Called when the instance unmounts; the reaction otherwise outlives it.

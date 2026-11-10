@@ -300,7 +300,18 @@
         "formula-compact": "方程式 紧凑",
         "formula-conspit": "方程式 宽体",
         "formula-conspit-pro": "方程式 宽体 Pro",
-        "formula-gt-hybrid": "方程式 GT 混合"
+        "formula-gt-hybrid": "方程式 GT 混合",
+        "custom": "自定义图片"
+      },
+      "customWheelImage": "方向盘图片",
+      "customWheelImageDesc": "选择你的方向盘图片：PNG、JPG、WebP、SVG、GIF 或 BMP，最大 20 MB。图片会缩小到 384 px，并保存在设置文件旁边。",
+      "customWheelImageSet": "正在使用你的图片。选择另一张即可替换。",
+      "customWheelPick": "选择图片",
+      "customWheelRemove": "移除图片",
+      "customWheelErrors": {
+        "unsupported": "不支持此文件类型。请使用 PNG、JPG、WebP、SVG、GIF 或 BMP。",
+        "tooLarge": "文件超过 20 MB。",
+        "unreadable": "无法读取该图片。"
       },
       "steeringCenterDisplay": "中央显示",
       "steeringCenterDisplayDesc": "方向盘中央显示的内容。",

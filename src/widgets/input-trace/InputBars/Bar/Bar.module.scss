@@ -1,20 +1,41 @@
+// The bar is three segments of one width: the min stop at the bottom, the
+// travel in the middle and the max stop on top, split by a gap. A stop lights
+// in the pedal's colour when the pedal reaches it, so "touched at all" and
+// "fully pressed" read at a glance, apart from the travel itself.
+$stop-height: rem(3);
+$stop-gap: rem(2);
+
 .verticalContainer {
-  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
+  gap: $space-xs;
   height: 100%;
+  min-width: 0;
+}
+
+// The readout sits above the bar, never on it, so the digits keep one colour
+// whatever the pedal does. Three digits wide, so the bars do not shift
+// sideways as the number grows.
+.value {
+  flex-shrink: 0;
+  min-width: 3ch;
+  text-align: center;
+  font-family: $font-mono;
+  font-size: rem(11);
+  letter-spacing: rem(-0.5);
+  font-weight: 700;
+  line-height: 1;
+  color: $widget-text-primary;
+  font-variant-numeric: tabular-nums;
 }
 
 .verticalTrack {
   display: flex;
   flex-direction: column;
-  justify-content: flex-end;
+  gap: $stop-gap;
   flex: 1 1 0;
   min-height: 0;
-  background: rgba(255, 255, 255, $opacity-subtle);
-  border-radius: $bar-border-radius;
-  overflow: hidden;
 }
 
 .trackWidth-sm {
@@ -26,8 +47,35 @@
 }
 
 .trackWidth-lg {
-  // Two pixels wider than $bar-height-lg so a three-digit readout fits.
-  width: rem(20);
+  width: $bar-height-lg;
+}
+
+.stop {
+  flex-shrink: 0;
+  width: 100%;
+  height: $stop-height;
+  background: rgba(255, 255, 255, $opacity-subtle);
+  border-radius: $bar-border-radius;
+}
+
+.maxStop {
+  background: var(--bar-max-color, rgba(255, 255, 255, $opacity-subtle));
+}
+
+.minStop {
+  background: var(--bar-min-color, rgba(255, 255, 255, $opacity-subtle));
+}
+
+.well {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  flex: 1 1 0;
+  min-height: 0;
+  width: 100%;
+  background: rgba(255, 255, 255, $opacity-subtle);
+  border-radius: $bar-border-radius;
+  overflow: hidden;
 }
 
 .verticalFill {
@@ -40,27 +88,4 @@
 
 .noRadius {
   border-radius: 0;
-}
-
-.value {
-  position: absolute;
-  top: $space-xs;
-  left: 0;
-  right: 0;
-  text-align: center;
-  font-family: $font-mono;
-
-  // The bar keeps its width whether the readout is on or not, so three
-  // digits have to live inside it — hence the tight mono size, and the label
-  // sitting outside the clipping track.
-  font-size: rem(12);
-  letter-spacing: rem(-0.5);
-  font-weight: 700;
-  line-height: 1;
-
-  // The color on the empty track; once the fill reaches the digits they are
-  // repainted by getContrastTextColor() against the bar's own color, which
-  // arrives as the custom property below.
-  color: var(--bar-value-color, #{$widget-text-primary});
-  pointer-events: none;
 }
