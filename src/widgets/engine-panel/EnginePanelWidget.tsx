@@ -30,19 +30,23 @@ const WATER_TEMP_LIMIT_C = 120;
 const isAdjustmentId = (id: CellId): id is AdjustmentKey =>
   id in ADJUSTMENT_SPECS;
 
+const PSI_PER_BAR = 14.5038;
+
+// The sim gives oil pressure in bar — a running GTP reads 3.81 — whatever the
+// contract's doc comment says.
 const formatPressure = (
-  kpa: number | null,
+  bar: number | null,
   unitSystem: UnitSystem
 ): { value: string; unit: string } => {
-  if (kpa === null) {
+  if (bar === null) {
     return { value: '--.-', unit: unitSystem === 'metric' ? 'bar' : 'psi' };
   }
 
   if (unitSystem === 'metric') {
-    return { value: (kpa / 100).toFixed(1), unit: 'bar' };
+    return { value: bar.toFixed(1), unit: 'bar' };
   }
 
-  return { value: (kpa * 0.145038).toFixed(0), unit: 'psi' };
+  return { value: (bar * PSI_PER_BAR).toFixed(0), unit: 'psi' };
 };
 
 /**

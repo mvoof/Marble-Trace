@@ -1022,7 +1022,7 @@ const WIDGET_SCENARIOS: PreviewScenario[] = [
       // the reading carries three digits — the widest the oil cell ever gets.
       applyEngine(store, {
         oil_temp: OIL_TEMP_WARNING_C + 12,
-        oil_press: 286,
+        oil_press: 2.86,
         water_temp: 108,
       });
     },

@@ -29,7 +29,7 @@ export const mockCarStatus = (
   fuel_level_pct: 0.52,
   fuel_use_per_hour: 9.4,
   oil_temp: 104,
-  oil_press: 412,
+  oil_press: 4.12,
   water_temp: 91,
   voltage: 13.8,
   on_pit_road: false,

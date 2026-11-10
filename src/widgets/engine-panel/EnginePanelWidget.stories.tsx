@@ -96,7 +96,7 @@ const meta: Meta<StoryArgs> = {
       car: 'gt3',
       oilTemp: 110,
       waterTemp: 90,
-      oilPress: 350,
+      oilPress: 3.5,
       absActive: false,
 
       showOilTemp: true,
