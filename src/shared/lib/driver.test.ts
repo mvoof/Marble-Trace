@@ -6,7 +6,20 @@ import {
   isNearIncidentPenalty,
   parseDriverFlags,
   trackGapMeters,
+  bumperGapMeters,
 } from './driver';
+
+describe('bumperGapMeters', () => {
+  it('takes one car length off, keeping the sign', () => {
+    expect(bumperGapMeters(10, 4.4)).toBeCloseTo(5.6);
+    expect(bumperGapMeters(-10, 4.4)).toBeCloseTo(-5.6);
+  });
+
+  it('is zero for cars nose to tail or overlapping', () => {
+    expect(bumperGapMeters(3, 4.4)).toBe(0);
+    expect(Math.abs(bumperGapMeters(-3, 4.4))).toBe(0);
+  });
+});
 
 describe('trackGapMeters', () => {
   it('scales the lap fraction by the track length, keeping the sign', () => {

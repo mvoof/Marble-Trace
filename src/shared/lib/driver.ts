@@ -189,8 +189,8 @@ export const hasSetALap = (driver: {
 /**
  * Meters along the track between a car and the player, from `relativeLapDist`
  * (the lap fraction between them, wrapped to half a lap either way). Positive:
- * ahead. Center to center, so a car alongside reads about a car length more
- * than the radar's bumper-to-bumper gap. `null` before the track length is known.
+ * ahead. Center to center — `bumperGapMeters` turns it into the gap the radar
+ * prints. `null` before the track length is known.
  */
 export const trackGapMeters = (
   relativeLapDist: number,
@@ -202,6 +202,18 @@ export const trackGapMeters = (
 
   return relativeLapDist * trackLengthM;
 };
+
+/**
+ * Bumper to bumper from center to center, keeping the sign: one car length
+ * less, never below zero. The backend's proximity `bumperDist` is the same
+ * formula, so a car near the player reads the same here as on the radar.
+ */
+export const bumperGapMeters = (
+  centerGapMeters: number,
+  carLengthM: number
+): number =>
+  Math.max(0, Math.abs(centerGapMeters) - carLengthM) *
+  Math.sign(centerGapMeters);
 
 /**
  * Seconds between a car and the player on the relative strip, scaled by class
