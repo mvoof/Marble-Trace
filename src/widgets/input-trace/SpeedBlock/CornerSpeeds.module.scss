@@ -1,28 +1,17 @@
-// Entry, apex and exit packed tight on the block's centre line, the apex level
-// with the car's speed beside it, so all of them are read at one glance.
+// Entry, apex and exit side by side under the speed and gear, as wide as that
+// block and off the same right edge. Each chip sits in a cell of its own
+// width, so a two-digit speed does not move its neighbours.
 .corners {
   display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  justify-content: center;
+  justify-content: flex-end;
   gap: ws(2);
-  width: ws(36);
-  height: 100%;
+  width: ws(116);
+  box-sizing: border-box;
+  padding-right: sp(sm);
 }
 
-// A fixed three-cell slot of a monospaced face, right aligned, so a two-digit
-// speed lines up with a three-digit one. The colour is the user's, per point.
-.cornerValue {
-  width: 3ch;
-  font-family: $font-mono;
-  font-size: wfs(19);
-  font-weight: 700;
-  line-height: 1;
-  text-align: right;
-  color: var(--corner-accent);
-}
-
-// Every figure but the one to read now.
-.cornerValuePending {
-  opacity: 0.35;
+.cell {
+  display: flex;
+  justify-content: center;
+  width: ws(34);
 }

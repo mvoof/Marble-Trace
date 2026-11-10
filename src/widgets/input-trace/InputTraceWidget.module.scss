@@ -1,4 +1,12 @@
-// InputTraceWidget layout — visual styling handled by InputBars and CanvasTrace primitives
+@use './InputBars/_bar-geometry.scss' as *;
+
+// The room above and below everything in the widget, so the bars' stops and
+// the wheel's rim do not run into the panel's edge. `section.` outranks the
+// panel's own `edgeInset` padding, whichever stylesheet loads last.
+section.panel {
+  padding-top: ws(6);
+  padding-bottom: ws(6);
+}
 
 .emptyState {
   flex: 1 1 0;
@@ -16,4 +24,30 @@
   min-height: 0;
   min-width: 0;
   overflow: hidden;
+}
+
+// Beside the bars the graph's window is cut to their well: past the max stop
+// at the top, and the readout above it when one is shown; past the min stop at
+// the bottom. The trace's 0 % and 100 % then sit level with the bars'.
+.chartBesideBars {
+  padding-top: rem($bar-stop-height + $bar-stop-gap);
+  padding-bottom: rem($bar-stop-height + $bar-stop-gap);
+}
+
+.chartBesideValues {
+  padding-top: rem(
+    $bar-value-size + $bar-value-gap + $bar-stop-height + $bar-stop-gap
+  );
+}
+
+// The speed and gear on top, the corner speeds under them, centred as a group.
+.speedBlock {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: center;
+  gap: ws(6);
+  flex-shrink: 0;
+  height: 100%;
+  min-height: 0;
 }

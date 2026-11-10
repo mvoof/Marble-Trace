@@ -1,0 +1,13 @@
+// The pedal bar's vertical geometry, shared with the graph beside it: the
+// graph's window is cut to the bar's well, so 0 % and 100 % on the trace sit
+// level with the bottom and top of the travel. Plain numbers, in px at the
+// rem base — a partial gets none of the injected helpers, so the stylesheets
+// that read these wrap them in rem() themselves.
+
+// The readout above the bar, and the gap under it ($space-xs).
+$bar-value-size: 11;
+$bar-value-gap: 2;
+
+// The min and max stops, and the gap between each and the well.
+$bar-stop-height: 3;
+$bar-stop-gap: 2;

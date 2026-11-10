@@ -5,7 +5,7 @@ import { INPUT_TRACE_MANIFEST } from './manifest';
 const DEFAULTS = INPUT_TRACE_MANIFEST.userSettings;
 const DESIGN_HEIGHT = 120;
 // Three bars, the wheel, one gap and the edge inset.
-const WITHOUT_TRACE_WIDTH = 68 + 120 + 8 + 4;
+const WITHOUT_TRACE_WIDTH = 62 + 120 + 8 + 4;
 
 const resolve = (
   next: Partial<WidgetUserSettings>,
@@ -57,8 +57,8 @@ describe('input trace layout', () => {
       }
     );
 
-    // One bar (20px) and its gap (4px) fewer.
-    expect(result?.currentWidth).toBe(designWidth - 24 + 300);
+    // One bar (18px) and its gap (4px) fewer.
+    expect(result?.currentWidth).toBe(designWidth - 22 + 300);
   });
 
   it('keeps the width when only the speed block changes sides', () => {
