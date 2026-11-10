@@ -1,17 +1,19 @@
 import { type ReactNode } from 'react';
 import { observer } from 'mobx-react-lite';
-import { WidgetLabel } from '@shared/ui/WidgetLabel/WidgetLabel';
-import type { CellRenderWeight } from './engine-panel-utils';
+import type { CellRender, CellRenderWeight } from './engine-panel-utils';
 import styles from './EnginePanelWidget.module.scss';
 
 export interface EngineCellProps {
   label: string;
   /**
-   * How the cell is drawn: `lead` large, `plain` at reading size, `satellite`
-   * small because it stands two to a column beside a lead. It is the slot the
-   * cell landed in, not what its spec asked for.
+   * How the cell is drawn: its weight — `lead` large, `plain` at reading size,
+   * `satellite` small because it stands two to a column beside a lead — and
+   * whether the label and the value share one line. It is the slot the cell
+   * landed in, not what its spec asked for.
    */
-  weight?: CellRenderWeight;
+  render?: CellRender;
+  /** A knob just moved: the cell lights in its system's tone. */
+  lit?: boolean;
   className?: string;
   children: ReactNode;
 }
@@ -22,15 +24,30 @@ const WEIGHT_CLASS: Record<CellRenderWeight, string> = {
   satellite: styles.satellite,
 };
 
+const DEFAULT_RENDER: CellRender = { weight: 'plain', inline: false };
+
 export const EngineCell = observer(
-  ({ label, weight = 'plain', className = '', children }: EngineCellProps) => {
-    const weightClass = WEIGHT_CLASS[weight];
+  ({
+    label,
+    render = DEFAULT_RENDER,
+    lit = false,
+    className = '',
+    children,
+  }: EngineCellProps) => {
+    const classes = [
+      styles.cell,
+      WEIGHT_CLASS[render.weight],
+      render.inline ? styles.inline : '',
+      className,
+    ]
+      .filter(Boolean)
+      .join(' ');
 
     return (
-      <div className={`${styles.cell} ${weightClass} ${className}`}>
-        <WidgetLabel mono={false} uppercase className={styles.label}>
-          {label}
-        </WidgetLabel>
+      <div className={classes}>
+        {lit ? <div className={styles.changeFlash} /> : null}
+
+        <span className={styles.label}>{label}</span>
 
         <div className={styles.cellValues}>{children}</div>
       </div>

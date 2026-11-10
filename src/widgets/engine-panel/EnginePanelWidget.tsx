@@ -11,11 +11,13 @@ import { GroupPlate } from './GroupPlate';
 import {
   ADJUSTMENT_SPECS,
   CELL_SLOTS,
+  panelLayoutOf,
   planEnginePanel,
-  renderWeights,
+  renderCells,
+  rowHasLead,
   type AdjustmentKey,
   type CellId,
-  type CellRenderWeight,
+  type CellRender,
   type CellSlot,
 } from './engine-panel-utils';
 import { usePlayerStore } from '@entities/player/player-context';
@@ -67,13 +69,13 @@ const TemperaturesCell = observer(
   ({
     carStatus,
     system,
-    weight,
+    render,
     showOil,
     showWater,
   }: {
     carStatus: CarStatusFrame | null | undefined;
     system: UnitSystem;
-    weight: CellRenderWeight;
+    render: CellRender;
     showOil: boolean;
     showWater: boolean;
   }) => {
@@ -94,16 +96,19 @@ const TemperaturesCell = observer(
       .filter((part) => part !== null)
       .join('/');
 
+    const empty =
+      (!showOil || oilTemp === null) && (!showWater || waterTemp === null);
+
     return (
       <EngineCell
         label={label}
-        weight={weight}
+        render={render}
         className={overLimit ? styles.overLimit : ''}
       >
         <WidgetValue
           value={<FixedDigits text={text} />}
           unit="°"
-          className={styles.value}
+          className={`${styles.value} ${empty ? styles.valueEmpty : ''}`}
         />
       </EngineCell>
     );
@@ -143,33 +148,29 @@ export const EnginePanelWidget = observer(() => {
 
   const drawn = CELL_SLOTS.filter(isDrawn);
 
-  // The column setting is a ceiling in width units, not a cell count: the rows
-  // break between plates and never through one, so a system's cells are never
-  // found in two places.
-  const maxCols = settings.horizontal
-    ? Math.max(1, settings.horizontalColumns ?? 12)
-    : (settings.verticalColumns ?? 3);
-
-  const rows = planEnginePanel(drawn, maxCols);
+  // A horizontal panel balances the systems over its rows, a vertical one gives
+  // each its own tier; either way a system's cells are never found in two
+  // places.
+  const layout = panelLayoutOf(settings);
+  const rows = planEnginePanel(drawn, layout);
 
   // A cell is drawn as the slot it landed in, which the plan knows and the
   // spec does not: the differential's cells are satellites by weight, but with
   // no lead in their plate they are drawn plain, at reading size.
-  const weights = renderWeights(rows);
+  const renders = renderCells(rows, layout.horizontal);
+  const fallbackRender: CellRender = { weight: 'plain', inline: false };
 
   for (const slot of drawn) {
-    const weight = weights.get(slot.id) ?? 'plain';
+    const render = renders.get(slot.id) ?? fallbackRender;
 
     if (isAdjustmentId(slot.id)) {
-      nodes[slot.id] = (
-        <AdjustmentCell cellId={slot.id} group={slot.group} weight={weight} />
-      );
+      nodes[slot.id] = <AdjustmentCell cellId={slot.id} render={render} />;
 
       continue;
     }
 
     if (slot.id === 'abs') {
-      nodes.abs = <AbsCell weight={weight} />;
+      nodes.abs = <AbsCell render={render} />;
 
       continue;
     }
@@ -179,7 +180,7 @@ export const EnginePanelWidget = observer(() => {
         <TemperaturesCell
           carStatus={carStatus}
           system={system}
-          weight={weight}
+          render={render}
           showOil={settings.showOilTemp !== false}
           showWater={settings.showWaterTemp !== false}
         />
@@ -190,11 +191,11 @@ export const EnginePanelWidget = observer(() => {
 
     if (slot.id === 'oilPress') {
       nodes.oilPress = (
-        <EngineCell label="OIL P" weight={weight}>
+        <EngineCell label="OIL P" render={render}>
           <WidgetValue
             value={<FixedDigits text={oilPress.value} />}
             unit={oilPress.unit}
-            className={styles.value}
+            className={`${styles.value} ${carStatus?.oil_press == null ? styles.valueEmpty : ''}`}
           />
         </EngineCell>
       );
@@ -203,7 +204,7 @@ export const EnginePanelWidget = observer(() => {
     }
 
     nodes.voltage = (
-      <EngineCell label="VOLT" weight={weight}>
+      <EngineCell label="VOLT" render={render}>
         <WidgetValue
           value={
             <FixedDigits
@@ -211,21 +212,32 @@ export const EnginePanelWidget = observer(() => {
             />
           }
           unit="V"
-          className={styles.value}
+          className={`${styles.value} ${voltage === null ? styles.valueEmpty : ''}`}
         />
       </EngineCell>
     );
   }
+
+  const rowClassOf = (hasLead: boolean): string => {
+    if (layout.horizontal) {
+      return hasLead ? styles.rowLead : styles.rowPlain;
+    }
+
+    return hasLead ? styles.tierLead : styles.tierPlain;
+  };
 
   return (
     <WidgetPanel
       direction="column"
       gap={0}
       minWidth={0}
-      className={styles.root}
+      className={`${styles.root} ${layout.horizontal ? styles.horizontal : styles.vertical}`}
     >
       {rows.map((row, rowIndex) => (
-        <div className={styles.row} key={rowIndex}>
+        <div
+          className={`${styles.row} ${rowClassOf(rowHasLead(row))}`}
+          key={rowIndex}
+        >
           {row.map((group) => (
             <GroupPlate group={group} nodes={nodes} key={group.group} />
           ))}

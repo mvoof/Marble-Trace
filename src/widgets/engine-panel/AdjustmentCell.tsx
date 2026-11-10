@@ -9,22 +9,15 @@ import {
   ADJUSTMENT_SPECS,
   formatAdjustment,
   type AdjustmentKey,
-  type CellGroup,
-  type CellRenderWeight,
+  type CellRender,
 } from './engine-panel-utils';
 import styles from './EnginePanelWidget.module.scss';
 import type { EnginePanelWidgetSettings } from './settings-schema';
 
 export interface AdjustmentCellProps {
   cellId: AdjustmentKey;
-  group: CellGroup;
-  weight: CellRenderWeight;
+  render: CellRender;
 }
-
-const TONE_CLASS: Partial<Record<CellGroup, string>> = {
-  brake: styles.changeFlashBrake,
-  diff: styles.changeFlashDiff,
-};
 
 /**
  * One in-car adjustment. Reads its own field, so a car that never publishes it
@@ -33,10 +26,11 @@ const TONE_CLASS: Partial<Record<CellGroup, string>> = {
  *
  * Whether the cell is lit is the store's answer, not this component's: the
  * highlight is a trailing window after the last change, which needs a timer,
- * and a timer belongs in a store.
+ * and a timer belongs in a store. It lights in the tone of the cell's system,
+ * which the group sets.
  */
 export const AdjustmentCell = observer(
-  ({ cellId, group, weight }: AdjustmentCellProps) => {
+  ({ cellId, render }: AdjustmentCellProps) => {
     const { carStatus } = usePlayerStore();
     const enginePanel = useEnginePanelWidgetStore();
     const settings =
@@ -46,15 +40,16 @@ export const AdjustmentCell = observer(
     const raw = carStatus?.[spec.field];
     const value = typeof raw === 'number' ? raw : null;
     const unit = 'unit' in spec ? spec.unit : undefined;
-    const accent = 'accent' in spec && spec.accent;
 
     return (
-      <EngineCell label={spec.label} weight={weight}>
-        {settings.highlightChanges !== false &&
-        enginePanel.isChanged(spec.field) ? (
-          <div className={`${styles.changeFlash} ${TONE_CLASS[group] ?? ''}`} />
-        ) : null}
-
+      <EngineCell
+        label={spec.label}
+        render={render}
+        lit={
+          settings.highlightChanges !== false &&
+          enginePanel.isChanged(spec.field)
+        }
+      >
         <WidgetValue
           value={
             <FixedDigits
@@ -64,7 +59,7 @@ export const AdjustmentCell = observer(
             />
           }
           unit={unit}
-          className={`${styles.value} ${accent ? styles.blueValue : ''}`}
+          className={`${styles.value} ${value === null ? styles.valueEmpty : ''}`}
         />
       </EngineCell>
     );

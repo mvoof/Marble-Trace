@@ -1,9 +1,12 @@
 import {
   bool,
+  choice,
   defineSettings,
-  num,
   type SettingsOf,
 } from '@shared/lib/widget-settings-dsl';
+
+export const HORIZONTAL_ROWS = ['auto', 1, 2, 3] as const;
+export type HorizontalRows = (typeof HORIZONTAL_ROWS)[number];
 
 export const ENGINE_PANEL_SETTINGS = defineSettings('enginePanel', {
   showOilTemp: bool(true),
@@ -39,11 +42,15 @@ export const ENGINE_PANEL_SETTINGS = defineSettings('enginePanel', {
    * system moved before the label is read.
    */
   highlightChanges: bool(true),
+  /**
+   * Systems side by side in rows; off, one tier per system, stacked.
+   */
   horizontal: bool(true),
-  /** Cells per row in the vertical layout. */
-  verticalColumns: num(3, { min: 1, max: 4, step: 1 }),
-  /** Cells per row in the horizontal layout; the shipped 12 fits them all. */
-  horizontalColumns: num(12, { min: 1, max: 12, step: 1 }),
+  /**
+   * How many rows the horizontal layout splits the systems into. `auto` keeps
+   * one row while it fits and balances the systems across two otherwise.
+   */
+  horizontalRows: choice(HORIZONTAL_ROWS, 'auto'),
 });
 
 export type EnginePanelWidgetSettings = SettingsOf<

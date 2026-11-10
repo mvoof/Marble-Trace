@@ -9,6 +9,7 @@ import {
 import { mockCarInputs } from '@features/preview/mocks/inputs';
 import { whenSet } from '@/storybook/story-overrides';
 import { EnginePanelWidget } from './EnginePanelWidget';
+import type { HorizontalRows } from './settings-schema';
 import {
   defineWidgetStories,
   previewScenario,
@@ -41,8 +42,7 @@ interface StoryArgs {
   showBrakeBias: boolean;
   showEngineMap: boolean;
   horizontal: boolean;
-  verticalColumns: number;
-  horizontalColumns: number;
+  horizontalRows: HorizontalRows;
 }
 
 const meta: Meta<StoryArgs> = {
@@ -93,8 +93,7 @@ const meta: Meta<StoryArgs> = {
         showDiffExit: true,
         highlightChanges: true,
         horizontal: args.horizontal,
-        verticalColumns: args.verticalColumns,
-        horizontalColumns: args.horizontalColumns,
+        horizontalRows: args.horizontalRows,
       });
     },
     args: {
@@ -114,8 +113,10 @@ const meta: Meta<StoryArgs> = {
       showBrakeBias: true,
       showEngineMap: true,
       horizontal: true,
-      verticalColumns: 2,
-      horizontalColumns: 8,
+      horizontalRows: 'auto',
+    },
+    argTypes: {
+      horizontalRows: { control: 'inline-radio', options: ['auto', 1, 2, 3] },
     },
   }),
 };
@@ -129,8 +130,6 @@ export const Default: Story = {};
 export const FormulaCar: Story = {
   args: {
     car: 'formula',
-    horizontalColumns: 4,
-    verticalColumns: 3,
   },
 };
 
@@ -168,26 +167,39 @@ export const MinimalLayout: Story = {
   },
 };
 
-export const Vertical1Col: Story = {
+/**
+ * Brake bias, traction control and ABS alone: one strip, not a lone bias
+ * stretched over the two below it.
+ */
+export const BiasTcAbs: Story = {
   args: {
-    horizontal: false,
-    verticalColumns: 1,
+    showOilTemp: false,
+    showWaterTemp: false,
+    showOilPress: false,
+    showVoltage: false,
+    showEngineMap: false,
   },
-  parameters: { widgetFrame: { width: 120 } },
 };
 
-export const Vertical2Cols: Story = {
+/** Variant A: one tier per system. */
+export const Vertical: Story = {
   args: {
     horizontal: false,
-    verticalColumns: 2,
   },
-  parameters: { widgetFrame: { width: 240 } },
+  parameters: { widgetFrame: { width: 300 } },
 };
 
-export const Vertical3Cols: Story = {
+export const VerticalFormulaCar: Story = {
   args: {
+    car: 'formula',
     horizontal: false,
-    verticalColumns: 3,
   },
   parameters: { widgetFrame: { width: 360 } },
+};
+
+export const FormulaCarThreeRows: Story = {
+  args: {
+    car: 'formula',
+    horizontalRows: 3,
+  },
 };

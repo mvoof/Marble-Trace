@@ -1,103 +1,116 @@
-// Every size here is the approved layout's own measurement, divided by the
-// 1.6 that mock-up was drawn at: a 12 px label there is 7.5 design px here,
-// a 36 px lead value is 22, a 10 px gap between plates is 6.
-// JetBrains Mono runs wider and taller than the Consolas the mock-up was set in,
-// so the values sit a step below its sizes.
+// The panel is a table: rows ruled apart, a system's cells ruled into columns,
+// the systems told apart by a quiet marker in their tone. Values are white;
+// color is spent on a knob that just moved, an active ABS, and a temperature
+// over the line — the one call loud enough to fill its cell.
 .root {
   width: 100%;
   height: 100%;
   font-family: $font-widget;
-  padding: sp(xxs);
   display: flex;
   flex-direction: column;
 }
 
-// A row holds whole plates. The basis is `auto`, never `0`: this widget is
-// autoHeight, so its container measures itself from the content — a zero basis
-// leaves no content to measure, the rows collapse and the values are clipped
-// out below their labels.
+// A row holds whole systems. Its height is fixed, rule included, so the panel
+// draws at the height the manifest measured — `autoHeight` sizes the frame from
+// this content.
 .row {
   display: flex;
-  flex: 1 1 auto;
-  gap: sp(xs);
+  flex: 0 0 auto;
+  box-sizing: border-box;
   min-height: 0;
+  background: $table-row-bg;
 }
 
-// The gap between rows is a margin, not the flex `gap` it looks like it should
-// be: `WidgetPanel` writes its own `gap` inline, and an inline style beats this
-// file. A margin is out of that fight, and unlike the panel's numeric prop it
-// scales with `--wfs` like every other measurement here.
 .row + .row {
-  margin-top: sp(xxs);
+  border-top: 1px solid $table-rule;
 }
 
-// The plate is the grouping. The gap around it does the separating work that
-// fifteen identical hairlines could not: the eye reads empty space as a break,
-// and a line between every cell reads as one continuous run.
+.rowLead {
+  height: ws(52);
+}
+
+.rowPlain {
+  height: ws(40);
+}
+
+.tierLead {
+  height: ws(38);
+}
+
+.tierPlain {
+  height: ws(30);
+}
+
+// The system's tone, quiet: a marker at the plate's edge and the ground a cell
+// lights in when its knob moves. The marker lies over the cells, so it takes
+// no room from them — across the top of a row's plate, down the side of a tier.
+$group-marker: 2px;
+
 .plate {
+  --group-tone: #{$chip-neutral-border};
+
   position: relative;
   display: flex;
-  flex-direction: column;
   flex: 1 1 0;
   min-width: 0;
-  background: $widget-surface-cell;
-  border-radius: radius(sm);
-  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    z-index: 1;
+    background: color-mix(in srgb, var(--group-tone) 70%, transparent);
+    pointer-events: none;
+  }
 }
 
-// A hairline of colour on the top edge. It confirms the boundary the gap drew
-// and says which system moved when a cell flashes in the same tone — it never
-// carries the grouping on its own, because an overlay lies over a moving track
-// and the saturated colours already mean something here.
-.plateBar {
-  height: ws(1.5);
-  width: 100%;
-  flex: 0 0 auto;
+.plate + .plate {
+  border-left: 1px solid $table-rule;
 }
 
-.plateBrake .plateBar {
-  background: $race-green;
+.horizontal .plate::before {
+  inset: 0 0 auto;
+  height: $group-marker;
 }
 
-.plateTraction .plateBar {
-  background: $race-gold;
+.vertical .plate {
+  padding-left: $group-marker;
+
+  &::before {
+    inset: 0 auto 0 0;
+    width: $group-marker;
+  }
 }
 
-.plateDiff .plateBar {
-  background: $race-blue;
+.plateBrake {
+  --group-tone: #{$chip-positive};
 }
 
-.plateChassis .plateBar {
-  background: $race-lilac;
+.plateTraction {
+  --group-tone: #{$chip-accent};
 }
 
-.plateEngine .plateBar {
-  background: $widget-border-subtle;
+.plateDiff {
+  --group-tone: #{$chip-info};
 }
 
-.plateCells {
-  display: flex;
-  flex: 1 1 auto;
-  min-height: 0;
+.plateChassis {
+  --group-tone: #{$race-lilac};
 }
 
-.slot {
+.plateEngine {
+  --group-tone: #{$chip-text-muted};
+}
+
+.slot,
+.stack {
   display: flex;
   flex: 1 1 0;
   min-width: 0;
-}
-
-// A lead cell is twice a satellite column — the size difference is what says
-// which value the glance is for.
-.slotLead {
-  flex-grow: 2;
 }
 
 .stack {
-  display: flex;
   flex-direction: column;
-  flex: 1 1 0;
-  min-width: 0;
+  background: $table-row-bg-alt;
 }
 
 .stackItem {
@@ -111,13 +124,15 @@
 .slot + .stack,
 .stack + .slot,
 .stack + .stack {
-  border-left: 1px solid $widget-border-subtle;
+  border-left: 1px solid $table-row-rule;
 }
 
 .stackItem + .stackItem {
-  border-top: 1px solid $widget-border-subtle;
+  border-top: 1px solid $table-row-rule;
 }
 
+// Label over value, centred: every cell of a horizontal row, and the
+// satellites beside a lead in a vertical tier.
 .cell {
   position: relative;
   flex: 1 1 auto;
@@ -126,65 +141,68 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  gap: sp(xxxs);
+  padding: sp(xxs) sp(xxs);
   text-align: center;
-  transition:
-    background-color 0.2s ease-in-out,
-    box-shadow 0.2s ease-in-out,
-    color 0.2s ease-in-out;
 }
 
-.lead {
-  padding: sp(xs) sp(xxs);
+// Label and value on one line, the value at the far end — a vertical tier.
+.inline {
+  flex-direction: row;
+  justify-content: space-between;
+  gap: sp(xs);
+  padding: 0 sp(sm);
 }
 
-// A plain cell is a whole plate's row — the mock-up's 5 px at the size it was
-// drawn, which is this scale's nearest even step. Its value size is the base
-// one, so only the padding is stated here.
-.plain {
-  padding: sp(xxs);
-}
-
-// A satellite sits two to a column, so it gives back every pixel it can.
 .satellite {
-  padding: sp(xxxs);
+  gap: 0;
+  padding: sp(xxxs) sp(xxs);
 }
 
-// One label size across the whole panel. The plate and the value size already
-// say what a cell is; a label that grows with them turns the heading into the
-// thing the eye lands on.
+// One label size across the panel: the plate and the value size already say
+// what a cell is.
+// Above the change light, which is positioned and would otherwise paint over.
+.label,
+.cellValues {
+  position: relative;
+}
+
 .label {
-  font-size: wfs(7.5);
-  font-weight: 600;
-  color: $widget-text-secondary;
-  opacity: 0.75;
-  letter-spacing: 0.1em;
+  font-family: $font-widget;
+  font-size: wfs(9);
+  font-weight: 700;
   line-height: 1;
-  // A two-word label must not wrap onto a second line: the cell is sized for
-  // one, and a wrapped label pushes its own value out of the plate.
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: $table-head-text;
+  // A two-word label must not wrap: the cell is sized for one line.
   white-space: nowrap;
+}
+
+.satellite .label {
+  font-size: wfs(8);
 }
 
 .cellValues {
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  width: 100%;
   min-width: 0;
-  margin-top: sp(xxxs);
 }
 
 .value {
-  font-size: wfs(13);
-  font-weight: 700;
-  color: $widget-text-primary;
   font-family: $font-mono;
+  font-size: fs(sm);
+  font-weight: 800;
   line-height: 1;
+  color: $widget-text-primary;
   white-space: nowrap;
 
   :global(.unit) {
-    font-size: 0.6em;
-    opacity: 0.6;
+    margin-left: 1px;
+    font-size: 0.65em;
+    font-weight: 600;
+    color: $chip-text-muted;
   }
 }
 
@@ -193,73 +211,44 @@
 }
 
 .satellite .value {
-  font-size: wfs(9);
+  font-size: wfs(10);
 }
 
-.satellite .cellValues {
-  margin-top: 1px;
+.valueEmpty {
+  color: $table-empty-text;
 }
 
-.blueValue {
-  color: $race-blue;
-  text-shadow: 0 0 sp(xs) rgba($race-blue, 0.3);
-}
-
-.yellowValue {
-  color: $race-gold;
-  text-shadow: 0 0 sp(xs) rgba($race-gold, 0.3);
-}
-
-// A temperature over the line. Static, not a pulse: an always-on-top overlay
-// over a sim should not keep the compositor awake for a warning that is just as
-// readable held still, and a cell that blinks is read twice.
+// A temperature over the line: the one alarm the panel has, so it is the one
+// cell that fills. Static, not a pulse — an always-on-top overlay should not
+// keep the compositor awake for a warning that reads just as well held still.
 .overLimit {
-  background-color: rgba($race-red, 0.28);
-  box-shadow: inset 0 0 0 1px rgba($race-red, 0.65);
+  background-color: rgba($chip-danger, 0.28);
+  box-shadow: inset 0 0 0 1px rgba($chip-danger, 0.7);
 
-  .label,
+  .label {
+    color: $chip-danger-soft;
+  }
+
   .value {
     color: $widget-text-primary;
-    opacity: 1;
   }
 }
 
-// A knob just moved. The highlight sits on the cell as an overlay rather than
-// on the value: the number is what the driver is reading at that moment, and
-// recolouring it competes with the colours already spoken for — blue for
-// traction control, amber for an active system. The background answers the
-// other question, which cell moved, and leaves the reading alone.
-//
-// No animation and no transition: an overlay over a sim should not be keeping
-// the compositor awake for a cosmetic cue. The overlay is simply present or
-// absent, and EnginePanelWidgetStore holds it for a second after the last
-// change — a trailing window, so spinning a rotary lights the cell once instead
-// of strobing per click.
+// A knob just moved: the cell lights in its system's tone, under the figure,
+// so the number the driver is reading keeps its color. No animation — the
+// store holds the light for a trailing second after the last click.
 .changeFlash {
   position: absolute;
   inset: 0;
-  background: rgba(255, 255, 255, 0.18);
+  background: color-mix(in srgb, var(--group-tone) 22%, transparent);
   pointer-events: none;
 }
 
-// The brake cells and the differential cells each light in their plate's own
-// colour, so a change seen out of the corner of the eye already says which
-// system moved.
-.changeFlashBrake {
-  background: rgba($race-green, 0.26);
-}
-
-.changeFlashDiff {
-  background: rgba($race-blue, 0.28);
-}
-
-// System activations (e.g. ABS active)
+// ABS working: an event, so the figure takes the traction tone.
 .absActive {
-  background-color: rgba($race-gold, 0.2);
-  box-shadow: 0 0 sp(xs) rgba($race-gold, 0.1);
+  background-color: rgba($chip-accent, 0.16);
 
   .value {
-    color: $race-gold;
-    text-shadow: 0 0 sp(xs) rgba($race-gold, 0.4);
+    color: $chip-accent;
   }
 }

@@ -17,11 +17,10 @@ const GROUP_CLASS: Record<PlannedGroup['group'], string> = {
 };
 
 /**
- * One system's cells on one plate.
+ * One system's cells, ruled apart as a table's columns are.
  *
- * The plate is the whole grouping mechanism: a gap around it, a hairline
- * between the cells inside it, and a two-pixel coloured edge that only confirms
- * what the gap already said.
+ * The system's tone is a marker on the plate's edge and the color a cell lights
+ * in when its knob moves — never the values', which stay white.
  */
 export const GroupPlate = observer(({ group, nodes }: GroupPlateProps) => {
   return (
@@ -32,32 +31,33 @@ export const GroupPlate = observer(({ group, nodes }: GroupPlateProps) => {
       // one beside it.
       style={{ flexGrow: group.units }}
     >
-      <div className={styles.plateBar} />
-
-      <div className={styles.plateCells}>
-        {group.slots.map((slot, slotIndex) => {
-          if (slot.kind === 'stack') {
-            return (
-              <div className={styles.stack} key={slotIndex}>
-                {slot.ids.map((id) => (
-                  <div className={styles.stackItem} key={id}>
-                    {nodes[id]}
-                  </div>
-                ))}
-              </div>
-            );
-          }
-
+      {group.slots.map((slot, slotIndex) => {
+        if (slot.kind === 'stack') {
           return (
             <div
-              className={`${styles.slot} ${slot.kind === 'lead' ? styles.slotLead : ''}`}
+              className={styles.stack}
+              style={{ flexGrow: slot.units }}
               key={slotIndex}
             >
-              {nodes[slot.ids[0]]}
+              {slot.ids.map((id) => (
+                <div className={styles.stackItem} key={id}>
+                  {nodes[id]}
+                </div>
+              ))}
             </div>
           );
-        })}
-      </div>
+        }
+
+        return (
+          <div
+            className={styles.slot}
+            style={{ flexGrow: slot.units }}
+            key={slotIndex}
+          >
+            {nodes[slot.ids[0]]}
+          </div>
+        );
+      })}
     </div>
   );
 });

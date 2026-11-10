@@ -19,8 +19,6 @@ const STATE_CHANGE_TRANSITIONS: Record<string, string> = {
   'delta/DeltaLive/DeltaLive.module.scss':
     'the reference label shows on a key press and leaves once',
   'drs/DrsWidget.module.scss': 'DRS available / open is a state',
-  'engine-panel/EnginePanelWidget.module.scss':
-    'warning lights switch on and off',
   'pit-service/TireGrid/TireCorner/TireCorner.module.scss':
     'tire wear is read in the pit box, not while driving',
   'race-dash/PitBlock/PitBlock.module.scss': 'the pit limiter engaging',

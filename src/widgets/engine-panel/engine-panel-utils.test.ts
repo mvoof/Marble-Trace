@@ -6,11 +6,13 @@ import {
   UNIT_WIDTH,
   enabledCellSlots,
   formatAdjustment,
-  packGroups,
   panelHeight,
+  panelLayoutOf,
   planEnginePanel,
   planGroupSlots,
+  renderCells,
   rowUnits,
+  splitGroups,
   type CellSlot,
   type PlannedGroup,
 } from './engine-panel-utils';
@@ -23,7 +25,13 @@ const shipped =
   ENGINE_PANEL_MANIFEST.userSettings as unknown as EnginePanelWidgetSettings;
 
 const stubGroup = (group: PlannedGroup['group'], units: number) =>
-  ({ group, slots: [], units }) as PlannedGroup;
+  ({ group, slots: [], units, hasLead: false }) as PlannedGroup;
+
+const groupsOf = (rows: PlannedGroup[][]) =>
+  rows.map((row) => row.map((group) => group.group));
+
+const AUTO = { horizontal: true, rows: 'auto' } as const;
+const VERTICAL = { horizontal: false, rows: 'auto' } as const;
 
 describe('planGroupSlots', () => {
   it('stands the satellites beside their lead', () => {
@@ -67,34 +75,54 @@ describe('planGroupSlots', () => {
   });
 });
 
-describe('packGroups', () => {
+describe('splitGroups', () => {
   it('breaks between groups, never through one', () => {
-    const rows = packGroups(
-      [stubGroup('brake', 3), stubGroup('traction', 7), stubGroup('diff', 3)],
-      10
+    const rows = splitGroups(
+      [stubGroup('brake', 4), stubGroup('traction', 7), stubGroup('diff', 3)],
+      2
     );
 
-    expect(rows.map((row) => row.map((group) => group.group))).toEqual([
+    expect(groupsOf(rows)).toEqual([['brake'], ['traction', 'diff']]);
+  });
+
+  it('balances the rows rather than filling the first', () => {
+    const rows = splitGroups(
+      [
+        stubGroup('brake', 4),
+        stubGroup('traction', 7),
+        stubGroup('diff', 3),
+        stubGroup('chassis', 2),
+        stubGroup('engine', 4),
+      ],
+      2
+    );
+
+    expect(groupsOf(rows)).toEqual([
       ['brake', 'traction'],
-      ['diff'],
+      ['diff', 'chassis', 'engine'],
     ]);
   });
 
-  it('gives a group wider than the ceiling its own row rather than splitting it', () => {
-    const rows = packGroups([stubGroup('traction', 7)], 4);
-
-    expect(rows).toHaveLength(1);
-    expect(rows[0][0].units).toBe(7);
+  it('never makes more rows than there are groups', () => {
+    expect(splitGroups([stubGroup('traction', 7)], 3)).toHaveLength(1);
   });
 });
 
 describe('planEnginePanel', () => {
-  it('lays a full formula car out in two rows at the shipped ceiling', () => {
-    const rows = planEnginePanel(CELL_SLOTS, shipped.horizontalColumns);
-
-    expect(rows.map((row) => row.map((group) => group.group))).toEqual([
+  it('lays a full formula car out in two balanced rows on auto', () => {
+    expect(groupsOf(planEnginePanel(CELL_SLOTS, AUTO))).toEqual([
       ['brake', 'traction'],
       ['diff', 'chassis', 'engine'],
+    ]);
+  });
+
+  it('keeps brake bias, TC and ABS on one row on auto', () => {
+    const cells = CELL_SLOTS.filter((slot) =>
+      ['showBrakeBias', 'showTc', 'abs'].includes(slot.id)
+    );
+
+    expect(groupsOf(planEnginePanel(cells, AUTO))).toEqual([
+      ['brake', 'traction'],
     ]);
   });
 
@@ -103,21 +131,48 @@ describe('planEnginePanel', () => {
       (slot) => slot.group !== 'diff' && slot.id !== 'showTc2'
     );
 
-    const rows = planEnginePanel(gt3, shipped.horizontalColumns);
+    const rows = planEnginePanel(gt3, AUTO);
 
     expect(rows[0].map((group) => group.group)).toEqual(['brake', 'traction']);
   });
 
+  it('gives every group its own tier when vertical', () => {
+    expect(groupsOf(planEnginePanel(CELL_SLOTS, VERTICAL))).toEqual([
+      ['brake'],
+      ['traction'],
+      ['diff'],
+      ['chassis'],
+      ['engine'],
+    ]);
+  });
+
+  it('stacks nothing in a vertical tier', () => {
+    const rows = planEnginePanel(CELL_SLOTS, VERTICAL);
+
+    expect(
+      rows.flat().flatMap((group) => group.slots.map((slot) => slot.kind))
+    ).not.toContain('stack');
+  });
+
+  it('reads a vertical lead, and a tier with no lead, in one line', () => {
+    const rows = planEnginePanel(CELL_SLOTS, VERTICAL);
+    const renders = renderCells(rows, false);
+
+    expect(renders.get('showBrakeBias')?.inline).toBe(true);
+    expect(renders.get('showBrakeBiasFine')?.inline).toBe(false);
+    expect(renders.get('showAntiRollFront')?.inline).toBe(true);
+  });
+
   it('sizes the shipped manifest', () => {
-    const rows = planEnginePanel(
-      enabledCellSlots(shipped),
-      shipped.horizontalColumns
-    );
+    const layout = panelLayoutOf(shipped);
+    const rows = planEnginePanel(enabledCellSlots(shipped), layout);
 
     const widest = Math.max(...rows.map(rowUnits));
 
     expect(widest * UNIT_WIDTH).toBe(ENGINE_PANEL_MANIFEST.designWidth);
-    expect(panelHeight(rows)).toBe(ENGINE_PANEL_MANIFEST.designHeight);
+    expect(panelHeight(rows, layout.horizontal)).toBe(
+      ENGINE_PANEL_MANIFEST.designHeight
+    );
   });
 });
 
@@ -134,9 +189,14 @@ describe('design width', () => {
     expect(derive(settingsWith({}))).toBe(ENGINE_PANEL_MANIFEST.designWidth);
   });
 
-  it('measures the widest row under the column ceiling', () => {
-    // [brake 4] [traction 7] [diff 3, chassis 2, engine 3]
-    expect(derive(settingsWith({ horizontalColumns: 8 }))).toBe(8 * UNIT_WIDTH);
+  it('measures the widest row of the rows asked for', () => {
+    // [brake 4] [traction 7] [diff 3, chassis 2, engine 4]
+    expect(derive(settingsWith({ horizontalRows: 3 }))).toBe(9 * UNIT_WIDTH);
+  });
+
+  it('measures the widest tier when vertical', () => {
+    // traction: TC 2, TC2 1, EB 1, ABS 2, MAP 2
+    expect(derive(settingsWith({ horizontal: false }))).toBe(8 * UNIT_WIDTH);
   });
 
   it('keeps the scale when a cell is turned off', () => {
