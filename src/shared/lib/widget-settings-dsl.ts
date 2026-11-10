@@ -41,12 +41,20 @@ export type ColorField = FieldBase<'color', string>;
 /** A map of numbers by name — every value finite, the names free. */
 export type NumberRecordField = FieldBase<'numRecord', Record<string, number>>;
 
+/**
+ * The bare name of a file the app keeps beside `settings.json` — never a path:
+ * the reader joins it to a directory of its own, so a stored `..\` must not
+ * get through.
+ */
+export type FileNameField = FieldBase<'fileName', string>;
+
 type PlainField =
   | BoolField
   | NumberField
   | ChoiceField<string | number>
   | ColorField
-  | NumberRecordField;
+  | NumberRecordField
+  | FileNameField;
 
 /** A field whose value may also be `null` — "not set, use what the sim says". */
 export type NullableField<Inner extends PlainField> = Omit<Inner, 'default'> & {
@@ -102,6 +110,12 @@ export const numRecord = (
   meta: Meta = {}
 ): NumberRecordField => ({ kind: 'numRecord', default: fallback, ...meta });
 
+export const fileName = (fallback: string, meta: Meta = {}): FileNameField => ({
+  kind: 'fileName',
+  default: fallback,
+  ...meta,
+});
+
 /**
  * `fallback` is the shipped value when it is `null` rather than the inner
  * field's own — "not set" as the default, the inner field still giving the
@@ -132,6 +146,13 @@ const isColor = (value: unknown): boolean =>
     FUNCTIONAL_COLOR.test(value) ||
     value === TRANSPARENT);
 
+// Letters, digits, dot, dash and underscore, starting with neither a dot nor a
+// dash — no separator, no `..`, nothing a path could be built from.
+const FILE_NAME = /^[a-z0-9_][a-z0-9._-]{0,127}$/i;
+
+const isFileName = (value: unknown): boolean =>
+  typeof value === 'string' && FILE_NAME.test(value) && !value.includes('..');
+
 const isFiniteNumber = (value: unknown): value is number =>
   typeof value === 'number' && Number.isFinite(value);
 
@@ -157,6 +178,8 @@ const isValid = (field: Field, value: unknown): boolean => {
       return isColor(value);
     case 'numRecord':
       return isNumberRecord(value);
+    case 'fileName':
+      return isFileName(value);
   }
 };
 

@@ -4,7 +4,7 @@
   justify-content: flex-end;
   gap: sp(md);
   width: ws(116);
-  height: 100%;
+  flex-shrink: 0;
   box-sizing: border-box;
   // Off the plate's straight right edge, which the wheel no longer fills.
   padding-right: sp(sm);
@@ -44,7 +44,7 @@
 .gear {
   width: 1ch;
   font-family: $font-mono;
-  font-size: wfs(72);
+  font-size: wfs(64);
   font-weight: 800;
   line-height: 1;
   text-align: center;

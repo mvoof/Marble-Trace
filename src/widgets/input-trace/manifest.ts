@@ -12,22 +12,22 @@ import {
 } from './settings-schema';
 
 // Layout constants matching JSX/SCSS values in InputTraceWidget.
-// Bar width = rem(20) @ 16px base = 20px; bar gap = $space-sm = rem(4) = 4px.
+// Bar width = $bar-height-lg = rem(18) @ 16px base = 18px; bar gap = $space-sm = rem(4) = 4px.
 // WidgetPanel gap={8} raw px; edgeInset padding: 2px × 2 = 4px total.
 // Wheel natural width = designHeight (aspect-ratio 1:1, height: 100%).
 // INPUT_TRACE_CHART_DESIGN_PX gives the trace its share; all-visible defaults
-// sum to 534px; the corner speeds and the speed and gear, off by default, add
-// their own widths.
-const INPUT_TRACE_BAR_PX = 20;
+// sum to 534px; the speed block (speed and gear over the corner speeds), off
+// by default, adds its own width.
+const INPUT_TRACE_BAR_PX = 18;
 const INPUT_TRACE_BAR_GAP_PX = 4;
 const INPUT_TRACE_WHEEL_PX = 120;
 const INPUT_TRACE_PANEL_GAP_PX = 8;
 const INPUT_TRACE_EDGE_PX = 4;
-const INPUT_TRACE_CHART_DESIGN_PX = 318;
-// The corner speeds column and the speed and gear block — widths from
-// SpeedBlock/*.module.scss.
-const INPUT_TRACE_CORNER_SPEEDS_PX = 36;
-const INPUT_TRACE_SPEED_GEAR_PX = 116;
+// Grown by the 6px the bars gave up, so the default width did not move.
+const INPUT_TRACE_CHART_DESIGN_PX = 324;
+// The speed block: the speed and gear over the corner speeds, one width for
+// either or both — SpeedBlock/*.module.scss.
+const INPUT_TRACE_SPEED_BLOCK_PX = 116;
 
 const computeInputTraceDesignWidth = (settings: InputTraceSettings): number => {
   const barCount = [
@@ -51,12 +51,8 @@ const computeInputTraceDesignWidth = (settings: InputTraceSettings): number => {
     sections.push(barsWidth);
   }
 
-  if (settings.showCornerSpeeds) {
-    sections.push(INPUT_TRACE_CORNER_SPEEDS_PX);
-  }
-
-  if (settings.showSpeedGear) {
-    sections.push(INPUT_TRACE_SPEED_GEAR_PX);
+  if (settings.showSpeedGear || settings.showCornerSpeeds) {
+    sections.push(INPUT_TRACE_SPEED_BLOCK_PX);
   }
 
   if (settings.showSteering) {

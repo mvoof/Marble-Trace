@@ -91,18 +91,27 @@ const SIZE_CLASS: Record<StatChipSize, string> = {
 /**
  * Turns a span written outside React — a gap cell that updates every tick —
  * into a chip that is its lead alone, built as the component builds one.
+ * `toneColor`, a data-driven color, wins over `tone` as it does on the
+ * component.
  */
 export const writeStatChip = (
   element: HTMLElement,
   tone: StatChipTone,
   kind: StatChipLeadKind,
   text: string,
-  look: StatChipLook = 'plain'
+  look: StatChipLook = 'plain',
+  toneColor?: string
 ): void => {
+  if (toneColor === undefined) {
+    element.style.removeProperty('--chip-data');
+  } else {
+    element.style.setProperty('--chip-data', toneColor);
+  }
+
   element.className = [
     styles.chip,
     styles.chipSingle,
-    TONE_CLASS[tone],
+    toneColor === undefined ? TONE_CLASS[tone] : styles.toneData,
     LOOK_CLASS[look],
     styles.lead,
     kind === 'label' ? styles.leadLabel : styles.leadNumber,

@@ -300,7 +300,18 @@
         "formula-compact": "Formula compact",
         "formula-conspit": "Formula wide",
         "formula-conspit-pro": "Formula wide pro",
-        "formula-gt-hybrid": "Formula GT hybrid"
+        "formula-gt-hybrid": "Formula GT hybrid",
+        "custom": "Your own image"
+      },
+      "customWheelImage": "Wheel Image",
+      "customWheelImageDesc": "Pick a picture of your wheel: PNG, JPG, WebP, SVG, GIF or BMP, up to 20 MB. It is shrunk to 384 px and kept next to the settings file.",
+      "customWheelImageSet": "Your picture is in use. Pick another one to replace it.",
+      "customWheelPick": "Choose image",
+      "customWheelRemove": "Remove image",
+      "customWheelErrors": {
+        "unsupported": "This file type is not supported. Use PNG, JPG, WebP, SVG, GIF or BMP.",
+        "tooLarge": "The file is larger than 20 MB.",
+        "unreadable": "The image could not be read."
       },
       "steeringCenterDisplay": "Center Display",
       "steeringCenterDisplayDesc": "What to show in the center of the steering wheel.",

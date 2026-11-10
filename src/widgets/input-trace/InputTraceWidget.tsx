@@ -40,20 +40,30 @@ export const InputTraceWidget = observer(() => {
   // Without the graph there is no left of it: the block keeps its place.
   const speedBlockOnLeft = showTrace && settings.speedBlockSide === 'left';
 
-  const speedBlock = (
-    <>
-      <CornerSpeeds />
-
+  const speedBlock = (settings.showSpeedGear || settings.showCornerSpeeds) && (
+    <div className={styles.speedBlock}>
       <SpeedGear />
-    </>
+
+      <CornerSpeeds />
+    </div>
   );
 
+  // Beside the bars the graph is as tall as they are, stop to stop.
+  const chartClassName = [
+    styles.chartArea,
+    !barsEffectivelyHidden &&
+      settings.showInputValues &&
+      styles.chartBesideValues,
+  ]
+    .filter(Boolean)
+    .join(' ');
+
   return (
-    <WidgetPanel direction="row" gap={8} edgeInset>
+    <WidgetPanel direction="row" gap={8} edgeInset className={styles.panel}>
       {speedBlockOnLeft && speedBlock}
 
       {showTrace && (
-        <div className={styles.chartArea}>
+        <div className={chartClassName}>
           <CanvasTrace />
         </div>
       )}

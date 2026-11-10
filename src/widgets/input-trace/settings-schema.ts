@@ -3,6 +3,7 @@ import {
   choice,
   color,
   defineSettings,
+  fileName,
   num,
   nullable,
   type SettingsOf,
@@ -34,6 +35,7 @@ export const STEERING_WHEEL_STYLE = [
   'formula-conspit',
   'formula-conspit-pro',
   'formula-gt-hybrid',
+  'custom',
 ] as const;
 export type SteeringWheelStyle = (typeof STEERING_WHEEL_STYLE)[number];
 
@@ -52,6 +54,12 @@ export const INPUT_TRACE_SETTINGS = defineSettings('inputTrace', {
   showInputValues: bool(false),
   steeringCenterDisplay: choice(STEERING_CENTER_DISPLAY, 'logo'),
   steeringWheelStyle: choice(STEERING_WHEEL_STYLE, 'default'),
+  /**
+   * The user's own wheel picture for the `custom` style: a file under
+   * `wheels/` beside settings.json, already shrunk on upload. `null` until one
+   * is picked — the `custom` style draws the default dial until then.
+   */
+  customWheelImage: nullable(fileName(''), null),
   /**
    * Round backdrop under the readout. Only the wheel silhouettes offer it —
    * the drawn dial has a centre pad of its own.

@@ -1,11 +1,7 @@
 import { useWidgetSettings } from '@entities/layout/useWidgetSettings';
-import { useRef } from 'react';
 import { observer } from 'mobx-react-lite';
 
-import { getContrastTextColor } from '@shared/lib/colors';
-
 import { useReactiveDomWrite } from '@shared/hooks/useReactiveDomWrite';
-import { useValueCoverPoint } from './useValueCoverPoint';
 
 import styles from './Bar.module.scss';
 import { usePlayerStore } from '@entities/player/player-context';
@@ -34,7 +30,8 @@ const getChannelColor = (
 
 const FILL_HEIGHT_PROPERTY = '--bar-fill';
 const FILL_COLOR_PROPERTY = '--bar-color';
-const VALUE_COLOR_PROPERTY = '--bar-value-color';
+const MIN_STOP_COLOR_PROPERTY = '--bar-min-color';
+const MAX_STOP_COLOR_PROPERTY = '--bar-max-color';
 
 const PCT = 100;
 
@@ -54,13 +51,10 @@ const CHANNEL_VISIBILITY_KEY: Record<
  */
 export const Bar = observer(
   ({ channel, width = 'md', rounded = true }: BarProps) => {
-    const trackRef = useRef<HTMLDivElement>(null);
-    const labelRef = useRef<HTMLSpanElement>(null);
     const player = usePlayerStore();
     const inputTrace = useInputTraceWidgetStore();
     const settings = useWidgetSettings<InputTraceSettings>('input-trace');
     const showValue = settings.showInputValues;
-    const coverPoint = useValueCoverPoint(trackRef, labelRef, showValue);
 
     const containerRef = useReactiveDomWrite<HTMLDivElement>(
       (element, scheduleWrite) => {
@@ -72,14 +66,18 @@ export const Bar = observer(
           ? settings.absColor
           : getChannelColor(settings, channel);
 
-        const valueText = `${Math.round(clamped * PCT)}`;
-        const valueColor =
-          clamped >= coverPoint ? getContrastTextColor(color) : '';
+        // The stops follow the readout: lit from the first percent the
+        // pedal shows, and on top at the hundred it shows.
+        const percent = Math.round(clamped * PCT);
+        const valueText = `${percent}`;
+        const minColor = percent > 0 ? color : '';
+        const maxColor = percent >= PCT ? color : '';
 
         scheduleWrite(() => {
           element.style.setProperty(FILL_HEIGHT_PROPERTY, `${clamped * PCT}%`);
           element.style.setProperty(FILL_COLOR_PROPERTY, color);
-          element.style.setProperty(VALUE_COLOR_PROPERTY, valueColor);
+          element.style.setProperty(MIN_STOP_COLOR_PROPERTY, minColor);
+          element.style.setProperty(MAX_STOP_COLOR_PROPERTY, maxColor);
 
           const label = element.querySelector(`.${styles.value}`);
 
@@ -88,27 +86,30 @@ export const Bar = observer(
           }
         });
       },
-      [inputTrace, player, settings, channel, coverPoint]
+      [inputTrace, player, settings, channel, showValue]
     );
 
     if (!settings[CHANNEL_VISIBILITY_KEY[channel]]) {
       return null;
     }
 
+    const radiusClass = rounded ? '' : ` ${styles.noRadius}`;
+
     return (
       <div ref={containerRef} className={styles.verticalContainer}>
-        <div
-          ref={trackRef}
-          className={`${styles.verticalTrack} ${styles[`trackWidth-${width}`]}${
-            !rounded ? ` ${styles.noRadius}` : ''
-          }`}
-        >
-          <div
-            className={`${styles.verticalFill}${!rounded ? ` ${styles.noRadius}` : ''}`}
-          />
-        </div>
+        {showValue && <span className={styles.value} />}
 
-        {showValue && <span ref={labelRef} className={styles.value} />}
+        <div
+          className={`${styles.verticalTrack} ${styles[`trackWidth-${width}`]}`}
+        >
+          <div className={`${styles.stop} ${styles.maxStop}${radiusClass}`} />
+
+          <div className={`${styles.well}${radiusClass}`}>
+            <div className={`${styles.verticalFill}${radiusClass}`} />
+          </div>
+
+          <div className={`${styles.stop} ${styles.minStop}${radiusClass}`} />
+        </div>
       </div>
     );
   }

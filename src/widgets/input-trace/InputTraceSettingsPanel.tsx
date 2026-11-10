@@ -19,6 +19,7 @@ import {
   type InputTraceSettings,
   type SteeringWheelStyle,
 } from './settings-schema';
+import { CustomWheelImageRow } from './CustomWheelImageRow';
 
 // Widget ids this panel configures — read by the panel registry.
 export const PANEL_WIDGET_IDS = ['input-trace'];
@@ -42,6 +43,9 @@ const hasCenterPlate = (settings: InputTraceSettings): boolean =>
   settings.showSteering &&
   settings.steeringWheelStyle !== 'default' &&
   settings.steeringCenterDisplay !== 'none';
+
+const hasCustomWheel = (settings: InputTraceSettings): boolean =>
+  settings.showSteering && settings.steeringWheelStyle === 'custom';
 
 // Left and right of the graph — with no graph, or nothing to place, there is
 // no side to pick.
@@ -338,6 +342,13 @@ export const InputTraceSettingsPanel = observer(() => {
               style={{ width: 180 }}
             />
           </SettingRow>
+        </DependentBlock>
+
+        <DependentBlock dependsOn={hasCustomWheel}>
+          <CustomWheelImageRow
+            image={settings.customWheelImage}
+            onChange={(image) => update({ customWheelImage: image })}
+          />
         </DependentBlock>
 
         <Row setting="steeringCenterDisplay" dependsOn="showSteering" />

@@ -20,6 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Lap Log — Settings:** Pace loss bars draw the delta as a bar of the time lost; the delta column can be hidden, narrowing the widget; a row height of narrow, medium or wide; and the BEST chip and the average can each show always, once there is a time, or never.
 - **Sector Matrix — Settings:** PRED, LAST and BEST can each show always, once there is a time, or never; with LAST and BEST both hidden the footer goes. The lap progress bar can be switched off. A predicted lap you had switched off stays off.
 - **Relative — Distance:** A setting adds the distance to each car, in white after the gap, in meters or feet by the unit system setting. It is measured bumper to bumper along the track, like the radar, so a car alongside reads the same in both.
+- **Input Trace — Your Own Wheel:** A new wheel style takes a picture of your own wheel: PNG, JPG, WebP, SVG, GIF or BMP, up to 20 MB. It is shrunk to 384 px and kept next to the settings file, is fitted inside the wheel's place without moving the rest of the widget, and turns with the steering. The settings panel shows it under the button, which spins until the picture is in. Remote screens draw the default wheel instead.
 
 ### Changed
 
@@ -37,6 +38,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Engine Panel:** A new look in the tables' chip style: one strip per system, always in the same order — brake bias, traction control and ABS, the formula cars' engine braking with the peak and fine bias, the differential, the anti-roll bars, and the engine readings at the bottom — each edged in its colour. The brake bias is the large figure and every other adjustment sits in a chip; a strip your car has no controls for is left out, so a value is always in the same place. An overheating temperature turns red, as do oil pressure and voltage with the engine off. The horizontal and vertical layouts and their column settings are gone.
 - **Battery:** A new look in the tables' chip style: a BAT chip over taller slanted cells with the charge as a large figure beside them, all coloured by charge — green, yellow, red; the deploy modes on their own strip with the selected one in a quiet chip; and IDLE, DEPLOY or REGEN as a bright chip beside the MGU-K power, which takes the state's colour while it flows. The LAP chip keeps one width when the lap's energy turns negative or passes 10 MJ.
 - **Widget Fonts:** Widgets are set in Inter, with figures in JetBrains Mono, in place of Rajdhani and Consolas.
+- **Input Trace:** The pedal bars are a little narrower, with a stop at the bottom and the top that lights in the pedal's colour once the pedal is touched and when it is fully pressed; the figures sit above the bars instead of on them. The graph is as tall as the bars, and the widget has room above and below. The speed and gear sit at the top of their block, with the entry, apex and exit speeds as chips under them, the one to read now bright and the others dimmed.
 
 ### Removed
 

@@ -1,5 +1,5 @@
 import { useWidgetSettings } from '@entities/layout/useWidgetSettings';
-import type { CSSProperties } from 'react';
+import { useState, type CSSProperties } from 'react';
 import { observer } from 'mobx-react-lite';
 import { usePlayerStore } from '@entities/player/player-context';
 import { useUnitsStore } from '@entities/app-settings/units-context';
@@ -7,6 +7,7 @@ import { steeringAngleDeg } from '@shared/lib/car-signals';
 import { useReactiveDomWrite } from '@shared/hooks/useReactiveDomWrite';
 import Logo from '@assets/brand-mark.svg?react';
 import { getWheelArt } from './WheelArt';
+import { useInputTraceWidgetStore } from '../input-trace.store';
 import styles from './SteeringWheel.module.scss';
 import type { InputTraceSettings } from '../settings-schema';
 
@@ -149,7 +150,18 @@ export const SteeringWheel = observer(() => {
   const telemetry = usePlayerStore();
 
   const settings = useWidgetSettings<InputTraceSettings>('input-trace');
+  const inputTrace = useInputTraceWidgetStore();
   const WheelArt = getWheelArt(settings.steeringWheelStyle);
+
+  // A file deleted from disk after it was picked would show the webview's
+  // broken-image icon; the drawn dial stands in for it instead.
+  const [failedSrc, setFailedSrc] = useState<string | null>(null);
+
+  const customSrc =
+    settings.steeringWheelStyle === 'custom' &&
+    inputTrace.customWheelSrc !== failedSrc
+      ? inputTrace.customWheelSrc
+      : null;
 
   const rotatorRef = useReactiveDomWrite<HTMLDivElement>(
     (element, scheduleWrite) => {
@@ -160,7 +172,7 @@ export const SteeringWheel = observer(() => {
         element.style.setProperty(STEERING_ANGLE_PROPERTY, `${-rawAngle}rad`);
       });
     },
-    [telemetry, settings.steeringWheelStyle, settings.showSteering]
+    [telemetry, settings.steeringWheelStyle, settings.showSteering, customSrc]
   );
 
   if (!settings.showSteering) {
@@ -170,8 +182,9 @@ export const SteeringWheel = observer(() => {
   // A traced wheel turns as a whole, so it replaces both the groove it would
   // hide and the rim marker it already reads as — gt-round and flat-bottom
   // are radially symmetric enough that the marker is drawn into their own
-  // SVG instead (see wheels/gt-round.svg, wheels/flat-bottom-wheel.svg).
-  if (WheelArt) {
+  // SVG instead (see wheels/gt-round.svg, wheels/flat-bottom-wheel.svg). The
+  // user's own picture turns the same way, as it is.
+  if (WheelArt || customSrc) {
     return (
       <div className={styles.container}>
         <div className={styles.dial}>
@@ -184,7 +197,17 @@ export const SteeringWheel = observer(() => {
               } as CSSProperties
             }
           >
-            <WheelArt className={styles.art} />
+            {customSrc ? (
+              <img
+                src={customSrc}
+                alt=""
+                draggable={false}
+                className={styles.customArt}
+                onError={() => setFailedSrc(customSrc)}
+              />
+            ) : (
+              WheelArt && <WheelArt className={styles.art} />
+            )}
           </div>
 
           {settings.steeringCenterDisplay !== 'none' && (
