@@ -1,0 +1,14 @@
+.distanceBlock {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+.distance {
+  font-family: $font-mono;
+  font-weight: 700;
+  font-size: fs(xs);
+  text-align: right;
+  white-space: nowrap;
+  color: $widget-text-primary;
+}

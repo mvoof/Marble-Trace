@@ -187,6 +187,23 @@ export const hasSetALap = (driver: {
 }): boolean => driver.bestLapTime !== null || driver.qualifyTime !== null;
 
 /**
+ * Meters along the track between a car and the player, from `relativeLapDist`
+ * (the lap fraction between them, wrapped to half a lap either way). Positive:
+ * ahead. Center to center, so a car alongside reads about a car length more
+ * than the radar's bumper-to-bumper gap. `null` before the track length is known.
+ */
+export const trackGapMeters = (
+  relativeLapDist: number,
+  trackLengthM: number | null | undefined
+): number | null => {
+  if (trackLengthM == null || trackLengthM <= 0) {
+    return null;
+  }
+
+  return relativeLapDist * trackLengthM;
+};
+
+/**
  * Seconds between a car and the player on the relative strip, scaled by class
  * pace so a faster class is not shown closer than it is. Positive: ahead.
  */

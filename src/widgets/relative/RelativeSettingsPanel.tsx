@@ -91,6 +91,7 @@ export const RelativeSettingsPanel = observer(() => {
         <Row setting="abbreviateNames" />
         <Row setting="showCountryFlag" />
         <Row setting="showDriverFlags" />
+        <Row setting="showDistance" />
       </Card>
 
       <Card title={t('settingsPanels.common.safetyCar')}>

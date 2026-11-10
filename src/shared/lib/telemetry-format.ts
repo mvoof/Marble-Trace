@@ -96,6 +96,13 @@ export function distanceUnit(unitSystem: UnitSystem): string {
 export const widgetDistanceUnit = (unitSystem: UnitSystem): 'm' | 'ft' =>
   unitSystem === 'imperial' ? 'ft' : 'm';
 
+/** A distance as an overlay widget prints it: whole meters or feet, "124 m". */
+export const formatWidgetDistance = (
+  meters: number,
+  unitSystem: UnitSystem
+): string =>
+  `${Math.round(metersToDisplayDistance(meters, unitSystem))} ${widgetDistanceUnit(unitSystem)}`;
+
 export function formatGear(gear: number): string {
   if (gear === 0) return 'N';
   if (gear < 0) return 'R';

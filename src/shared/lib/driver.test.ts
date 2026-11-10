@@ -5,7 +5,20 @@ import {
   isNearIncidentLimit,
   isNearIncidentPenalty,
   parseDriverFlags,
+  trackGapMeters,
 } from './driver';
+
+describe('trackGapMeters', () => {
+  it('scales the lap fraction by the track length, keeping the sign', () => {
+    expect(trackGapMeters(0.1, 5000)).toBe(500);
+    expect(trackGapMeters(-0.02, 5000)).toBe(-100);
+  });
+
+  it('is null until the track length is known', () => {
+    expect(trackGapMeters(0.1, null)).toBeNull();
+    expect(trackGapMeters(0.1, 0)).toBeNull();
+  });
+});
 
 const INITIAL = 8;
 const SUBSEQUENT = 4;

@@ -5,6 +5,7 @@ import { splitDriverName } from '@shared/lib/driver';
 import type { UnitSystem } from '@shared/contracts/domain';
 import {
   displayDistanceToMeters,
+  formatWidgetDistance,
   metersToDisplayDistance,
   widgetDistanceUnit,
 } from '@shared/lib/telemetry-format';
@@ -434,11 +435,7 @@ export const formatBattleGap = (gapSeconds: number): string =>
 export const formatBattleDistance = (
   clearance: number,
   isMetric: boolean
-): string => {
-  const value = toDisplayDistance(clearance, isMetric);
-
-  return `${Math.round(value)} ${widgetDistanceUnit(unitSystemOf(isMetric))}`;
-};
+): string => formatWidgetDistance(clearance, unitSystemOf(isMetric));
 
 /**
  * The same distance, split at the unit.

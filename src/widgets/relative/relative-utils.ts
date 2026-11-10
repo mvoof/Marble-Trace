@@ -34,6 +34,8 @@ export const NAME_COLUMN_MIN_PX = 80;
 export const NAME_COLUMN_MAX_PX = 300;
 export const NAME_COLUMN_DEFAULT_PX = 180;
 
+const DISTANCE_COLUMN_PX = 60;
+
 const clampNameColumnWidth = (width: number | undefined) => {
   if (!Number.isFinite(width)) {
     return NAME_COLUMN_DEFAULT_PX;
@@ -85,6 +87,8 @@ const colSpecs = (
     chipColumn(srChipWidth(sr, settings.licBadgeStyle), settings),
     chipColumn(irChipWidth(ir), settings),
     { px: padded(56), show: true }, // gap
+    // Distance: five digits and the unit ("41010 ft"), half a lap of the Nordschleife.
+    { px: padded(DISTANCE_COLUMN_PX), show: settings.showDistance },
   ];
 };
 
