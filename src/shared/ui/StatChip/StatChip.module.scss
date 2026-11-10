@@ -15,7 +15,8 @@ $pad-y: var(--chip-pad-y, #{sp(xxxs)});
   display: inline-flex;
   align-items: stretch;
   flex-shrink: 0;
-  min-width: 0;
+  // A caller whose figure changes width sets a floor, so the chip holds still.
+  min-width: var(--chip-min-width, 0);
   overflow: hidden;
   border: 1px solid var(--chip-border, #{$chip-border});
   border-radius: radius(sm);
@@ -64,6 +65,8 @@ $pad-y: var(--chip-pad-y, #{sp(xxxs)});
 .lead {
   display: inline-flex;
   align-items: center;
+  // Centred in a chip held wider than it (`--chip-min-width`).
+  justify-content: center;
   gap: sp(xxs);
   min-height: calc(var(--chip-line, #{wfs(16)}) + #{$pad-y} * 2);
   padding: var(--chip-lead-padding, #{$pad-y sp(xs)});
@@ -237,11 +240,14 @@ $pad-y: var(--chip-pad-y, #{sp(xxxs)});
   --chip-edge: #{$chip-neutral-border};
 }
 
-// A color read from the data — a temperature, the track's wetness — taken down
-// to a ground the same way the fixed tones are.
+// A color read from the data — a temperature, the track's wetness, a pedal
+// color the user set — taken down to a ground the same way the fixed tones
+// are, and filling a filled look from the color itself.
 .toneData {
   --chip-lead-bg: color-mix(in srgb, var(--chip-data) 22%, #{$chip-bg});
   --chip-lead-text: var(--chip-data);
+  --chip-solid-bg: var(--chip-data);
+  --chip-on-solid: #{$widget-text-primary};
   --chip-edge: color-mix(in srgb, var(--chip-data) 40%, transparent);
 }
 

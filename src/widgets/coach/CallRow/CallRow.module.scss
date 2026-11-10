@@ -43,11 +43,6 @@ $phase-cell-height: calc(
   --chip-lead-padding: #{sp(xxs) sp(sm)};
 }
 
-// A pedal call is filled from the color the user set for that pedal.
-.callCell .callPedal {
-  --chip-solid-bg: var(--chip-data);
-}
-
 // Without a reference lap there is no call to make — the word is a status, not
 // an instruction, so it stays a reading's size.
 .status {

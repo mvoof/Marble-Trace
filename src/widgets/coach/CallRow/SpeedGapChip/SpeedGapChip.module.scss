@@ -11,8 +11,6 @@
   --chip-solid-weight: 800;
   --chip-solid-padding-x: #{sp(sm)};
   --chip-pad-y: #{sp(xxs)};
-
-  justify-content: center;
   // Wide enough for −00, so the chip holds its width as the gap changes.
-  min-width: ws(40);
+  --chip-min-width: #{ws(40)};
 }

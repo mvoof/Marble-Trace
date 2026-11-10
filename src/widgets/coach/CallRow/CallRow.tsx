@@ -170,12 +170,7 @@ export const CallRow = observer(() => {
             ? { look: 'state', toneColor: settings.gasColor }
             : { look: 'state', tone: 'muted' };
 
-  const callClass = [
-    inactiveReason !== null ? styles.status : styles.call,
-    callChip.toneColor !== undefined ? styles.callPedal : '',
-  ]
-    .filter(Boolean)
-    .join(' ');
+  const callClass = inactiveReason !== null ? styles.status : styles.call;
 
   // The bar is the continuous signal behind the discrete call: how close the
   // last possible braking point is, and — once the call is GAS — how much of
