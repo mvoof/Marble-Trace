@@ -40,6 +40,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Engine Panel — Oil Pressure:** Oil pressure always read 0.0 bar; it now shows the real pressure, in bar or psi.
 - **Pit Service — Projected Position:** The `P5 → P8` estimate now counts the time the pit lane itself costs, measured from the stops the field makes, on top of the standing still, and shows on the way to the pits, not only in the box. A car a lap down right behind you no longer counts as a place lost, a car more than half a lap back still does, and the estimate no longer needs the Relative widget on screen to work.
 - **TCR Badge:** A TCR class with the Audi RS3 LMS Gen2 in it is badged TCR, not by the series name the sim gives it.
 - **Incident Count:** The Incident Tracker takes the count as the sim gives it. Started mid-session, it no longer counts from zero while the standings footer reads the right number, and a momentary drop of the session number no longer starts a new session.
