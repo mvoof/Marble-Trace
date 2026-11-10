@@ -1,43 +1,52 @@
 import { observer } from 'mobx-react-lite';
+import { useRef } from 'react';
 
 import { useReactiveDomWrite } from '@shared/hooks/useReactiveDomWrite';
 import { formatSpeed } from '@shared/lib/telemetry-format';
 import { writeStatChip, type StatChipTone } from '@shared/ui/StatChip/StatChip';
 import { useUnitsStore } from '@entities/app-settings/units-context';
 import { useDrivingCoachWidgetStore } from '@widgets/coach/coach-stores';
+import { NO_SPEED_GAP, settleSpeedGap, type ShownSpeedGap } from './speed-gap';
 
 import styles from './SpeedGapChip.module.scss';
 
 const NO_VALUE_TEXT = '—';
+const EVEN_TEXT = '0';
 
-/** How far this lap's speed is off the reference's here, in whole display units. */
-const speedGapText = (gap: number | null): string => {
-  if (gap === null) {
+const speedGapText = (shown: ShownSpeedGap): string => {
+  if (shown.kind === 'none') {
     return NO_VALUE_TEXT;
   }
 
-  const sign = gap > 0 ? '+' : gap < 0 ? '−' : '';
+  if (shown.kind === 'even') {
+    return EVEN_TEXT;
+  }
 
-  return `${sign}${Math.abs(gap)}`;
+  const sign = shown.units > 0 ? '+' : '−';
+
+  return `${sign}${Math.abs(shown.units)}`;
 };
 
-const speedGapTone = (gap: number | null): StatChipTone => {
-  if (gap === null || gap === 0) {
+const speedGapTone = (shown: ShownSpeedGap): StatChipTone => {
+  if (shown.kind !== 'gap') {
     return 'muted';
   }
 
-  return gap > 0 ? 'positive' : 'danger';
+  return shown.units > 0 ? 'positive' : 'danger';
 };
 
 /**
  * How far off the reference's speed this lap is at the car's position, as a
  * quiet chip. It moves with the car, so it is written straight to the chip. It
- * is the gap of the two figures as the footer shows them, so the three always
- * add up.
+ * is the gap of the two figures as the footer shows them, so the three add up
+ * — except near zero, where a unit either way is rounding and the chip holds
+ * at an even 0 (`settleSpeedGap`).
  */
 export const SpeedGapChip = observer(() => {
   const coach = useDrivingCoachWidgetStore();
   const units = useUnitsStore();
+
+  const shownRef = useRef<ShownSpeedGap>(NO_SPEED_GAP);
 
   const chipRef = useReactiveDomWrite<HTMLSpanElement>(
     (element, scheduleWrite) => {
@@ -47,8 +56,12 @@ export const SpeedGapChip = observer(() => {
           ? null
           : Number(formatSpeed(coach.currentSpeedMps, units.unitSystem)) -
             Number(formatSpeed(referenceSpeedMps, units.unitSystem));
-      const tone = speedGapTone(gap);
-      const text = speedGapText(gap);
+      const shown = settleSpeedGap(shownRef.current, gap);
+
+      shownRef.current = shown;
+
+      const tone = speedGapTone(shown);
+      const text = speedGapText(shown);
 
       scheduleWrite(() => {
         writeStatChip(element, tone, 'number', text, 'reading');
