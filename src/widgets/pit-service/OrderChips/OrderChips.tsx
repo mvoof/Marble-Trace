@@ -8,6 +8,25 @@ import { usePlayerStore } from '@entities/player/player-context';
 
 const UNKNOWN_COMPOUND = '—';
 
+// iRacing reports 255 fast repairs available when the session sets no limit.
+const UNLIMITED_FAST_REPAIRS = 255;
+const UNLIMITED_MARK = '∞';
+
+// Names up to four letters (HARD, SOFT, WET) fit the chip; longer ones are cut
+// to three (MEDIUM → MED).
+const COMPOUND_FULL_NAME_MAX = 4;
+const COMPOUND_SHORT_LENGTH = 3;
+
+const shortCompoundName = (name: string): string =>
+  name.length > COMPOUND_FULL_NAME_MAX
+    ? name.slice(0, COMPOUND_SHORT_LENGTH)
+    : name;
+
+const fastRepairTotal = (available: number, used: number): string =>
+  available >= UNLIMITED_FAST_REPAIRS
+    ? UNLIMITED_MARK
+    : String(available + used);
+
 // The compound is named in the color the standings give its badge: white for
 // hard, blue for wet.
 const COMPOUND_CLASS: Record<string, string> = {
@@ -55,7 +74,7 @@ export const OrderChips = observer(() => {
           look={isFastRepairOrdered ? 'mark' : 'plain'}
           tone={isFastRepairOrdered ? 'positive' : 'muted'}
         >
-          {used}/{available + used}
+          {used}/{fastRepairTotal(available, used)}
         </StatChip>
       </OrderToggle>
 
@@ -83,7 +102,11 @@ export const OrderChips = observer(() => {
           onToggle={() => widget.order.cycleTireCompound()}
         >
           <StatChip
-            lead={compoundName ?? UNKNOWN_COMPOUND}
+            lead={
+              compoundName === null
+                ? UNKNOWN_COMPOUND
+                : shortCompoundName(compoundName)
+            }
             className={compoundClass(compoundName)}
           />
         </OrderToggle>
