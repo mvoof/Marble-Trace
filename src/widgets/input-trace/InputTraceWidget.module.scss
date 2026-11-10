@@ -26,18 +26,10 @@ section.panel {
   overflow: hidden;
 }
 
-// Beside the bars the graph's window is cut to their well: past the max stop
-// at the top, and the readout above it when one is shown; past the min stop at
-// the bottom. The trace's 0 % and 100 % then sit level with the bars'.
-.chartBesideBars {
-  padding-top: rem($bar-stop-height + $bar-stop-gap);
-  padding-bottom: rem($bar-stop-height + $bar-stop-gap);
-}
-
+// Beside the bars the graph spans them stop to stop: with the readout shown
+// above the bars it starts where they do, under the digits.
 .chartBesideValues {
-  padding-top: rem(
-    $bar-value-size + $bar-value-gap + $bar-stop-height + $bar-stop-gap
-  );
+  padding-top: rem($bar-value-size + $bar-value-gap);
 }
 
 // The speed and gear on top, the corner speeds under them, centred as a group.

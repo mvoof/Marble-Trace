@@ -15,3 +15,9 @@
   justify-content: center;
   width: ws(34);
 }
+
+// Every figure but the one to read now, dimmed as a whole — the quiet chip's
+// shade alone sits too close to the bright one to tell them apart at a glance.
+.cellPending {
+  opacity: 0.35;
+}

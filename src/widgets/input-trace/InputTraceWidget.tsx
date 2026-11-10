@@ -48,11 +48,9 @@ export const InputTraceWidget = observer(() => {
     </div>
   );
 
-  // Beside the bars the graph is cut to their well, so its 0 % and 100 % are
-  // the bars' own.
+  // Beside the bars the graph is as tall as they are, stop to stop.
   const chartClassName = [
     styles.chartArea,
-    !barsEffectivelyHidden && styles.chartBesideBars,
     !barsEffectivelyHidden &&
       settings.showInputValues &&
       styles.chartBesideValues,

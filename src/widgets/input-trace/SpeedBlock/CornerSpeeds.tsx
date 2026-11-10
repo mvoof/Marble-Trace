@@ -56,6 +56,12 @@ export const CornerSpeeds = observer(() => {
             return;
           }
 
+          // A no-op on the DOM when the cell already is in that state.
+          chip.parentElement?.classList.toggle(
+            styles.cellPending,
+            row.look !== 'mark'
+          );
+
           const signature = `${row.text}|${row.look}|${row.color}`;
 
           if (chip.dataset.shown === signature) {
