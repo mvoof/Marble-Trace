@@ -1,0 +1,42 @@
+.monitorRow {
+  display: flex;
+  align-items: center;
+  gap: sp(xs);
+  font-size: fs(xs);
+  padding: sp(xxs) sp(xs);
+  border-radius: radius(sm);
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.monitorRowOffline {
+  opacity: 0.6;
+}
+
+.monitorDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: $race-green;
+  flex: 0 0 auto;
+}
+
+.monitorDotOffline {
+  background: #3a3d45;
+}
+
+.monitorName {
+  flex: 1 1 auto;
+  min-width: 0;
+  color: #e0e0e0;
+  font-family: $font-mono;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.monitorMeta {
+  color: #8b8e98;
+  font-family: $font-mono;
+  font-size: fs(xxs);
+  white-space: nowrap;
+}

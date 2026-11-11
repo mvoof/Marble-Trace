@@ -14,7 +14,7 @@ import {
   widgetScaleOf,
 } from '@entities/widget/widget-frame';
 import { useRendersNothing } from './use-renders-nothing';
-import styles from './LayoutCanvas.module.scss';
+import styles from './LayoutCanvasWidget.module.scss';
 
 interface LayoutCanvasWidgetProps {
   widgetId: string;

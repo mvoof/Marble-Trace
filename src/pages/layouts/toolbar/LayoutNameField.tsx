@@ -5,7 +5,6 @@ import { Button, Input, Popconfirm, Select, Tooltip } from 'antd';
 import type { InputRef } from 'antd';
 import { Check, Pencil, Plus, Trash2, X } from 'lucide-react';
 
-import { deleteBackgroundImage } from '@entities/layout/layout-background';
 import { useLayoutsStore } from '@entities/layout/layouts-context';
 import {
   useLayoutEditorStore,
@@ -13,7 +12,7 @@ import {
 } from '@features/layout-editor/layout-editor-context';
 import {
   createLayout,
-  deleteLayout,
+  deleteLayoutAndBackgrounds,
 } from '@features/layout-editor/layout-gestures';
 
 import styles from './LayoutNameField.module.scss';
@@ -87,11 +86,7 @@ export const LayoutNameField = observer(() => {
       return;
     }
 
-    for (const image of Object.values(editingLayout?.backgroundImages ?? {})) {
-      void deleteBackgroundImage(image);
-    }
-
-    deleteLayout(gestureStores, activeId);
+    deleteLayoutAndBackgrounds(gestureStores, activeId);
   };
 
   if (draft !== 'none') {

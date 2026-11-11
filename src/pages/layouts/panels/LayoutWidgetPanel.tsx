@@ -19,17 +19,9 @@ import type { MonitorWidgetRow } from '@entities/layout/live-widgets.store';
 import { isRemoteMonitor } from '@shared/lib/remote-screen';
 import { useLayoutsStore } from '@entities/layout/layouts-context';
 import { useMainLiveWidgetsStore } from '@entities/layout/main-live-widgets-context';
+import { useLayoutEditorUiStore } from '@features/layout-editor/layout-editor-ui-context';
+
 import styles from './LayoutWidgetPanel.module.scss';
-
-interface LayoutWidgetPanelProps {
-  selectedWidgetId: string | null;
-  onSelectWidget: (id: string) => void;
-}
-
-interface SelectionProps {
-  selectedWidgetId: string | null;
-  onSelectWidget: (id: string) => void;
-}
 
 /**
  * Whether the widget's hotkeys act on this instance, and a click to change
@@ -81,17 +73,16 @@ const InstanceRow = observer(
     ordinal,
     total,
     available,
-    selectedWidgetId,
-    onSelectWidget,
-  }: SelectionProps & {
+  }: {
     widget: WidgetDefaultConfig;
     ordinal: number;
     total: number;
     available: boolean;
   }) => {
     const liveWidgets = useMainLiveWidgetsStore();
+    const editorUi = useLayoutEditorUiStore();
     const { t } = useTranslation('main-app');
-    const isSelected = selectedWidgetId === widget.id;
+    const isSelected = editorUi.selectedWidgetId === widget.id;
     const rowRef = useScrollIntoViewWhen(isSelected);
 
     return (
@@ -114,7 +105,7 @@ const InstanceRow = observer(
           type="button"
           className={styles.label}
           aria-label={t('layoutWidgetPanel.copyTooltip')}
-          onClick={() => onSelectWidget(widget.id)}
+          onClick={() => editorUi.selectWidget(widget.id)}
         >
           <Tooltip title={t('layoutWidgetPanel.copyTooltip')}>
             <span className={styles.copyTag}>
@@ -134,9 +125,9 @@ const InstanceRow = observer(
           onConfirm={() => {
             liveWidgets.removeWidgetCopy(widget.id);
 
-            // An empty id clears the selection — the copy it named is gone.
+            // The copy the selection named is gone.
             if (isSelected) {
-              onSelectWidget('');
+              editorUi.selectWidget(null);
             }
           }}
         >
@@ -159,20 +150,14 @@ const InstanceRow = observer(
  * making one — and off takes every instance of it off this monitor.
  */
 const WidgetTypeRow = observer(
-  ({
-    row,
-    monitorName,
-    selectedWidgetId,
-    onSelectWidget,
-  }: SelectionProps & {
-    row: MonitorWidgetRow;
-    monitorName: string;
-  }) => {
+  ({ row, monitorName }: { row: MonitorWidgetRow; monitorName: string }) => {
     const liveWidgets = useMainLiveWidgetsStore();
+    const editorUi = useLayoutEditorUiStore();
     const { instances, available } = row;
     const [first] = instances;
     const isOn = instances.some((widget) => widget.userSettings.enabled);
-    const isSelected = first !== undefined && selectedWidgetId === first.id;
+    const isSelected =
+      first !== undefined && editorUi.selectedWidgetId === first.id;
     const rowRef = useScrollIntoViewWhen(isSelected);
 
     const handleToggle = (checked: boolean) => {
@@ -183,7 +168,7 @@ const WidgetTypeRow = observer(
       );
 
       if (switchedOn !== null) {
-        onSelectWidget(switchedOn);
+        editorUi.selectWidget(switchedOn);
       }
     };
 
@@ -206,7 +191,7 @@ const WidgetTypeRow = observer(
             type="button"
             className={styles.label}
             disabled={first === undefined}
-            onClick={() => first && onSelectWidget(first.id)}
+            onClick={() => first && editorUi.selectWidget(first.id)}
           >
             {row.label}
           </button>
@@ -224,8 +209,6 @@ const WidgetTypeRow = observer(
                 ordinal={index + 2}
                 total={instances.length}
                 available={available}
-                selectedWidgetId={selectedWidgetId}
-                onSelectWidget={onSelectWidget}
               />
             ))}
       </>
@@ -272,34 +255,31 @@ const ScreenHeading = observer(
   }
 );
 
-const ScreenGroup = observer(
-  ({ monitor, ...selection }: SelectionProps & { monitor: LayoutMonitor }) => {
-    const liveWidgets = useMainLiveWidgetsStore();
-    const [isCollapsed, setIsCollapsed] = useState(false);
+const ScreenGroup = observer(({ monitor }: { monitor: LayoutMonitor }) => {
+  const liveWidgets = useMainLiveWidgetsStore();
+  const [isCollapsed, setIsCollapsed] = useState(false);
 
-    return (
-      <div className={styles.screenGroup}>
-        <ScreenHeading
-          monitor={monitor}
-          isCollapsed={isCollapsed}
-          onToggle={() => setIsCollapsed((collapsed) => !collapsed)}
-        />
+  return (
+    <div className={styles.screenGroup}>
+      <ScreenHeading
+        monitor={monitor}
+        isCollapsed={isCollapsed}
+        onToggle={() => setIsCollapsed((collapsed) => !collapsed)}
+      />
 
-        {!isCollapsed &&
-          liveWidgets
-            .monitorWidgetRows(monitor.name)
-            .map((row) => (
-              <WidgetTypeRow
-                key={row.type}
-                row={row}
-                monitorName={monitor.name}
-                {...selection}
-              />
-            ))}
-      </div>
-    );
-  }
-);
+      {!isCollapsed &&
+        liveWidgets
+          .monitorWidgetRows(monitor.name)
+          .map((row) => (
+            <WidgetTypeRow
+              key={row.type}
+              row={row}
+              monitorName={monitor.name}
+            />
+          ))}
+    </div>
+  );
+});
 
 /**
  * The layout editor's widget list: one list per screen of the layout, each
@@ -311,22 +291,15 @@ const ScreenGroup = observer(
  * on a widget, its settings included, lives in the inspector on the other side
  * of the canvas.
  */
-export const LayoutWidgetPanel = observer(
-  ({ selectedWidgetId, onSelectWidget }: LayoutWidgetPanelProps) => {
-    const layouts = useLayoutsStore();
-    const monitors = layouts.editingLayout?.monitors ?? [];
+export const LayoutWidgetPanel = observer(() => {
+  const layouts = useLayoutsStore();
+  const monitors = layouts.editingLayout?.monitors ?? [];
 
-    return (
-      <div className={styles.list}>
-        {monitors.map((monitor) => (
-          <ScreenGroup
-            key={monitor.name}
-            monitor={monitor}
-            selectedWidgetId={selectedWidgetId}
-            onSelectWidget={onSelectWidget}
-          />
-        ))}
-      </div>
-    );
-  }
-);
+  return (
+    <div className={styles.list}>
+      {monitors.map((monitor) => (
+        <ScreenGroup key={monitor.name} monitor={monitor} />
+      ))}
+    </div>
+  );
+});

@@ -164,6 +164,12 @@ main window; its model — the editor store, gestures, snapping — is the featu
   moving the driver's screen while the user edits another layout, and closing
   the editor hands the live layout back as the edited one. `previewMode`
   (`layoutEditor`) is derived from the two, not stored.
+- What the editor _shows_ — selection, focused screen, preview scenario,
+  drawers, pinned ratios, the background picture of a screen — is
+  `LayoutEditorUiStore` (`features/layout-editor/layout-editor-ui.store.ts`).
+  The toolbar, canvas, list and panels under `pages/layouts/` read it through
+  `useLayoutEditorUiStore` rather than through props; `useState` there holds
+  only what lasts one gesture (a name being typed, a screen in hand).
 - Geometry is read from and written to the **main** `LiveWidgetsStore`; widget
   _content_ renders against an isolated `PreviewCore` seeded from
   `features/preview/scenarios.ts`, mirrored on `changeToken`.
@@ -177,7 +183,7 @@ main window; its model — the editor store, gestures, snapping — is the featu
 - The editor raises `dragMode` on the preview store, so in-place widget controls
   behave as they do on the overlay. Prefer that flag over an editor-specific branch.
 - State an in-place control changes outside the preview store is bridged explicitly
-  in `LayoutCanvas` (see `useTrackRotationBridge`), in both directions.
+  in `canvas/use-track-rotation-bridge.ts`, in both directions.
 - Widget → monitor is the widget's `monitor` field, never its position: a drag
   is clamped to the widget's own monitor (`updatePosition`), and only
   `moveWidgetToMonitor` hands it to another one. A remote screen is just a

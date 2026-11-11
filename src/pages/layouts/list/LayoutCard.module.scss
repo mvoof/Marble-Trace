@@ -1,0 +1,122 @@
+.layoutCard {
+  background: #15161a;
+  border: 1px solid #2a2c32;
+  border-radius: radius(md);
+  padding: sp(sm);
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: sp(sm);
+  transition:
+    transform 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+  position: relative;
+  text-align: left;
+  font-family: inherit;
+  color: inherit;
+  width: 100%;
+
+  &:hover {
+    transform: translateY(-2px);
+    border-color: #5e626d;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  }
+}
+
+.layoutCardSelected {
+  border-color: #e0e0e0;
+  box-shadow: 0 0 0 2px rgba(224, 224, 224, 0.15);
+}
+
+.cardFooter {
+  display: flex;
+  flex-direction: column;
+  gap: sp(xxs);
+}
+
+.cardHeaderRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: sp(xs);
+}
+
+.cardName {
+  font-size: fs(sm);
+  font-weight: 500;
+  color: #e0e0e0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 1;
+}
+
+.cardMeta {
+  font-size: fs(xxs);
+  color: #8b8e98;
+  font-family: $font-mono;
+}
+
+.activeBadge {
+  background: rgba(59, 130, 246, 0.1);
+  color: #3b82f6;
+  border: 1px solid rgba(59, 130, 246, 0.25);
+  font-size: 10px;
+  padding: 0 sp(xxs);
+  border-radius: radius(sm);
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.badgesWrapper {
+  display: flex;
+  flex-wrap: wrap;
+  gap: sp(xxs);
+  align-items: center;
+  margin-top: sp(xxs);
+}
+
+.sessionBadge {
+  font-size: 10px;
+  padding: 0 sp(xxs);
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: radius(sm);
+  font-weight: 600;
+  text-transform: uppercase;
+  font-family: $font-mono;
+}
+
+.sessionBadgePractice {
+  background: rgba($race-blue, 0.1);
+  color: $race-blue;
+  border: 1px solid rgba($race-blue, 0.25);
+}
+
+.sessionBadgeQualify {
+  background: rgba($race-purple, 0.1);
+  color: $race-purple;
+  border: 1px solid rgba($race-purple, 0.25);
+}
+
+.sessionBadgeRace {
+  background: rgba($race-green, 0.1);
+  color: $race-green;
+  border: 1px solid rgba($race-green, 0.25);
+}
+
+.sessionBadgeGarage {
+  background: rgba($race-yellow, 0.1);
+  color: $race-yellow;
+  border: 1px solid rgba($race-yellow, 0.25);
+}
+
+.sessionBadgeDisabled,
+.sessionBadgeManual {
+  background: rgba(255, 255, 255, 0.03);
+  color: #5e626d;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}

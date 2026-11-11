@@ -1,0 +1,80 @@
+.panel {
+  flex: 0 0 260px;
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.panelDrawer {
+  position: absolute;
+  // Below the floating toolbar, whatever height it wrapped to — measured, not
+  // assumed, since the bar takes a second row as soon as the window narrows.
+  top: var(--editor-toolbar-bottom, 56px);
+  left: sp(md);
+  bottom: sp(sm);
+  z-index: 30;
+  width: 280px;
+  display: flex;
+  flex-direction: column;
+  overflow: visible;
+  padding: sp(sm);
+  background: rgba(11, 12, 16, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: radius(lg);
+  backdrop-filter: blur(6px);
+  transform: translateX(calc(-100% - #{sp(md)}));
+  transition: transform 0.2s ease;
+}
+
+.panelDrawerOpen {
+  transform: translateX(0);
+}
+
+.panelDrawerHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex: 0 0 auto;
+  margin-bottom: sp(xs);
+}
+
+.panelDrawerTitle {
+  color: #e0e0e0;
+  font-size: fs(sm);
+  font-weight: 600;
+}
+
+// The inspector holds its width whether or not a widget is selected: a column
+// that comes and goes would rescale the canvas on every click.
+.inspector {
+  flex: 0 0 320px;
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+// Fullscreen mirrors the widget list: an overlay drawer, on the other side.
+.inspectorDrawer {
+  position: absolute;
+  top: var(--editor-toolbar-bottom, 56px);
+  right: sp(md);
+  bottom: sp(sm);
+  z-index: 30;
+  width: 320px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding: sp(sm);
+  background: rgba(11, 12, 16, 0.92);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: radius(lg);
+  backdrop-filter: blur(6px);
+  transform: translateX(calc(100% + #{sp(md)}));
+  transition: transform 0.2s ease;
+}
+
+.inspectorDrawerOpen {
+  transform: translateX(0);
+}

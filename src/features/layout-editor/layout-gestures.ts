@@ -1,5 +1,6 @@
 import { runInAction } from 'mobx';
 
+import { deleteBackgroundImage } from '@entities/layout/layout-background';
 import { fullScreenMonitor } from '@entities/layout/virtual-desktop';
 import { resolveMonitorByName } from '@shared/api/overlay-resolution';
 
@@ -33,9 +34,13 @@ export interface GestureLayoutRecords {
   readonly editingLayoutId: string | null;
   readonly editingLayout: { widgets: WidgetDefaultConfig[] } | undefined;
   addLayout(name: string): string;
-  byId(
-    id: string
-  ): { monitors: LayoutMonitor[]; widgets: WidgetDefaultConfig[] } | undefined;
+  byId(id: string):
+    | {
+        monitors: LayoutMonitor[];
+        widgets: WidgetDefaultConfig[];
+        backgroundImages?: Record<string, string>;
+      }
+    | undefined;
   setEditingLayoutId(id: string | null): void;
   anchorToMonitor(id: string, monitor: LayoutMonitor): boolean;
   detachLayout(id: string): void;
@@ -131,6 +136,23 @@ export const deleteLayout = (
   }
 
   records.setEditingLayoutId(null);
+};
+
+/**
+ * Drops a layout together with its background pictures, which are files of
+ * their own and would otherwise outlive the layout that named them.
+ */
+export const deleteLayoutAndBackgrounds = (
+  stores: LayoutGestureStores,
+  id: string
+) => {
+  const images = Object.values(stores.records.byId(id)?.backgroundImages ?? {});
+
+  for (const image of images) {
+    void deleteBackgroundImage(image);
+  }
+
+  deleteLayout(stores, id);
 };
 
 /**

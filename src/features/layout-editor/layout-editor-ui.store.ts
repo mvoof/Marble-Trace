@@ -1,6 +1,18 @@
 import { makeAutoObservable, reaction } from 'mobx';
 
+import {
+  deleteBackgroundImage,
+  saveBackgroundImage,
+} from '@entities/layout/layout-background';
 import type { LayoutsStore } from '@entities/layout/layouts.store';
+
+const DEFAULT_IMAGE_EXTENSION = 'png';
+
+/** What the editor's view reads and writes of the layout records. */
+export type LayoutEditorUiLayouts = Pick<
+  LayoutsStore,
+  'editingLayoutId' | 'editingLayout' | 'setMonitorBackground'
+>;
 
 /**
  * What the layout editor shows, as opposed to the layout it edits: the
@@ -29,12 +41,15 @@ export class LayoutEditorUiStore {
 
   private readonly stopFollowingLayout: () => void;
 
-  constructor(layouts: LayoutsStore, defaultScenarioId: string) {
+  constructor(
+    private readonly layouts: LayoutEditorUiLayouts,
+    defaultScenarioId: string
+  ) {
     this.scenarioId = defaultScenarioId;
 
-    makeAutoObservable<LayoutEditorUiStore, 'stopFollowingLayout'>(
+    makeAutoObservable<LayoutEditorUiStore, 'stopFollowingLayout' | 'layouts'>(
       this,
-      { stopFollowingLayout: false },
+      { stopFollowingLayout: false, layouts: false },
       { autoBind: true }
     );
 
@@ -97,5 +112,78 @@ export class LayoutEditorUiStore {
   /** Whether the selected widget's resize keeps its shape. */
   get isSelectedRatioLocked(): boolean {
     return this.isRatioLocked(this.selectedWidgetId);
+  }
+
+  /** The screens a widget can be sent to: every one but the screen in focus. */
+  get unfocusedMonitorNames(): string[] {
+    return (this.layouts.editingLayout?.monitors ?? [])
+      .map((monitor) => monitor.name)
+      .filter((name) => name !== this.focusedMonitorName);
+  }
+
+  /**
+   * The screen a background picture goes to. Pictures belong to a screen, so
+   * it is the one in focus — in the overview, the first.
+   */
+  get backgroundMonitorName(): string | undefined {
+    return (
+      this.focusedMonitorName ?? this.layouts.editingLayout?.monitors[0]?.name
+    );
+  }
+
+  /** The picture that screen carries now, if any. */
+  get currentBackground(): string | undefined {
+    const monitorName = this.backgroundMonitorName;
+
+    return monitorName
+      ? this.layouts.editingLayout?.backgroundImages?.[monitorName]
+      : undefined;
+  }
+
+  /**
+   * Saves the picked picture and hands it to the screen, deleting the file it
+   * replaces. No file — the picker was dismissed — only ends the upload.
+   */
+  async setBackgroundFromFile(file: File | undefined) {
+    const layoutId = this.layouts.editingLayoutId;
+    const monitorName = this.backgroundMonitorName;
+    const previous = this.currentBackground;
+
+    if (!file || !layoutId) {
+      this.setUploadingBackground(false);
+
+      return;
+    }
+
+    try {
+      const extension = (
+        file.name.split('.').pop() ?? DEFAULT_IMAGE_EXTENSION
+      ).toLowerCase();
+      const bytes = new Uint8Array(await file.arrayBuffer());
+      const fileName = await saveBackgroundImage(layoutId, bytes, extension);
+
+      if (previous && previous !== fileName) {
+        void deleteBackgroundImage(previous);
+      }
+
+      if (monitorName) {
+        this.layouts.setMonitorBackground(monitorName, fileName);
+      }
+    } catch (error) {
+      console.error('Failed to save background image:', error);
+    } finally {
+      this.setUploadingBackground(false);
+    }
+  }
+
+  clearBackground() {
+    const monitorName = this.backgroundMonitorName;
+
+    if (!monitorName) {
+      return;
+    }
+
+    void deleteBackgroundImage(this.currentBackground);
+    this.layouts.setMonitorBackground(monitorName, undefined);
   }
 }
