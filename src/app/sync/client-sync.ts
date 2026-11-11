@@ -129,7 +129,7 @@ export const applyControl = (core: RendererCore, message: ControlMessage) => {
       }
 
       case 'layout-activated': {
-        core.liveWidgets.showLayoutActivatedToast(message.data as string);
+        core.layoutToast.show(message.data as string);
 
         return;
       }

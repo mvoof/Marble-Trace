@@ -1,4 +1,5 @@
 import { BackendComputedStore } from '@entities/cars/computed.store';
+import { LayoutToastStore } from '@entities/layout/layout-toast.store';
 import { SimStore } from '@entities/sim/sim.store';
 import { FlagsStore } from '@entities/flags/flags.store';
 import { IncidentsWidgetStore } from '@entities/incidents/incidents.store';
@@ -96,6 +97,7 @@ export class RendererCore {
 
   /** What every settings write marks itself in — see `SettingsMutationLog`. */
   settingsMutations: SettingsMutationLog;
+  layoutToast: LayoutToastStore;
   appSettings: AppSettingsStore;
   units: UnitsStore;
   widgetAutoHide: WidgetAutoHideStore;
@@ -112,6 +114,7 @@ export class RendererCore {
     this.backendComputed = new BackendComputedStore(this.session);
     this.widgetDefaults = new WidgetDefaultsStore(this);
     this.settingsMutations = new SettingsMutationLog();
+    this.layoutToast = new LayoutToastStore();
     // Built in dependency order, so neither needs a deferred reference to the
     // other: the records know nothing, the live map projects the records. The
     // editing session that drives both belongs to the main window (`MainRoot`).

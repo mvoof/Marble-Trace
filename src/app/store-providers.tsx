@@ -20,6 +20,7 @@ import { RadarWidgetContext } from '@entities/radar/radar-context';
 import { PitServiceWidgetContext } from '@features/pit-service/pit-service-context';
 import { TrackMapWidgetContext } from '@entities/track/track-map-context';
 import { TrackRotationContext } from '@entities/track/track-rotation-context';
+import { LayoutToastContext } from '@entities/layout/layout-toast-context';
 import { LiveWidgetsContext } from '@entities/layout/live-widgets-context';
 import { MainLiveWidgetsContext } from '@entities/layout/main-live-widgets-context';
 import { WidgetDefaultsContext } from '@entities/widget/widget-defaults-context';
@@ -76,6 +77,7 @@ const coreStores = (core: RendererCore): ProvidedStore[] => [
   provide(PitServiceWidgetContext, core.pitServiceWidget),
   provide(TrackMapWidgetContext, core.trackMapWidget),
   provide(LiveWidgetsContext, core.liveWidgets),
+  provide(LayoutToastContext, core.layoutToast),
   provide(WidgetDefaultsContext, core.widgetDefaults),
   provide(LayoutsContext, core.layouts),
   provide(SettingsMutationLogContext, core.settingsMutations),

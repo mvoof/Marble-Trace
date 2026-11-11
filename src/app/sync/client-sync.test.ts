@@ -128,8 +128,7 @@ const CASES: Record<
   },
   'layout-activated': {
     data: 'Race',
-    expect: (core) =>
-      expect(core.liveWidgets.layoutActivatedToast).toBe('Race'),
+    expect: (core) => expect(core.layoutToast.message).toBe('Race'),
   },
   'track-map-cleared': {
     data: null,

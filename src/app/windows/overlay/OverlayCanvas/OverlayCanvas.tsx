@@ -13,6 +13,7 @@ import { useAppSettingsStore } from '@entities/app-settings/app-settings-context
 import { useBindingsStore } from '@features/hotkey-bindings/bindings-context';
 import { useSimStore } from '@entities/sim/sim-context';
 import { useLayoutsStore } from '@entities/layout/layouts-context';
+import { useLayoutToastStore } from '@entities/layout/layout-toast-context';
 import { useLiveWidgetsStore } from '@entities/layout/live-widgets-context';
 
 // antd and the widget picker stay out of the overlay's initial bundle.
@@ -25,6 +26,7 @@ const DragModeBar = lazy(() =>
 export const OverlayCanvas = observer(() => {
   const appSettings = useAppSettingsStore();
   const liveWidgets = useLiveWidgetsStore();
+  const layoutToast = useLayoutToastStore();
   const layouts = useLayoutsStore();
   const bindings = useBindingsStore();
   const simStore = useSimStore();
@@ -134,12 +136,12 @@ export const OverlayCanvas = observer(() => {
           </div>
         )}
 
-        {liveWidgets.layoutActivatedToast !== null && (
+        {layoutToast.message !== null && (
           <div className={styles.toast}>
             <Layers size={14} className={styles.toastIcon} />
             <span className={styles.toastText}>
               {t('overlayCanvas.layoutSwitched', {
-                layout: liveWidgets.layoutActivatedToast,
+                layout: layoutToast.message,
               })}
             </span>
           </div>
