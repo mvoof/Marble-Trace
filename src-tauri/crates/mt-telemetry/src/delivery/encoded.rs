@@ -1,6 +1,6 @@
 //! A bundle put on the wire once per delivery group, whoever receives it.
 
-use crate::emitter::TelemetryBundle;
+use crate::bundle::TelemetryBundle;
 
 /// One group's bundle, encoded once and handed to every recipient of the
 /// group: the windows, the broadcast and the remote screens all take the same

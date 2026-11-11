@@ -3,6 +3,7 @@
 //! and the counters of what went out.
 
 pub mod counters;
+pub mod deliver;
 pub mod dispatch;
 pub mod encoded;
 pub mod masks;

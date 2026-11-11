@@ -230,7 +230,7 @@ docs. Check `bindings.ts` for the frame you are reading rather than assuming.
 
 > [!WARNING]
 > A new bundle field slower than the overlay clock joins
-> `TelemetryBundle::carries_slow_fields` in `mt-telemetry/src/emitter.rs`. The
+> `TelemetryBundle::carries_slow_fields` in `mt-telemetry/src/bundle/mod.rs`. The
 > remote rate limit thins only the ticks that carry none, and a slow field left
 > out of it is dropped with the motion data on every remote screen.
 
@@ -514,23 +514,23 @@ unit-test — and why sim quirks must be resolved upstream before they reach it.
 Who gets which field and when sits in `delivery/` (masks, scheduler, dispatch,
 publications, quantize, counters); the rest is the loop around it.
 
-| File                                    | Role                                                                   |
-| --------------------------------------- | ---------------------------------------------------------------------- |
-| `runtime.rs`                            | owns the telemetry thread and the connection lifecycle                 |
-| `state.rs`                              | only what crosses threads: command sender, snapshots, masks, counters  |
-| `loop_state.rs`                         | what the loop alone writes — session, grid, pit markers, processors    |
-| `control.rs`                            | `TelemetryCommand`s and the config a run starts with                   |
-| `scheduler.rs`                          | decides which rate tiers are due this tick                             |
-| `emitter.rs`                            | runs the processor registry, assembles one `TelemetryBundle`, emits it |
-| `masks.rs`                              | the demand mask each window registered, keyed by window label          |
-| `dispatch.rs`                           | groups windows by mask value: one bundle built per distinct mask       |
-| `delivery.rs`                           | per-recipient counters of what each bundle carried                     |
-| `quantize.rs`                           | rounds per-car frames to what a widget draws                           |
-| `publications.rs`                       | drops a frame equal to the last one published                          |
-| `tick_timings.rs`, `perf_run.rs`        | `dev` only: tick timing and the timed perf run (`MARBLE_TRACE_PERF`)   |
-| `io_worker.rs`                          | session-YAML parsing and every file read or write, off the loop        |
-| `storage.rs`                            | the track-shape and reference-lap files, shared with the commands      |
-| `mt-model/src/contract/capabilities.rs` | reports what the connected sim can actually provide                    |
+| File                                    | Role                                                                             |
+| --------------------------------------- | -------------------------------------------------------------------------------- |
+| `runtime.rs`                            | owns the telemetry thread and the connection lifecycle                           |
+| `state.rs`                              | only what crosses threads: command sender, snapshots, masks, counters            |
+| `loop_state.rs`                         | what the loop alone writes — session, grid, pit markers, processors              |
+| `control.rs`                            | `TelemetryCommand`s and the config a run starts with                             |
+| `scheduler.rs`                          | decides which rate tiers are due this tick                                       |
+| `tick/`                                 | one tick as stages (`tick/mod.rs`): processors, pit actions, slow tiers, publish |
+| `masks.rs`                              | the demand mask each window registered, keyed by window label                    |
+| `dispatch.rs`                           | groups windows by mask value: one bundle built per distinct mask                 |
+| `delivery.rs`                           | per-recipient counters of what each bundle carried                               |
+| `quantize.rs`                           | rounds per-car frames to what a widget draws                                     |
+| `publications.rs`                       | drops a frame equal to the last one published                                    |
+| `tick_timings.rs`, `perf_run.rs`        | `dev` only: tick timing and the timed perf run (`MARBLE_TRACE_PERF`)             |
+| `io_worker.rs`                          | session-YAML parsing and every file read or write, off the loop                  |
+| `storage.rs`                            | the track-shape and reference-lap files, shared with the commands                |
+| `mt-model/src/contract/capabilities.rs` | reports what the connected sim can actually provide                              |
 
 The thread owns its state. A command never writes it: it sends a
 `TelemetryCommand`, drained at the top of the next tick, and a value that must
@@ -605,7 +605,7 @@ telemetry thread against its own frame (`mt-computations/src/strategy/pit_auto.r
 `mt-computations/src/strategy/pit_actions.rs`), so no window has to be fed the right slice for
 an order to be right.
 
-A new consumer in main adds its frame to `TelemetrySlowBundle` in `emitter.rs`
+A new consumer in main adds its frame to `TelemetrySlowBundle` in `bundle/mod.rs`
 and to `SimStore.subscribeSlowBundle`; it does not go back to the bundle.
 
 ### Demand gating
@@ -654,7 +654,7 @@ export const G_METER_MANIFEST: WidgetManifest = {
 
 `SimStore` (`updateOwnActiveEvents`) unions the declarations of the enabled widgets in
 the active layout and sends the result to `set_active_events` as a bitmask;
-`emitter.rs` reads it and leaves an unrequested field out of the bundle. The mask
+`tick/` reads it and leaves an unrequested field out of the bundle. The mask
 is per recipient: `mt-telemetry/src/delivery/masks.rs` keeps one per window label (a remote
 screen registers through `set_remote_active_events`), and `mt-telemetry/src/delivery/dispatch.rs`
 builds and serializes one bundle per distinct mask value, so a monitor showing
@@ -1536,7 +1536,7 @@ flowchart TB
     end
     subgraph BE["Rust backend"]
         CMD["commands/ · hotkeys/ · input/ ·<br/>remote/ · chat/ commands.rs"]
-        TEL["mt-telemetry/src/emitter.rs"]
+        TEL["mt-telemetry/src/tick/"]
     end
 
     M -->|"① commands — invoke()<br/>request/response"| CMD
@@ -1551,7 +1551,7 @@ flowchart TB
 | #   | Channel            | Direction                               | Frontend entry point           | Backend entry point                                    |
 | --- | ------------------ | --------------------------------------- | ------------------------------ | ------------------------------------------------------ |
 | ①   | **Commands**       | frontend → backend, with a return value | `shared/api/*.service.ts`      | `commands/`, `{hotkeys,input,remote,chat}/commands.rs` |
-| ②   | **Backend events** | backend → both windows, fire-and-forget | `app/sync/listeners.ts`        | `mt-telemetry/src/emitter.rs` and friends              |
+| ②   | **Backend events** | backend → both windows, fire-and-forget | `app/sync/listeners.ts`        | `mt-telemetry/src/tick/` and friends                   |
 | ③   | **Window events**  | main ↔ overlay                          | `shared/api/events.service.ts` | — (never reaches Rust, except two noted below)         |
 
 > [!NOTE]
@@ -1614,21 +1614,21 @@ Names come from `src-tauri/crates/mt-model/src/contract/events.rs` through the g
 
 | Event                                                    | Emitted by                                             | Rate                          | Lands in                                                                                    |
 | -------------------------------------------------------- | ------------------------------------------------------ | ----------------------------- | ------------------------------------------------------------------------------------------- |
-| `sim://telemetry/bundle`                                 | `mt-telemetry/src/emitter.rs`                          | every tick, tiered            | the entity stores, via `apply-bundle.ts`                                                    |
+| `sim://telemetry/bundle`                                 | `mt-telemetry/src/tick/`                               | every tick, tiered            | the entity stores, via `apply-bundle.ts`                                                    |
 | `sim://session`                                          | session polling                                        | on change                     | `session.store.ts`                                                                          |
 | `sim://weather`                                          | weather decoding                                       | async                         | `environment.store.ts`                                                                      |
 | `sim://status`                                           | connection lifecycle                                   | on change                     | `sim.store.ts`                                                                              |
 | `sim://disconnected`                                     | connection lifecycle                                   | on loss                       | `sim.store.ts` — triggers `reset()`                                                         |
 | `sim://capabilities`                                     | `mt-model/src/contract/capabilities.rs`                | on connect                    | `sim.store.ts`                                                                              |
-| `sim://track-shape`                                      | `mt-telemetry/src/emitter.rs`                          | on discovery or pit-pct patch | the track map widget store                                                                  |
-| `sim://reference-lap/updated`                            | `mt-telemetry/src/emitter.rs`                          | active reference changes      | `reference-lap.store.ts`                                                                    |
-| `sim://telemetry/slow`                                   | `mt-telemetry/src/emitter.rs`                          | 4 Hz                          | `player.store.ts` (`updateCarStatus`), via `sim.store.ts` — **windows off the bundle only** |
+| `sim://track-shape`                                      | `mt-telemetry/src/tick/`                               | on discovery or pit-pct patch | the track map widget store                                                                  |
+| `sim://reference-lap/updated`                            | `mt-telemetry/src/tick/`                               | active reference changes      | `reference-lap.store.ts`                                                                    |
+| `sim://telemetry/slow`                                   | `mt-telemetry/src/tick/`                               | 4 Hz                          | `player.store.ts` (`updateCarStatus`), via `sim.store.ts` — **windows off the bundle only** |
 | `perf://begin` · `perf://end`                            | `src-tauri/src/perf_run.rs` (dev, `MARBLE_TRACE_PERF`) | once per run                  | `app/sync/dev/perf-run.ts`, every overlay                                                   |
 | `remote://device`                                        | `mt-remote/src/server.rs`                              | a device comes, goes, reports | `listenRemoteDevice` in `remote-publish.ts`                                                 |
 | `app://overlay-modes`                                    | `mt-hotkeys`                                           | on change                     | `app-settings.store.ts`, every window                                                       |
 | `hotkey://settings-action`                               | `mt-hotkeys`                                           | on a settings key             | `settings-actions.ts`, main only                                                            |
 | `client://control`                                       | `mt-hotkeys`, main                                     | on a view key or signal       | `applyControl` in every overlay, plus the remote hub                                        |
-| `sim://perf`                                             | `mt-telemetry/src/emitter.rs`                          | with the sim's counters       | `sim-perf.store.ts`, via `sim.store.ts`                                                     |
+| `sim://perf`                                             | `mt-telemetry/src/tick/`                               | with the sim's counters       | `sim-perf.store.ts`, via `sim.store.ts`                                                     |
 | `input://devices`                                        | `mt-input/src/runtime.rs`                              | on device change              | `device-input.store.ts`                                                                     |
 | `input://button`                                         | `mt-input/src/runtime.rs`                              | on press/release              | `device-input.store.ts`, for binding capture                                                |
 | `chat://message` · `chat://presence` · `chat://deletion` | `chat/`                                                | async                         | `chat.store.ts`                                                                             |
@@ -1730,7 +1730,7 @@ flowchart TB
     SRC["<b>mt-sim-iracing/src/frame_map.rs</b><br/>→ SourceFrame"]
     SCH["<b>mt-telemetry/src/delivery/scheduler.rs</b><br/>fuel is a 4 Hz tier — due?"]
     COMP["<b>mt-computations/src/strategy/fuel.rs</b><br/>average · laps left · fuel to add"]
-    EM["<b>mt-telemetry/src/emitter.rs</b><br/>scatter into TelemetryBundle"]
+    EM["<b>mt-telemetry/src/tick/</b><br/>scatter into TelemetryBundle"]
     EV["<code>sim://telemetry/bundle</code>"]
     SVC["<b>shared/api/events.service.ts</b><br/>listenTo"]
     SYNC["<b>app/sync/listeners.ts</b><br/>which store owns this?"]
@@ -1785,7 +1785,7 @@ flowchart TB
 | One overlay clock                                    | `mt-telemetry/src/delivery/scheduler.rs`, `overlayUpdateHz`                          | the overlay changing — and DWM composing a frame on the game's GPU — on every source tick                                               |
 | No transitions on telemetry-driven values            | widget stylesheets, `widgets/widget-transitions.test.ts`                             | a transition re-run by each value redrawing the overlay at the monitor's rate whatever the clock                                        |
 | Rate tiers                                           | `mt-telemetry/src/delivery/scheduler.rs`                                             | sending standings 60 times a second when it changes 10 times                                                                            |
-| Demand gating (`telemetryEvents`)                    | widget manifests → `mt-telemetry/src/emitter.rs`                                     | shipping the whole driver table to every window and remote screen when nothing on screen shows it                                       |
+| Demand gating (`telemetryEvents`)                    | widget manifests → `mt-telemetry/src/tick/`                                          | shipping the whole driver table to every window and remote screen when nothing on screen shows it                                       |
 | Quantization + repeat suppression                    | `mt-telemetry/src/delivery/quantize.rs`, `mt-telemetry/src/delivery/publications.rs` | resending a frame whose only change is in a decimal no widget prints                                                                    |
 | `observableRef` on frame buffers                     | `entities/cars/cars.store.ts`, `computed.store.ts`                                   | MobX walking every field of every car on every frame — frames are swapped wholesale, so reference equality is all the reactivity needed |
 | Split computeds                                      | `entities/cars/computed.store.ts` and the widget stores                              | one changed field invalidating an unrelated derived value                                                                               |
@@ -1958,7 +1958,7 @@ And within the answer, next to its lowest consumer — see
 | I want to…                         | Do this                                                                                       |
 | ---------------------------------- | --------------------------------------------------------------------------------------------- |
 | add a field to a backend payload   | edit the struct in `mt-model`, run `npm run tauri:dev` to regenerate `bindings.ts`            |
-| add a new computed telemetry value | add or extend a processor in `mt-computations`, scatter its output in `emitter.rs`            |
+| add a new computed telemetry value | add or extend a processor in `mt-computations`, scatter its output in `bundle/mod.rs`         |
 | support a sim quirk                | fix it in its `mt-sim-*` crate — never let it reach `mt-computations`                         |
 | add a widget                       | follow the [checklist](#adding-a-widget--checklist)                                           |
 | add a keyboard shortcut            | one entry in `HOTKEY_ACTIONS`, one key in `main-app.json`                                     |

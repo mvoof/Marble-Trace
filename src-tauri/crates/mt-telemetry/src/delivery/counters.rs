@@ -9,7 +9,7 @@
 use std::collections::HashMap;
 use std::time::Instant;
 
-use crate::emitter::TelemetryBundle;
+use crate::bundle::TelemetryBundle;
 
 /// The one recipient there is before the mask is split per window: the
 /// broadcast every subscribed webview takes.
@@ -179,7 +179,7 @@ impl DeliveryCounters {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::emitter::{apply_event_mask, TelemetryBundle};
+    use crate::bundle::{apply_event_mask, TelemetryBundle};
     use mt_computations::field::driver_entries::DriverEntriesFrame;
     use mt_model::contract::telemetry_events::EVENT_CAR_POSITIONS;
     use mt_model::sim::cars::CarPositionsFrame;

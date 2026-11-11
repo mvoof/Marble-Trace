@@ -12,8 +12,9 @@ use mt_model::app::crew::{CrewIntent, CrewReply, CrewSink};
 use mt_model::sim::session::SessionSnapshot;
 use mt_source::{PitCommander, SourceFrame};
 
-use crate::emitter::{compound_indexes, send_manual_action, TelemetryBundle};
+use crate::bundle::TelemetryBundle;
 use crate::loop_state::LoopState;
+use crate::tick::actions::{compound_indexes, send_manual_action};
 
 /// Every tick: keeps the engineer's view current and answers what was asked.
 /// The cars are read only while someone can ask about them; pit stops are

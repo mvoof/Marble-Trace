@@ -15,13 +15,13 @@ use tracing::{debug, info, warn};
 
 use crate::control::{TelemetryCommand, TelemetryRun};
 use crate::delivery::scheduler::EmitScheduler;
-use crate::emitter::{
-    emit_domain_frames, EmitContext, EVENT_CAPABILITIES, EVENT_DISCONNECTED, EVENT_SESSION_INFO,
-    EVENT_STATUS, EVENT_TRACK_SHAPE, EVENT_WEATHER_FORECAST,
-};
 use crate::io_worker::{IoWorker, SessionUpdate};
 use crate::loop_state::LoopState;
 use crate::state::TelemetryServiceState;
+use crate::tick::{
+    emit_domain_frames, EmitContext, EVENT_CAPABILITIES, EVENT_DISCONNECTED, EVENT_SESSION_INFO,
+    EVENT_STATUS, EVENT_TRACK_SHAPE, EVENT_WEATHER_FORECAST,
+};
 use mt_computations::ProcessorCommand;
 use mt_model::app::crew::CrewSink;
 use mt_model::computed::track_shape::TrackShapePayload;

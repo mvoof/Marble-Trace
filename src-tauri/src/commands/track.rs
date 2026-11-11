@@ -8,11 +8,11 @@ use tracing::{info, warn};
 use mt_model::computed::reference_lap::{ReferenceLapData, TrackCondition};
 use mt_model::computed::track_shape::TrackShapePayload;
 use mt_telemetry::control::TelemetryCommand;
-use mt_telemetry::emitter::EVENT_TRACK_SHAPE;
 use mt_telemetry::state::TelemetryState;
 use mt_telemetry::storage::{
     load_cached_track_shape, reference_lap_key, reference_lap_path, track_shape_path,
 };
+use mt_telemetry::tick::EVENT_TRACK_SHAPE;
 
 #[tauri::command]
 pub async fn reset_pit_lane_pct(

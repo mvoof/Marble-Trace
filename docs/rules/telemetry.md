@@ -37,11 +37,11 @@ Main takes `sim://telemetry/slow` instead — the player's `car_status` at 4 Hz,
 for the layout auto-switch, which reads `is_on_track`. That is all it decides
 on: the hotkeys and the pit orders run on the telemetry thread's own frames, so
 nothing in main reads the sim to act on it. A new consumer in main adds its
-frame to `TelemetrySlowBundle` in `emitter.rs` and to
+frame to `TelemetrySlowBundle` in `bundle/mod.rs` and to
 `SimStore.subscribeSlowBundle`, not a subscription to the bundle.
 
 **Every pit order goes out from the telemetry thread.** Auto mode decides there
-(`mt-computations/src/strategy/pit_auto.rs`, stepped at 4 Hz in `emitter.rs`); a manual one —
+(`mt-computations/src/strategy/pit_auto.rs`, stepped at 4 Hz in `tick/slow_tiers.rs`); a manual one —
 a key, or a click through `run_pit_action` — is a `PitAction` the thread
 resolves against the frame of the tick that drains it
 (`mt-computations/src/strategy/pit_actions.rs`), claiming its half of the stop from auto mode
@@ -74,7 +74,7 @@ export const G_METER_MANIFEST: WidgetManifest = {
 
 `SimStore` (`updateOwnActiveEvents`) unions the declarations of every **enabled** widget
 in the active layout and sends the mask to the backend
-(`set_active_events`); `emitter.rs` leaves an unrequested field out of the
+(`set_active_events`); `bundle/mod.rs` (`apply_event_mask`) leaves an unrequested field out of the
 bundle. The names and their bit values are declared once, in
 `src-tauri/crates/mt-model/src/contract/telemetry_events.rs` (`ts_values!`), and generated into
 `src/shared/contracts/generated/telemetry-event-bits.ts`; `src/shared/contracts/telemetry-events.ts` derives
@@ -145,11 +145,11 @@ connection, the YAML (`get_raw_session`) once per session change. The snapshot
 export uses the same feed for one frame and writes the raw data beside the
 adapted frames (`raw` in `TelemetrySnapshot`).
 
-| Layer                                 | File                                                                                                  |
-| ------------------------------------- | ----------------------------------------------------------------------------------------------------- |
-| feed state, one-shot capture          | `features/telemetry-inspector/telemetry-inspector.store.ts`                                           |
-| row building, filtering, array paging | `features/telemetry-inspector/inspector-tree.ts`                                                      |
-| commands                              | `src-tauri/src/commands/telemetry.rs`, frame stored in `mt-telemetry/src/emitter.rs` on the 4 Hz tier |
-| UI                                    | `features/telemetry-inspector/TelemetryInspectorSection/`                                             |
+| Layer                                 | File                                                                                                          |
+| ------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| feed state, one-shot capture          | `features/telemetry-inspector/telemetry-inspector.store.ts`                                                   |
+| row building, filtering, array paging | `features/telemetry-inspector/inspector-tree.ts`                                                              |
+| commands                              | `src-tauri/src/commands/telemetry.rs`, frame stored in `mt-telemetry/src/tick/slow_tiers.rs` on the 4 Hz tier |
+| UI                                    | `features/telemetry-inspector/TelemetryInspectorSection/`                                                     |
 
 ---

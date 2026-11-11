@@ -25,7 +25,7 @@
 
 use std::collections::HashMap;
 
-use crate::emitter::TelemetryBundle;
+use crate::bundle::TelemetryBundle;
 use mt_computations::driving::coach::CoachFrame;
 use mt_computations::driving::corner_speeds::CornerSpeedsFrame;
 use mt_computations::field::driver_entries::DriverEntriesFrame;
