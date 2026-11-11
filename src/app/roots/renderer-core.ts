@@ -147,7 +147,6 @@ export class RendererCore {
 
     if (!options?.skipInit) {
       this.sim.init();
-      this.appSettings.init();
       this.pitServiceWidget.init();
       void this.chat.init();
       void this.crewRadio.init();

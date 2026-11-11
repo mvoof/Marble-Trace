@@ -50,8 +50,8 @@ const makeRoot = (): FakeRoot => {
     },
     appSettings: {
       appSettings,
-      setHideAllWidgets: (value: boolean) => {
-        appSettings.hideAllWidgets = value;
+      update: (patch: Partial<typeof appSettings>) => {
+        Object.assign(appSettings, patch);
       },
     },
     simPerf,

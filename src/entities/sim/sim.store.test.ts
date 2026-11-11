@@ -241,11 +241,11 @@ describe('SimStore active-events mask', () => {
 
         expect(lastMaskOf(setActiveEventsSilent)).toBe(registeredMask);
 
-        root.appSettings.setHideAllWidgets(true);
+        root.appSettings.update({ hideAllWidgets: true });
 
         expect(clearActiveEventsSilent).toHaveBeenCalledTimes(1);
 
-        root.appSettings.setHideAllWidgets(false);
+        root.appSettings.update({ hideAllWidgets: false });
 
         expect(lastMaskOf(setActiveEventsSilent)).toBe(registeredMask);
       });
@@ -270,7 +270,7 @@ describe('SimStore active-events mask', () => {
         runInAction(() => {
           root.sim.status = 'connected';
         });
-        root.appSettings.setHideWidgetsWhenGameClosed(true);
+        root.appSettings.update({ hideWidgetsWhenGameClosed: true });
 
         expect(clearActiveEventsSilent).not.toHaveBeenCalled();
 
@@ -299,7 +299,7 @@ describe('SimStore active-events mask', () => {
           dragMode: true,
           interactMode: false,
         });
-        root.appSettings.setHideWidgetsWhenGameClosed(true);
+        root.appSettings.update({ hideWidgetsWhenGameClosed: true });
 
         expect(clearActiveEventsSilent).not.toHaveBeenCalled();
         expect(lastMaskOf(setActiveEventsSilent)).toBe(registeredMask);

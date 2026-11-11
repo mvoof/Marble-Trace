@@ -64,9 +64,7 @@ describe('PitServiceWidgetStore — pit orders', () => {
   };
 
   const setStrategy = (partial: Partial<PitStrategy>) => {
-    runInAction(() =>
-      rootStore.appSettings.setPitStrategy(partial as PitStrategy)
-    );
+    runInAction(() => rootStore.appSettings.update(partial as PitStrategy));
   };
 
   // The split across stops is the backend's now, so the fixture seeds the

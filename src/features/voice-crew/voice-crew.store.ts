@@ -560,7 +560,7 @@ export class VoiceCrewStore {
     await this.refresh();
 
     if (name) {
-      this.root.appSettings.setVoiceSettings({
+      this.root.appSettings.update({
         voiceName: `${CUSTOM_VOICE_PREFIX}${name}`,
       });
     }
@@ -588,7 +588,7 @@ export class VoiceCrewStore {
       return;
     }
 
-    this.root.appSettings.setVoiceSettings({ voiceFolder: folder });
+    this.root.appSettings.update({ voiceFolder: folder });
     await this.run(() =>
       configureVoiceCrew(
         voiceCrewSettingsOf(
@@ -620,7 +620,7 @@ export class VoiceCrewStore {
     await this.refresh();
 
     if (settings.voiceName === id) {
-      this.root.appSettings.setVoiceSettings({ voiceName: '' });
+      this.root.appSettings.update({ voiceName: '' });
     }
   }
 

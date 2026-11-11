@@ -49,7 +49,7 @@ const meta: Meta<StoryArgs> = {
 
       store.liveWidgets.updateUserSettings('input-trace', settings);
 
-      store.appSettings.setSteeringLock(args.steeringLock);
+      store.appSettings.update({ steeringLock: args.steeringLock });
 
       store.player.updateCarInputs(
         mockCarInputs({

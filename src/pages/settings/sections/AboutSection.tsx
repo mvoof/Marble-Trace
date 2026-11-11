@@ -1,13 +1,13 @@
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
-import { useAppSettingsStore } from '@entities/app-settings/app-settings-context';
+import { useAppUpdateStore } from '@features/app-update/app-update-context';
 import { SettingsCard } from '@shared/ui/SettingsCard/SettingsCard';
 import styles from '../SettingsPage.module.scss';
 
 // The trademark list follows the names the app itself shows; the README and
 // the site footer carry their own lists for the names they use.
 export const AboutSection = observer(() => {
-  const appSettings = useAppSettingsStore();
+  const appUpdate = useAppUpdateStore();
   const { t } = useTranslation('main-app');
 
   return (
@@ -17,7 +17,7 @@ export const AboutSection = observer(() => {
           <div className={styles.fieldTitle}>
             Marble Trace™{' '}
             <span className={styles.versionLabel}>
-              v{appSettings.currentVersion}
+              v{appUpdate.currentVersion}
             </span>
           </div>
 

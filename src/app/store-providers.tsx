@@ -37,6 +37,7 @@ import { FpsDiagnosticsContext } from '@features/diagnostics/fps-diagnostics-con
 import { DiagnosticsExportContext } from '@features/diagnostics/diagnostics-export-context';
 import { TelemetryInspectorContext } from '@features/telemetry-inspector/telemetry-inspector-context';
 import { TwitchAuthContext } from '@features/twitch-auth/twitch-auth-context';
+import { AppUpdateContext } from '@features/app-update/app-update-context';
 import { CompanionAppsContext } from '@features/companion-apps/companion-apps-context';
 import { VoiceCrewContext } from '@features/voice-crew/voice-crew-context';
 import { RemoteDevicesContext } from '@features/remote-screens/remote-devices-context';
@@ -103,6 +104,7 @@ const mainStores = (root: MainRoot): ProvidedStore[] => [
   provide(MainRootContext, root),
   provide(MainLiveWidgetsContext, root.liveWidgets),
   provide(LayoutEditorContext, root.layoutEditor),
+  provide(AppUpdateContext, root.appUpdate),
   provide(CompanionAppsContext, root.companionApps),
   provide(VoiceCrewContext, root.voiceCrew),
   provide(TwitchAuthContext, root.twitchAuth),

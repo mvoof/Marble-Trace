@@ -800,7 +800,9 @@ export const LayoutEditor = observer(
                   size="small"
                   type={showGrid ? 'primary' : 'text'}
                   icon={<Grid3x3 size={14} />}
-                  onClick={() => appSettings.setEditorShowGrid(!showGrid)}
+                  onClick={() =>
+                    appSettings.update({ editorShowGrid: !showGrid })
+                  }
                 />
               </Tooltip>
 
@@ -809,7 +811,9 @@ export const LayoutEditor = observer(
                   <Select
                     size="small"
                     value={gridSize}
-                    onChange={(value) => appSettings.setEditorGridSize(value)}
+                    onChange={(value) =>
+                      appSettings.update({ editorGridSize: value })
+                    }
                     options={GRID_SIZE_OPTIONS}
                     style={{ minWidth: 72 }}
                   />
@@ -821,7 +825,9 @@ export const LayoutEditor = observer(
                   size="small"
                   type={snapToGrid ? 'primary' : 'text'}
                   icon={<Magnet size={14} />}
-                  onClick={() => appSettings.setEditorSnapToGrid(!snapToGrid)}
+                  onClick={() =>
+                    appSettings.update({ editorSnapToGrid: !snapToGrid })
+                  }
                 />
               </Tooltip>
 

@@ -88,7 +88,7 @@ export const InteractionSection = observer(() => {
 
           <Segmented<InteractHotkeyMode>
             value={appSettings.appSettings.interactHotkeyMode}
-            onChange={(v) => appSettings.setInteractHotkeyMode(v)}
+            onChange={(v) => appSettings.update({ interactHotkeyMode: v })}
             options={[
               {
                 label: t('settingsPage.interactionMode.interactToggle'),
@@ -118,7 +118,9 @@ export const InteractionSection = observer(() => {
 
             <Segmented<number>
               value={appSettings.appSettings.interactAutoOffSeconds}
-              onChange={(v) => appSettings.setInteractAutoOffSeconds(v)}
+              onChange={(v) =>
+                appSettings.update({ interactAutoOffSeconds: v })
+              }
               options={INTERACT_AUTO_OFF_OPTIONS.map((seconds) => ({
                 label:
                   seconds === 0

@@ -13,7 +13,7 @@ import { setupDeviceBindings } from '@features/hotkey-bindings/bindings-sync';
 import { listenSettingsActions, registerHotkeyReactions } from './hotkey-sync';
 import { setupMainListeners } from './listeners';
 import { registerChatReactions } from './chat-sync';
-import { pitStrategyOf } from '@entities/app-settings/app-settings.store';
+import { registerSaveReaction } from './save-sync';
 import { registerPitServiceMainReactions } from './pit-service-sync';
 import { registerVoiceMainReactions } from './voice-sync';
 import { overlayMonitorNames, syncOverlayWindows } from './overlay-windows';
@@ -31,30 +31,6 @@ import type { MainRoot } from '@app/roots/main-root';
 
 let mainSyncInitPromise: Promise<() => void> | null = null;
 let mainSyncRefCount = 0;
-
-/**
- * App settings the overlays read. They reach the overlays in the snapshot
- * (`client-publish.ts`); here they are only persisted. Requires a hydrated
- * settings store.
- */
-const registerOverlayReadSaveReactions = (
-  root: MainRoot,
-  onSave: () => Promise<void>
-): IReactionDisposer[] => [
-  reaction(
-    () => [
-      root.appSettings.appSettings.hideAllWidgets,
-      root.appSettings.appSettings.hideWidgetsWhenGameClosed,
-      root.appSettings.appSettings.autoSwitchLayouts,
-      root.appSettings.appSettings.language,
-      JSON.stringify(root.layouts.sessionLayouts),
-    ],
-    () => {
-      void onSave();
-    },
-    { equals: compareStructural }
-  ),
-];
 
 /**
  * Session-driven layout auto-switch. `fireImmediately`, so it must run after
@@ -102,86 +78,13 @@ export const registerLayoutAutoSwitchReaction = (
     { fireImmediately: true }
   );
 
-/** App settings that only need persisting — nothing mirrors them. */
-const registerAppSettingsSaveReactions = (
-  root: MainRoot,
-  onSave: () => Promise<void>
-): IReactionDisposer[] => [
-  reaction(
-    () => root.appSettings.appSettings.autoUpdate,
-    () => {
-      void onSave();
-    }
-  ),
-  reaction(
-    () => root.appSettings.appSettings.startMinimized,
-    () => {
-      void onSave();
-    }
-  ),
-  reaction(
-    () => [
-      root.appSettings.appSettings.editorShowGrid,
-      root.appSettings.appSettings.editorSnapToGrid,
-      root.appSettings.appSettings.editorGridSize,
-    ],
-    () => {
-      void onSave();
-    }
-  ),
-  reaction(
-    () => root.appSettings.appSettings.overlayUpdateHz,
-    () => {
-      void onSave();
-    }
-  ),
-  reaction(
-    () => root.appSettings.appSettings.updateCheckInterval,
-    () => {
-      void onSave();
-    }
-  ),
-  reaction(
-    () => root.appSettings.appSettings.lastUpdateCheck,
-    () => {
-      void onSave();
-    }
-  ),
-  // The remote block is read by `registerRemotePublishing`, which restarts the
-  // server on a change but never writes - without this the port, the token and
-  // the rate survive only until the app is closed some way other than the
-  // window's own close handler.
-  reaction(
-    () => [
-      root.appSettings.appSettings.remoteEnabled,
-      root.appSettings.appSettings.remotePort,
-      root.appSettings.appSettings.remoteLan,
-      root.appSettings.appSettings.remoteToken,
-      root.appSettings.appSettings.remoteTelemetryHz,
-    ],
-    () => {
-      void onSave();
-    }
-  ),
-  // One counter covers adding, removing, renaming and every toggle on the
-  // companion list - the entries are objects, and a reaction on the array
-  // itself would not see a field change inside one.
-  reaction(
-    () => root.companionApps.revision,
-    () => {
-      void onSave();
-    }
-  ),
-];
-
 /**
  * Which overlay windows exist, and what they draw. Requires the monitors to be
  * aligned to hardware already — opening a window for a placeholder position
  * puts it on the wrong screen.
  */
 const registerOverlayWindowReactions = (
-  root: MainRoot,
-  onSave: () => Promise<void>
+  root: MainRoot
 ): IReactionDisposer[] => [
   reaction(
     // One overlay window per monitor that has widgets on it. Switching layouts,
@@ -193,42 +96,10 @@ const registerOverlayWindowReactions = (
       void syncOverlayWindows(root);
     }
   ),
-  reaction(
-    // Widgets-catalog (preview page) edits only touch the defaults store, which
-    // no other reaction observes — without this they'd never be persisted and
-    // would reset on restart.
-    () => root.widgetDefaults.changeToken,
-    () => {
-      void onSave();
-    },
-    { delay: 500 }
-  ),
-  reaction(
-    // Every settings write, main's own and an overlay's command alike, moves
-    // the one token. Nothing is committed into the active layout first: the
-    // edits were made on the layout's own widgets, so the debounce delays only
-    // the write to disk.
-    () => root.settingsMutations.changeToken,
-    () => {
-      void onSave();
-    },
-    { delay: 500 }
-  ),
 ];
 
 /** Input bindings, and the device polling their existence justifies. */
-const registerBindingReactions = (
-  root: MainRoot,
-  onSave: () => Promise<void>
-): IReactionDisposer[] => [
-  // One binding registry, one dependency. The backend dispatcher gets the map
-  // from `registerHotkeyReactions`.
-  reaction(
-    () => root.bindings.mutationId,
-    () => {
-      void onSave();
-    }
-  ),
+const registerBindingReactions = (root: MainRoot): IReactionDisposer[] => [
   // Reading wheels 125 times a second is only worth it while something consumes
   // the edges: a device binding exists, or the settings screen is waiting for a
   // button — to bind it, or to search by it.
@@ -244,27 +115,6 @@ const registerBindingReactions = (
       );
     },
     { fireImmediately: true, equals: compareStructural }
-  ),
-];
-
-/**
- * Units, the wheel and the pit strategy — read by the overlays through the
- * snapshot, persisted here.
- */
-const registerDisplayPreferenceReactions = (
-  root: MainRoot,
-  onSave: () => Promise<void>
-): IReactionDisposer[] => [
-  reaction(
-    () => [
-      root.units.unitSystem,
-      root.appSettings.appSettings.steeringLock,
-      pitStrategyOf(root.appSettings.appSettings),
-    ],
-    () => {
-      void onSave();
-    },
-    { equals: compareStructural }
   ),
 ];
 
@@ -299,6 +149,9 @@ export const initMainSync = async (root: MainRoot) => {
       // settings load, so checking any earlier gets overwritten by the stale
       // value from disk and the UI claims a signed-in session that is gone.
       void root.twitchAuth.syncLogin();
+
+      // On the user's schedule, which only the loaded settings know.
+      root.appUpdate.start();
 
       // Companion programs start once the list has been read from disk, and
       // are stopped by the backend on the way out - the window is already
@@ -354,8 +207,8 @@ export const initMainSync = async (root: MainRoot) => {
           event.preventDefault();
 
           try {
-            // The layout commit and settings save both run on debounced
-            // reactions (500ms). Closing before that timer fires would
+            // The settings save runs on a debounced reaction
+            // (SAVE_DEBOUNCE_MS). Closing before that timer fires would
             // persist stale layout/widget state, so flush them here.
             // Before the settings are written and the window goes: the
             // programs the user asked to close with the app are still
@@ -386,14 +239,12 @@ export const initMainSync = async (root: MainRoot) => {
       // `fireImmediately` reactions (layout auto-switch, device polling, chat
       // connect, sim-armed pit order) run in this sequence at startup.
       const disposers = [
-        ...registerOverlayReadSaveReactions(root, onSave),
+        registerSaveReaction(root, onSave),
         registerLayoutAutoSwitchReaction(root),
-        ...registerAppSettingsSaveReactions(root, onSave),
-        ...registerOverlayWindowReactions(root, onSave),
-        ...registerBindingReactions(root, onSave),
+        ...registerOverlayWindowReactions(root),
+        ...registerBindingReactions(root),
         ...registerHotkeyReactions(root),
-        ...registerDisplayPreferenceReactions(root, onSave),
-        ...registerChatReactions(root, onSave),
+        ...registerChatReactions(root),
         ...registerPitServiceMainReactions(root),
         ...registerVoiceMainReactions(root),
       ];

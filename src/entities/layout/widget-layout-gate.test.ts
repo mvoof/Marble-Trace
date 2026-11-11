@@ -83,8 +83,8 @@ describe('isWidgetOnScreen', () => {
   // what main pushes with the strategy.
   it('takes pit-service auto mode down with the layout switch', () => {
     runInAction(() => {
-      root.appSettings.setPitAutoFuel(true);
-      root.appSettings.setPitAutoTires(false);
+      root.appSettings.update({ pitAutoFuel: true });
+      root.appSettings.update({ pitAutoTires: false });
     });
 
     const disposers = registerPitServiceMainReactions(root);

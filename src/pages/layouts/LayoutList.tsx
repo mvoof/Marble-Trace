@@ -305,7 +305,7 @@ export const LayoutList = observer(({ onOpenEditor }: LayoutListProps) => {
             className={styles.modeSwitch}
             value={autoSwitchEnabled ? 'auto' : 'manual'}
             onChange={(value) =>
-              appSettings.setAutoSwitchLayouts(value === 'auto')
+              appSettings.update({ autoSwitchLayouts: value === 'auto' })
             }
             options={[
               { label: t('layoutList.modeManual'), value: 'manual' },

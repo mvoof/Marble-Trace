@@ -59,7 +59,9 @@ describe('StreamChatWidgetStore', () => {
   });
 
   it('hides bot commands when the filter is on', () => {
-    runInAction(() => rootStore.appSettings.setStreamChatHideCommands(true));
+    runInAction(() =>
+      rootStore.appSettings.update({ streamChatHideCommands: true })
+    );
     seed([
       makeMessage('1', 'viewer', '!drops'),
       makeMessage('2', 'viewer', 'hello'),
@@ -139,7 +141,9 @@ describe('StreamChatWidgetStore', () => {
   });
 
   it('keeps commands when the filter is off', () => {
-    runInAction(() => rootStore.appSettings.setStreamChatHideCommands(false));
+    runInAction(() =>
+      rootStore.appSettings.update({ streamChatHideCommands: false })
+    );
     seed([makeMessage('1', 'viewer', '!drops')]);
 
     expect(chatWidget.visibleMessages).toHaveLength(1);
@@ -147,7 +151,7 @@ describe('StreamChatWidgetStore', () => {
 
   it('drops messages from ignored bots regardless of casing', () => {
     runInAction(() =>
-      rootStore.appSettings.setStreamChatIgnoredBots('Nightbot')
+      rootStore.appSettings.update({ streamChatIgnoredBots: 'Nightbot' })
     );
     seed([
       makeMessage('1', 'nightbot', 'stay hydrated'),

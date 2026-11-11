@@ -20,8 +20,7 @@ const STREAM_CHAT_WIDGET_ID = 'stream-chat';
  * defaults rather than the user's channel.
  */
 export const registerChatReactions = (
-  root: RendererCore,
-  onSave: () => Promise<void>
+  root: RendererCore
 ): IReactionDisposer[] => [
   // Restarting on any source change keeps a single code path for "connect" and
   // "reconnect with new settings".
@@ -65,21 +64,8 @@ export const registerChatReactions = (
         root.chat.reset();
         void emitStreamChatCleared();
       }
-
-      void onSave();
     },
     { equals: compareStructural, fireImmediately: true, delay: 400 }
-  ),
-  reaction(
-    () => ({
-      hideCommands: root.appSettings.appSettings.streamChatHideCommands,
-      ignoredBots: root.appSettings.appSettings.streamChatIgnoredBots,
-    }),
-    // The overlays read the filters from their snapshot.
-    () => {
-      void onSave();
-    },
-    { equals: compareStructural }
   ),
   reaction(
     () =>
@@ -89,7 +75,6 @@ export const registerChatReactions = (
       }),
     (config) => {
       setChatCommandsSilent(config);
-      void onSave();
     },
     { equals: compareStructural, fireImmediately: true }
   ),

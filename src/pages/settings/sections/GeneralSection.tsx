@@ -74,7 +74,7 @@ export const GeneralSection = observer(() => {
 
             <Switch
               checked={appSettings.appSettings.startMinimized}
-              onChange={(v) => appSettings.setStartMinimized(v)}
+              onChange={(v) => appSettings.update({ startMinimized: v })}
             />
           </div>
         </div>

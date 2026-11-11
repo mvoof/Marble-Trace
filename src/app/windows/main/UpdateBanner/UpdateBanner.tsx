@@ -3,8 +3,8 @@ import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
 import { ReleaseNotesButton } from '@pages/settings/ReleaseNotesButton/ReleaseNotesButton';
 import styles from './UpdateBanner.module.scss';
-import { useAppSettingsStore } from '@entities/app-settings/app-settings-context';
-import { UpdateStatus } from '@entities/app-settings/app-settings.store';
+import { useAppUpdateStore } from '@features/app-update/app-update-context';
+import type { UpdateStatus } from '@features/app-update/app-update.store';
 
 const BANNER_STATUSES: UpdateStatus[] = ['available', 'downloading', 'ready'];
 
@@ -17,10 +17,10 @@ const ALERT_TYPES: Partial<
 };
 
 export const UpdateBanner = observer(() => {
-  const appSettings = useAppSettingsStore();
+  const appUpdate = useAppUpdateStore();
   const { t } = useTranslation('main-app');
 
-  const { updateStatus } = appSettings;
+  const { status: updateStatus } = appUpdate;
 
   if (!BANNER_STATUSES.includes(updateStatus)) return null;
 
@@ -31,7 +31,7 @@ export const UpdateBanner = observer(() => {
 
   const title =
     updateStatus === 'available'
-      ? t('updateBanner.available', { version: appSettings.availableVersion })
+      ? t('updateBanner.available', { version: appUpdate.availableVersion })
       : titles[updateStatus];
 
   return (
@@ -49,7 +49,7 @@ export const UpdateBanner = observer(() => {
             <Button
               size="small"
               type="text"
-              onClick={() => void appSettings.installUpdate()}
+              onClick={() => void appUpdate.installUpdate()}
             >
               {t('updateBanner.updateAndRestart')}
             </Button>

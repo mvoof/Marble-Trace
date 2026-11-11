@@ -1,7 +1,4 @@
-import { makeAutoObservable, runInAction } from 'mobx';
-import { check } from '@tauri-apps/plugin-updater';
-import { relaunch } from '@tauri-apps/plugin-process';
-import { getVersion } from '@tauri-apps/api/app';
+import { makeAutoObservable } from 'mobx';
 import {
   requestDragMode,
   requestInteractMode,
@@ -11,6 +8,7 @@ import {
   setCarLengthSilent,
   setOverlayUpdateHzSilent,
 } from '@shared/api/settings.service';
+import { relaunchApp } from '@shared/api/updater.service';
 import { DEFAULT_OVERLAY_UPDATE_HZ } from '@shared/contracts/generated/backend-constants';
 import { mergeWithDefaults } from '@shared/lib/deep-merge';
 import { detectSystemLanguage } from '@entities/app-settings/system-locale';
@@ -203,14 +201,6 @@ export const voiceCrewSettingsOf = (
   };
 };
 
-export type UpdateStatus =
-  | 'idle'
-  | 'checking'
-  | 'available'
-  | 'downloading'
-  | 'ready'
-  | 'error';
-
 export class AppSettingsStore {
   // The spread is shallow, so the one array among the defaults has to be copied
   // by hand — a store that pushed into it would be editing the defaults, and
@@ -246,55 +236,9 @@ export class AppSettingsStore {
    * two default to — auto-switch on, no garage layout.
    */
   hidesOffTrack = true;
-  updateStatus: UpdateStatus = 'idle';
-  availableVersion: string | null = null;
-  releaseNotes: string | null = null;
-  currentVersion = '';
-  updateError: string | null = null;
-  private updateTimer: number | null = null;
 
   constructor() {
     makeAutoObservable(this, {}, { autoBind: true });
-  }
-
-  init() {
-    void this._initAsync().catch((err) =>
-      console.error('Failed to initialize AppSettingsStore:', err)
-    );
-  }
-
-  private async _initAsync() {
-    const version = await getVersion();
-
-    runInAction(() => {
-      this.currentVersion = version;
-    });
-
-    if (this.appSettings.autoUpdate) {
-      void this.checkForUpdates(true);
-
-      this.startUpdateTimer();
-    }
-  }
-
-  private startUpdateTimer() {
-    this.stopUpdateTimer();
-
-    if (!this.appSettings.autoUpdate) return;
-
-    const ms = this.appSettings.updateCheckInterval * 60 * 60 * 1000;
-
-    this.updateTimer = window.setInterval(() => {
-      void this.checkForUpdates(true);
-    }, ms);
-  }
-
-  private stopUpdateTimer() {
-    if (this.updateTimer !== null) {
-      window.clearInterval(this.updateTimer);
-
-      this.updateTimer = null;
-    }
   }
 
   lockSettings(reason: SettingsLockReason) {
@@ -314,101 +258,27 @@ export class AppSettingsStore {
     void i18n.changeLanguage(resolveAppLanguage(this.appSettings.language));
   }
 
+  /**
+   * The one way to change a stored setting. Saving asks nothing of the caller:
+   * the save reaction watches the settings themselves.
+   */
+  update(patch: Partial<AppSettings>) {
+    Object.assign(this.appSettings, patch);
+  }
+
+  /** One chat command switched on or off. */
+  setStreamChatCommandSwitch(command: ChatCommand, value: boolean) {
+    this.update({
+      streamChatCommandSwitches: {
+        ...this.appSettings.streamChatCommandSwitches,
+        [command]: value,
+      },
+    });
+  }
+
   setLanguage(value: AppLanguage) {
     this.appSettings.language = value;
     void i18n.changeLanguage(resolveAppLanguage(value));
-  }
-
-  setAutoUpdate(value: boolean) {
-    this.appSettings.autoUpdate = value;
-
-    if (value) {
-      this.startUpdateTimer();
-    } else {
-      this.stopUpdateTimer();
-    }
-  }
-
-  setUpdateCheckInterval(value: number) {
-    this.appSettings.updateCheckInterval = value;
-
-    if (this.appSettings.autoUpdate) {
-      this.startUpdateTimer();
-    }
-  }
-
-  async checkForUpdates(silent = false) {
-    if (this.updateStatus === 'checking' || this.updateStatus === 'downloading')
-      return;
-
-    runInAction(() => {
-      this.updateStatus = 'checking';
-      this.updateError = null;
-    });
-
-    try {
-      const update = await check();
-
-      runInAction(() => {
-        this.appSettings.lastUpdateCheck = new Date().toISOString();
-
-        if (update) {
-          this.updateStatus = 'available';
-          this.availableVersion = update.version;
-          this.releaseNotes = update.body ?? null;
-        } else {
-          this.updateStatus = 'idle';
-          this.availableVersion = null;
-          this.releaseNotes = null;
-
-          if (!silent) {
-            // manual check success
-          }
-        }
-      });
-    } catch (err) {
-      console.error('Failed to check for updates:', err);
-
-      runInAction(() => {
-        this.updateStatus = 'error';
-        this.updateError = String(err);
-      });
-    }
-  }
-
-  async installUpdate() {
-    if (this.updateStatus !== 'available') return;
-
-    runInAction(() => {
-      this.updateStatus = 'downloading';
-      this.updateError = null;
-    });
-
-    try {
-      const update = await check();
-
-      if (update) {
-        await update.downloadAndInstall();
-
-        runInAction(() => {
-          this.updateStatus = 'ready';
-        });
-
-        await relaunch();
-      } else {
-        runInAction(() => {
-          this.updateStatus = 'idle';
-          this.availableVersion = null;
-        });
-      }
-    } catch (err) {
-      console.error('Failed to install update:', err);
-
-      runInAction(() => {
-        this.updateStatus = 'error';
-        this.updateError = String(err);
-      });
-    }
   }
 
   toggleDragMode() {
@@ -446,32 +316,6 @@ export class AppSettingsStore {
     this.interactMode = modes.interactMode;
   }
 
-  /** The dispatcher switches interact mode off when this changes. */
-  setInteractHotkeyMode(mode: InteractHotkeyMode) {
-    this.appSettings.interactHotkeyMode = mode;
-  }
-
-  /** The dispatcher re-arms a running watchdog with the new duration. */
-  setInteractAutoOffSeconds(seconds: number) {
-    this.appSettings.interactAutoOffSeconds = seconds;
-  }
-
-  setHideAllWidgets(value: boolean) {
-    this.appSettings.hideAllWidgets = value;
-  }
-
-  setStartMinimized(value: boolean) {
-    this.appSettings.startMinimized = value;
-  }
-
-  setHideWidgetsWhenGameClosed(value: boolean) {
-    this.appSettings.hideWidgetsWhenGameClosed = value;
-  }
-
-  setSteeringLock(value: number) {
-    this.appSettings.steeringLock = value;
-  }
-
   setCarLength(value: number) {
     this.appSettings.carLength = value;
     setCarLengthSilent(value);
@@ -482,79 +326,9 @@ export class AppSettingsStore {
     setOverlayUpdateHzSilent(value);
   }
 
-  setPitAutoFuel(value: boolean) {
-    this.appSettings.pitAutoFuel = value;
-  }
-
-  setPitAutoTires(value: boolean) {
-    this.appSettings.pitAutoTires = value;
-  }
-
-  setPitAutoTireWearThreshold(value: number) {
-    this.appSettings.pitAutoTireWearThreshold = value;
-  }
-
-  setPitFuelAdjustStep(value: FuelAdjustStep) {
-    this.appSettings.pitFuelAdjustStep = value;
-  }
-
-  setPitPressureAdjustStep(kpa: number) {
-    this.appSettings.pitPressureAdjustStep = kpa;
-  }
-
-  /** Any of the voice crew's settings, from the Crew tab. */
-  setVoiceSettings(patch: VoiceSettingsPatch) {
-    Object.assign(this.appSettings, patch);
-  }
-
-  /** Applies a strategy mirrored from another window. */
-  setPitStrategy(strategy: PitStrategy) {
-    Object.assign(this.appSettings, strategy);
-  }
-
-  setStreamChatTwitchChannel(value: string) {
-    this.appSettings.streamChatTwitchChannel = value;
-  }
-
-  setStreamChatYoutubeTarget(value: string) {
-    this.appSettings.streamChatYoutubeTarget = value;
-  }
-
-  setStreamChatTwitchClientId(value: string) {
-    this.appSettings.streamChatTwitchClientId = value;
-  }
-
   setStreamChatTwitchLogin(login: string | null) {
     this.appSettings.streamChatTwitchLogin = login;
     this.appSettings.streamChatAuthRevision += 1;
-  }
-
-  setStreamChatHideCommands(value: boolean) {
-    this.appSettings.streamChatHideCommands = value;
-  }
-
-  setStreamChatIgnoredBots(value: string) {
-    this.appSettings.streamChatIgnoredBots = value;
-  }
-
-  setStreamChatCommandsEnabled(value: boolean) {
-    this.appSettings.streamChatCommandsEnabled = value;
-  }
-
-  setStreamChatCommandCooldownSeconds(value: number) {
-    this.appSettings.streamChatCommandCooldownSeconds = value;
-  }
-
-  setStreamChatCommandGlobalCooldownSeconds(value: number) {
-    this.appSettings.streamChatCommandGlobalCooldownSeconds = value;
-  }
-
-  setStreamChatCommandSwitch(command: ChatCommand, value: boolean) {
-    this.appSettings.streamChatCommandSwitches[command] = value;
-  }
-
-  setAutoSwitchLayouts(value: boolean) {
-    this.appSettings.autoSwitchLayouts = value;
   }
 
   setRemoteEnabled(value: boolean) {
@@ -567,18 +341,6 @@ export class AppSettingsStore {
     }
   }
 
-  setRemotePort(value: number) {
-    this.appSettings.remotePort = value;
-  }
-
-  setRemoteLan(value: boolean) {
-    this.appSettings.remoteLan = value;
-  }
-
-  setRemoteTelemetryHz(value: number) {
-    this.appSettings.remoteTelemetryHz = value;
-  }
-
   /** Invalidates every URL already handed out — which is the point. */
   regenerateRemoteToken() {
     this.appSettings.remoteToken = createRemoteToken();
@@ -586,18 +348,6 @@ export class AppSettingsStore {
 
   clearRemoteToken() {
     this.appSettings.remoteToken = '';
-  }
-
-  setEditorShowGrid(value: boolean) {
-    this.appSettings.editorShowGrid = value;
-  }
-
-  setEditorSnapToGrid(value: boolean) {
-    this.appSettings.editorSnapToGrid = value;
-  }
-
-  setEditorGridSize(value: number) {
-    this.appSettings.editorGridSize = value;
   }
 
   /**
@@ -612,6 +362,6 @@ export class AppSettingsStore {
    */
   async resetSettings() {
     await deleteSettingsFile();
-    await relaunch();
+    await relaunchApp();
   }
 }

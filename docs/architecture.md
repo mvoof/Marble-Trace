@@ -1181,7 +1181,8 @@ starts with the window; it never reaches the window shells.
 | File                                       | Role                                                                                      |
 | ------------------------------------------ | ----------------------------------------------------------------------------------------- |
 | `listeners.ts`                             | `setupMainListeners` / `setupOverlayListeners` — overlay modes, and the overlay's signals |
-| `main-sync.ts`                             | main's startup and the reactions that save                                                |
+| `main-sync.ts`                             | main's startup order                                                                      |
+| `save-sync.ts`                             | the one save trigger: every value `buildSettings` writes, debounced                       |
 | `client-snapshot.ts` · `client-publish.ts` | main's half of the client protocol: snapshots out, commands in (ADR-0007)                 |
 | `client-sync.ts`                           | a client's half, transport-free: installs a snapshot, runs a signal                       |
 | `overlay-sync.ts` · `remote-sync.ts`       | the two transports into `client-sync.ts` — Tauri events, the remote socket                |
