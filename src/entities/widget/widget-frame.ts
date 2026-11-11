@@ -47,6 +47,25 @@ export const widgetFrameBorderRadius = (
   return shape ? frameShapeRadius(shape, userSettings) : undefined;
 };
 
+/**
+ * The widget's scale, `--wfs`: its drawn size over its design size — by the
+ * height for a widget that scales from it, by the width otherwise. The one
+ * formula every host uses: overlay, editor, preview and remote screen.
+ */
+export const widgetScaleOf = ({
+  scaleFromHeight = false,
+  width,
+  height,
+  designWidth,
+  designHeight,
+}: {
+  scaleFromHeight?: boolean;
+  width: number;
+  height: number;
+  designWidth: number;
+  designHeight: number;
+}): number => (scaleFromHeight ? height / designHeight : width / designWidth);
+
 export const DEFAULT_WIDGET_BACKGROUND = 'rgba(21, 22, 26, 0.8)';
 export const DEFAULT_WIDGET_BORDER = 'rgba(255, 255, 255, 0.1)';
 

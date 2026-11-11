@@ -1,12 +1,13 @@
 import React, { useCallback, useRef, type ReactNode } from 'react';
+import { resizeBox } from '@features/layout-editor/resize-geometry';
 import { observer } from 'mobx-react-lite';
 import { ErrorBoundary } from '@shared/ui/ErrorBoundary';
 import {
   resizeDirectionsFor,
-  scaleFromCorner,
   widgetBoxSize,
   widgetFrameStyle,
   type ResizeDirection,
+  widgetScaleOf,
 } from '@entities/widget/widget-frame';
 import styles from './WidgetContainer.module.scss';
 import { WidgetIdContext } from '@entities/widget/WidgetIdContext';
@@ -81,9 +82,13 @@ export const WidgetContainer = observer(
 
     const scaleFromHeight = widget?.scaleFromHeight ?? false;
 
-    const widgetScale = scaleFromHeight
-      ? height / designHeight
-      : width / designWidth;
+    const widgetScale = widgetScaleOf({
+      scaleFromHeight,
+      width,
+      height,
+      designWidth,
+      designHeight,
+    });
 
     const handleDragMouseDown = useCallback(
       (e: React.MouseEvent) => {
@@ -160,89 +165,35 @@ export const WidgetContainer = observer(
           const dx = ev.clientX - resizeStartRef.current.mouseX;
           const dy = ev.clientY - resizeStartRef.current.mouseY;
 
-          const minW = Math.max(20, Math.round(designWidth * 0.2));
-          const minH = Math.max(20, Math.round(designHeight * 0.2));
+          const box = resizeBox({
+            direction,
+            dx,
+            dy,
+            start: {
+              x: resizeStartRef.current.widgetX,
+              y: resizeStartRef.current.widgetY,
+              width: resizeStartRef.current.widgetW,
+              height: resizeStartRef.current.widgetH,
+            },
+            drawn: {
+              width: resizeStartRef.current.drawnW,
+              height: resizeStartRef.current.drawnH,
+            },
+            design: { width: designWidth, height: designHeight },
+            widget: {
+              contentSized: widget?.contentSized,
+              scaleFromHeight: widget?.scaleFromHeight,
+              lockAspectRatio: widget?.lockAspectRatio,
+            },
+          });
 
-          const startW = resizeStartRef.current.widgetW;
-          const startH = resizeStartRef.current.widgetH;
-          const startX = resizeStartRef.current.widgetX;
-          const startY = resizeStartRef.current.widgetY;
-
-          if (widget?.contentSized) {
-            const scaled = scaleFromCorner({
-              direction,
-              dx,
-              start: { x: startX, y: startY, width: startW, height: startH },
-              drawn: {
-                width: resizeStartRef.current.drawnW,
-                height: resizeStartRef.current.drawnH,
-              },
-              minWidth: minW,
-            });
-
-            settingsClient.resizeWidget(
-              widgetId,
-              scaled.x,
-              scaled.y,
-              scaled.width,
-              scaled.height
-            );
-
-            return;
-          }
-
-          let newW = startW;
-          let newH = startH;
-          let newX = startX;
-          let newY = startY;
-
-          if (direction.includes('e')) {
-            newW = Math.max(minW, Math.round(startW + dx));
-          }
-
-          if (direction.includes('w')) {
-            newW = Math.max(minW, Math.round(startW - dx));
-            newX = Math.round(startX + startW - newW);
-          }
-
-          if (widget?.scaleFromHeight) {
-            // e/w only stretches the widget (its scale comes from the
-            // unchanged height); corners rescale it keeping the current shape.
-            const isCorner = direction.length === 2;
-
-            if (isCorner && startH > 0) {
-              newH = Math.max(minH, Math.round(newW * (startH / startW)));
-
-              if (direction.includes('n')) {
-                newY = Math.round(startY + startH - newH);
-              }
-            }
-          } else if (widget?.lockAspectRatio) {
-            // Only e/w and corner handles are offered for these widgets (see
-            // resizeDirections below) — height always tracks width so a
-            // circular badge sized off the height never distorts. Corners
-            // resize the widget proportionally, which is the only way to make
-            // these widgets taller.
-            newH = Math.max(
-              minH,
-              Math.round(newW * (designHeight / designWidth))
-            );
-
-            if (direction.includes('n')) {
-              newY = Math.round(startY + startH - newH);
-            }
-          } else {
-            if (direction.includes('s')) {
-              newH = Math.max(minH, Math.round(startH + dy));
-            }
-
-            if (direction.includes('n')) {
-              newH = Math.max(minH, Math.round(startH - dy));
-              newY = Math.round(startY + startH - newH);
-            }
-          }
-
-          settingsClient.resizeWidget(widgetId, newX, newY, newW, newH);
+          settingsClient.resizeWidget(
+            widgetId,
+            box.x,
+            box.y,
+            box.width,
+            box.height
+          );
         };
 
         const onMouseUp = () => {

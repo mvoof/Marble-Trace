@@ -2,7 +2,11 @@ import { observer } from 'mobx-react-lite';
 import type { ReactNode } from 'react';
 
 import { ErrorBoundary } from '@shared/ui/ErrorBoundary';
-import { widgetBoxSize, widgetFrameStyle } from '@entities/widget/widget-frame';
+import {
+  widgetBoxSize,
+  widgetFrameStyle,
+  widgetScaleOf,
+} from '@entities/widget/widget-frame';
 import { WidgetIdContext } from '@entities/widget/WidgetIdContext';
 import styles from './RemoteWidgetFrame.module.scss';
 import { useLiveWidgetsStore } from '@entities/layout/live-widgets-context';
@@ -49,9 +53,13 @@ export const RemoteWidgetFrame = observer(
     const contentSized = widget.contentSized ?? false;
     const transparentContainer = widget.transparentContainer ?? false;
 
-    const widgetScale = widget.scaleFromHeight
-      ? height / widget.designHeight
-      : width / widget.designWidth;
+    const widgetScale = widgetScaleOf({
+      scaleFromHeight: widget.scaleFromHeight,
+      width,
+      height,
+      designWidth: widget.designWidth,
+      designHeight: widget.designHeight,
+    });
 
     const frameStyle = widgetFrameStyle({
       widgetType: widget ? widget.type : widgetId,

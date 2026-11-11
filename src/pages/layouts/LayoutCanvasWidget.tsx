@@ -1,23 +1,21 @@
 import React, { useCallback, useEffect, useRef, type ReactNode } from 'react';
+import { resizeBox, snapToGrid } from '@features/layout-editor/resize-geometry';
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
 import type { LiveWidgetsStore } from '@entities/layout/live-widgets.store';
 import type { MonitorBounds } from '@shared/contracts/widget-settings';
 import {
   resizeDirectionsFor,
-  scaleFromCorner,
   widgetBoxSize,
   widgetFrameStyle,
   type ResizeDirection,
+  widgetScaleOf,
 } from '@entities/widget/widget-frame';
 import { useRendersNothing } from './use-renders-nothing';
 import styles from './LayoutCanvas.module.scss';
 
 // Snap distance (overlay px) for centering a widget on the canvas axes.
 const SNAP_CENTER_THRESHOLD = 24;
-
-const snapToGrid = (value: number, gridSize: number) =>
-  Math.round(value / gridSize) * gridSize;
 
 interface LayoutCanvasWidgetProps {
   widgetId: string;
@@ -101,9 +99,13 @@ export const LayoutCanvasWidget = observer(
 
     const scaleFromHeight = widget?.scaleFromHeight ?? false;
 
-    const widgetScale = scaleFromHeight
-      ? height / designHeight
-      : width / designWidth;
+    const widgetScale = widgetScaleOf({
+      scaleFromHeight,
+      width,
+      height,
+      designWidth,
+      designHeight,
+    });
 
     const frameStyle = widgetFrameStyle({
       widgetType: widget ? widget.type : widgetId,
@@ -233,125 +235,35 @@ export const LayoutCanvasWidget = observer(
           const dx = (moveEvent.clientX - resizeStartRef.current.mouseX) / fit;
           const dy = (moveEvent.clientY - resizeStartRef.current.mouseY) / fit;
 
-          const minW = Math.max(20, Math.round(designWidth * 0.2));
-          const minH = Math.max(20, Math.round(designHeight * 0.2));
+          const start = {
+            x: resizeStartRef.current.widgetX,
+            y: resizeStartRef.current.widgetY,
+            width: resizeStartRef.current.widgetW,
+            height: resizeStartRef.current.widgetH,
+          };
+          const box = resizeBox({
+            direction,
+            dx,
+            dy,
+            start,
+            drawn: {
+              width: resizeStartRef.current.drawnW,
+              height: resizeStartRef.current.drawnH,
+            },
+            design: { width: designWidth, height: designHeight },
+            widget: {
+              contentSized: widget?.contentSized,
+              scaleFromHeight: widget?.scaleFromHeight,
+              lockAspectRatio: widget?.lockAspectRatio,
+            },
+            snapGrid: snap ? gridSize : null,
+            keepRatio: moveEvent.shiftKey || isRatioLocked,
+          });
 
-          const startW = resizeStartRef.current.widgetW;
-          const startH = resizeStartRef.current.widgetH;
-          const startX = resizeStartRef.current.widgetX;
-          const startY = resizeStartRef.current.widgetY;
+          mainSettings.updateSize(widgetId, box.width, box.height);
 
-          // A content-sized widget only scales: the grid and the ratio lock
-          // have no edge of their own to act on.
-          if (widget?.contentSized) {
-            const scaled = scaleFromCorner({
-              direction,
-              dx,
-              start: { x: startX, y: startY, width: startW, height: startH },
-              drawn: {
-                width: resizeStartRef.current.drawnW,
-                height: resizeStartRef.current.drawnH,
-              },
-              minWidth: minW,
-            });
-
-            mainSettings.updateSize(widgetId, scaled.width, scaled.height);
-
-            if (scaled.x !== startX || scaled.y !== startY) {
-              mainSettings.updatePosition(widgetId, scaled.x, scaled.y);
-            }
-
-            return;
-          }
-
-          let newW = startW;
-          let newH = startH;
-          let newX = startX;
-          let newY = startY;
-
-          if (direction.includes('e')) {
-            newW = Math.max(minW, Math.round(startW + dx));
-          }
-
-          if (direction.includes('w')) {
-            newW = Math.max(minW, Math.round(startW - dx));
-            newX = Math.round(startX + startW - newW);
-          }
-
-          if (direction.includes('s')) {
-            newH = Math.max(minH, Math.round(startH + dy));
-          }
-
-          if (direction.includes('n')) {
-            newH = Math.max(minH, Math.round(startH - dy));
-            newY = Math.round(startY + startH - newH);
-          }
-
-          if (snap) {
-            newW = Math.max(minW, snapToGrid(newW, gridSize));
-            newH = Math.max(minH, snapToGrid(newH, gridSize));
-
-            if (direction.includes('w')) {
-              newX = Math.round(startX + startW - newW);
-            }
-
-            if (direction.includes('n')) {
-              newY = Math.round(startY + startH - newH);
-            }
-          }
-
-          if (widget?.scaleFromHeight) {
-            // e/w only stretches the widget (its scale comes from the
-            // unchanged height); corners rescale it keeping the current shape.
-            const isCorner = direction.length === 2;
-
-            if (isCorner && startW > 0) {
-              newH = Math.max(minH, Math.round(newW * (startH / startW)));
-
-              if (direction.includes('n')) {
-                newY = Math.round(startY + startH - newH);
-              }
-            }
-          } else if (widget?.lockAspectRatio) {
-            // Only e/w and corner handles are offered for these widgets (see
-            // resizeDirections below) — height always tracks the design
-            // aspect ratio, mirroring the overlay's WidgetContainer.
-            newH = Math.max(
-              minH,
-              Math.round(newW * (designHeight / designWidth))
-            );
-
-            if (direction.includes('n')) {
-              newY = Math.round(startY + startH - newH);
-            }
-          } else {
-            const shouldLockRatio = moveEvent.shiftKey || isRatioLocked;
-
-            if (shouldLockRatio && startW > 0 && startH > 0) {
-              const aspect = startW / startH;
-
-              if (direction === 'e' || direction === 'w') {
-                newH = Math.max(minH, Math.round(newW / aspect));
-              } else if (direction === 'n' || direction === 's') {
-                newW = Math.max(minW, Math.round(newH * aspect));
-              } else {
-                newH = Math.max(minH, Math.round(newW / aspect));
-              }
-
-              if (direction.includes('w')) {
-                newX = Math.round(startX + startW - newW);
-              }
-
-              if (direction.includes('n')) {
-                newY = Math.round(startY + startH - newH);
-              }
-            }
-          }
-
-          mainSettings.updateSize(widgetId, newW, newH);
-
-          if (newX !== startX || newY !== startY) {
-            mainSettings.updatePosition(widgetId, newX, newY);
+          if (box.x !== start.x || box.y !== start.y) {
+            mainSettings.updatePosition(widgetId, box.x, box.y);
           }
         };
 
