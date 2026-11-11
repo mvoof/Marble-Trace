@@ -8,7 +8,10 @@ import {
   listOverlayWindowLabels,
   monitorLabel,
 } from '@shared/api/overlay-labels';
-import { overlaySnapshotFor, snapshotAppInputs } from './client-snapshot';
+import {
+  overlaySnapshotFor,
+  snapshotAppInputs,
+} from '../client/client-snapshot';
 import type { MainRoot } from '@app/roots/main-root';
 import type { RejectedCommand } from '@shared/contracts/generated/bindings';
 import type {

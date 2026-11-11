@@ -11,7 +11,7 @@ import {
 } from './persistence-sync';
 import { setupDeviceBindings } from '@features/hotkey-bindings/bindings-sync';
 import { listenSettingsActions, registerHotkeyReactions } from './hotkey-sync';
-import { setupMainListeners } from './listeners';
+import { setupMainListeners } from '../listeners';
 import { registerChatReactions } from './chat-sync';
 import { registerSaveReaction } from './save-sync';
 import { registerTelemetrySettingsReaction } from './telemetry-settings-sync';

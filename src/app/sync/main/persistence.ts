@@ -18,7 +18,7 @@ import {
   encodeTemplates,
   type StoredLayout,
   type StoredTemplate,
-} from '@app/sync/settings-file';
+} from '@app/sync/main/settings-file';
 
 export const SETTINGS_FILE = 'settings.json';
 

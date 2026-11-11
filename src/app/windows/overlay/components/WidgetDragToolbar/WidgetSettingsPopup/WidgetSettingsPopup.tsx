@@ -15,7 +15,7 @@ import { useSettingsMutationLog } from '@entities/layout/mutation-log-context';
 import { useOverlayRoot } from '@app/roots/overlay-root-context';
 import type { LiveWidgetsView } from '@entities/layout/live-widgets.store';
 import type { SettingsMutationLog } from '@entities/layout/mutation-log.store';
-import type { SettingsClientStore } from '@app/sync/settings-client.store';
+import type { SettingsClientStore } from '@app/sync/overlay/settings-client.store';
 import { getWidgetLabel } from '@entities/widget/widget-i18n';
 import styles from './WidgetSettingsPopup.module.scss';
 

@@ -58,8 +58,8 @@ vi.mock('@shared/api/overlay-labels', () => ({
 }));
 
 const { overlaySnapshotFor } = await import('./client-snapshot');
-const { registerClientPublishing } = await import('./client-publish');
-const { applyOverlaySnapshot } = await import('./overlay-sync');
+const { registerClientPublishing } = await import('../main/client-publish');
+const { applyOverlaySnapshot } = await import('../overlay/overlay-sync');
 
 /** How long the overlay holds a drag before sending it, and a popup edit. */
 const GEOMETRY_SEND_MS = 75;

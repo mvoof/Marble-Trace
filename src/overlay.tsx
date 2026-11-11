@@ -1,4 +1,4 @@
-import { watchColdStart } from '@app/sync/perf-cold-start';
+import { watchColdStart } from '@app/sync/dev/perf-cold-start';
 import { OverlayRoot } from '@app/roots/overlay-root';
 import { AppWindowProvider, CoreProvider } from '@app/store-providers';
 import { OverlayRootContext } from '@app/roots/overlay-root-context';

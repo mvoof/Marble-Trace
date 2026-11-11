@@ -53,8 +53,8 @@ vi.mock('@shared/api/settings.service', () => ({
   setActiveEventsSilent: vi.fn(),
 }));
 
-const { setupOverlayListeners } = await import('./listeners');
-const { initRemoteSync } = await import('./remote-sync');
+const { setupOverlayListeners } = await import('../listeners');
+const { initRemoteSync } = await import('../remote/remote-sync');
 
 /** A mounted standings table and chat window under the hotkeys. */
 const mountHotkeyTargets = (core: RendererCore) => {

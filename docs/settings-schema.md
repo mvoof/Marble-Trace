@@ -7,7 +7,7 @@ to write one.
 
 User settings are persisted to `settings.json` in the app config directory
 (`%APPDATA%/com.voof.marble-trace` on Windows) through `tauri-plugin-store`. The
-shape is `Settings` in `src/app/sync/persistence.ts`.
+shape is `Settings` in `src/app/sync/main/persistence.ts`.
 
 The file carries a `schemaVersion` at its top level. It is an **integer** and is
 deliberately unrelated to the app's semver:
@@ -39,7 +39,7 @@ written at all.
 
 In memory the shape is different: a layout keeps one flat `widgets[]` in
 desktop-wide coordinates, each record carrying every setting resolved and naming
-its monitor in `monitor`. `app/sync/settings-file.ts` converts between the
+its monitor in `monitor`. `app/sync/main/settings-file.ts` converts between the
 two, and is the only module that knows the file's shape. The active layout
 **owns** its records outright: the store's live widget map is a projection of
 that layout's own objects, so an edit in the overlay or the editor lands in the
@@ -99,7 +99,7 @@ Five things about this order matter:
    (`updateUserSettings`). Like `mergeWithDefaults`, it runs after migrations —
    a migration writing a value the schema refuses has its work undone.
 
-5. **Only the main window runs the chain** (`app/sync/persistence-sync.ts`:
+5. **Only the main window runs the chain** (`app/sync/main/persistence-sync.ts`:
    `readSettingsFile` → `runMigrations` → `hydrateFromDisk`) and only it writes.
    An overlay or remote screen reads no settings file; it draws the snapshot main
    sends (ADR-0007). A migration must still be pure — the runner clones the blob

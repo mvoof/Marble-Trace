@@ -2,9 +2,9 @@ import { runInAction, compareStructural } from 'mobx';
 import { getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow';
 
 import { emitToMain, listenToMain } from '@shared/api/events.service';
-import { setupOverlayListeners } from './listeners';
-import { applyClientSnapshot } from './client-sync';
-import { initPerfRun } from './perf-run';
+import { setupOverlayListeners } from '../listeners';
+import { applyClientSnapshot } from '../client/client-sync';
+import { initPerfRun } from '../dev/perf-run';
 import type { OverlayRoot } from '@app/roots/overlay-root';
 import type { SnapshotMessage } from '@shared/contracts/client-protocol';
 

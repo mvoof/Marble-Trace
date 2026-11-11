@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow';
 import { OverlayCanvas } from './OverlayCanvas/OverlayCanvas';
-import { initOverlaySync } from '@app/sync/overlay-sync';
+import { initOverlaySync } from '@app/sync/overlay/overlay-sync';
 import { useSimStore } from '@entities/sim/sim-context';
 import { useOverlayRoot } from '@app/roots/overlay-root-context';
 

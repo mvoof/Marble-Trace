@@ -136,8 +136,8 @@ picture: `docs/architecture.md` → Cross-window synchronization.
 | Layer            | File                                                          |
 | ---------------- | ------------------------------------------------------------- |
 | server / fan-out | `src-tauri/crates/mt-remote/src/{server,hub,mirror,pages}.rs` |
-| main-window half | `app/sync/remote-publish.ts`                                  |
-| browser half     | `app/sync/remote-sync.ts` → `client-sync.ts`                  |
+| main-window half | `app/sync/main/remote-publish.ts`                             |
+| browser half     | `app/sync/remote/remote-sync.ts` → `client-sync.ts`           |
 | page entry       | `remote.html` → `src/remote.tsx` → `app/windows/remote/`      |
 
 - **Read-only.** A device reports only its viewport, applied once to fit a newly
@@ -209,7 +209,7 @@ file and hydrating the stores.
   nowhere else; `widgetTemplates` beside the layouts is only the catalogue the
   Widgets page edits and a new instance starts from. In memory a layout keeps
   one flat `widgets[]` in desktop-wide coordinates, each record naming its
-  monitor in `monitor` — `app/sync/settings-file.ts` is the codec between
+  monitor in `monitor` — `app/sync/main/settings-file.ts` is the codec between
   the two and the only place that knows the file's shape.
   `LiveWidgetsStore.widgets` is a projection of the active layout's own
   objects, so an edit lands in the record itself and there is nothing to

@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { runInAction } from 'mobx';
 import { MainRoot } from '@app/roots/main-root';
-import { registerPitServiceMainReactions } from '@app/sync/pit-service-sync';
+import { registerPitServiceMainReactions } from '@app/sync/main/pit-service-sync';
 import type { SavedLayout } from '@shared/contracts/widget-settings';
 
 // setWidgets pushes a few settings to the backend through the service layer,

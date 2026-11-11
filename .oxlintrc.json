@@ -166,6 +166,39 @@
     },
     {
       "files": [
+        "src/app/sync/overlay/**",
+        "src/app/sync/remote/**",
+        "src/app/sync/client/**",
+        "src/app/sync/listeners.ts"
+      ],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "patterns": [
+              {
+                "group": ["@app/sync/main/**", "**/sync/main/**", "../main/**"],
+                "message": "app/sync/main/ runs in the main window only — an overlay, a remote screen and the code both share never load it."
+              },
+              {
+                "group": ["@tauri-apps/api/core"],
+                "message": "Tauri invoke is wrapped by src/shared/api/ — call a service instead."
+              },
+              {
+                "group": ["@tauri-apps/api/event"],
+                "message": "Tauri events are wrapped by src/shared/api/events.service.ts — use listenTo/emitToApp/emitToOverlays."
+              },
+              {
+                "group": ["@app/windows/**"],
+                "message": "sync/ wires transport to stores. The UI is downstream of both."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "files": [
         "src/shared/api/**",
         "src/entities/layout/layout-background.ts"
       ],
@@ -175,7 +208,7 @@
     },
     {
       "files": [
-        "src/app/sync/persistence-sync.ts",
+        "src/app/sync/main/persistence-sync.ts",
         "src/entities/track/track-map.store.ts"
       ],
       "rules": {
@@ -292,6 +325,10 @@
           {
             "patterns": [
               {
+                "group": ["@app/sync/main/**", "**/sync/main/**", "../main/**"],
+                "message": "app/sync/main/ runs in the main window only — an overlay, a remote screen and the code both share never load it."
+              },
+              {
                 "group": [
                   "@app/roots/main-root",
                   "@app/roots/main-root-context",
@@ -364,6 +401,10 @@
           "error",
           {
             "patterns": [
+              {
+                "group": ["@app/sync/main/**", "**/sync/main/**", "../main/**"],
+                "message": "app/sync/main/ runs in the main window only — an overlay, a remote screen and the code both share never load it."
+              },
               {
                 "group": [
                   "@app/roots/main-root",

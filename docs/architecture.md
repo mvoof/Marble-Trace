@@ -1086,7 +1086,7 @@ paused main window costs only the actions that write settings.
 | settings-UI registry, visibility actions        | `src/features/hotkey-bindings/actions.ts`                   |
 | persisted map (`actionId -> Binding[]`)         | `src/features/hotkey-bindings/bindings.store.ts`            |
 | settings actions                                | `src/features/hotkey-bindings/settings-actions.ts`          |
-| main's half                                     | `src/app/sync/hotkey-sync.ts`                               |
+| main's half                                     | `src/app/sync/main/hotkey-sync.ts`                          |
 
 > [!TIP]
 > **Adding a bindable action is one entry in `HOTKEY_ACTIONS` plus one key under
@@ -1623,7 +1623,7 @@ Names come from `src-tauri/crates/mt-model/src/contract/events.rs` through the g
 | `sim://track-shape`                                      | `mt-telemetry/src/emitter.rs`                          | on discovery or pit-pct patch | the track map widget store                                                                  |
 | `sim://reference-lap/updated`                            | `mt-telemetry/src/emitter.rs`                          | active reference changes      | `reference-lap.store.ts`                                                                    |
 | `sim://telemetry/slow`                                   | `mt-telemetry/src/emitter.rs`                          | 4 Hz                          | `player.store.ts` (`updateCarStatus`), via `sim.store.ts` — **windows off the bundle only** |
-| `perf://begin` · `perf://end`                            | `src-tauri/src/perf_run.rs` (dev, `MARBLE_TRACE_PERF`) | once per run                  | `app/sync/perf-run.ts`, every overlay                                                       |
+| `perf://begin` · `perf://end`                            | `src-tauri/src/perf_run.rs` (dev, `MARBLE_TRACE_PERF`) | once per run                  | `app/sync/dev/perf-run.ts`, every overlay                                                   |
 | `remote://device`                                        | `mt-remote/src/server.rs`                              | a device comes, goes, reports | `listenRemoteDevice` in `remote-publish.ts`                                                 |
 | `app://overlay-modes`                                    | `mt-hotkeys`                                           | on change                     | `app-settings.store.ts`, every window                                                       |
 | `hotkey://settings-action`                               | `mt-hotkeys`                                           | on a settings key             | `settings-actions.ts`, main only                                                            |
@@ -1832,7 +1832,7 @@ Three rules, each of which exists because breaking it corrupts real users' files
 
 The widgets a driver sees live in the layout and nowhere else — on disk under
 each monitor (`layouts[].monitors[].widgets[]`), in memory as the layout's flat
-`widgets[]`, each record naming its monitor (`app/sync/settings-file.ts`
+`widgets[]`, each record naming its monitor (`app/sync/main/settings-file.ts`
 converts between the two).
 `LiveWidgetsStore.widgets` is a **projection** of the active layout's own
 objects — the same objects, not a copy — so every edit the overlay or the editor

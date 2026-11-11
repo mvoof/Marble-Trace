@@ -142,7 +142,7 @@ and **dispatched in Rust** — a key acts on the car with every webview paused.
 | settings-UI registry (+ visibility actions)     | `src/features/hotkey-bindings/actions.ts`                              |
 | persisted map (`actionId -> Binding[]`)         | `src/features/hotkey-bindings/bindings.store.ts`                       |
 | settings actions, applied in main               | `src/features/hotkey-bindings/settings-actions.ts`                     |
-| main's half: push map + context, apply          | `src/app/sync/hotkey-sync.ts`                                          |
+| main's half: push map + context, apply          | `src/app/sync/main/hotkey-sync.ts`                                     |
 
 **Adding a bindable action = one entry in `HOTKEY_ACTIONS` + one key under
 `bindings.actions` in `main-app.json`.** The entry's `HotkeyEffect` says what

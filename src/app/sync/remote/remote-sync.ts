@@ -6,7 +6,7 @@ import type { RemoteScreenStore } from '@features/remote-screens/remote-screen.s
 import type { RendererCore } from '@app/roots/renderer-core';
 import type { RemoteMessage } from '@shared/contracts/remote';
 import type { ClientSnapshot } from '@shared/contracts/client-protocol';
-import { applyClientSnapshot, applyControl } from './client-sync';
+import { applyClientSnapshot, applyControl } from '../client/client-sync';
 import type {
   CapabilitiesPayload,
   ChatDeletion,
