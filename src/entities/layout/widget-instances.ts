@@ -103,3 +103,71 @@ export const copyOrdinalAmong = (
     total: copies.length,
   };
 };
+
+/**
+ * Puts a copy right after the widget it came from, so a widget's copies stay
+ * together in the list and in settings.json. Mutates `widgets`.
+ */
+export const insertAfter = (
+  widgets: WidgetDefaultConfig[],
+  sourceId: string,
+  copy: WidgetDefaultConfig
+): void => {
+  widgets.splice(
+    widgets.findIndex((widget) => widget.id === sourceId) + 1,
+    0,
+    copy
+  );
+};
+
+/**
+ * A detached copy of a widget list, one level into `userSettings`: for the
+ * undo stack, and for copying widgets into another layout record.
+ * (structuredClone throws on MobX proxies.)
+ */
+export const detachedCopiesOf = (
+  widgets: WidgetDefaultConfig[]
+): WidgetDefaultConfig[] =>
+  widgets.map((widget) => ({
+    ...widget,
+    userSettings: { ...widget.userSettings },
+  }));
+
+/**
+ * What switching a widget on or off on one monitor does, given its instances
+ * there:
+ *
+ * - `unchanged` — nothing to do; `id` is the instance already on, if any.
+ * - `switchOff` — these instances go off; nothing on any other monitor does.
+ * - `switchOn` — an instance already standing here comes back on, with every
+ *   setting it had.
+ * - `create` — there is none here: a new one is made from the template.
+ */
+export type MonitorSwitch =
+  | { kind: 'unchanged'; id: string | null }
+  | { kind: 'switchOff'; widgets: WidgetDefaultConfig[] }
+  | { kind: 'switchOn'; widget: WidgetDefaultConfig }
+  | { kind: 'create' };
+
+export const monitorSwitchOf = (
+  instancesOnMonitor: WidgetDefaultConfig[],
+  enabled: boolean
+): MonitorSwitch => {
+  const switchedOn = instancesOnMonitor.filter(
+    (widget) => widget.userSettings.enabled
+  );
+
+  if (!enabled) {
+    return switchedOn.length === 0
+      ? { kind: 'unchanged', id: null }
+      : { kind: 'switchOff', widgets: switchedOn };
+  }
+
+  if (switchedOn.length > 0) {
+    return { kind: 'unchanged', id: switchedOn[0].id };
+  }
+
+  const reused = instancesOnMonitor.at(0);
+
+  return reused ? { kind: 'switchOn', widget: reused } : { kind: 'create' };
+};

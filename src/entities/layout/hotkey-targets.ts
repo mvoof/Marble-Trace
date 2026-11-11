@@ -51,3 +51,20 @@ export const hotkeyLeaderAmong = (
 
   return primary && marked.includes(primary) ? primary : marked[0];
 };
+
+/**
+ * The value a cycling hotkey steps to from `current`, wrapping round; the
+ * first one when `current` is not among them.
+ */
+export const nextCycleValue = (
+  values: readonly string[],
+  current: string
+): string => values[(values.indexOf(current) + 1) % values.length];
+
+/**
+ * What the visibility hotkey does to every instance it acts on, all the same
+ * way: off while any of them is on screen, on when none is.
+ */
+export const visibilityAfterToggle = (
+  instances: WidgetDefaultConfig[]
+): boolean => !instances.some((widget) => widget.userSettings.enabled);

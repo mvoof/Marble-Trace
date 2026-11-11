@@ -5,7 +5,12 @@ import type {
   WidgetDefaultConfig,
 } from '@shared/contracts/widget-settings';
 
-import { hotkeyLeaderAmong, primaryInstanceAmong } from './hotkey-targets';
+import {
+  hotkeyLeaderAmong,
+  nextCycleValue,
+  primaryInstanceAmong,
+  visibilityAfterToggle,
+} from './hotkey-targets';
 
 const DISPLAY: LayoutMonitor = {
   name: 'DISPLAY1',
@@ -74,5 +79,30 @@ describe('hotkeyLeaderAmong', () => {
         MONITORS
       )
     ).toBeUndefined();
+  });
+});
+
+describe('nextCycleValue', () => {
+  it('steps to the next value and wraps round', () => {
+    expect(nextCycleValue(['a', 'b', 'c'], 'b')).toBe('c');
+    expect(nextCycleValue(['a', 'b', 'c'], 'c')).toBe('a');
+  });
+
+  it('starts from the first value when the current one is unknown', () => {
+    expect(nextCycleValue(['a', 'b'], 'z')).toBe('a');
+  });
+});
+
+describe('visibilityAfterToggle', () => {
+  it('hides while any instance is on, shows when none is', () => {
+    expect(
+      visibilityAfterToggle([
+        instance('standings', 'DISPLAY1', false),
+        instance('standings-2', 'tablet', true),
+      ])
+    ).toBe(false);
+    expect(
+      visibilityAfterToggle([instance('standings', 'DISPLAY1', false)])
+    ).toBe(true);
   });
 });

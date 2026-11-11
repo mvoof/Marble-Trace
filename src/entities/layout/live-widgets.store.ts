@@ -1,6 +1,5 @@
 import { makeAutoObservable, runInAction } from 'mobx';
 import {
-  checkedSettings,
   DEFAULT_WIDGETS,
   DEFAULT_WIDGET_BY_ID,
 } from '@entities/widget/widget-catalog';
@@ -9,25 +8,48 @@ import type { LayoutsStore } from '@entities/layout/layouts.store';
 import type { SettingsMutationLog } from '@entities/layout/mutation-log.store';
 import { availableWidgetIdsOf } from '@entities/widget/widget-availability';
 import {
-  applyDerivedDesignWidth,
-  applyLayoutResize,
-  deriveWidgetDesignWidth,
-} from '@entities/widget/layout-resize';
-import {
   hotkeyLeaderAmong,
+  nextCycleValue,
   primaryInstanceAmong,
+  visibilityAfterToggle,
 } from '@entities/layout/hotkey-targets';
 import {
   clampOnOwnMonitor,
-  positionOnMonitor,
+  monitorMoveOf,
   withoutGeometry,
 } from '@entities/layout/widget-geometry';
 import {
   copyOrdinalAmong,
+  detachedCopiesOf,
   duplicateOf,
+  insertAfter,
   instanceFromTemplate,
+  monitorSwitchOf,
 } from '@entities/layout/widget-instances';
 import { normalizeWidgets } from '@entities/layout/widget-normalize';
+import {
+  adoptWidgetSet,
+  isSameWidgetSet,
+  patchFromSync,
+} from '@entities/layout/widget-sync';
+import {
+  applySettingsEdit,
+  markForHotkeys,
+  moveWidgetTo,
+  resizeWidgetTo,
+} from '@entities/layout/widget-edits';
+import {
+  shownWidgetIdsByZOrder,
+  shownWidgetIdsOf,
+  shownWidgetTypesOf,
+} from '@entities/layout/widget-visibility';
+import {
+  monitorWidgetRowsOf,
+  pickableWidgetsOf,
+  populatedMonitorNamesOf,
+  remoteScreenWidgetsOf,
+  type MonitorWidgetRow,
+} from '@entities/layout/monitor-widgets';
 
 import type {
   WidgetDefaultConfig,
@@ -40,10 +62,8 @@ import type {
 import { DEFAULT_LAYOUT_RESOLUTION } from '@entities/layout/layout-resolution';
 import {
   hotkeysActOn,
-  monitorForWidget,
   widgetsOnMonitor,
 } from '@entities/layout/virtual-desktop';
-import { isDisplayMonitor } from '@shared/lib/remote-screen';
 import { WidgetHistory } from '@entities/layout/widget-history.store';
 import {
   bottomZIndex,
@@ -55,17 +75,7 @@ import type { WidgetMap } from '@entities/widget/widget-map';
 import type { WidgetDefaultsStore } from '@entities/widget/widget-defaults.store';
 import type { CapabilitiesPayload } from '@shared/contracts/generated/bindings';
 
-export type { PickableWidget };
-
-/** One widget on one monitor's list in the editor. */
-export interface MonitorWidgetRow {
-  type: string;
-  label: string;
-  /** Whether the connected sim can feed it at all. */
-  available: boolean;
-  /** Its instances on this monitor, in layout order. Empty: never switched on here. */
-  instances: WidgetDefaultConfig[];
-}
+export type { MonitorWidgetRow, PickableWidget };
 
 /**
  * The writes that change a widget's settings — what an editor does to a
@@ -235,15 +245,10 @@ export class LiveWidgetsStore implements WidgetMap {
   }
 
   get liveEnabledWidgetIds(): string[] {
-    const available = new Set(
+    return shownWidgetIdsOf(
+      this.liveWidgets,
       availableWidgetIdsOf(this.liveWidgets, this.capabilitiesOf())
     );
-
-    return this.liveWidgets
-      .filter(
-        (widget) => widget.userSettings.enabled && available.has(widget.id)
-      )
-      .map((widget) => widget.id);
   }
 
   get availableWidgetIds(): string[] {
@@ -251,22 +256,10 @@ export class LiveWidgetsStore implements WidgetMap {
   }
 
   get enabledWidgetIds(): string[] {
-    const ids: string[] = [];
-    const available = new Set(this.availableWidgetIds);
-
-    for (const widget of this.widgets.values()) {
-      if (widget.userSettings.enabled && available.has(widget.id)) {
-        ids.push(widget.id);
-      }
-    }
-
-    return ids.sort((a, b) => {
-      const widgetA = this.getWidget(a);
-      const widgetB = this.getWidget(b);
-      const zA = widgetA?.userSettings.zIndex ?? 0;
-      const zB = widgetB?.userSettings.zIndex ?? 0;
-      return zA - zB;
-    });
+    return shownWidgetIdsByZOrder(
+      this.widgets.values(),
+      this.availableWidgetIds
+    );
   }
 
   /**
@@ -285,21 +278,11 @@ export class LiveWidgetsStore implements WidgetMap {
 
   /**
    * The widget types `isWidgetOnScreen` answers yes for, sorted — what the
-   * hotkey dispatcher gates on. Addressed by type, not by copy: a binding
-   * belongs to the widget, so it fires while any copy of it is on screen.
-   * Which copies it then reaches is the action's own business.
+   * hotkey dispatcher gates on. Which copies a binding then reaches is the
+   * action's own business.
    */
   get onScreenWidgetTypes(): string[] {
-    const live = new Set(this.liveEnabledWidgetIds);
-    const types = new Set<string>();
-
-    for (const widget of this.liveWidgets) {
-      if (live.has(widget.id)) {
-        types.add(widget.type);
-      }
-    }
-
-    return Array.from(types).sort();
+    return shownWidgetTypesOf(this.liveWidgets, this.liveEnabledWidgetIds);
   }
 
   /**
@@ -311,12 +294,12 @@ export class LiveWidgetsStore implements WidgetMap {
   cycleSetting(type: string, setting: string, values: readonly string[]) {
     const leader = this.hotkeyLeaderOf(type);
 
-    if (!leader || values.length === 0) {
-      return;
-    }
+    if (!leader || values.length === 0) return;
 
-    const current = String(this.getSettings(leader.id)[setting]);
-    const next = values[(values.indexOf(current) + 1) % values.length];
+    const next = nextCycleValue(
+      values,
+      String(this.getSettings(leader.id)[setting])
+    );
 
     for (const widget of this.hotkeyInstancesOf(type)) {
       this.updateUserSettings(widget.id, { [setting]: next });
@@ -388,6 +371,19 @@ export class LiveWidgetsStore implements WidgetMap {
     this.mutations.record();
   }
 
+  /** Installs a widget list as the active layout's, or as the detached map. */
+  private installWidgets(widgets: WidgetDefaultConfig[]) {
+    const layout = this.widgetOwner;
+
+    if (layout) {
+      layout.widgets = widgets;
+    } else {
+      this.detachedWidgets = new Map(
+        widgets.map((widget) => [widget.id, widget])
+      );
+    }
+  }
+
   /**
    * Brings a widget list up to the current shape (`normalizeWidgets`) and
    * installs it as the active layout's widgets.
@@ -398,84 +394,32 @@ export class LiveWidgetsStore implements WidgetMap {
    */
   setWidgets(widgets: WidgetDefaultConfig[]) {
     runInAction(() => {
-      const layout = this.widgetOwner;
-      const normalized = normalizeWidgets(widgets, layout);
-
-      if (layout) {
-        layout.widgets = normalized;
-      } else {
-        this.detachedWidgets = new Map(
-          normalized.map((widget) => [widget.id, widget])
-        );
-      }
-
+      this.installWidgets(normalizeWidgets(widgets, this.widgetOwner));
       this.bumpMutation();
     });
   }
 
   /**
-   * Installs a widget list a window received from elsewhere.
+   * Installs a widget list a window received from elsewhere (`adoptWidgetSet`)
+   * — a client installing main's snapshot, a preview mirroring the main
+   * window's widgets. `applySettingsSync` patches records it already holds and
+   * can express neither an instance that appeared nor one that was deleted.
    *
-   * `applySettingsSync` patches records it already holds and can express
-   * neither an instance that appeared nor one that was deleted.
-   *
-   * So this adopts the list: a widget already here is patched, one that is new
-   * is installed beside it, one the list no longer names is dropped. What it
-   * deliberately does *not* do is run the list through `setWidgets`: that fills
-   * a widget the list left out with its shipped default, which is right for a
-   * layout being loaded and wrong for a list that is already the answer — the
-   * window would draw records its sender never had.
-   *
-   * Used where a list arrives already normalized: a client installing main's
-   * snapshot, a preview mirroring the main window's widgets.
+   * Deliberately not through `setWidgets`: that fills a widget the list left
+   * out with its shipped default, which is right for a layout being loaded and
+   * wrong for a list that is already the answer.
    */
   syncWidgetSet(widgets: WidgetDefaultConfig[]) {
     const known = this.widgets;
 
-    // The set is what this is for, and the set almost never changes: a drag
-    // sends a snapshot every few frames, and rebuilding the collection each time
-    // rerenders every widget's content — canvases and all — while the user is
-    // only moving one of them. Same ids, same order: patch in place.
-    const isUnchanged =
-      known.size === widgets.length &&
-      widgets.every((widget) => known.has(widget.id));
-
-    if (isUnchanged) {
+    if (isSameWidgetSet(known, widgets)) {
       this.applySettingsSync(widgets);
 
       return;
     }
 
     runInAction(() => {
-      const adopted = widgets.map((incoming) => {
-        const existing = known.get(incoming.id);
-
-        if (!existing) {
-          const installed: WidgetDefaultConfig = {
-            ...incoming,
-            userSettings: { ...incoming.userSettings },
-          };
-
-          applyDerivedDesignWidth(incoming.type, installed);
-
-          return installed;
-        }
-
-        this.patchFromSync(existing, incoming);
-
-        return existing;
-      });
-
-      const layout = this.widgetOwner;
-
-      if (layout) {
-        layout.widgets = adopted;
-      } else {
-        this.detachedWidgets = new Map(
-          adopted.map((widget) => [widget.id, widget])
-        );
-      }
-
+      this.installWidgets(adoptWidgetSet(known, widgets));
       this.mutations.record();
     });
   }
@@ -485,42 +429,13 @@ export class LiveWidgetsStore implements WidgetMap {
       for (const incoming of widgets) {
         const existing = this.widgets.get(incoming.id);
 
-        if (!existing) continue;
-
-        this.patchFromSync(existing, incoming);
+        if (existing) {
+          patchFromSync(existing, incoming);
+        }
       }
 
       this.mutations.record();
     });
-  }
-
-  /**
-   * Writes a synced copy of a widget onto the record held here. The monitor
-   * travels with it: "move to monitor" in one window changes nothing but the
-   * monitor and the position, and the other window has to follow both.
-   */
-  private patchFromSync(
-    existing: WidgetDefaultConfig,
-    incoming: WidgetDefaultConfig
-  ) {
-    Object.assign(existing.userSettings, incoming.userSettings);
-
-    if (incoming.monitor !== undefined) {
-      existing.monitor = incoming.monitor;
-    }
-
-    if (incoming.hotkeys === undefined) {
-      delete existing.hotkeys;
-    } else {
-      existing.hotkeys = incoming.hotkeys;
-    }
-
-    existing.designWidth = deriveWidgetDesignWidth(
-      incoming.type,
-      existing.userSettings,
-      incoming.designWidth
-    );
-    existing.designHeight = incoming.designHeight;
   }
 
   getWidget(id: string): WidgetDefaultConfig | undefined {
@@ -551,10 +466,7 @@ export class LiveWidgetsStore implements WidgetMap {
 
   /** See `hotkeyLeaderAmong`. */
   private hotkeyLeaderOf(type: string): WidgetDefaultConfig | undefined {
-    return hotkeyLeaderAmong(
-      this.widgetsOfType(type),
-      this.editingLayout?.monitors ?? []
-    );
+    return hotkeyLeaderAmong(this.widgetsOfType(type), this.editingMonitors);
   }
 
   /** Whether the widget's hotkeys act on this instance. */
@@ -564,10 +476,7 @@ export class LiveWidgetsStore implements WidgetMap {
     return widget ? hotkeysActOn(widget) : false;
   }
 
-  /**
-   * Marks an instance for the widget's hotkeys, or unmarks it. Stored only
-   * where it departs from the default.
-   */
+  /** See `markForHotkeys`. */
   setHotkeysActOn(id: string, actsOn: boolean) {
     const widget = this.getWidget(id);
 
@@ -575,25 +484,17 @@ export class LiveWidgetsStore implements WidgetMap {
 
     this.pushUndo();
 
-    if (actsOn) {
-      delete widget.hotkeys;
-    } else {
-      widget.hotkeys = false;
-    }
-
+    markForHotkeys(widget, actsOn);
     this.bumpMutation();
   }
 
-  /**
-   * The visibility hotkey: every instance it acts on goes the same way — off
-   * while any of them is on screen, on when none is.
-   */
+  /** The visibility hotkey — see `visibilityAfterToggle`. */
   toggleVisibilityByHotkey(type: string) {
     const instances = this.hotkeyInstancesOf(type);
 
     if (instances.length === 0) return;
 
-    const show = !instances.some((widget) => widget.userSettings.enabled);
+    const show = visibilityAfterToggle(instances);
 
     this.pushUndo();
 
@@ -604,10 +505,7 @@ export class LiveWidgetsStore implements WidgetMap {
 
   /** The instance that speaks for a widget — see `primaryInstanceAmong`. */
   primaryInstanceOf(type: string): WidgetDefaultConfig | undefined {
-    return primaryInstanceAmong(
-      this.widgetsOfType(type),
-      this.editingLayout?.monitors ?? []
-    );
+    return primaryInstanceAmong(this.widgetsOfType(type), this.editingMonitors);
   }
 
   setWidgetEnabled(id: string, enabled: boolean) {
@@ -616,14 +514,9 @@ export class LiveWidgetsStore implements WidgetMap {
   }
 
   /**
-   * Makes another instance of a widget, on the same monitor, and returns its
-   * id.
-   *
-   * The new instance carries the source's settings as its starting point and
-   * then owns them: changing its columns, its scale or its enabled flag leaves
-   * the source alone. It is offset slightly so it does not land exactly under
-   * the widget it came from, and lifted to the top so it is the one being
-   * dragged.
+   * Makes another instance of a widget (`duplicateOf`) and returns its id. The
+   * copy then owns its settings: changing its columns, its scale or its
+   * enabled flag leaves the source alone.
    *
    * Placed straight into the layout record rather than through `setWidgets`,
    * which normalizes a whole list — there is nothing to repair in a record
@@ -631,25 +524,15 @@ export class LiveWidgetsStore implements WidgetMap {
    */
   duplicateWidget(id: string): string | null {
     const source = this.getWidget(id);
-
-    if (!source) return null;
-
     const layout = this.widgetOwner;
 
-    if (!layout) return null;
+    if (!source || !layout) return null;
 
     this.pushUndo();
 
     const copy = duplicateOf(source, layout);
 
-    // Right after the widget it came from, so a widget's copies stay together
-    // in the list and in settings.json.
-    layout.widgets.splice(
-      layout.widgets.findIndex((widget) => widget.id === id) + 1,
-      0,
-      copy
-    );
-
+    insertAfter(layout.widgets, id, copy);
     this.bumpMutation();
 
     return copy.id;
@@ -662,13 +545,9 @@ export class LiveWidgetsStore implements WidgetMap {
    * next time it is switched on.
    */
   removeWidgetCopy(id: string) {
-    const widget = this.getWidget(id);
-
-    if (!widget || !this.canRemoveWidget(id)) return;
-
     const layout = this.widgetOwner;
 
-    if (!layout) return;
+    if (!this.getWidget(id) || !this.canRemoveWidget(id) || !layout) return;
 
     this.pushUndo();
 
@@ -689,10 +568,9 @@ export class LiveWidgetsStore implements WidgetMap {
   }
 
   /**
-   * Gives an instance another instance's settings — its columns, colours,
-   * scale of text — while it keeps its own place, size and switch. Goes
-   * through `updateUserSettings`, so a copied orientation or column set
-   * reshapes the widget the way a toggle would.
+   * Gives an instance another instance's settings while it keeps its own
+   * place, size and switch. Goes through `updateUserSettings`, so a copied
+   * orientation or column set reshapes the widget the way a toggle would.
    */
   copySettingsFrom(targetId: string, sourceId: string) {
     const target = this.getWidget(targetId);
@@ -724,23 +602,15 @@ export class LiveWidgetsStore implements WidgetMap {
   }
 
   /**
-   * Widgets the F9 picker can put on a screen: every widget not already
-   * switched on there. Picking one goes through `setTypeEnabledOnMonitor`, so
-   * it lands on this screen whatever any other screen shows.
+   * Widgets the F9 picker can put on a screen (`pickableWidgetsOf`). Picking
+   * one goes through `setTypeEnabledOnMonitor`, so it lands on this screen
+   * whatever any other screen shows.
    */
   pickableWidgetsForMonitor(monitorName: string): PickableWidget[] {
-    return this.monitorWidgetRows(monitorName)
-      .filter(
-        (row) => !row.instances.some((widget) => widget.userSettings.enabled)
-      )
-      .map((row) => ({
-        id: row.type,
-        type: row.type,
-        label: row.label,
-        description: DEFAULT_WIDGET_BY_ID.get(row.type)?.description,
-        available: row.available,
-      }))
-      .sort((first, second) => first.label.localeCompare(second.label));
+    return pickableWidgetsOf(
+      this.monitorWidgetRows(monitorName),
+      (type) => DEFAULT_WIDGET_BY_ID.get(type)?.description
+    );
   }
 
   /**
@@ -751,7 +621,7 @@ export class LiveWidgetsStore implements WidgetMap {
     const widget = this.getWidget(id);
 
     return widget
-      ? clampOnOwnMonitor(widget, this.editingLayout?.monitors ?? [], { x, y })
+      ? clampOnOwnMonitor(widget, this.editingMonitors, { x, y })
       : { x, y };
   }
 
@@ -765,19 +635,9 @@ export class LiveWidgetsStore implements WidgetMap {
 
     if (!widget) return;
 
-    const position = clampOnOwnMonitor(
-      widget,
-      this.editingLayout?.monitors ?? [],
-      { x, y }
-    );
+    const position = clampOnOwnMonitor(widget, this.editingMonitors, { x, y });
 
-    if (
-      widget.userSettings.x !== position.x ||
-      widget.userSettings.y !== position.y
-    ) {
-      widget.userSettings.x = position.x;
-      widget.userSettings.y = position.y;
-
+    if (moveWidgetTo(widget, position)) {
       this.bumpMutation();
     }
   }
@@ -785,32 +645,18 @@ export class LiveWidgetsStore implements WidgetMap {
   updateSize(id: string, width: number, height: number) {
     const widget = this.getWidget(id);
 
-    if (
-      widget &&
-      (widget.userSettings.currentWidth !== width ||
-        widget.userSettings.currentHeight !== height)
-    ) {
-      widget.userSettings.currentWidth = width;
-      widget.userSettings.currentHeight = height;
-
+    if (widget && resizeWidgetTo(widget, width, height)) {
       this.bumpMutation();
     }
   }
 
+  /** See `applySettingsEdit`. */
   updateUserSettings(id: string, partial: Partial<WidgetUserSettings>) {
     const widget = this.getWidget(id);
 
     if (!widget) return;
 
-    const type = widget.type;
-    const resolvedPartial = checkedSettings(type, partial);
-
-    const prevSettings = { ...widget.userSettings };
-
-    Object.assign(widget.userSettings, resolvedPartial);
-
-    applyLayoutResize(type, widget, prevSettings, widget.userSettings);
-
+    applySettingsEdit(widget, partial);
     this.bumpMutation();
   }
 
@@ -859,32 +705,21 @@ export class LiveWidgetsStore implements WidgetMap {
     return widgetsOnMonitor(this.enabledWidgets, monitorName);
   }
 
-  /**
-   * One monitor's own widget list, as the editor shows it: every widget the
-   * build ships, each with its instances on this monitor — none, when it has
-   * never been switched on here. A monitor added a minute ago lists every
-   * widget, all off.
-   */
+  /** One monitor's own widget list, as the editor shows it (`monitorWidgetRowsOf`). */
   monitorWidgetRows(monitorName: string): MonitorWidgetRow[] {
-    const onMonitor = widgetsOnMonitor(this.allWidgets, monitorName);
-    const available = new Set(
-      availableWidgetIdsOf(DEFAULT_WIDGETS, this.capabilitiesOf())
+    return monitorWidgetRowsOf(
+      DEFAULT_WIDGETS,
+      this.allWidgets,
+      monitorName,
+      new Set(availableWidgetIdsOf(DEFAULT_WIDGETS, this.capabilitiesOf()))
     );
-
-    return DEFAULT_WIDGETS.map((shipped) => ({
-      type: shipped.id,
-      label: shipped.label,
-      available: available.has(shipped.id),
-      instances: onMonitor.filter((widget) => widget.type === shipped.id),
-    }));
   }
 
   /**
-   * The switch of one widget on one monitor's list. On: an instance already
-   * standing on this monitor is switched back on — with every setting it had —
-   * or, when there is none, a new one is made from the widget's template and
-   * placed in a free spot. Off: every instance of it on this monitor goes off;
-   * nothing on any other monitor is touched.
+   * The switch of one widget on one monitor's list (`monitorSwitchOf`): on
+   * reuses an instance already standing here, settings and all, or makes one
+   * from the widget's template in a free spot; off touches nothing on any
+   * other monitor.
    *
    * Returns the instance switched on, so the editor can select it.
    */
@@ -903,54 +738,41 @@ export class LiveWidgetsStore implements WidgetMap {
     const instances = widgetsOnMonitor(this.allWidgets, monitorName).filter(
       (widget) => widget.type === type
     );
+    const change = monitorSwitchOf(instances, enabled);
 
-    if (!enabled) {
-      const switchedOn = instances.filter(
-        (widget) => widget.userSettings.enabled
-      );
-
-      if (switchedOn.length === 0) return null;
-
-      this.pushUndo();
-
-      for (const widget of switchedOn) {
-        widget.userSettings.enabled = false;
-      }
-
-      this.bumpMutation();
-
-      return null;
+    if (change.kind === 'unchanged') {
+      return change.id;
     }
-
-    const alreadyOn = instances.find((widget) => widget.userSettings.enabled);
-
-    if (alreadyOn) return alreadyOn.id;
 
     this.pushUndo();
 
-    const reused = instances[0];
+    let switchedOnId: string | null = null;
 
-    if (reused) {
-      reused.userSettings.enabled = true;
-      this.bumpMutation();
+    if (change.kind === 'switchOff') {
+      for (const widget of change.widgets) {
+        widget.userSettings.enabled = false;
+      }
+    } else if (change.kind === 'switchOn') {
+      change.widget.userSettings.enabled = true;
+      switchedOnId = change.widget.id;
+    } else {
+      const template =
+        this.widgetDefaults.getWidget(type) ?? DEFAULT_WIDGET_BY_ID.get(type)!;
+      const created = instanceFromTemplate(template, type, monitor, layout);
 
-      return reused.id;
+      layout.widgets.push(created);
+      switchedOnId = created.id;
     }
 
-    const template =
-      this.widgetDefaults.getWidget(type) ?? DEFAULT_WIDGET_BY_ID.get(type)!;
-    const created = instanceFromTemplate(template, type, monitor, layout);
-
-    layout.widgets.push(created);
     this.bumpMutation();
 
-    return created.id;
+    return switchedOnId;
   }
 
   /**
    * Which instance of its widget this record is, counting from one, and how
-   * many instances there are in the layout. `1 of 1` is a widget that stands
-   * in the layout once.
+   * many instances there are (`copyOrdinalAmong`). `1 of 1` is a widget that
+   * stands in the layout once.
    */
   copyOrdinalOf(widgetId: string): { ordinal: number; total: number } {
     const widget = this.getWidget(widgetId);
@@ -963,9 +785,8 @@ export class LiveWidgetsStore implements WidgetMap {
   // Widgets drawn by this overlay window: the ones that belong to its monitor.
   get ownMonitorWidgets(): WidgetDefaultConfig[] {
     const monitorName = this.ownMonitorName;
-    const monitors = this.editingLayout?.monitors ?? [];
 
-    if (!monitorName || monitors.length === 0) return [];
+    if (!monitorName || this.editingMonitors.length === 0) return [];
 
     return widgetsOnMonitor(this.enabledWidgets, monitorName);
   }
@@ -996,23 +817,14 @@ export class LiveWidgetsStore implements WidgetMap {
     return this.allWidgets.filter((widget) => widget.userSettings.enabled);
   }
 
-  // Monitors of the layout on screen that actually have something to draw. A
-  // full-screen transparent always-on-top window costs DWM composition over the
-  // game and a copy of every telemetry bundle, so empty screens get none.
+  /** Monitors of the layout on screen with something to draw (`populatedMonitorNamesOf`). */
   get populatedMonitorNames(): string[] {
-    const monitors = this.layoutRecords.liveLayout?.monitors ?? [];
-    const enabledIds = new Set(this.liveEnabledWidgetIds);
-    const enabled = this.liveWidgets.filter((widget) =>
-      enabledIds.has(widget.id)
-    );
+    const shownIds = new Set(this.liveEnabledWidgetIds);
 
-    return monitors
-      .filter(
-        (monitor) =>
-          isDisplayMonitor(monitor) &&
-          widgetsOnMonitor(enabled, monitor.name).length > 0
-      )
-      .map((monitor) => monitor.name);
+    return populatedMonitorNamesOf(
+      this.layoutRecords.liveLayout?.monitors ?? [],
+      this.liveWidgets.filter((widget) => shownIds.has(widget.id))
+    );
   }
 
   /**
@@ -1023,59 +835,39 @@ export class LiveWidgetsStore implements WidgetMap {
    * telemetry fields unless main does it for them.
    */
   get liveRemoteScreenWidgets(): WidgetDefaultConfig[] {
-    const monitors = this.layoutRecords.liveLayout?.monitors ?? [];
-    const remoteNames = monitors
-      .filter((monitor) => !isDisplayMonitor(monitor))
-      .map((monitor) => monitor.name);
-
-    if (remoteNames.length === 0) return [];
-
-    return this.liveWidgets.filter((widget) => {
-      const owner = monitorForWidget(widget, monitors);
-
-      return owner ? remoteNames.includes(owner.name) : false;
-    });
+    return remoteScreenWidgetsOf(
+      this.layoutRecords.liveLayout?.monitors ?? [],
+      this.liveWidgets
+    );
   }
 
   /**
-   * Hands a widget to another monitor of the layout, keeping its relative
-   * place on screen and every setting it has. This is the only way a widget
-   * changes monitor — a drag never does.
+   * Hands a widget to another monitor of the layout (`monitorMoveOf`), keeping
+   * its relative place on screen and every setting it has. This is the only
+   * way a widget changes monitor — a drag never does.
    */
   moveWidgetToMonitor(widgetId: string, targetMonitorName: string) {
     const layout = this.editingLayout;
     const widget = this.widgets.get(widgetId);
+    const move =
+      layout && widget
+        ? monitorMoveOf(widget, layout.monitors, targetMonitorName)
+        : null;
 
-    if (!layout || !widget) return;
-
-    const from = monitorForWidget(widget, layout.monitors);
-    const to = layout.monitors.find(
-      (monitor) => monitor.name === targetMonitorName
-    );
-
-    if (!to || from?.name === to.name) return;
+    if (!widget || !move) return;
 
     this.pushUndo();
 
-    const moved = positionOnMonitor(widget, from, to);
-
-    widget.monitor = to.name;
-    widget.userSettings.x = moved.x;
-    widget.userSettings.y = moved.y;
+    widget.monitor = move.monitor;
+    widget.userSettings.x = move.x;
+    widget.userSettings.y = move.y;
     widget.userSettings.zIndex = topZIndex(this.allWidgets, widgetId) + 1;
     this.bumpMutation();
   }
 
-  /**
-   * A detached deep-ish copy of the active layout's widgets, for the two
-   * callers that need one: the undo stack, and copying this layout's widgets
-   * into a different layout record. (structuredClone throws on MobX proxies.)
-   */
+  /** The active layout's widgets, detached — see `detachedCopiesOf`. */
   private snapshotWidgets(): WidgetDefaultConfig[] {
-    return this.allWidgets.map((widget) => ({
-      ...widget,
-      userSettings: { ...widget.userSettings },
-    }));
+    return detachedCopiesOf(this.allWidgets);
   }
 
   setLayouts(layouts: SavedLayout[], editingLayoutId?: string | null) {
@@ -1120,6 +912,10 @@ export class LiveWidgetsStore implements WidgetMap {
       : this.layoutRecords.editingLayout;
   }
 
+  private get editingMonitors(): LayoutMonitor[] {
+    return this.editingLayout?.monitors ?? [];
+  }
+
   // Selecting a layout loads its saved widgets into the live store. Repointing
   // editingLayoutId alone would let the commit reaction clobber the selected
   // layout with the previously-active layout's stale widgets.
@@ -1144,15 +940,12 @@ export class LiveWidgetsStore implements WidgetMap {
     this.layoutRecords.setPinnedLiveLayoutId(null);
     this.layoutRecords.setEditingLayoutId(id);
 
-    if (layout.monitors.length > 0) {
-      this.setWidgets(layout.widgets);
-    } else {
-      // No monitor config yet (e.g. a brand-new layout whose auto-resolve
-      // hasn't landed). Fall back to a blank layout instead of silently
-      // leaving the previously-active layout's widgets on screen.
-      this.setWidgets(this.starterWidgets(true));
-    }
-
+    // A layout with no monitor config yet (a brand-new one whose auto-resolve
+    // has not landed) opens blank rather than silently leaving the
+    // previously-active layout's widgets on screen.
+    this.setWidgets(
+      layout.monitors.length > 0 ? layout.widgets : this.starterWidgets(true)
+    );
     this.bumpMutation();
   }
 
@@ -1191,8 +984,7 @@ export class LiveWidgetsStore implements WidgetMap {
     // type; a caller naming a type directly still lands on the right record,
     // since the original copy's id is its type.
     const type = widget ? widget.type : widgetTypeFromId(widgetId);
-    const defaultConfig = DEFAULT_WIDGET_BY_ID.get(type);
-    const defaultSettings = defaultConfig?.userSettings as
+    const defaultSettings = DEFAULT_WIDGET_BY_ID.get(type)?.userSettings as
       | (BaseUserSettings & SpecificSettings)
       | undefined;
 

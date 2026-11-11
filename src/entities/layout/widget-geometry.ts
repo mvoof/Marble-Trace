@@ -122,3 +122,25 @@ export const positionOnMonitor = (
   from
     ? placeWidgetOnMonitor(widget, from.bounds, to.bounds).userSettings
     : clampToBounds(to.bounds, widget.userSettings, clampSizeOf(widget));
+
+/**
+ * Where a widget lands when it is handed to the monitor named `targetName`:
+ * the same relative place it had on its own. Null when there is no such
+ * monitor, or the widget already stands on it.
+ */
+export const monitorMoveOf = (
+  widget: WidgetDefaultConfig,
+  monitors: LayoutMonitor[],
+  targetName: string
+): ({ monitor: string } & Position) | null => {
+  const from = monitorForWidget(widget, monitors);
+  const to = monitors.find((monitor) => monitor.name === targetName);
+
+  if (!to || from?.name === to.name) {
+    return null;
+  }
+
+  const { x, y } = positionOnMonitor(widget, from, to);
+
+  return { monitor: to.name, x, y };
+};
