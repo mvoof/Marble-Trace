@@ -909,11 +909,6 @@ describe('every settings write leaves its mark', () => {
       expected: { changes: true },
     },
     {
-      name: 'updateLayout',
-      run: (store) => store.updateLayout('layout-race'),
-      expected: { changes: true },
-    },
-    {
       name: 'renameLayout',
       run: (_store, layouts) => layouts.renameLayout('layout-race', 'Renamed'),
       expected: { changes: true },

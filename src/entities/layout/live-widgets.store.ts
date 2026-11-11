@@ -99,7 +99,6 @@ type WidgetSettingsWrite =
   | 'moveWidgetToMonitor'
   | 'loadLayout'
   | 'selectLayout'
-  | 'updateLayout'
   | 'setLayouts'
   | 'setWidgets'
   | 'pushUndo'
@@ -946,15 +945,6 @@ export class LiveWidgetsStore implements WidgetMap {
     this.setWidgets(
       layout.monitors.length > 0 ? layout.widgets : this.starterWidgets(true)
     );
-    this.bumpMutation();
-  }
-
-  updateLayout(id: string) {
-    const layout = this.layoutRecords.byId(id);
-
-    if (!layout || layout.monitors.length === 0) return;
-
-    layout.widgets = this.snapshotWidgets();
     this.bumpMutation();
   }
 
