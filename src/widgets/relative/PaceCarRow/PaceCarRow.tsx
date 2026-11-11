@@ -4,6 +4,7 @@ import { observer } from 'mobx-react-lite';
 import { buildRelativeGridTemplate } from '@widgets/relative/relative-utils';
 import { computeRelativeGap, formatCarNumber } from '@shared/lib/driver';
 import { useReactiveDomWrite } from '@shared/hooks/useReactiveDomWrite';
+import { writeText } from '@shared/ui/live/live-parts';
 
 import styles from './PaceCarRow.module.scss';
 import { useBackendComputedStore } from '@entities/cars/computed-context';
@@ -50,7 +51,7 @@ export const PaceCarRow = observer(({ carIdx, index }: PaceCarRowProps) => {
             : '0.0';
 
       scheduleWrite(() => {
-        element.textContent = gapText;
+        writeText(element, gapText);
       });
     },
     [computed, relativeWidget, carIdx]

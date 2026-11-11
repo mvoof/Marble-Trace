@@ -6,6 +6,7 @@ import {
 } from '@widgets/pit-line/pit-line-utils';
 import { parsePitSpeedLimitMs, speedUnit } from '@shared/lib/telemetry-format';
 import { useReactiveDomWrite } from '@shared/hooks/useReactiveDomWrite';
+import { useLiveParts, writeStyle } from '@shared/ui/live/live-parts';
 import { usePlayerStore } from '@entities/player/player-context';
 import { useSessionStore } from '@entities/session/session-context';
 import { useUnitsStore } from '@entities/app-settings/units-context';
@@ -41,6 +42,8 @@ export const PitSpeedGauge = observer(({ withUnit }: PitSpeedGaugeProps) => {
   const sessionStore = useSessionStore();
   const units = useUnitsStore();
 
+  const parts = useLiveParts<'over' | 'lift' | 'value'>();
+
   const rowRef = useReactiveDomWrite<HTMLDivElement>(
     (element, scheduleWrite) => {
       const speedMs = player.carDynamics?.speed ?? 0;
@@ -60,50 +63,34 @@ export const PitSpeedGauge = observer(({ withUnit }: PitSpeedGaugeProps) => {
           : NO_LIMIT_TEXT;
 
       scheduleWrite(() => {
-        element.style.setProperty(FILL_WIDTH_PROPERTY, `${view.fill * PCT}%`);
-        element.style.setProperty(
-          OVER_LEFT_PROPERTY,
-          `${SPEED_GREEN_SHARE * PCT}%`
-        );
-        element.style.setProperty(
-          OVER_WIDTH_PROPERTY,
-          `${view.overFill * PCT}%`
-        );
+        writeStyle(element, FILL_WIDTH_PROPERTY, `${view.fill * PCT}%`);
+        writeStyle(element, OVER_LEFT_PROPERTY, `${SPEED_GREEN_SHARE * PCT}%`);
+        writeStyle(element, OVER_WIDTH_PROPERTY, `${view.overFill * PCT}%`);
 
-        const over = element.querySelector(`.${styles.fillOver}`);
+        parts.attribute('over', 'hidden', view.overFill <= 0 ? '' : null);
 
-        if (over instanceof HTMLElement) {
-          over.hidden = view.overFill <= 0;
-        }
-
-        const lift = element.querySelector(`.${styles.liftZone}`);
         const hasLift = view.liftStart !== null && view.liftWidth !== null;
 
-        if (lift instanceof HTMLElement) {
-          lift.hidden = !hasLift;
-        }
+        parts.attribute('lift', 'hidden', hasLift ? null : '');
 
         if (hasLift) {
-          element.style.setProperty(
+          writeStyle(
+            element,
             LIFT_LEFT_PROPERTY,
             `${(view.liftStart ?? 0) * PCT}%`
           );
-          element.style.setProperty(
+          writeStyle(
+            element,
             LIFT_WIDTH_PROPERTY,
             `${(view.liftWidth ?? 0) * PCT}%`
           );
         }
 
-        const value = element.querySelector(`.${styles.value}`);
-
-        if (value instanceof HTMLElement) {
-          value.classList.toggle(styles.valueOver, view.isOver);
-          value.classList.toggle(styles.valueUnder, !view.isOver);
-          value.textContent = speedText;
-        }
+        parts.state('value', 'limit', view.isOver ? 'over' : 'under');
+        parts.text('value', speedText);
       });
     },
-    [player, sessionStore, units]
+    [player, sessionStore, units, parts]
   );
 
   return (
@@ -114,14 +101,14 @@ export const PitSpeedGauge = observer(({ withUnit }: PitSpeedGaugeProps) => {
 
       <span className={styles.fill} />
 
-      <span className={styles.fillOver} />
+      <span ref={parts.ref('over')} className={styles.fillOver} />
 
       {/*
         Where the car coasts to at the current throttle. Once the fill reaches
         into this band the limit is already spoken for, and lifting here is what
         keeps the stop legal, which no static "sweet spot" could say.
       */}
-      <span className={styles.liftZone} />
+      <span ref={parts.ref('lift')} className={styles.liftZone} />
 
       <span className={styles.limitTick} />
 
@@ -131,7 +118,7 @@ export const PitSpeedGauge = observer(({ withUnit }: PitSpeedGaugeProps) => {
         two sides of the same line rather than two colours of the same text.
       */}
       <span className={styles.seam}>
-        <span className={styles.value} />
+        <span ref={parts.ref('value')} className={styles.value} />
       </span>
 
       {/* Read once, so it keeps out of the way at the foot of the column. */}

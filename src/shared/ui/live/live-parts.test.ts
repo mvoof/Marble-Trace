@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { createLiveParts } from './live-parts';
+import { createLiveParts, writeState } from './live-parts';
 
 // Only what the parts touch; there is no DOM in the test environment.
 const fakeElement = () => {
@@ -112,5 +112,22 @@ describe('createLiveParts', () => {
     parts.style('gear', 'color', null);
 
     expect(gear.writes).toEqual(['color=red', 'blink:true', '-color']);
+  });
+});
+
+describe('writeState', () => {
+  it('sets, skips an unchanged value and removes', () => {
+    const rail = fakeElement();
+
+    writeState(rail.element, 'urgency', 'brake');
+    expect(rail.element.dataset.urgency).toBe('brake');
+
+    // Tampered from outside: an unchanged write must not touch the node.
+    rail.element.dataset.urgency = 'tampered';
+    writeState(rail.element, 'urgency', 'brake');
+    expect(rail.element.dataset.urgency).toBe('tampered');
+
+    writeState(rail.element, 'urgency', null);
+    expect(rail.element.dataset.urgency).toBeUndefined();
   });
 });

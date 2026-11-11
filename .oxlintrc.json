@@ -364,6 +364,34 @@
       }
     },
     {
+      "files": ["src/widgets/**/*.tsx"],
+      "rules": {
+        "no-restricted-properties": [
+          "error",
+          {
+            "property": "textContent",
+            "message": "A hot write goes through the kit in shared/ui/live (useLiveParts, LiveText, writeText, writeStyle, writeState): named parts, state as a data-attribute, no DOM lookup inside a frame (docs/rendering.md)."
+          },
+          {
+            "property": "classList",
+            "message": "A hot write goes through the kit in shared/ui/live (useLiveParts, LiveText, writeText, writeStyle, writeState): named parts, state as a data-attribute, no DOM lookup inside a frame (docs/rendering.md)."
+          },
+          {
+            "property": "querySelector",
+            "message": "A hot write goes through the kit in shared/ui/live (useLiveParts, LiveText, writeText, writeStyle, writeState): named parts, state as a data-attribute, no DOM lookup inside a frame (docs/rendering.md)."
+          },
+          {
+            "property": "querySelectorAll",
+            "message": "A hot write goes through the kit in shared/ui/live (useLiveParts, LiveText, writeText, writeStyle, writeState): named parts, state as a data-attribute, no DOM lookup inside a frame (docs/rendering.md)."
+          },
+          {
+            "property": "closest",
+            "message": "A hot write goes through the kit in shared/ui/live (useLiveParts, LiveText, writeText, writeStyle, writeState): named parts, state as a data-attribute, no DOM lookup inside a frame (docs/rendering.md)."
+          }
+        ]
+      }
+    },
+    {
       "files": [
         "src/app/windows/main/MainWindow.tsx",
         "src/app/windows/main/AppHeader/WindowControls.tsx"

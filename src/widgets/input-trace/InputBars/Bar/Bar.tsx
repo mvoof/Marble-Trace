@@ -2,6 +2,7 @@ import { useWidgetSettings } from '@entities/layout/useWidgetSettings';
 import { observer } from 'mobx-react-lite';
 
 import { useReactiveDomWrite } from '@shared/hooks/useReactiveDomWrite';
+import { useLiveParts, writeStyle } from '@shared/ui/live/live-parts';
 
 import styles from './Bar.module.scss';
 import { usePlayerStore } from '@entities/player/player-context';
@@ -56,6 +57,8 @@ export const Bar = observer(
     const settings = useWidgetSettings<InputTraceSettings>('input-trace');
     const showValue = settings.showInputValues;
 
+    const parts = useLiveParts<'value'>();
+
     const containerRef = useReactiveDomWrite<HTMLDivElement>(
       (element, scheduleWrite) => {
         const clamped = Math.max(0, Math.min(1, inputTrace.smoothed[channel]));
@@ -74,19 +77,14 @@ export const Bar = observer(
         const maxColor = percent >= PCT ? color : '';
 
         scheduleWrite(() => {
-          element.style.setProperty(FILL_HEIGHT_PROPERTY, `${clamped * PCT}%`);
-          element.style.setProperty(FILL_COLOR_PROPERTY, color);
-          element.style.setProperty(MIN_STOP_COLOR_PROPERTY, minColor);
-          element.style.setProperty(MAX_STOP_COLOR_PROPERTY, maxColor);
-
-          const label = element.querySelector(`.${styles.value}`);
-
-          if (label instanceof HTMLElement) {
-            label.textContent = valueText;
-          }
+          writeStyle(element, FILL_HEIGHT_PROPERTY, `${clamped * PCT}%`);
+          writeStyle(element, FILL_COLOR_PROPERTY, color);
+          writeStyle(element, MIN_STOP_COLOR_PROPERTY, minColor || null);
+          writeStyle(element, MAX_STOP_COLOR_PROPERTY, maxColor || null);
+          parts.text('value', valueText);
         });
       },
-      [inputTrace, player, settings, channel, showValue]
+      [inputTrace, player, settings, channel, showValue, parts]
     );
 
     if (!settings[CHANNEL_VISIBILITY_KEY[channel]]) {
@@ -97,7 +95,9 @@ export const Bar = observer(
 
     return (
       <div ref={containerRef} className={styles.verticalContainer}>
-        {showValue && <span className={styles.value} />}
+        {showValue && (
+          <span ref={parts.ref('value')} className={styles.value} />
+        )}
 
         <div
           className={`${styles.verticalTrack} ${styles[`trackWidth-${width}`]}`}

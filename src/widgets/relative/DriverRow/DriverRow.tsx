@@ -15,7 +15,7 @@ import { cx } from '@shared/lib/class-names';
 import { computeRelativeGap } from '@shared/lib/driver';
 import { isSessionEnded } from '@shared/lib/timer-utils';
 import { CountryFlag } from '@shared/ui/CountryFlag/CountryFlag';
-import { useLiveParts } from '@shared/ui/live/live-parts';
+import { useLiveParts, writeText } from '@shared/ui/live/live-parts';
 import {
   buildRelativeGridTemplate,
   resolveRowPosition,
@@ -95,9 +95,7 @@ export const DriverRow = observer(({ carIdx, index }: DriverRowProps) => {
       scheduleWrite(() => {
         const gapText = liveDriver.isPlayer ? '-' : relativeGapText;
 
-        if (element.textContent !== gapText) {
-          element.textContent = gapText;
-        }
+        writeText(element, gapText);
 
         if (element.dataset.sign !== gapSign) {
           element.dataset.sign = gapSign;

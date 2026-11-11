@@ -11,6 +11,7 @@ import { usePlayerStore } from '@entities/player/player-context';
 import { TowTime } from '@entities/player/TowTime/TowTime';
 import { useSessionStore } from '@entities/session/session-context';
 import { useReactiveDomWrite } from '@shared/hooks/useReactiveDomWrite';
+import { writeText } from '@shared/ui/live/live-parts';
 import { cx } from '@shared/lib/class-names';
 import { formatBrand } from '@shared/lib/driver';
 import { isSessionEnded } from '@shared/lib/timer-utils';
@@ -75,9 +76,7 @@ const writeGap = (
     element.className = className;
   }
 
-  if (element.textContent !== gapInfo.value) {
-    element.textContent = gapInfo.value;
-  }
+  writeText(element, gapInfo.value);
 };
 
 const LAP_DELTA_TONE_CLASS: Record<LapDeltaTone, string> = {

@@ -171,3 +171,36 @@ export const writeStyle = (
     element.style.setProperty(property, value);
   }
 };
+
+const writtenStates = new WeakMap<LiveElement, Map<string, string>>();
+
+/**
+ * A `data-*` state of the element a reactive write targets, written only when
+ * it changed; `null` removes it.
+ */
+export const writeState = (
+  element: LiveElement,
+  key: string,
+  value: string | null
+): void => {
+  let written = writtenStates.get(element);
+
+  if (!written) {
+    written = new Map();
+    writtenStates.set(element, written);
+  }
+
+  const next = value ?? ABSENT;
+
+  if (written.get(key) === next) {
+    return;
+  }
+
+  written.set(key, next);
+
+  if (value === null) {
+    delete element.dataset[key];
+  } else {
+    element.dataset[key] = value;
+  }
+};

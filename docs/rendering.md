@@ -107,6 +107,8 @@ The write itself goes through the kit in `shared/ui/live/`, not by hand:
 - `writeStatChip` builds its chip once per node and rewrites only what moved.
 
 A state is a `data-*` attribute, not a set of classes to remove and add.
+Lint holds it in `src/widgets/**/*.tsx`: `no-restricted-properties` forbids
+`textContent`, `classList`, `querySelector`, `querySelectorAll` and `closest`.
 
 The compass ring is the worked example. `RotatingRing` writes one custom
 property, `--compass-yaw`; the group rotates by it and the cardinal labels

@@ -11,11 +11,14 @@ import {
 import { formatSpeed } from '@shared/lib/telemetry-format';
 import { useReactiveDomWrite } from '@shared/hooks/useReactiveDomWrite';
 import { writeStatChip } from '@shared/ui/StatChip/StatChip';
+import { useLiveParts } from '@shared/ui/live/live-parts';
 
 import styles from './CornerSpeeds.module.scss';
 import type { InputTraceSettings } from '../settings-schema';
 
 const EMPTY_VALUE = '—';
+
+type CornerPart = `cell${number}` | `chip${number}`;
 
 /**
  * Entry, apex and exit as a row of chips under the speed and gear. Quiet chips
@@ -31,8 +34,10 @@ export const CornerSpeeds = observer(() => {
   const backendComputed = useBackendComputedStore();
   const units = useUnitsStore();
 
+  const parts = useLiveParts<CornerPart>();
+
   const rootRef = useReactiveDomWrite<HTMLDivElement>(
-    (element, scheduleWrite) => {
+    (_element, scheduleWrite) => {
       const colorOf: Record<CornerSpeedPoint, string> = {
         entry: settings.entrySpeedColor,
         apex: settings.apexSpeedColor,
@@ -50,16 +55,16 @@ export const CornerSpeeds = observer(() => {
 
       scheduleWrite(() => {
         rows.forEach((row, index) => {
-          const chip = element.children[index]?.firstElementChild;
+          const chip = parts.elementOf(`chip${index}`);
 
           if (!(chip instanceof HTMLElement)) {
             return;
           }
 
-          // A no-op on the DOM when the cell already is in that state.
-          chip.parentElement?.classList.toggle(
-            styles.cellPending,
-            row.look !== 'mark'
+          parts.state(
+            `cell${index}`,
+            'pending',
+            row.look !== 'mark' ? 'true' : null
           );
 
           const signature = `${row.text}|${row.look}|${row.color}`;
@@ -81,7 +86,7 @@ export const CornerSpeeds = observer(() => {
         });
       });
     },
-    [backendComputed, units, settings]
+    [backendComputed, units, settings, parts]
   );
 
   if (!settings.showCornerSpeeds) {
@@ -90,9 +95,13 @@ export const CornerSpeeds = observer(() => {
 
   return (
     <div ref={rootRef} className={styles.corners}>
-      {CORNER_SPEED_POINTS.map((point) => (
-        <div key={point} className={styles.cell}>
-          <span />
+      {CORNER_SPEED_POINTS.map((point, index) => (
+        <div
+          key={point}
+          ref={parts.ref(`cell${index}`)}
+          className={styles.cell}
+        >
+          <span ref={parts.ref(`chip${index}`)} />
         </div>
       ))}
     </div>

@@ -7,6 +7,7 @@ import {
 } from '@entities/incidents/flag-zones';
 import { useBlinkHandle } from '@shared/hooks/useBlink';
 import { useReactiveDomWrite } from '@shared/hooks/useReactiveDomWrite';
+import { useLiveParts } from '@shared/ui/live/live-parts';
 import { useBackendComputedStore } from '@entities/cars/computed-context';
 import { useIncidentsWidgetStore } from '@entities/incidents/incidents-context';
 
@@ -26,6 +27,8 @@ const BAND_START_PROPERTY = '--band-start';
 const BAND_SIZE_PROPERTY = '--band-size';
 
 const PCT = 100;
+
+type BandPart = `band${number}`;
 
 /**
  * A zone wraps the window at most once, so it never needs more than two bands.
@@ -53,6 +56,8 @@ export const FlagBands = observer(({ isHorizontal }: FlagBandsProps) => {
   const blink = settings.blinkIncidentZones;
   const zoneCount = incidentsStore.zones.length;
   const zoneBlink = useBlinkHandle();
+
+  const parts = useLiveParts<BandPart>();
 
   const containerRef = useReactiveDomWrite<HTMLDivElement>(
     (element, scheduleWrite) => {
@@ -89,38 +94,34 @@ export const FlagBands = observer(({ isHorizontal }: FlagBandsProps) => {
         zoneBlink.run(blink && isAnyBlinking ? FLAG_ZONE_BLINK : null);
 
         for (const [bandIndex, placement] of placements.entries()) {
-          const band = element.children[bandIndex];
+          const band: BandPart = `band${bandIndex}`;
 
-          if (!(band instanceof HTMLElement)) {
-            continue;
-          }
-
-          band.hidden = placement === null;
+          parts.attribute(band, 'hidden', placement === null ? '' : null);
 
           if (!placement) {
             continue;
           }
 
-          band.style.setProperty(
+          parts.style(
+            band,
             BAND_START_PROPERTY,
             `${placement.startFraction * PCT}%`
           );
-          band.style.setProperty(
+          parts.style(
+            band,
             BAND_SIZE_PROPERTY,
             `${placement.sizeFraction * PCT}%`
           );
 
           const isDimmed = placement.isBehind || !placement.isActive;
+          const isBlinking = blink && placement.isActive && !placement.isBehind;
 
-          band.classList.toggle(styles.flagBandBehind, isDimmed);
-          band.classList.toggle(
-            styles.flagBandBlink,
-            blink && placement.isActive && !placement.isBehind
-          );
+          parts.state(band, 'dimmed', isDimmed ? 'true' : null);
+          parts.state(band, 'blink', isBlinking ? 'true' : null);
         }
       });
     },
-    [computed, incidentsStore, blink, zoneCount, isHorizontal, zoneBlink]
+    [computed, incidentsStore, blink, zoneCount, isHorizontal, zoneBlink, parts]
   );
 
   if (!settings.showIncidentZones) {
@@ -144,7 +145,13 @@ export const FlagBands = observer(({ isHorizontal }: FlagBandsProps) => {
       {Array.from(
         { length: zoneCount * BANDS_PER_ZONE },
         (_unused, bandIndex) => (
-          <div key={bandIndex} className={bandClass} style={paint} hidden />
+          <div
+            key={bandIndex}
+            ref={parts.ref(`band${bandIndex}`)}
+            className={bandClass}
+            style={paint}
+            hidden
+          />
         )
       )}
     </div>

@@ -3,6 +3,7 @@ import { observer } from 'mobx-react-lite';
 import { bumperGapMeters, trackGapMeters } from '@shared/lib/driver';
 import { formatWidgetDistance } from '@shared/lib/telemetry-format';
 import { useReactiveDomWrite } from '@shared/hooks/useReactiveDomWrite';
+import { writeText } from '@shared/ui/live/live-parts';
 import { useBackendComputedStore } from '@entities/cars/computed-context';
 import { useSessionStore } from '@entities/session/session-context';
 import { useUnitsStore } from '@entities/app-settings/units-context';
@@ -56,7 +57,7 @@ export const TrackDistance = observer(
               );
 
         scheduleWrite(() => {
-          element.textContent = text;
+          writeText(element, text);
         });
       },
       [computed, relativeWidget, session, units, appSettings, carIdx, isPaceCar]

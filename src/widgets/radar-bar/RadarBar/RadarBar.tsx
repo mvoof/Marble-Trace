@@ -7,6 +7,11 @@ import {
 } from '@shared/lib/telemetry-format';
 import { getBarPillColor } from '@entities/radar/radar-constants';
 import { useReactiveDomWrite } from '@shared/hooks/useReactiveDomWrite';
+import {
+  useLiveParts,
+  writeState,
+  writeStyle,
+} from '@shared/ui/live/live-parts';
 import { useWidgetSettings } from '@entities/layout/useWidgetSettings';
 import { useAppSettingsStore } from '@entities/app-settings/app-settings-context';
 import { useBackendComputedStore } from '@entities/cars/computed-context';
@@ -94,6 +99,8 @@ export const RadarBar = observer(({ side }: RadarBarProps) => {
     side === 'left' ? computed.carAlongsideLeft : computed.carAlongsideRight;
   const sideVisible = appSettings.dragMode || carAlongside;
 
+  const parts = useLiveParts<'text'>();
+
   const pillRef = useReactiveDomWrite<HTMLDivElement>(
     (element, scheduleWrite) => {
       const rawDist =
@@ -103,7 +110,7 @@ export const RadarBar = observer(({ side }: RadarBarProps) => {
 
       if (rawDist === null || rawDist === undefined) {
         scheduleWrite(() => {
-          element.classList.add(styles.pillEmpty);
+          writeState(element, 'empty', 'true');
         });
 
         return;
@@ -119,19 +126,14 @@ export const RadarBar = observer(({ side }: RadarBarProps) => {
       )}${widgetDistanceUnit(units.unitSystem)}`;
 
       scheduleWrite(() => {
-        element.classList.remove(styles.pillEmpty);
-        element.style.setProperty(PILL_TOP_PROPERTY, `${topPercent}%`);
-        element.style.setProperty(PILL_HEIGHT_PROPERTY, `${heightPercent}%`);
-        element.style.setProperty(PILL_COLOR_PROPERTY, color);
-
-        const text = element.firstElementChild;
-
-        if (text instanceof HTMLElement) {
-          text.textContent = label;
-        }
+        writeState(element, 'empty', null);
+        writeStyle(element, PILL_TOP_PROPERTY, `${topPercent}%`);
+        writeStyle(element, PILL_HEIGHT_PROPERTY, `${heightPercent}%`);
+        writeStyle(element, PILL_COLOR_PROPERTY, color);
+        parts.text('text', label);
       });
     },
-    [computed, appSettings, units, side]
+    [computed, appSettings, units, side, parts]
   );
 
   if (!visible || !sideVisible || !computed.hasProximity) {
@@ -150,7 +152,9 @@ export const RadarBar = observer(({ side }: RadarBarProps) => {
           } as CSSProperties
         }
       >
-        {radarSettings.showDistance && <span className={styles.pillText} />}
+        {radarSettings.showDistance && (
+          <span ref={parts.ref('text')} className={styles.pillText} />
+        )}
       </div>
     </div>
   );

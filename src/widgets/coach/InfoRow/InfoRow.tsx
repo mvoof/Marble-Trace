@@ -7,6 +7,7 @@ import {
   speedUnit,
 } from '@shared/lib/telemetry-format';
 import { useReactiveDomWrite } from '@shared/hooks/useReactiveDomWrite';
+import { useLiveParts } from '@shared/ui/live/live-parts';
 import { StatChip, type StatChipTone } from '@shared/ui/StatChip/StatChip';
 import { useUnitsStore } from '@entities/app-settings/units-context';
 import {
@@ -50,8 +51,10 @@ export const InfoRow = observer(() => {
 
   const settings = useWidgetSettings<CoachWidgetSettings>('coach');
 
+  const parts = useLiveParts<'value' | 'reference'>();
+
   const rootRef = useReactiveDomWrite<HTMLDivElement>(
-    (element, scheduleWrite) => {
+    (_element, scheduleWrite) => {
       const currentText = formatSpeed(coach.currentSpeedMps, units.unitSystem);
       const referenceSpeedMps = coach.referenceSpeedMps;
       const referenceText =
@@ -60,19 +63,11 @@ export const InfoRow = observer(() => {
           : formatSpeed(referenceSpeedMps, units.unitSystem);
 
       scheduleWrite(() => {
-        const current = element.querySelector(`.${styles.value}`);
-        const reference = element.querySelector(`.${styles.reference}`);
-
-        if (current instanceof HTMLElement) {
-          current.textContent = currentText;
-        }
-
-        if (reference instanceof HTMLElement) {
-          reference.textContent = referenceText;
-        }
+        parts.text('value', currentText);
+        parts.text('reference', referenceText);
       });
     },
-    [coach, units]
+    [coach, units, parts]
   );
 
   const showsReference =
@@ -99,9 +94,9 @@ export const InfoRow = observer(() => {
     <div ref={rootRef} className={styles.root}>
       {settings.showSpeed ? (
         <span className={styles.speed}>
-          <span className={styles.value} />
+          <span ref={parts.ref('value')} className={styles.value} />
           <span className={styles.separator}>/</span>
-          <span className={styles.reference} />
+          <span ref={parts.ref('reference')} className={styles.reference} />
           <span className={styles.unit}>{speedUnit(units.unitSystem)}</span>
         </span>
       ) : null}

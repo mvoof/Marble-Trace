@@ -2,6 +2,7 @@ import { observer } from 'mobx-react-lite';
 
 import { speedUnit } from '@shared/lib/telemetry-format';
 import { useReactiveDomWrite } from '@shared/hooks/useReactiveDomWrite';
+import { useLiveParts } from '@shared/ui/live/live-parts';
 import { usePlayerStore } from '@entities/player/player-context';
 import { useUnitsStore } from '@entities/app-settings/units-context';
 
@@ -21,25 +22,23 @@ export const PitLimiterRow = observer(({ withUnit }: PitLimiterRowProps) => {
   const player = usePlayerStore();
   const units = useUnitsStore();
 
+  const parts = useLiveParts<'value'>();
+
   const rowRef = useReactiveDomWrite<HTMLDivElement>(
-    (element, scheduleWrite) => {
+    (_element, scheduleWrite) => {
       const speedMs = player.carDynamics?.speed ?? 0;
       const speedText = Math.round(speedMs * units.speedFactor).toString();
 
       scheduleWrite(() => {
-        const value = element.querySelector(`.${styles.flatValue}`);
-
-        if (value instanceof HTMLElement) {
-          value.textContent = speedText;
-        }
+        parts.text('value', speedText);
       });
     },
-    [player, units]
+    [player, units, parts]
   );
 
   return (
     <div ref={rowRef} className={`${styles.row} ${styles.rowLimiter}`}>
-      <span className={styles.flatValue} />
+      <span ref={parts.ref('value')} className={styles.flatValue} />
 
       <span className={styles.label}>LIM</span>
 

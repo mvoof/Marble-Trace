@@ -8,6 +8,11 @@ import { useUnitsStore } from '@entities/app-settings/units-context';
 import { buildPitApproachView } from '@features/pit-service/pit-approach';
 import { useReactiveDomWrite } from '@shared/hooks/useReactiveDomWrite';
 import {
+  useLiveParts,
+  writeState,
+  writeStyle,
+} from '@shared/ui/live/live-parts';
+import {
   useBlink,
   useBlinkHandle,
   type BlinkCycle,
@@ -26,8 +31,6 @@ const NO_VALUE_TEXT = '--';
 
 const FILL_WIDTH_PROPERTY = '--rail-fill';
 const BRAKE_LEFT_PROPERTY = '--rail-brake-left';
-
-const URGENCY_CLASSES = [styles.urgencybrake, styles.urgencyarrived];
 
 /**
  * The room the column asks for while the widget is being placed. Kept as a
@@ -91,6 +94,8 @@ export const PitApproachRail = observer(
       }
     }, [brakeBlink, pitService.isPitLimitReleased]);
 
+    const parts = useLiveParts<'fill' | 'brakeMarker' | 'value'>();
+
     const railRef = useReactiveDomWrite<HTMLDivElement>(
       (element, scheduleWrite) => {
         const view = buildPitApproachView({
@@ -115,52 +120,37 @@ export const PitApproachRail = observer(
               ).toString();
 
         scheduleWrite(() => {
-          for (const urgencyClass of URGENCY_CLASSES) {
-            element.classList.remove(urgencyClass);
-          }
-
-          if (!isIdle) {
-            element.classList.add(styles[`urgency${view.urgency}`]);
-          }
+          writeState(element, 'urgency', isIdle ? null : view.urgency);
 
           brakeBlink.attach(element);
           brakeBlink.run(
             !isIdle && view.urgency === 'brake' ? BRAKE_BLINK : null
           );
 
-          element.style.setProperty(
+          writeStyle(
+            element,
             FILL_WIDTH_PROPERTY,
             `${isIdle ? 0 : view.fill * PCT}%`
           );
 
-          const fill = element.querySelector(`.${styles.fill}`);
+          parts.attribute('fill', 'hidden', isIdle ? '' : null);
 
-          if (fill instanceof HTMLElement) {
-            fill.hidden = isIdle;
-          }
-
-          const brakeMarker = element.querySelector(`.${styles.brakeMarker}`);
           const hasBrakeMarker = !isIdle && view.brakeMarker !== null;
 
-          if (brakeMarker instanceof HTMLElement) {
-            brakeMarker.hidden = !hasBrakeMarker;
-          }
+          parts.attribute('brakeMarker', 'hidden', hasBrakeMarker ? null : '');
 
           if (hasBrakeMarker) {
-            element.style.setProperty(
+            writeStyle(
+              element,
               BRAKE_LEFT_PROPERTY,
               `${(view.brakeMarker ?? 0) * PCT}%`
             );
           }
 
-          const value = element.querySelector(`.${styles.value}`);
-
-          if (value instanceof HTMLElement) {
-            value.textContent = distValue;
-          }
+          parts.text('value', distValue);
         });
       },
-      [player, pitService, withBrakeCue, isIdle, unitSystem, brakeBlink]
+      [player, pitService, withBrakeCue, isIdle, unitSystem, brakeBlink, parts]
     );
 
     // The lane goes away, but not the room it stands in: the rail appears on
@@ -211,9 +201,9 @@ export const PitApproachRail = observer(
     return (
       <div ref={railRef} className={styles.rail}>
         <div className={styles.track}>
-          <span className={styles.fill} />
+          <span ref={parts.ref('fill')} className={styles.fill} />
 
-          <span className={styles.brakeMarker} />
+          <span ref={parts.ref('brakeMarker')} className={styles.brakeMarker} />
 
           {/*
             The number is the first thing read on the column, so it stands at
@@ -221,7 +211,7 @@ export const PitApproachRail = observer(
             foot. Nothing marks the top of the fill — the fill's own edge is the
             car, and a line drawn over it only competed with the box.
           */}
-          <span className={styles.value} />
+          <span ref={parts.ref('value')} className={styles.value} />
 
           {withUnit && (
             <span className={styles.unit}>

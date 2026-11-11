@@ -156,11 +156,11 @@ $speed-limit-seam: $pit-readout-seam;
   flex: 0 0 auto;
 }
 
-.valueUnder {
+.value[data-limit='under'] {
   color: $race-green;
 }
 
-.valueOver {
+.value[data-limit='over'] {
   top: auto;
   bottom: sp(xxs);
   color: $race-red;

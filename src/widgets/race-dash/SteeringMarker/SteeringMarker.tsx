@@ -4,6 +4,7 @@ import { observer } from 'mobx-react-lite';
 import { usePlayerStore } from '@entities/player/player-context';
 import { steeringAngleDeg, wrapToHalfTurn } from '@shared/lib/car-signals';
 import { useReactiveDomWrite } from '@shared/hooks/useReactiveDomWrite';
+import { useLiveParts } from '@shared/ui/live/live-parts';
 import {
   RIM_MARKER_RADIUS,
   RING_SIZE,
@@ -43,8 +44,10 @@ export const SteeringMarker = observer(() => {
 
   const settings = useWidgetSettings<RaceDashWidgetSettings>('race-dash');
 
+  const parts = useLiveParts<'trail' | 'dot'>();
+
   const rootRef = useReactiveDomWrite<SVGSVGElement>(
-    (element, scheduleWrite) => {
+    (_element, scheduleWrite) => {
       const rawAngle = player.carDynamics?.steering_wheel_angle ?? 0;
       // Wheel left means the marker travels left, i.e. counter-clockwise, so
       // the sign flips against the clockwise-positive SVG sweep.
@@ -62,22 +65,13 @@ export const SteeringMarker = observer(() => {
         : '';
 
       scheduleWrite(() => {
-        const trail = element.querySelector(`.${styles.trail}`);
-
-        if (trail instanceof SVGPathElement) {
-          trail.setAttribute('d', trailPath);
-          trail.style.display = hasTrail ? '' : 'none';
-        }
-
-        const marker = element.querySelector(`.${styles.dot}`);
-
-        if (marker instanceof SVGCircleElement) {
-          marker.setAttribute('cx', dot.x.toFixed(3));
-          marker.setAttribute('cy', dot.y.toFixed(3));
-        }
+        parts.attribute('trail', 'd', trailPath);
+        parts.style('trail', 'display', hasTrail ? null : 'none');
+        parts.attribute('dot', 'cx', dot.x.toFixed(3));
+        parts.attribute('dot', 'cy', dot.y.toFixed(3));
       });
     },
-    [player]
+    [player, parts]
   );
 
   if (!settings.showSteeringMarker) {
@@ -92,12 +86,13 @@ export const SteeringMarker = observer(() => {
       aria-hidden="true"
     >
       <path
+        ref={parts.ref('trail')}
         className={styles.trail}
         stroke={settings.steeringTrailColor}
         strokeOpacity={TRAIL_OPACITY}
       />
 
-      <circle className={styles.dot} r={DOT_RADIUS} />
+      <circle ref={parts.ref('dot')} className={styles.dot} r={DOT_RADIUS} />
     </svg>
   );
 });

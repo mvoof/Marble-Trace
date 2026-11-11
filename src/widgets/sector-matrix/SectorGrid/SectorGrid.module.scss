@@ -77,12 +77,12 @@
   color: var(--cell-label);
 }
 
-.deltaSlot {
+.cellTop [data-part='delta'] {
   min-width: 0;
 }
 
 // The table's chip: a 14px line, the delta at 10px.
-.deltaChip {
+.cellTop [data-delta] {
   --chip-line: #{$table-chip-line};
   --chip-lead-size: #{fs(xxxs)};
   --chip-solid-padding-x: #{sp(xs)};
@@ -90,7 +90,7 @@
 
 // LIVE on the running sector: filled in the deep green, white on it — the
 // quiet shade of green would sink into the running cell's own green ground.
-.deltaSlot.deltaChip.deltaLive {
+.cell [data-part='delta'][data-delta='live'] {
   --chip-solid-bg: #{$chip-lic-b};
   --chip-solid-strength: 100%;
   --chip-solid-text: #{$widget-text-primary};
