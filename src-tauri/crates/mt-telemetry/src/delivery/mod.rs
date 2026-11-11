@@ -4,6 +4,7 @@
 
 pub mod counters;
 pub mod dispatch;
+pub mod encoded;
 pub mod masks;
 pub mod publications;
 pub mod quantize;

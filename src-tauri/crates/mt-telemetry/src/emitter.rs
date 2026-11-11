@@ -5,13 +5,14 @@ use std::mem;
 /// runs the computations via `ProcessorRegistry` and emits a single bundle
 /// event per tick.
 use std::sync::Mutex;
-use std::time::{Duration, Instant};
+use std::time::Instant;
 
 use tracing::{info, warn};
 
 use crate::crew::run_crew;
 use crate::delivery::counters::DeliveryCounters;
-use crate::delivery::dispatch::{mirrors, plan, BundleSink, DeliveryGroup, Recipient};
+use crate::delivery::dispatch::{feeds_remote, plan, BundleSink, DeliveryGroup, Recipient};
+use crate::delivery::encoded::EncodedBundle;
 use crate::delivery::publications::PublicationRegistry;
 use crate::delivery::quantize;
 use crate::delivery::scheduler::DueGroups;
@@ -34,6 +35,7 @@ use mt_computations::{
 use mt_model::app::crew::CrewSink;
 use mt_model::computed::lap_log::LapLogFrame;
 use mt_model::computed::track_shape::TrackRecordingFrame;
+use mt_model::contract::bundle_tap::BundleTap;
 use mt_model::contract::capabilities::Capabilities;
 use mt_model::contract::event_sink::EventSink;
 use mt_model::contract::telemetry_events::{
@@ -59,12 +61,14 @@ use mt_source::{PitCommander, SourceFrame};
 // because this is the module that emits them.
 pub use mt_model::contract::events::{
     EVENT_CAPABILITIES, EVENT_DISCONNECTED, EVENT_REFERENCE_LAP_UPDATED, EVENT_SESSION_INFO,
-    EVENT_SIM_PERF, EVENT_STATUS, EVENT_TELEMETRY_BUNDLE, EVENT_TELEMETRY_BUNDLE_MIRROR,
-    EVENT_TELEMETRY_SLOW, EVENT_TRACK_SHAPE, EVENT_WEATHER_FORECAST,
+    EVENT_SIM_PERF, EVENT_STATUS, EVENT_TELEMETRY_BUNDLE, EVENT_TELEMETRY_SLOW, EVENT_TRACK_SHAPE,
+    EVENT_WEATHER_FORECAST,
 };
 
 pub struct EmitContext<'a> {
     pub sink: &'a dyn EventSink,
+    /// The remote screens' feed, when the app runs a remote hub.
+    pub remote: Option<&'a dyn BundleTap>,
     /// Where the files a processor produces are written, off this thread.
     pub io: &'a IoWorker,
     pub frame: &'a SourceFrame,
@@ -140,6 +144,33 @@ pub struct TelemetryBundle {
     pub pit_auto: Option<PitAutoFrame>,
 }
 
+impl TelemetryBundle {
+    /// Whether the bundle holds a field that arrives at 10 Hz or slower. The
+    /// remote rate limit thins only the ticks that hold none: dropping one
+    /// that carries the session clock or the fuel numbers would make them skip
+    /// with the motion data.
+    pub fn carries_slow_fields(&self) -> bool {
+        self.car_idx.is_some()
+            || self.pace_car.is_some()
+            || self.radio.is_some()
+            || self.chassis.is_some()
+            || self.lap_timing.is_some()
+            || self.proximity.is_some()
+            || self.driver_entries.is_some()
+            || self.relative.is_some()
+            || self.car_status.is_some()
+            || self.fuel.is_some()
+            || self.pit_stops.is_some()
+            || self.pit_service.is_some()
+            || self.pit_auto.is_some()
+            || self.session.is_some()
+            || self.environment.is_some()
+            || self.lap_log.is_some()
+            || self.track_recording.is_some()
+            || self.safety_rating.is_some()
+    }
+}
+
 /// The 4 Hz slice for a window that does not draw widgets.
 ///
 /// The main window is off the bundle (see `SimStore.subscribeBundle`), but it
@@ -154,11 +185,10 @@ pub struct TelemetrySlowBundle {
     pub car_status: CarStatusFrame,
 }
 
-/// Returns the time spent measuring rather than delivering — the `dev`-only
-/// sizing of each bundle — so the tick timing can leave it out.
-pub fn emit_domain_frames(ctx: EmitContext<'_>) -> Duration {
+pub fn emit_domain_frames(ctx: EmitContext<'_>) {
     let EmitContext {
         sink,
+        remote,
         io,
         frame,
         due,
@@ -400,7 +430,7 @@ pub fn emit_domain_frames(ctx: EmitContext<'_>) -> Duration {
     // sends the bundle. Between published ticks there is nothing to send — a
     // frame computed here is a snapshot the next published tick replaces.
     if !due.publish {
-        return Duration::ZERO;
+        return;
     }
 
     // Drop what nobody asked for. Deliberately after the processors have run:
@@ -424,8 +454,8 @@ pub fn emit_domain_frames(ctx: EmitContext<'_>) -> Duration {
         due,
         bundle,
         groups,
-        &mut EventBundleSink { sink },
-    )
+        &mut EventBundleSink { sink, remote },
+    );
 }
 
 /// Hands a changed active reference to the coach, to commands asking for it,
@@ -617,31 +647,35 @@ pub(crate) fn send_manual_action(
     (Some(order), result.is_ok())
 }
 
-/// The real transport: `emit_to` per window, `emit` for the broadcast and for
-/// the mirror's internal event.
+/// The real transport: `emit_to` per window, `emit` for the broadcast, and the
+/// remote hub for the remote screens — all handed the one encoded string.
 struct EventBundleSink<'a> {
     sink: &'a dyn EventSink,
+    remote: Option<&'a dyn BundleTap>,
 }
 
 impl BundleSink for EventBundleSink<'_> {
-    fn to_window(&mut self, label: &str, bundle: &TelemetryBundle) {
-        if let Err(e) = self.sink.emit_to(label, EVENT_TELEMETRY_BUNDLE, bundle) {
+    fn to_window(&mut self, label: &str, bundle: &EncodedBundle<'_>) {
+        if let Err(e) = self
+            .sink
+            .emit_json_to(label, EVENT_TELEMETRY_BUNDLE, bundle.json.clone())
+        {
             warn!("Failed to emit telemetry bundle to {}: {}", label, e);
         }
     }
 
-    fn broadcast(&mut self, bundle: &TelemetryBundle) {
-        if let Err(e) = self.sink.emit(EVENT_TELEMETRY_BUNDLE, bundle) {
+    fn broadcast(&mut self, bundle: &EncodedBundle<'_>) {
+        if let Err(e) = self
+            .sink
+            .emit_json(EVENT_TELEMETRY_BUNDLE, bundle.json.clone())
+        {
             warn!("Failed to emit telemetry bundle: {}", e);
         }
     }
 
-    fn to_mirror(&mut self, bundle: &TelemetryBundle) {
-        if let Err(e) = self.sink.emit(EVENT_TELEMETRY_BUNDLE_MIRROR, bundle) {
-            warn!(
-                "Failed to emit telemetry bundle to the remote mirror: {}",
-                e
-            );
+    fn to_remote(&mut self, bundle: &EncodedBundle<'_>) {
+        if let Some(remote) = self.remote {
+            remote.publish_bundle(&bundle.json, bundle.carries_slow_fields);
         }
     }
 }
@@ -650,7 +684,7 @@ impl BundleSink for EventBundleSink<'_> {
 ///
 /// `assembled` is filled from the union and already quantized; each group is
 /// that bundle narrowed to its own mask, pruned against its own record and put
-/// on the wire once. Returns the time spent sizing bundles for the counters.
+/// encoded once for every recipient of the group.
 fn deliver(
     publications: &mut PublicationRegistry,
     counters: &Mutex<DeliveryCounters>,
@@ -658,7 +692,7 @@ fn deliver(
     assembled: TelemetryBundle,
     groups: Vec<DeliveryGroup>,
     sink: &mut impl BundleSink,
-) -> Duration {
+) {
     // Handed to the last group by value: with one group — one monitor, or two
     // monitors whose widgets want the same fields, which is the common case —
     // nothing is cloned and the tick costs exactly what it did before.
@@ -666,7 +700,6 @@ fn deliver(
     let last = groups.len().saturating_sub(1);
     let live: Vec<u32> = groups.iter().map(|group| group.mask).collect();
     let mut delivery = lock_or_recover(counters);
-    let mut sizing = Duration::ZERO;
 
     publications.retain(&live);
 
@@ -699,8 +732,15 @@ fn deliver(
             continue;
         }
 
-        let (size, spent) = measure_size(&bundle);
-        sizing += spent;
+        let encoded = match EncodedBundle::of(&bundle) {
+            Ok(encoded) => encoded,
+            Err(error) => {
+                warn!("Failed to encode telemetry bundle: {error}");
+
+                continue;
+            }
+        };
+        let size = Some(encoded.json.len());
 
         for recipient in &group.recipients {
             // Counted here rather than at assembly: what the counters answer is
@@ -709,36 +749,17 @@ fn deliver(
             delivery.record(recipient.label(), &bundle, size);
 
             match recipient {
-                Recipient::Window(label) => sink.to_window(label, &bundle),
-                Recipient::Broadcast => sink.broadcast(&bundle),
-                // Reached by the mirror re-emit below, which is the only path
-                // `src-tauri/src/remote_mirror.rs` can still see.
-                Recipient::Mirror => {}
+                Recipient::Window(label) => sink.to_window(label, &encoded),
+                Recipient::Broadcast => sink.broadcast(&encoded),
+                // Fed below, whichever group stands in for the remote screens.
+                Recipient::Remote => {}
             }
         }
 
-        if mirrors(&groups, group) {
-            sink.to_mirror(&bundle);
+        if feeds_remote(&groups, group) {
+            sink.to_remote(&encoded);
         }
     }
-
-    sizing
-}
-
-/// The bundle's JSON length and what finding it out cost. A second
-/// serialization of what Tauri is about to serialize anyway — the transport
-/// keeps its own string to itself — so only a `dev` build pays for it.
-#[cfg(feature = "dev")]
-fn measure_size(bundle: &TelemetryBundle) -> (Option<usize>, Duration) {
-    let started = Instant::now();
-    let size = serde_json::to_vec(bundle).ok().map(|bytes| bytes.len());
-
-    (size, started.elapsed())
-}
-
-#[cfg(not(feature = "dev"))]
-fn measure_size(_bundle: &TelemetryBundle) -> (Option<usize>, Duration) {
-    (None, Duration::ZERO)
 }
 
 /// Keeps the record of a race under the flag on disk, on the tier the Safety
@@ -956,14 +977,14 @@ mod tests {
     }
 
     /// Stands in for `EventBundleSink`. What the real transport can do silently —
-    /// above all leaving the mirror unfed — is a missing row here.
+    /// above all leaving the remote screens unfed — is a missing row here.
     #[derive(Default)]
     struct RecordingSink {
         sent: Vec<Sent>,
     }
 
-    /// The mirror's internal event, named so a test reads as what it asserts.
-    const MIRROR_TARGET: &str = "@mirror-event";
+    /// The remote hub, named so a test reads as what it asserts.
+    const REMOTE_TARGET: &str = "@remote-hub";
 
     impl RecordingSink {
         fn to(&self, target: &str) -> Vec<&TelemetryBundle> {
@@ -983,16 +1004,16 @@ mod tests {
     }
 
     impl BundleSink for RecordingSink {
-        fn to_window(&mut self, label: &str, bundle: &TelemetryBundle) {
-            self.record(label, bundle);
+        fn to_window(&mut self, label: &str, bundle: &EncodedBundle<'_>) {
+            self.record(label, bundle.bundle);
         }
 
-        fn broadcast(&mut self, bundle: &TelemetryBundle) {
-            self.record(BROADCAST_LABEL, bundle);
+        fn broadcast(&mut self, bundle: &EncodedBundle<'_>) {
+            self.record(BROADCAST_LABEL, bundle.bundle);
         }
 
-        fn to_mirror(&mut self, bundle: &TelemetryBundle) {
-            self.record(MIRROR_TARGET, bundle);
+        fn to_remote(&mut self, bundle: &EncodedBundle<'_>) {
+            self.record(REMOTE_TARGET, bundle.bundle);
         }
     }
 
@@ -1114,12 +1135,12 @@ mod tests {
         );
 
         // One delivery each, out of one bundle. The tap is fed as well, by the
-        // widest-group fallback in `dispatch::mirrors`, which is why this counts
+        // widest-group fallback in `dispatch::feeds_remote`, which is why this counts
         // the windows rather than every row the sink holds.
         assert_eq!(harness.sink.to("overlay-left").len(), 1);
         assert_eq!(harness.sink.to("overlay-right").len(), 1);
         assert_eq!(
-            harness.sink.to(MIRROR_TARGET).len(),
+            harness.sink.to(REMOTE_TARGET).len(),
             1,
             "the tap is never left unfed, even with no remote appetite registered"
         );
@@ -1158,11 +1179,9 @@ mod tests {
         );
     }
 
-    /// The failure mode of this ticket: `emit_to` does not feed `app.listen`,
-    /// and nothing logs when the mirror stops receiving — the remote screens
-    /// just go stale.
+    /// A remote screen fed nothing logs nothing — it just goes stale.
     #[test]
-    fn the_mirrors_group_still_reaches_the_tap() {
+    fn the_remote_group_reaches_the_tap() {
         let mut harness = Harness::new(&["overlay-left", REMOTE_LABEL]);
 
         harness.tick(
@@ -1174,17 +1193,17 @@ mod tests {
             ],
         );
 
-        let mirrored = harness.sink.to(MIRROR_TARGET);
+        let fed = harness.sink.to(REMOTE_TARGET);
 
-        assert_eq!(mirrored.len(), 1, "the mirror is fed exactly once");
-        assert!(mirrored[0].car_positions.is_some());
+        assert_eq!(fed.len(), 1, "the remote screens are fed exactly once");
+        assert!(fed[0].car_positions.is_some());
         assert!(
-            mirrored[0].driver_entries.is_none(),
+            fed[0].driver_entries.is_none(),
             "the remote screens pay for their own appetite, not the union"
         );
     }
 
-    /// Before any window has registered, the mirror has no appetite of its own
+    /// Before any window has registered, the remote screens have no appetite of their own
     /// and the bootstrap broadcast is what it lives on.
     #[test]
     fn the_bootstrap_broadcast_feeds_the_tap_too() {
@@ -1193,7 +1212,7 @@ mod tests {
         harness.tick(hot_tick(), assembled(0.5), &[(BOOTSTRAP_LABEL, u32::MAX)]);
 
         assert_eq!(harness.sink.to(BROADCAST_LABEL).len(), 1);
-        assert_eq!(harness.sink.to(MIRROR_TARGET).len(), 1);
+        assert_eq!(harness.sink.to(REMOTE_TARGET).len(), 1);
     }
 
     /// Mask 0 is "slow tiers only", not silence.
@@ -1391,5 +1410,33 @@ mod tests {
         apply_event_mask(&mut bundle, EVENT_CAR_INPUTS);
 
         assert!(bundle.input_samples.is_none());
+    }
+
+    #[test]
+    fn a_bundle_of_overlay_clock_fields_carries_no_slow_field() {
+        let bundle = TelemetryBundle {
+            car_positions: Some(positions(0.5)),
+            ..Default::default()
+        };
+
+        assert!(!bundle.carries_slow_fields());
+    }
+
+    /// The timer widget reads the session clock; a thinned tick that carried
+    /// it made the clock jump a second at a time.
+    #[test]
+    fn a_bundle_with_a_slow_tier_field_carries_one() {
+        let bundle = TelemetryBundle {
+            car_positions: Some(positions(0.5)),
+            driver_entries: Some(entries()),
+            ..Default::default()
+        };
+
+        assert!(bundle.carries_slow_fields());
+        assert!(TelemetryBundle {
+            environment: Some(Default::default()),
+            ..Default::default()
+        }
+        .carries_slow_fields());
     }
 }

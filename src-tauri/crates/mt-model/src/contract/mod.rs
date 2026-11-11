@@ -2,6 +2,7 @@
 //! protocol, the sink events go through, the generated value files and the window
 //! labels.
 
+pub mod bundle_tap;
 pub mod capabilities;
 pub mod client_protocol;
 pub mod defaults;

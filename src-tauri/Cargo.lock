@@ -3008,7 +3008,6 @@ dependencies = [
  "futures",
  "local-ip-address",
  "mt-model",
- "mt-telemetry",
  "reqwest 0.13.5",
  "serde",
  "serde_json",

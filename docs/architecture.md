@@ -229,11 +229,10 @@ sim's own markers, so a field reads the same here as in kerb and in the SDK
 docs. Check `bindings.ts` for the frame you are reading rather than assuming.
 
 > [!WARNING]
-> If you add or change a rename, check `SLOW_FIELD_KEYS` in `mt-remote/src/hub.rs`. It
-> matches field names against the **already-encoded** bundle to decide whether a
-> tick carries anything below 60 Hz, and a stale entry there fails nothing — it
-> quietly makes every bundle look 60 Hz-only and starts throwing the session
-> clock and the fuel numbers off every remote screen.
+> A new bundle field slower than the overlay clock joins
+> `TelemetryBundle::carries_slow_fields` in `mt-telemetry/src/emitter.rs`. The
+> remote rate limit thins only the ticks that carry none, and a slow field left
+> out of it is dropped with the motion data on every remote screen.
 
 ---
 
@@ -787,7 +786,7 @@ too.
 | `src-tauri/src/commands/`               | every Tauri command, split by what it touches — `settings`, `telemetry`, `track`, `pit`, `chat`, `input`, `hotkeys`, `remote`, `companions`, `perf` (see [Command catalogue](#command-catalogue-frontend--backend)) |
 | `mt-hotkeys`                            | the hotkey dispatcher: what a key fires (`dispatch.rs`), drag / interact modes (`modes.rs`), the effects (`runtime.rs`)                                                                                             |
 | `src-tauri/src/hotkeys.rs`              | the global-shortcut plugin behind `KeyRegistrar`, and the dispatcher's `HotkeyHost`                                                                                                                                 |
-| `mt-remote`                             | the LAN server for remote screens: `server`, `hub` (fan-out), `pages`, `csp`, `control` (start/stop); the app's `remote_mirror.rs` feeds the hub                                                                    |
+| `mt-remote`                             | the LAN server for remote screens: `server`, `hub` (fan-out), `pages`, `csp`, `control` (start/stop); the telemetry runtime feeds the hub through `BundleTap`, the app's `remote_events.rs` the rare events         |
 | `mt-companions`                         | companion apps — catalog, process detection, registry, icons                                                                                                                                                        |
 | `process_priority.rs`                   | asks Windows to schedule the sim ahead of the overlay                                                                                                                                                               |
 | `mt-model/src/contract/capabilities.rs` | per-sim feature reporting                                                                                                                                                                                           |

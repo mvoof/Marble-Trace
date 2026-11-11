@@ -15,8 +15,8 @@
 use std::collections::HashMap;
 
 use crate::delivery::counters::BROADCAST_LABEL;
+use crate::delivery::encoded::EncodedBundle;
 use crate::delivery::masks::{BOOTSTRAP_LABEL, REMOTE_LABEL};
-use crate::emitter::TelemetryBundle;
 
 /// Where one bundle has to go.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -30,10 +30,9 @@ pub enum Recipient {
     /// bootstrap entry away (`MaskRegistry::register`), so a broadcast group
     /// and a window group do not coexist.
     Broadcast,
-    /// The remote screens. They hold no webview here — `src-tauri/src/remote_mirror.rs` taps
-    /// the event stream — so their bundle goes out on an internal event the tap
-    /// listens for.
-    Mirror,
+    /// The remote screens. They hold no webview here: their bundle goes
+    /// straight to the remote hub (`BundleTap`).
+    Remote,
 }
 
 impl Recipient {
@@ -42,7 +41,7 @@ impl Recipient {
         match self {
             Recipient::Window(label) => label,
             Recipient::Broadcast => BROADCAST_LABEL,
-            Recipient::Mirror => REMOTE_LABEL,
+            Recipient::Remote => REMOTE_LABEL,
         }
     }
 }
@@ -65,7 +64,7 @@ pub fn plan(entries: Vec<(String, u32)>) -> Vec<DeliveryGroup> {
 
     for (label, mask) in entries {
         let recipient = match label.as_str() {
-            REMOTE_LABEL => Recipient::Mirror,
+            REMOTE_LABEL => Recipient::Remote,
             BOOTSTRAP_LABEL => Recipient::Broadcast,
             _ => Recipient::Window(label),
         };
@@ -87,35 +86,24 @@ pub fn plan(entries: Vec<(String, u32)>) -> Vec<DeliveryGroup> {
     groups
 }
 
-/// Whether this group's bundle must also go out on the internal mirror event.
+/// Whether this group's bundle is the one the remote screens are fed.
 ///
-/// **Temporary — the second half of spec decision 6.** The remote screens still
-/// arrive through `app.listen` in `src-tauri/src/remote_mirror.rs`, which `emit_to` does not
-/// feed, so the group holding their appetite is re-emitted on an event the tap
-/// can see. The follow-up is "move the mirror to `emit_to`", named as out of
-/// scope in `.scratch/per-window-telemetry-mask/spec.md`; when it lands this
-/// function and the internal event go with it.
-///
-/// A silent mirror is this design's failure mode — nothing logs when the tap
-/// stops receiving, the remote screens simply go stale — so every state the
-/// registry can be in feeds it something:
+/// Exactly one group feeds them in every state the registry can be in — a
+/// remote screen fed nothing simply goes stale, with nothing in the log:
 ///
 /// 1. The remote screens have registered: their own group, and only that one.
-/// 2. Nobody has registered yet: the bootstrap group, which broadcasts
-///    everything, exactly as the single `app.emit` used to.
+/// 2. Nobody has registered yet: the bootstrap group, which carries everything.
 /// 3. **The gap.** A window registers before main has registered the remote
 ///    appetite — main does so on its first reaction, but the overlay may get
 ///    there first — and the bootstrap entry is already gone, taken away by that
-///    window. There is then no mirror group and no broadcast group, and without
-///    this last case the tap would be fed nothing at all for as long as the gap
-///    lasts. The widest group stands in: the most fields any window is being
+///    window. The widest group stands in: the most fields any window is being
 ///    sent, which is the closest thing to what the remote screens are about to
 ///    ask for.
-pub fn mirrors(groups: &[DeliveryGroup], group: &DeliveryGroup) -> bool {
-    let has_mirror = |candidate: &DeliveryGroup| candidate.recipients.contains(&Recipient::Mirror);
+pub fn feeds_remote(groups: &[DeliveryGroup], group: &DeliveryGroup) -> bool {
+    let has_remote = |candidate: &DeliveryGroup| candidate.recipients.contains(&Recipient::Remote);
 
-    if groups.iter().any(has_mirror) {
-        return has_mirror(group);
+    if groups.iter().any(has_remote) {
+        return has_remote(group);
     }
 
     if groups
@@ -133,18 +121,14 @@ pub fn mirrors(groups: &[DeliveryGroup], group: &DeliveryGroup) -> bool {
         .is_some_and(|widest| widest.mask == group.mask)
 }
 
-/// Where a delivered bundle actually goes.
-///
-/// A seam rather than a call to `AppHandle` in place, because the one failure
-/// this design can produce silently is a bundle that reaches no mirror: nothing
-/// logs when `src-tauri/src/remote_mirror.rs` stops receiving, the remote screens simply go
-/// stale. With the transport behind this trait, the grouping can be driven in a
-/// unit test and the mirror asserted on.
+/// Where a delivered bundle actually goes. A seam rather than calls in place,
+/// so the grouping can be driven in a unit test and every recipient — the
+/// remote screens above all — asserted on.
 pub trait BundleSink {
-    fn to_window(&mut self, label: &str, bundle: &TelemetryBundle);
-    fn broadcast(&mut self, bundle: &TelemetryBundle);
-    /// The temporary half of spec decision 6 — see [`mirrors`].
-    fn to_mirror(&mut self, bundle: &TelemetryBundle);
+    fn to_window(&mut self, label: &str, bundle: &EncodedBundle<'_>);
+    fn broadcast(&mut self, bundle: &EncodedBundle<'_>);
+    /// The remote screens' group — see [`feeds_remote`].
+    fn to_remote(&mut self, bundle: &EncodedBundle<'_>);
 }
 
 #[cfg(test)]
@@ -201,9 +185,9 @@ mod tests {
         assert_eq!(groups.len(), 1);
         assert_eq!(
             groups[0].recipients,
-            vec![Recipient::Mirror, window("overlay-left")]
+            vec![Recipient::Remote, window("overlay-left")]
         );
-        assert!(mirrors(&groups, &groups[0]));
+        assert!(feeds_remote(&groups, &groups[0]));
     }
 
     #[test]
@@ -213,8 +197,8 @@ mod tests {
             (REMOTE_LABEL.into(), EVENT_PROXIMITY),
         ]);
 
-        assert!(!mirrors(&groups, &groups[0]));
-        assert!(mirrors(&groups, &groups[1]));
+        assert!(!feeds_remote(&groups, &groups[0]));
+        assert!(feeds_remote(&groups, &groups[1]));
     }
 
     /// Before any window registers there is no remote appetite either, and the
@@ -225,12 +209,12 @@ mod tests {
         let groups = plan(vec![(BOOTSTRAP_LABEL.into(), u32::MAX)]);
 
         assert_eq!(groups[0].recipients, vec![Recipient::Broadcast]);
-        assert!(mirrors(&groups, &groups[0]));
+        assert!(feeds_remote(&groups, &groups[0]));
     }
 
     /// The gap between a window registering — which takes the bootstrap entry
     /// away — and main registering the remote appetite. Nothing holds the
-    /// mirror and nothing broadcasts, and the tap must still be fed.
+    /// remote appetite and nothing broadcasts, and the tap must still be fed.
     #[test]
     fn the_widest_group_feeds_the_tap_while_no_remote_appetite_is_registered() {
         let groups = plan(vec![
@@ -238,7 +222,10 @@ mod tests {
             ("overlay-right".into(), EVENT_CAR_DYNAMICS),
         ]);
 
-        let fed: Vec<bool> = groups.iter().map(|group| mirrors(&groups, group)).collect();
+        let fed: Vec<bool> = groups
+            .iter()
+            .map(|group| feeds_remote(&groups, group))
+            .collect();
 
         assert_eq!(
             fed.iter().filter(|mirrored| **mirrored).count(),
@@ -246,7 +233,7 @@ mod tests {
             "exactly one group feeds the tap, never two and never none"
         );
         assert!(
-            mirrors(&groups, &groups[1]),
+            feeds_remote(&groups, &groups[1]),
             "the widest group is the closest thing to what the remote screens will ask for"
         );
     }
@@ -260,9 +247,9 @@ mod tests {
             (REMOTE_LABEL.into(), EVENT_CAR_DYNAMICS),
         ]);
 
-        assert!(!mirrors(&groups, &groups[1]), "not the widest group");
+        assert!(!feeds_remote(&groups, &groups[1]), "not the widest group");
         assert!(
-            mirrors(&groups, &groups[0]),
+            feeds_remote(&groups, &groups[0]),
             "the remote screens' own group"
         );
     }
@@ -276,6 +263,6 @@ mod tests {
     fn recipients_are_counted_under_their_own_labels() {
         assert_eq!(window("overlay-left").label(), "overlay-left");
         assert_eq!(Recipient::Broadcast.label(), BROADCAST_LABEL);
-        assert_eq!(Recipient::Mirror.label(), REMOTE_LABEL);
+        assert_eq!(Recipient::Remote.label(), REMOTE_LABEL);
     }
 }

@@ -2,7 +2,7 @@
 //! message kind the remote hub pushes over its socket.
 //!
 //! These used to be plain strings declared once in Rust and once again in
-//! TypeScript — three times for the chat events, which `src-tauri/src/remote_mirror.rs` also
+//! TypeScript — three times for the chat events, which `src-tauri/src/remote_events.rs` also
 //! kept a copy of. A name that drifts on one side does not fail a build: the
 //! listener simply never fires, which is how a missing `case` in
 //! `remote-sync.ts` came to be documented as a known hazard rather than a bug.
@@ -126,19 +126,6 @@ ts_values! {
     /// A connected remote device came, went, or reported a new viewport.
     pub const EVENT_REMOTE_DEVICE: &str = "remote://device" => REMOTE_DEVICE_EVENT;
 }
-
-/// The same bundle again, for the remote screens only.
-///
-/// **Temporary — the second half of spec decision 6.** `src-tauri/src/remote_mirror.rs` taps
-/// the event stream with `app.listen`, and `emit_to` does not feed a Rust
-/// listener, so the bundle built for the remote screens' own mask is re-emitted
-/// under this name for the tap to pick up. The follow-up — moving the mirror to
-/// `emit_to` — is named as out of scope in
-/// `.scratch/per-window-telemetry-mask/spec.md`; this name goes away with it.
-///
-/// Not in `ts_values!` on purpose: it never crosses into TypeScript. A webview
-/// listening for it would take the remote screens' bundle on top of its own.
-pub const EVENT_TELEMETRY_BUNDLE_MIRROR: &str = "sim://telemetry/bundle/mirror";
 
 // --- Remote socket message kinds ----------------------------------------
 

@@ -11,7 +11,7 @@ dependencies:
 _Held by: the compiler for the layer imports — a crate can only `use` what its
 `Cargo.toml` lists, so kerb outside `mt-sim-*` or tauri outside the app does
 not build; review for what goes into which crate; test for the `ts_values!`
-files and `SLOW_FIELD_KEYS` (both pinned). `bindings.ts` is not pinned: it is
+files (pinned). `bindings.ts` is not pinned: it is
 regenerated, never edited, and a stale copy shows only in the diff._
 
 ```
@@ -63,10 +63,10 @@ with `[lints] workspace = true`.
   `carDynamics`, `carInputs`, `carStatus`, `chassis`, `lapTiming`, `carIdx`,
   `carPositions` — keep kerb's snake*case names and the sim's own `-1`/`0`
   markers; that is a decision, not a backlog. A computed frame says "no value"
-  with `Option`, never a marker. Check `bindings.ts` for the frame you read. If
-  you add a rename, check `SLOW_FIELD_KEYS` in `mt-remote/src/hub.rs`: it matches field
-  names against the \_encoded* bundle, and a stale entry there silently strips
-  the slow tiers off every remote screen rather than failing.
+  with `Option`, never a marker. Check `bindings.ts` for the frame you read. A new
+  bundle field slower than the overlay clock joins
+  `TelemetryBundle::carries_slow_fields`, or the remote rate limit drops it
+  with the motion data.
 - Never use `f32::INFINITY`/`f32::NAN` in payloads — use finite placeholders or `Option<f32>`.
 - All imports at top of file; no fully-qualified paths in logic.
 

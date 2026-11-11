@@ -15,6 +15,7 @@ use tokio::sync::broadcast;
 use tracing::warn;
 
 use mt_model::app::remote::RemoteDevice;
+use mt_model::contract::bundle_tap::BundleTap;
 use mt_model::contract::events::{RemoteControlKind, RemoteStreamKind, Replayed, WireName};
 use mt_model::utils::lock_or_recover;
 
@@ -149,15 +150,15 @@ impl RemoteHub {
     /// session clock and the fuel numbers. A bundle carrying any slower field
     /// is always sent; only the pure 60 Hz ones are thinned.
     ///
-    /// The mirror taps Tauri's own event stream, where the bundle has been
-    /// serialized once for the overlay windows already — wrapping that string
-    /// costs a `format!` instead of a second full `serde_json` pass at 60 Hz.
-    pub fn publish_raw_telemetry(&self, json: &str) {
+    /// The bundle arrives encoded once for every recipient of its group —
+    /// wrapping that string costs a `format!` instead of another full
+    /// `serde_json` pass at 60 Hz.
+    fn send_telemetry(&self, json: &str, carries_slow_fields: bool) {
         if !self.has_clients() {
             return;
         }
 
-        if carries_slow_fields(json) {
+        if carries_slow_fields {
             self.last_telemetry_us
                 .store(self.started.elapsed().as_micros() as u64, Ordering::Relaxed);
 
@@ -309,43 +310,10 @@ impl RemoteHub {
     }
 }
 
-/// Fields that arrive at 10 Hz or slower. `serde` omits the absent ones, so
-/// their presence in the encoded bundle is what marks a tick as carrying
-/// something the rate limit must not throw away.
-///
-/// These are the *wire* names, which `TelemetryBundle` renames to camelCase.
-/// A rename that missed this list would not fail anything — it would quietly
-/// make every bundle look 60 Hz-only and start throwing away the session clock
-/// along with the motion data, which is why the test below pins them to the
-/// real serialization.
-const SLOW_FIELD_KEYS: [&str; 18] = [
-    "\"carIdx\"",
-    "\"paceCar\"",
-    "\"radio\"",
-    "\"chassis\"",
-    "\"lapTiming\"",
-    "\"proximity\"",
-    "\"driverEntries\"",
-    "\"relative\"",
-    "\"carStatus\"",
-    "\"fuel\"",
-    "\"pitStops\"",
-    "\"pitService\"",
-    "\"pitAuto\"",
-    "\"session\"",
-    "\"environment\"",
-    "\"lapLog\"",
-    "\"trackRecording\"",
-    "\"safetyRating\"",
-];
-
-/// Whether this bundle carries anything below 60 Hz.
-///
-/// A substring scan rather than a parse: the payload is already-encoded JSON,
-/// and re-parsing it sixty times a second to answer one yes/no question would
-/// cost more than the send it decides about.
-fn carries_slow_fields(json: &str) -> bool {
-    SLOW_FIELD_KEYS.iter().any(|key| json.contains(key))
+impl BundleTap for RemoteHub {
+    fn publish_bundle(&self, json: &str, carries_slow_fields: bool) {
+        self.send_telemetry(json, carries_slow_fields);
+    }
 }
 
 /// Compares two tokens without returning early on the first differing byte.
@@ -385,7 +353,7 @@ struct SnapshotPayload {
 #[cfg(test)]
 mod tests {
     use super::tokens_match;
-    use super::{carries_slow_fields, RemoteHub, SLOW_FIELD_KEYS};
+    use super::RemoteHub;
     use mt_model::contract::events::{RemoteControlKind, RemoteStreamKind, WireName};
 
     #[test]
@@ -404,31 +372,6 @@ mod tests {
             .all(|message| !message.contains("\"track-shape\"")));
     }
 
-    /// The rate limit reads these keys out of an already-encoded bundle, so
-    /// they have to be the names `serde` actually writes. A `rename_all` added
-    /// to `TelemetryBundle` without touching this list would not fail anything
-    /// — it would quietly make every bundle look 60 Hz-only and start throwing
-    /// the session clock and the fuel numbers off every remote screen.
-    #[test]
-    fn the_slow_field_keys_are_the_names_serde_writes() {
-        let bundle = mt_telemetry::emitter::TelemetryBundle {
-            environment: Some(Default::default()),
-            ..Default::default()
-        };
-
-        let encoded = serde_json::to_string(&bundle).unwrap();
-
-        assert!(encoded.contains("\"environment\""));
-        assert!(carries_slow_fields(&encoded));
-
-        for key in SLOW_FIELD_KEYS {
-            assert!(
-                !key.contains('_'),
-                "{key} is a snake_case name; the bundle is serialized camelCase"
-            );
-        }
-    }
-
     #[test]
     fn accepts_only_the_exact_token() {
         assert!(tokens_match("a3f9", "a3f9"));
@@ -444,28 +387,5 @@ mod tests {
     #[test]
     fn rejects_an_empty_guess() {
         assert!(!tokens_match("", "a3f9"));
-    }
-
-    #[test]
-    fn thins_only_the_pure_60_hz_bundles() {
-        let fast = r#"{"car_dynamics":{"speed":1.0},"car_inputs":{"throttle":0.5}}"#;
-
-        assert!(!carries_slow_fields(fast));
-    }
-
-    #[test]
-    fn never_thins_a_bundle_carrying_the_session_clock() {
-        // The timer widget reads the session clock; dropping the tick that
-        // carried it made the clock jump a second at a time.
-        let slow = r#"{"car_dynamics":{"speed":1.0},"session":{"session_time":12.0}}"#;
-
-        assert!(carries_slow_fields(slow));
-    }
-
-    #[test]
-    fn never_thins_the_four_hz_tier() {
-        let slow = r#"{"car_inputs":{"throttle":0.1},"fuel":{"level":40.0}}"#;
-
-        assert!(carries_slow_fields(slow));
     }
 }

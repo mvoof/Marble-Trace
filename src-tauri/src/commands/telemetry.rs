@@ -13,9 +13,11 @@ use crate::sim::connect_source;
 use crate::sink::TauriSink;
 use crate::voice::VoiceCrewState;
 use mt_model::app::crew::CrewSink;
+use mt_model::contract::bundle_tap::BundleTap;
 use mt_model::contract::defaults::{MAX_FUEL_AVG_WINDOW, SOURCE_TICK_HZ};
 use mt_model::sim::session::SessionSnapshot;
 use mt_model::utils::lock_or_recover;
+use mt_remote::control::RemoteState;
 use mt_source::raw::{RawSession, RawValues, RawVarMeta};
 use mt_source::SourceFrame;
 use mt_telemetry::delivery::counters::DeliverySet;
@@ -52,11 +54,13 @@ pub async fn start_telemetry_stream(
         .inspect_err(|error| warn!("No app data dir, tracks and laps are not stored: {error}"))
         .ok();
     let crew: Arc<dyn CrewSink> = app.state::<Arc<VoiceCrewState>>().inner().clone();
+    let remote: Arc<dyn BundleTap> = app.state::<RemoteState>().hub.clone();
     let host = TelemetryHost {
         sink: Arc::new(TauriSink(app)),
         data_dir,
         connect: connect_source,
         crew: Some(crew),
+        remote: Some(remote),
     };
 
     spawn_telemetry_thread(host, state.service.clone(), run)
@@ -97,10 +101,10 @@ pub async fn set_active_events(
 
 /// Records what the remote screens are asking for.
 ///
-/// They have no webview of their own here — `src-tauri/src/remote_mirror.rs` taps the global
-/// event stream — so their appetite is registered under a reserved pseudo-label
-/// instead of a window's. Keeping it in the registry rather than implied by the
-/// broadcast is what lets the later move to `emit_to` be a transport swap.
+/// They have no webview of their own here — the telemetry runtime feeds the
+/// remote hub directly — so their appetite is registered under a reserved
+/// pseudo-label instead of a window's, and grouped with any window that wants
+/// the same fields.
 #[tauri::command]
 pub async fn set_remote_active_events(
     state: State<'_, TelemetryState>,
