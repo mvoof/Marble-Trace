@@ -4,7 +4,7 @@ What a reviewer applies to widget code. To build one, follow `docs/widget-author
 
 ## The widget system
 
-_Held by: test (every manifest has a mount and a schema whose defaults pass their own check, no mount or panel claims a widget the catalog does not ship, the catalog is alphabetical, no locale block outlives its widget, no catalog description runs past 80 characters — `widget-catalog.test.ts`, `registry.test.ts`, `panel-registry.test.ts`, `widget-locales.test.ts`); review (a manifest never importing its component, panel rows sitting directly after their parent)._
+_Held by: test (every manifest has a mount and a schema whose defaults pass their own check, no mount or panel claims a widget the catalog does not ship, the catalog is alphabetical, no locale block outlives its widget, no catalog description runs past 80 characters, no string in `src/entities/` names a catalog widget outside the listed exceptions — `widget-catalog.test.ts`, `registry.test.ts`, `panel-registry.test.ts`, `widget-locales.test.ts`, `entities/entities-name-no-widget.test.ts`); review (a manifest never importing its component, panel rows sitting directly after their parent)._
 
 Each widget is one slice, `src/widgets/<name>/` (kebab-case; components inside
 stay PascalCase), and ships three files of its own that nothing lists by hand:
@@ -109,7 +109,7 @@ backend event shapes.
 
 ## Where a file lives
 
-_Held by: lint (the layer direction and the sibling-slice rule, Layers above — a widget importing another widget's slice fails); review (the lowest consumer, every MobX class in a `*.store.ts` file). `docs/widget-toolbox.md` must list every module of `src/shared/lib/`, `src/shared/ui/` and `src/shared/hooks/` — test (`widget-toolbox.test.ts`)._
+_Held by: lint (the layer direction and the sibling-slice rule, Layers above — a widget importing another widget's slice fails); review (the lowest consumer, every MobX class in a `*.store.ts` file). `docs/widget-toolbox.md` must list every module of `src/shared/lib/`, `src/shared/ui/` and `src/shared/hooks/` — test (`widget-toolbox.test.ts`). A component past 300 lines or a store past 600 is split, not grown: a new one fails `docs/file-size-ceiling.test.ts`, which lists the ones already past it._
 
 **A file sits next to its lowest consumer, and moves up only when its consumers
 sit in different branches of the tree.** Never to a shared folder "in case",
