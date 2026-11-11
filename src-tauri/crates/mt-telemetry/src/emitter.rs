@@ -185,6 +185,11 @@ pub struct TelemetrySlowBundle {
     pub car_status: CarStatusFrame,
 }
 
+/// One tick, as a sequence of stages. The order is the contract: the
+/// reference is settled before the coach computes on it, the processors run
+/// before the actions read their frames, every stateful stage runs on every
+/// tick, and only then is the bundle masked, rounded and sent — on the ticks
+/// that publish.
 pub fn emit_domain_frames(ctx: EmitContext<'_>) {
     let EmitContext {
         sink,
@@ -201,19 +206,88 @@ pub fn emit_domain_frames(ctx: EmitContext<'_>) {
 
     let active_mask = service.masks.effective_mask();
 
-    // The track turning wet or drying swaps the reference; any change queued
-    // since the last tick — a session, a new best, a deletion — reaches the
-    // coach before it computes on this one, and the windows with it.
+    announce_reference(frame, sink, service, state);
+
+    // Every field is an `Option` the stages below fill in, so the empty bundle
+    // is the derived default rather than twenty-two `None`s written out.
+    let mut bundle = TelemetryBundle::default();
+
+    collect_raw_frames(&mut bundle, frame, due, active_mask, state);
+
+    // A clone of the Arc, so the processors below can borrow the rest of the state.
+    let session_snapshot = state.session.clone();
+    let session_info = session_snapshot.as_deref();
+
+    if let Some(session) = session_info {
+        run_processors(
+            &mut bundle,
+            ProcessorRun {
+                frame,
+                session,
+                due,
+                active_mask,
+                capabilities,
+                sink,
+                io,
+            },
+            state,
+        );
+    }
+
+    // Every tick, not on a tier: a key pressed is answered within the tick
+    // that drains it, against the order the sim reports on that same frame.
+    run_pit_actions(frame, session_info, state, pit);
+    run_crew(frame, &bundle, session_info, state, pit, crew);
+    note_last_race(frame, &bundle, session_info, state, io);
+
+    collect_slow_tiers(
+        &mut bundle,
+        SlowTierRun {
+            frame,
+            session_info,
+            due,
+            sink,
+            service,
+            io,
+            pit,
+        },
+        state,
+    );
+
+    // Everything above that keeps state has run; what is left only builds and
+    // sends the bundle. Between published ticks there is nothing to send — a
+    // frame computed here is a snapshot the next published tick replaces.
+    if !due.publish {
+        return;
+    }
+
+    publish(bundle, active_mask, due, service, state, sink, remote);
+}
+
+/// The track turning wet or drying swaps the reference; any change queued
+/// since the last tick — a session, a new best, a deletion — reaches the coach
+/// before it computes on this one, and the windows with it.
+fn announce_reference(
+    frame: &SourceFrame,
+    sink: &dyn EventSink,
+    service: &TelemetryServiceState,
+    state: &mut LoopState,
+) {
     state.track_wetness = frame.environment.track_wetness;
     let change = state.references.observe_wetness(state.track_wetness);
     state.note_reference(change);
     publish_reference(sink, service, state);
+}
 
-    // Every field is an `Option` the tiers below fill in, so the empty bundle
-    // is the derived default rather than twenty-two `None`s written out.
-    let mut bundle = TelemetryBundle::default();
-
-    // 60 Hz — raw frames, on the ticks that publish
+/// The raw 60 Hz frames, on the ticks that publish, and the input samples,
+/// which are kept on every tick.
+fn collect_raw_frames(
+    bundle: &mut TelemetryBundle,
+    frame: &SourceFrame,
+    due: DueGroups,
+    active_mask: u32,
+    state: &mut LoopState,
+) {
     if due.publish && (active_mask & EVENT_CAR_DYNAMICS) != 0 {
         bundle.car_dynamics = Some(frame.car_dynamics.clone());
     }
@@ -238,154 +312,209 @@ pub fn emit_domain_frames(ctx: EmitContext<'_>) {
         state.input_samples.clear();
     }
 
-    // A clone of the Arc, so the processors below can borrow the rest of the state.
-    let session_snapshot = state.session.clone();
-    let session_info = session_snapshot.as_deref();
-
-    // 60 Hz — lightweight car positions for smooth map/relative rendering
+    // Lightweight car positions for smooth map and relative rendering.
     if due.publish && (active_mask & EVENT_CAR_POSITIONS) != 0 {
         bundle.car_positions = Some(frame.car_positions.clone());
     }
+}
 
-    // Run processors — only when session is available (mirrors previous behavior)
-    if let Some(session) = session_info {
-        let track_length = state.track_length_m.unwrap_or(0.0);
+/// What the processor stage reads besides the loop state.
+struct ProcessorRun<'a> {
+    frame: &'a SourceFrame,
+    session: &'a SessionSnapshot,
+    due: DueGroups,
+    active_mask: u32,
+    capabilities: Capabilities,
+    sink: &'a dyn EventSink,
+    io: &'a IoWorker,
+}
 
-        let compute_ctx = ComputeContext {
-            car_dynamics: &frame.car_dynamics,
-            car_inputs: &frame.car_inputs,
-            car_idx: &frame.car_idx,
-            pacing: &frame.pacing,
-            lap_timing: &frame.lap_timing,
-            car_status: &frame.car_status,
-            pit_service: &frame.pit_service,
-            chassis: &frame.chassis,
-            environment: &frame.environment,
-            session,
-            track_length_m: track_length,
-            car_length_m: state.config.car_length_m,
-            start_positions: &state.start_positions,
-            fuel_settings: state.config.fuel,
-            lap_delta_active: (active_mask & EVENT_LAP_DELTA) != 0,
-            session_num: frame.session.session_num,
-            session_time: frame.session.session_time,
-            session_time_remain: frame.session.session_time_remain,
-            session_state: frame.session.session_state,
-            session_flags: frame.session.session_flags,
-        };
+/// The processors of the three tiers, with what they hand to disk and to the
+/// windows on the way, and the pit-lane target between the first and the
+/// rest. Runs only while a session is known.
+fn run_processors(bundle: &mut TelemetryBundle, run: ProcessorRun<'_>, state: &mut LoopState) {
+    let ProcessorRun {
+        frame,
+        session,
+        due,
+        active_mask,
+        capabilities,
+        sink,
+        io,
+    } = run;
+    let track_length = state.track_length_m.unwrap_or(0.0);
 
-        // 60 Hz computed (lap delta, gated by lap_delta_active inside processor)
-        for output in state
-            .registry
-            .run(TickRate::OverlayClock, capabilities, &compute_ctx)
-        {
-            match output {
-                ComputedOutput::TrackShape(payload) => {
-                    if let Err(e) = sink.emit(EVENT_TRACK_SHAPE, &payload) {
-                        warn!("Failed to emit track shape: {}", e);
-                    }
+    let compute_ctx = ComputeContext {
+        car_dynamics: &frame.car_dynamics,
+        car_inputs: &frame.car_inputs,
+        car_idx: &frame.car_idx,
+        pacing: &frame.pacing,
+        lap_timing: &frame.lap_timing,
+        car_status: &frame.car_status,
+        pit_service: &frame.pit_service,
+        chassis: &frame.chassis,
+        environment: &frame.environment,
+        session,
+        track_length_m: track_length,
+        car_length_m: state.config.car_length_m,
+        start_positions: &state.start_positions,
+        fuel_settings: state.config.fuel,
+        lap_delta_active: (active_mask & EVENT_LAP_DELTA) != 0,
+        session_num: frame.session.session_num,
+        session_time: frame.session.session_time,
+        session_time_remain: frame.session.session_time_remain,
+        session_state: frame.session.session_state,
+        session_flags: frame.session.session_flags,
+    };
 
-                    io.save_track_shape(payload);
+    // The overlay clock's computed frames (lap delta, gated inside the processor).
+    for output in state
+        .registry
+        .run(TickRate::OverlayClock, capabilities, &compute_ctx)
+    {
+        match output {
+            ComputedOutput::TrackShape(payload) => {
+                if let Err(e) = sink.emit(EVENT_TRACK_SHAPE, &payload) {
+                    warn!("Failed to emit track shape: {}", e);
                 }
-                ComputedOutput::ReferenceLap(data) => {
-                    // Fields rather than `note_reference`: the context above still
-                    // borrows the grid out of `state`.
-                    let change = state.references.record(data.clone());
 
-                    if change.is_some() {
-                        state.pending_reference = change;
-                    }
+                io.save_track_shape(payload);
+            }
+            ComputedOutput::ReferenceLap(data) => {
+                // Fields rather than `note_reference`: the context above still
+                // borrows the grid out of `state`.
+                let change = state.references.record(data.clone());
 
-                    io.save_reference_lap(data);
+                if change.is_some() {
+                    state.pending_reference = change;
                 }
-                ComputedOutput::PitLanePct {
-                    track_id,
-                    pit_in_pct,
-                    pit_exit_pct,
-                } => {
-                    state.pit_in_pct = Some(pit_in_pct);
-                    state.pit_exit_pct = Some(pit_exit_pct);
-                    io.patch_pit_lane_pct(track_id, pit_in_pct, pit_exit_pct);
-                }
-                other => scatter_output(&mut bundle, other),
+
+                io.save_reference_lap(data);
             }
-        }
-
-        // Where the car is in the pit lane, and how far its box or the exit is.
-        let lap_dist_pct = frame.lap_timing.lap_dist_pct;
-        let pit_in_pct = state.pit_in_pct;
-        let pit_exit_pct = state.pit_exit_pct;
-        let pitbox_pct = session.driver_pit_trk_pct;
-
-        // The entry this stint actually used: taken on the first frame the sim
-        // reports pit road, dropped on the way out. Anchoring the lane on it
-        // keeps the rail from filling the moment the car turns in, where the
-        // recorded entry point sits a few meters the other side of the car.
-        let live_pit_in_pct = {
-            let on_pit_road = frame.car_status.on_pit_road.unwrap_or(false);
-            let live = &mut state.live_pit_in_pct;
-
-            if !on_pit_road {
-                *live = None;
-            } else if live.is_none() {
-                *live = lap_dist_pct.filter(|dist| *dist >= 0.0);
+            ComputedOutput::PitLanePct {
+                track_id,
+                pit_in_pct,
+                pit_exit_pct,
+            } => {
+                state.pit_in_pct = Some(pit_in_pct);
+                state.pit_exit_pct = Some(pit_exit_pct);
+                io.patch_pit_lane_pct(track_id, pit_in_pct, pit_exit_pct);
             }
-
-            *live
-        };
-
-        if let (Some(lap_dist), Some(pit_in), Some(pit_exit)) =
-            (lap_dist_pct, pit_in_pct, pit_exit_pct)
-        {
-            if let Some(pit_target) = resolve_pit_target(
-                lap_dist,
-                pit_in,
-                pit_exit,
-                live_pit_in_pct,
-                pitbox_pct,
-                track_length,
-            ) {
-                bundle.pit_target = Some(PitTargetFrame {
-                    dist_m: pit_target.dist_m,
-                    target: pit_target.target,
-                    lane_progress_pct: pit_target.lane_progress,
-                });
-            }
-        }
-
-        if due.hz10 {
-            for output in state
-                .registry
-                .run(TickRate::Hz10, capabilities, &compute_ctx)
-            {
-                scatter_output(&mut bundle, output);
-            }
-        }
-
-        if due.hz4 {
-            for output in state
-                .registry
-                .run(TickRate::Hz4, capabilities, &compute_ctx)
-            {
-                match output {
-                    ComputedOutput::SafetyRating { frame, save } => {
-                        if let Some(state_to_save) = save {
-                            io.save_safety_rating(*state_to_save);
-                        }
-
-                        bundle.safety_rating = Some(frame);
-                    }
-                    other => scatter_output(&mut bundle, other),
-                }
-            }
+            other => scatter_output(bundle, other),
         }
     }
 
-    // Every tick, not on a tier: a key pressed is answered within the tick
-    // that drains it, against the order the sim reports on that same frame.
-    run_pit_actions(frame, session_info, state, pit);
-    run_crew(frame, &bundle, session_info, state, pit, crew);
-    note_last_race(frame, &bundle, session_info, state, io);
+    bundle.pit_target = locate_pit_target(
+        frame,
+        PitLane {
+            pit_in_pct: state.pit_in_pct,
+            pit_exit_pct: state.pit_exit_pct,
+            pitbox_pct: session.driver_pit_trk_pct,
+            track_length,
+        },
+        &mut state.live_pit_in_pct,
+    );
+
+    if due.hz10 {
+        for output in state
+            .registry
+            .run(TickRate::Hz10, capabilities, &compute_ctx)
+        {
+            scatter_output(bundle, output);
+        }
+    }
+
+    if due.hz4 {
+        for output in state
+            .registry
+            .run(TickRate::Hz4, capabilities, &compute_ctx)
+        {
+            match output {
+                ComputedOutput::SafetyRating { frame, save } => {
+                    if let Some(state_to_save) = save {
+                        io.save_safety_rating(*state_to_save);
+                    }
+
+                    bundle.safety_rating = Some(frame);
+                }
+                other => scatter_output(bundle, other),
+            }
+        }
+    }
+}
+
+/// The pit lane as the track records it.
+struct PitLane {
+    pit_in_pct: Option<f32>,
+    pit_exit_pct: Option<f32>,
+    pitbox_pct: Option<f32>,
+    track_length: f32,
+}
+
+/// Where the car is in the pit lane, and how far its box or the exit is.
+///
+/// The entry this stint actually used is taken on the first frame the sim
+/// reports pit road and dropped on the way out (`live_pit_in_pct`). Anchoring
+/// the lane on it keeps the rail from filling the moment the car turns in,
+/// where the recorded entry point sits a few meters the other side of the car.
+fn locate_pit_target(
+    frame: &SourceFrame,
+    lane: PitLane,
+    live_pit_in_pct: &mut Option<f32>,
+) -> Option<PitTargetFrame> {
+    let lap_dist_pct = frame.lap_timing.lap_dist_pct;
+    let on_pit_road = frame.car_status.on_pit_road.unwrap_or(false);
+
+    if !on_pit_road {
+        *live_pit_in_pct = None;
+    } else if live_pit_in_pct.is_none() {
+        *live_pit_in_pct = lap_dist_pct.filter(|dist| *dist >= 0.0);
+    }
+
+    let (Some(lap_dist), Some(pit_in), Some(pit_exit)) =
+        (lap_dist_pct, lane.pit_in_pct, lane.pit_exit_pct)
+    else {
+        return None;
+    };
+
+    resolve_pit_target(
+        lap_dist,
+        pit_in,
+        pit_exit,
+        *live_pit_in_pct,
+        lane.pitbox_pct,
+        lane.track_length,
+    )
+    .map(|pit_target| PitTargetFrame {
+        dist_m: pit_target.dist_m,
+        target: pit_target.target,
+        lane_progress_pct: pit_target.lane_progress,
+    })
+}
+
+/// What the slow-tier stage reads besides the loop state.
+struct SlowTierRun<'a> {
+    frame: &'a SourceFrame,
+    session_info: Option<&'a SessionSnapshot>,
+    due: DueGroups,
+    sink: &'a dyn EventSink,
+    service: &'a TelemetryServiceState,
+    io: &'a IoWorker,
+    pit: Option<&'a dyn PitCommander>,
+}
+
+/// The raw frames of the 10, 4 and 1 Hz tiers, auto pit on the 4 Hz one, and
+/// the events those tiers send on their own.
+fn collect_slow_tiers(bundle: &mut TelemetryBundle, run: SlowTierRun<'_>, state: &mut LoopState) {
+    let SlowTierRun {
+        frame,
+        session_info,
+        due,
+        sink,
+        service,
+        io,
+        pit,
+    } = run;
 
     if due.hz10 {
         bundle.chassis = Some(frame.chassis.clone());
@@ -397,7 +526,7 @@ pub fn emit_domain_frames(ctx: EmitContext<'_>) {
     if due.hz4 {
         bundle.car_status = Some(frame.car_status.clone());
         bundle.pit_service = Some(frame.pit_service.clone());
-        bundle.pit_auto = Some(run_pit_auto(frame, &bundle, state, pit));
+        bundle.pit_auto = Some(run_pit_auto(frame, bundle, state, pit));
 
         let slow = TelemetrySlowBundle {
             car_status: frame.car_status.clone(),
@@ -425,14 +554,18 @@ pub fn emit_domain_frames(ctx: EmitContext<'_>) {
             warn!("Failed to emit sim perf: {}", e);
         }
     }
+}
 
-    // Everything above that keeps state has run; what is left only builds and
-    // sends the bundle. Between published ticks there is nothing to send — a
-    // frame computed here is a snapshot the next published tick replaces.
-    if !due.publish {
-        return;
-    }
-
+/// Masks, rounds and delivers a published tick's bundle.
+fn publish(
+    mut bundle: TelemetryBundle,
+    active_mask: u32,
+    due: DueGroups,
+    service: &TelemetryServiceState,
+    state: &mut LoopState,
+    sink: &dyn EventSink,
+    remote: Option<&dyn BundleTap>,
+) {
     // Drop what nobody asked for. Deliberately after the processors have run:
     // the mask gates publication, never computation, so a widget switched on
     // mid-race finds the driver table, the gaps and the history intact
