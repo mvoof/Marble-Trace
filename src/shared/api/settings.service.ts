@@ -1,5 +1,7 @@
 import { invoke } from '@tauri-apps/api/core';
 
+import type { TelemetrySettings } from '@shared/contracts/generated/bindings';
+
 export const settingsFileExists = async (): Promise<boolean> =>
   invoke('settings_file_exists');
 
@@ -14,36 +16,15 @@ export const logSettingsSnapshot = async (settings: unknown): Promise<void> =>
 export const deleteSettingsFile = async (): Promise<void> =>
   invoke('delete_settings_file');
 
-/** Fire-and-forget backend mirrors of widget settings: callers never await. */
-export const setPitWarningLapsSilent = (laps: number): void => {
-  invoke('set_pit_warning_laps', { laps }).catch((error) =>
-    console.error('[settings.service] set_pit_warning_laps failed:', error)
-  );
-};
-
-export const setFuelAvgWindowSilent = (window: number): void => {
-  invoke('set_fuel_avg_window', { window }).catch((error) =>
-    console.error('[settings.service] set_fuel_avg_window failed:', error)
-  );
-};
-
-export const setFuelCountYellowLapsSilent = (count: boolean): void => {
-  invoke('set_fuel_count_yellow_laps', { count }).catch((error) =>
-    console.error(
-      '[settings.service] set_fuel_count_yellow_laps failed:',
-      error
-    )
-  );
-};
-
-export const setCarLengthSilent = (length: number): void => {
-  invoke('set_car_length', { length }).catch((error) =>
-    console.error('[settings.service] set_car_length failed:', error)
-  );
-};
-
-export const setOverlayUpdateHzSilent = (rateHz: number): void => {
-  invoke('set_overlay_update_hz', { hz: rateHz }).catch((error) =>
-    console.error('[settings.service] set_overlay_update_hz failed:', error)
+/**
+ * The user's telemetry settings, whole — the backend applies them as one
+ * value. Fire-and-forget: the caller is a reaction that sends them again on
+ * the next change.
+ */
+export const setTelemetrySettingsSilent = (
+  settings: TelemetrySettings
+): void => {
+  invoke('set_telemetry_settings', { settings }).catch((error) =>
+    console.error('[settings.service] set_telemetry_settings failed:', error)
   );
 };

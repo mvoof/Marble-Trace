@@ -14,6 +14,7 @@ import { listenSettingsActions, registerHotkeyReactions } from './hotkey-sync';
 import { setupMainListeners } from './listeners';
 import { registerChatReactions } from './chat-sync';
 import { registerSaveReaction } from './save-sync';
+import { registerTelemetrySettingsReaction } from './telemetry-settings-sync';
 import { registerPitServiceMainReactions } from './pit-service-sync';
 import { registerVoiceMainReactions } from './voice-sync';
 import { overlayMonitorNames, syncOverlayWindows } from './overlay-windows';
@@ -240,6 +241,7 @@ export const initMainSync = async (root: MainRoot) => {
       // connect, sim-armed pit order) run in this sequence at startup.
       const disposers = [
         registerSaveReaction(root, onSave),
+        registerTelemetrySettingsReaction(root),
         registerLayoutAutoSwitchReaction(root),
         ...registerOverlayWindowReactions(root),
         ...registerBindingReactions(root),

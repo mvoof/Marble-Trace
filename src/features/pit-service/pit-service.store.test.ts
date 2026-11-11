@@ -28,11 +28,7 @@ vi.mock('@shared/api/telemetry.service', () => ({
   setActiveEventsSilent: vi.fn(),
 }));
 vi.mock('@shared/api/settings.service', () => ({
-  setPitWarningLapsSilent: vi.fn(),
-  setFuelAvgWindowSilent: vi.fn(),
-  setFuelCountYellowLapsSilent: vi.fn(),
-  setCarLengthSilent: vi.fn(),
-  setOverlayUpdateHzSilent: vi.fn(),
+  setTelemetrySettingsSilent: vi.fn(),
 }));
 
 // RendererCore subscribes to sim events on construction; the node test

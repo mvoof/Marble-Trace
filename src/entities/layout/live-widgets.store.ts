@@ -9,11 +9,6 @@ import {
   nextInstanceId,
   widgetTypeFromId,
 } from '@entities/widget/widget-instance';
-import {
-  setFuelAvgWindowSilent,
-  setFuelCountYellowLapsSilent,
-  setPitWarningLapsSilent,
-} from '@shared/api/settings.service';
 import type { LayoutsStore } from '@entities/layout/layouts.store';
 import type { SettingsMutationLog } from '@entities/layout/mutation-log.store';
 import { availableWidgetIdsOf } from '@entities/widget/widget-availability';
@@ -65,11 +60,6 @@ const LAYOUT_TOAST_DURATION_MS = 3000;
  * The fuel widget's settings the backend keeps a copy of. Declared here, not
  * imported: the fuel widget's schema sits in its slice, above this layer.
  */
-interface FuelStrategySettings {
-  pitWarningLaps: number;
-  fuelAvgWindow: number;
-  countYellowFlagLaps: boolean;
-}
 
 // How far a duplicate lands from the widget it was copied from, so the two
 // are visibly separate the moment the copy appears.
@@ -578,18 +568,6 @@ export class LiveWidgetsStore implements WidgetMap {
       }
 
       this.bumpMutation();
-
-      // The backend keeps one copy of these, so one instance has to speak for
-      // them however many the layout holds.
-      const fuel = this.primaryInstanceOf('fuel');
-
-      if (fuel) {
-        const settings = fuel.userSettings as unknown as FuelStrategySettings;
-
-        setPitWarningLapsSilent(settings.pitWarningLaps);
-        setFuelAvgWindowSilent(settings.fuelAvgWindow);
-        setFuelCountYellowLapsSilent(settings.countYellowFlagLaps);
-      }
     });
   }
 
@@ -1073,20 +1051,6 @@ export class LiveWidgetsStore implements WidgetMap {
     applyLayoutResize(type, widget, prevSettings, widget.userSettings);
 
     this.bumpMutation();
-
-    const fuelPartial = resolvedPartial as Partial<FuelStrategySettings>;
-
-    if (type === 'fuel' && 'pitWarningLaps' in resolvedPartial) {
-      setPitWarningLapsSilent(fuelPartial.pitWarningLaps!);
-    }
-
-    if (type === 'fuel' && 'fuelAvgWindow' in resolvedPartial) {
-      setFuelAvgWindowSilent(fuelPartial.fuelAvgWindow!);
-    }
-
-    if (type === 'fuel' && 'countYellowFlagLaps' in resolvedPartial) {
-      setFuelCountYellowLapsSilent(fuelPartial.countYellowFlagLaps!);
-    }
   }
 
   setOverlayResolution(resolution: LayoutResolution) {

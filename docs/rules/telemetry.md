@@ -8,7 +8,7 @@ _Held by: test (the scheduler's rates and that a timed tier is never due off a p
 
 The processors run on every source tick (~60 Hz). A bundle is **published** on
 every Nth tick — the overlay clock, `appSettings.overlayUpdateHz` (60 / 30 / 20 /
-15, default 30, `set_overlay_update_hz`) — and the slower tiers are only ever due
+15, default 30, sent in `set_telemetry_settings`) — and the slower tiers are only ever due
 on a published tick (ADR-0009). Every bundle is one change of the overlay, and
 every change costs the game a composed frame: never publish off the clock.
 

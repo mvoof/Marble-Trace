@@ -45,9 +45,7 @@ vi.mock('@shared/api/track.service', () => ({
 }));
 
 vi.mock('@shared/api/settings.service', () => ({
-  setFuelAvgWindowSilent: vi.fn(),
-  setFuelCountYellowLapsSilent: vi.fn(),
-  setPitWarningLapsSilent: vi.fn(),
+  setTelemetrySettingsSilent: vi.fn(),
 }));
 
 const MONITOR_LEFT = {

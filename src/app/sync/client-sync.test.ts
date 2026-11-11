@@ -49,12 +49,8 @@ vi.mock('@shared/api/remote-socket.service', () => ({
 }));
 
 vi.mock('@shared/api/settings.service', () => ({
-  setFuelAvgWindowSilent: vi.fn(),
-  setFuelCountYellowLapsSilent: vi.fn(),
-  setPitWarningLapsSilent: vi.fn(),
+  setTelemetrySettingsSilent: vi.fn(),
   setActiveEventsSilent: vi.fn(),
-  setCarLengthSilent: vi.fn(),
-  setOverlayUpdateHzSilent: vi.fn(),
 }));
 
 const { setupOverlayListeners } = await import('./listeners');

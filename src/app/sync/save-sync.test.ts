@@ -17,12 +17,7 @@ vi.mock('@shared/api/events.service', () => ({
 }));
 
 vi.mock('@shared/api/settings.service', () => ({
-  setFuelAvgWindowSilent: vi.fn(),
-  setFuelCountYellowLapsSilent: vi.fn(),
-  setPitWarningLapsSilent: vi.fn(),
   setActiveEventsSilent: vi.fn(),
-  setCarLengthSilent: vi.fn(),
-  setOverlayUpdateHzSilent: vi.fn(),
   setTelemetrySettingsSilent: vi.fn(),
 }));
 

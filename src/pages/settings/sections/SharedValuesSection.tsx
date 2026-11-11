@@ -44,7 +44,7 @@ export const SharedValuesSection = observer(() => {
               value={appSettings.appSettings.carLength}
               onChange={(value) => {
                 if (value !== null) {
-                  appSettings.setCarLength(value);
+                  appSettings.update({ carLength: value });
                 }
               }}
             />

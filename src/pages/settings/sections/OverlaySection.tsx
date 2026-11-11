@@ -75,7 +75,9 @@ export const OverlaySection = observer(() => {
 
             <Segmented<number>
               value={appSettings.appSettings.overlayUpdateHz}
-              onChange={(rateHz) => appSettings.setOverlayUpdateHz(rateHz)}
+              onChange={(rateHz) =>
+                appSettings.update({ overlayUpdateHz: rateHz })
+              }
               options={OVERLAY_UPDATE_HZ_OPTIONS.map((rateHz) => ({
                 label: `${rateHz} Hz`,
                 value: rateHz,

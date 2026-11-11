@@ -2902,6 +2902,31 @@ export type TelemetryBundle = {
 };
 
 /**
+ * What `set_telemetry_settings` carries.
+ */
+export type TelemetrySettings = {
+  /**
+   * The player's car length, which turns a centre-to-centre distance into
+   * the gap between bumpers.
+   */
+  carLengthM: number;
+  /**
+   * How often a bundle is published; a divisor of `SOURCE_TICK_HZ`. The
+   * processors keep running at the source's rate (ADR-0009).
+   */
+  overlayUpdateHz: number;
+  pitWarningLaps: number;
+  /**
+   * Recent laps averaged for fuel use; 0 is the whole session.
+   */
+  fuelAvgWindow: number;
+  /**
+   * Whether laps under a local yellow count towards fuel use.
+   */
+  fuelCountYellowLaps: boolean;
+};
+
+/**
  * The 4 Hz slice for a window that does not draw widgets.
  *
  * The main window is off the bundle (see `SimStore.subscribeBundle`), but it

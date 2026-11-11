@@ -3,11 +3,7 @@ import {
   requestDragMode,
   requestInteractMode,
 } from '@shared/api/hotkeys.service';
-import {
-  deleteSettingsFile,
-  setCarLengthSilent,
-  setOverlayUpdateHzSilent,
-} from '@shared/api/settings.service';
+import { deleteSettingsFile } from '@shared/api/settings.service';
 import { relaunchApp } from '@shared/api/updater.service';
 import { DEFAULT_OVERLAY_UPDATE_HZ } from '@shared/contracts/generated/backend-constants';
 import { mergeWithDefaults } from '@shared/lib/deep-merge';
@@ -250,11 +246,6 @@ export class AppSettingsStore {
     const merged = mergeWithDefaults(DEFAULT_APP_SETTINGS, saved);
     Object.assign(this.appSettings, merged);
 
-    // The backend holds its own copy for the proximity computation, and it
-    // starts on the shipped default: a file that says otherwise has to be
-    // pushed across on the way in, not on the first time the user touches it.
-    setCarLengthSilent(this.appSettings.carLength);
-    setOverlayUpdateHzSilent(this.appSettings.overlayUpdateHz);
     void i18n.changeLanguage(resolveAppLanguage(this.appSettings.language));
   }
 
@@ -314,16 +305,6 @@ export class AppSettingsStore {
   applyOverlayModes(modes: OverlayModes) {
     this.dragMode = modes.dragMode;
     this.interactMode = modes.interactMode;
-  }
-
-  setCarLength(value: number) {
-    this.appSettings.carLength = value;
-    setCarLengthSilent(value);
-  }
-
-  setOverlayUpdateHz(value: number) {
-    this.appSettings.overlayUpdateHz = value;
-    setOverlayUpdateHzSilent(value);
   }
 
   setStreamChatTwitchLogin(login: string | null) {
