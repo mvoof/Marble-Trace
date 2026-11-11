@@ -15,6 +15,7 @@ pub mod pack;
 pub mod pack_files;
 pub mod piper;
 pub mod playback;
+pub mod preview;
 pub mod queue;
 pub mod views;
 pub mod voice_in;
