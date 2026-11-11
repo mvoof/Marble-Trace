@@ -465,10 +465,22 @@ of 20 widgets on `DISPLAY1` at 30 Hz. Each cell is the mean of three runs.
   recipient plus the mirror, but the difference sits on the ticks that do not
   publish as well, where delivery does not run: it is build-to-build spread.
   As the audit expected, B1 is a simplification, not a speed-up.
-- **Allocation +6 %**, spread under 1 % — real. Not the live-write kit: making
-  its writes allocate nothing on an unchanged value (2f4bdea7) left the number
-  where it was. A 30 s `--heap` of each puts the extra in React render/commit
-  (+0.09 MiB/s) and in the standings helpers it calls (+0.06; the file itself
-  is unchanged), which points at the Standings row rendering more often since
-  its split into shared parts. The rest is within the sampler's spread.
-  Unresolved.
+- **Allocation: a regression found and fixed.** The table above read +6 %
+  (spread under 1 %). Bisected with one 30 s run per commit (`--seconds 30`
+  — compare only runs of the same span; the 30 s and 60 s windows cover
+  different laps and differ by ~0.2 MiB/s on their own):
+
+  | commit                                | alloc (MiB/s) |
+  | ------------------------------------- | ------------- |
+  | `main` b2f01467                       | 5.34          |
+  | 819f1ff8 (car lookups by index)       | 5.28          |
+  | 8fa7a977 (one driver row for tables)  | 5.59          |
+  | every later commit up to 57ef0fab     | 5.57–5.70     |
+  | f1680978 (row reads `isSessionEnded`) | 5.39          |
+
+  The shared row state read `session.session?.session_state` in render. The
+  session frame is replaced every second, so every Relative row — which had
+  not read the session before — redrew once a second with its four observer
+  parts. `SessionStore.isSessionEnded` is a computed boolean; the rows wake
+  when it flips. Single 30 s runs spread about ±0.04 MiB/s, so 5.39 against
+  5.34 is level with `main`.
