@@ -1,74 +1,47 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
-import {
-  App,
-  Button,
-  Input,
-  Popconfirm,
-  Select,
-  Tooltip,
-  ConfigProvider,
-} from 'antd';
-import type { InputRef } from 'antd';
+import { Button, ConfigProvider, Select, Tooltip } from 'antd';
 import {
   ArrowLeft,
-  Plus,
-  Pencil,
-  Play,
-  Check,
-  X,
-  Image,
-  ImageOff,
   Grid3x3,
   Magnet,
   Maximize,
   Minimize,
-  Monitor,
   PanelLeft,
   PanelLeftClose,
   PanelRight,
   PanelRightClose,
-  Undo2,
+  Play,
   Redo2,
   Rows3,
-  Trash2,
+  Undo2,
 } from 'lucide-react';
+
 import { useAppSettingsStore } from '@entities/app-settings/app-settings-context';
 import { useLayoutsStore } from '@entities/layout/layouts-context';
-import {
-  useLayoutEditorStore,
-  useLayoutGestureStores,
-} from '@features/layout-editor/layout-editor-context';
 import { useMainLiveWidgetsStore } from '@entities/layout/main-live-widgets-context';
-import {
-  SESSION_PREVIEW_SCENARIOS,
-  DEFAULT_PREVIEW_SCENARIO_ID,
-} from '@features/preview/scenarios';
-import { LayoutCanvas } from './LayoutCanvas';
-import { LayoutWidgetPanel } from './LayoutWidgetPanel';
-import { LayoutList } from './LayoutList';
-import {
-  saveBackgroundImage,
-  deleteBackgroundImage,
-} from '@entities/layout/layout-background';
-import { isRemoteMonitor } from '@shared/lib/remote-screen';
-import { AddRemoteScreenButton } from './AddRemoteScreenButton';
 import { monitorForWidget } from '@entities/layout/virtual-desktop';
+import { useLayoutEditorStore } from '@features/layout-editor/layout-editor-context';
+import { useLayoutEditorUiStore } from '@features/layout-editor/layout-editor-ui-context';
+import {
+  snappedPosition,
+  type SnapPosition,
+} from '@features/layout-editor/snap-position';
+import { SESSION_PREVIEW_SCENARIOS } from '@features/preview/scenarios';
+import { isRemoteMonitor } from '@shared/lib/remote-screen';
+import { cx } from '@shared/lib/class-names';
+
+import { AddRemoteScreenButton } from './AddRemoteScreenButton';
+import { LayoutCanvas } from './LayoutCanvas';
+import { LayoutList } from './LayoutList';
+import { LayoutWidgetPanel } from './LayoutWidgetPanel';
+import { BackgroundControls } from './toolbar/BackgroundControls';
+import { LayoutNameField } from './toolbar/LayoutNameField';
+import { MonitorPicker } from './toolbar/MonitorPicker';
 import { useToolbarBottom } from './use-toolbar-bottom';
 import { WidgetInspector } from './WidgetInspector';
-import type { SnapPosition } from '@features/layout-editor/snap-position';
-import {
-  createLayout,
-  deleteLayout,
-  removeMonitor,
-} from '@features/layout-editor/layout-gestures';
 import styles from './LayoutEditor.module.scss';
-
-const SNAP_MARGIN = 8;
-
-// Sentinel for the picker entry that zooms the canvas out to the whole desktop.
-const ALL_MONITORS = '__all__';
 
 // The canvas is seeded as a whole, so the bar offers the session-wide moments
 // only — a widget's own domain scenarios belong to that widget's picker.
@@ -82,30 +55,38 @@ const GRID_SIZE_OPTIONS = [10, 15, 20, 30, 40].map((size) => ({
   label: `${size}px`,
 }));
 
-// Layout editor section: a WYSIWYG canvas of the active layout plus a
-// master-detail widget panel. Editing the canvas (drag/resize) or a widget's
-// settings auto-commits into the active layout via the store's change reaction.
+const GRID_SELECT_MIN_WIDTH_PX = 72;
+const SCENARIO_SELECT_MIN_WIDTH_PX = 150;
+
+type EditorMode = 'list' | 'editor';
+
+/**
+ * The Layouts tab: the list of layouts, or the editor of one. The editor's
+ * view state is `LayoutEditorUiStore`'s; this component lays the toolbar, the
+ * widget panel, the canvas and the inspector out around it.
+ */
 export const LayoutEditor = observer(
   ({
     mode = 'list',
     onModeChange,
   }: {
-    mode?: 'list' | 'editor';
-    onModeChange?: (mode: 'list' | 'editor') => void;
+    mode?: EditorMode;
+    onModeChange?: (mode: EditorMode) => void;
   }) => {
     const liveWidgets = useMainLiveWidgetsStore();
     const layouts = useLayoutsStore();
-    const { modal } = App.useApp();
-    const gestureStores = useLayoutGestureStores();
     const layoutEditor = useLayoutEditorStore();
+    const editorUi = useLayoutEditorUiStore();
     const appSettings = useAppSettingsStore();
     const { t } = useTranslation('main-app');
 
-    const [localMode, setLocalMode] = useState<'list' | 'editor'>('list');
+    const [localMode, setLocalMode] = useState<EditorMode>('list');
+    const rootRef = useRef<HTMLDivElement | null>(null);
+    const toolbarRef = useToolbarBottom(rootRef);
 
     const activeMode = onModeChange ? mode : localMode;
 
-    const handleModeChange = (nextMode: 'list' | 'editor') => {
+    const handleModeChange = (nextMode: EditorMode) => {
       if (onModeChange) {
         onModeChange(nextMode);
       } else {
@@ -123,16 +104,6 @@ export const LayoutEditor = observer(
       handleModeChange('editor');
     };
 
-    const handleBack = () => {
-      handleModeChange('list');
-    };
-
-    const handleMakeActive = () => {
-      layoutEditor.activateLayout();
-    };
-
-    const isEditingLayoutActive = !layoutEditor.previewMode;
-
     // Closing hands the screen's layout back as the one being edited; the
     // session auto-switch never stands down, so the overlay has been following
     // the session the whole time the editor was open.
@@ -142,8 +113,7 @@ export const LayoutEditor = observer(
     // effect down before running the new one, so a cleanup that closed
     // unconditionally would close the session the click handler had just
     // opened — handing the editor back the layout that was live instead of the
-    // one that was clicked. Leaving on the other branch there is nothing to
-    // tear down, and the close below has already run.
+    // one that was clicked.
     useEffect(() => {
       if (activeMode !== 'editor') {
         layoutEditor.setOpen(false);
@@ -158,65 +128,35 @@ export const LayoutEditor = observer(
       };
     }, [activeMode, layoutEditor]);
 
+    useEffect(() => {
+      const onFullscreenChange = () =>
+        editorUi.setFullscreen(!!document.fullscreenElement);
+
+      document.addEventListener('fullscreenchange', onFullscreenChange);
+
+      return () =>
+        document.removeEventListener('fullscreenchange', onFullscreenChange);
+    }, [editorUi]);
+
     const showGrid = appSettings.appSettings.editorShowGrid;
     const snapToGrid = appSettings.appSettings.editorSnapToGrid;
     const gridSize = appSettings.appSettings.editorGridSize;
-
-    const [selectedWidgetId, setSelectedWidgetId] = useState<string | null>(
-      null
-    );
-    const [scenarioId, setScenarioId] = useState(DEFAULT_PREVIEW_SCENARIO_ID);
-
-    // Which screen fills the canvas. Null shows every monitor of the layout at
-    // once — needed to drag widgets between screens, useless for fine work.
-    const [focusedMonitorName, setFocusedMonitorName] = useState<string | null>(
-      null
-    );
-
-    const [isUploadingBackground, setIsUploadingBackground] = useState(false);
-
-    const [isCreating, setIsCreating] = useState(false);
-    const [newName, setNewName] = useState('');
-    const [isRenaming, setIsRenaming] = useState(false);
-    const [draftName, setDraftName] = useState('');
-    const pendingNameFocusRef = useRef(false);
-    const nameInputCallbackRef = useCallback((node: InputRef | null) => {
-      if (node && pendingNameFocusRef.current) {
-        pendingNameFocusRef.current = false;
-        node.focus?.();
-      }
-    }, []);
-    const backgroundInputRef = useRef<HTMLInputElement | null>(null);
-    const rootRef = useRef<HTMLDivElement | null>(null);
-    const [isFullscreen, setIsFullscreen] = useState(false);
-    const [isPanelOpen, setIsPanelOpen] = useState(false);
-    const [isInspectorOpen, setIsInspectorOpen] = useState(false);
-
-    const [lockedRatios, setLockedRatios] = useState<Record<string, boolean>>(
-      {}
-    );
-
-    const activeId = layouts.editingLayoutId;
+    const isFullscreen = editorUi.isFullscreen;
+    const selectedWidgetId = editorUi.selectedWidgetId;
     const editingLayout = layouts.editingLayout;
-    const monitors = liveWidgets.attachedMonitors;
-
-    // Background images belong to a screen, so setting one needs a screen in
-    // focus; in overview the first monitor is the sensible target.
-    const backgroundTargetName =
-      focusedMonitorName ?? editingLayout?.monitors[0]?.name;
-
-    const prevActiveIdRef = useRef(activeId);
-
-    useEffect(() => {
-      if (prevActiveIdRef.current !== activeId) {
-        prevActiveIdRef.current = activeId;
-        setSelectedWidgetId(null);
-      }
-    }, [activeId]);
-
     const selectedWidget = selectedWidgetId
       ? liveWidgets.getWidget(selectedWidgetId)
       : undefined;
+
+    const hasRemoteScreens = (editingLayout?.monitors ?? []).some(
+      isRemoteMonitor
+    );
+
+    const moveTargetOptions = (editingLayout?.monitors ?? [])
+      .filter((monitor) => monitor.name !== editorUi.focusedMonitorName)
+      .map((monitor) => ({ value: monitor.name, label: monitor.name }));
+
+    const dialogContainer = () => rootRef.current ?? document.body;
 
     const toggleFullscreen = () => {
       if (document.fullscreenElement) {
@@ -226,186 +166,10 @@ export const LayoutEditor = observer(
       }
     };
 
-    useEffect(() => {
-      const onChange = () => {
-        const fullscreen = !!document.fullscreenElement;
-
-        setIsFullscreen(fullscreen);
-
-        if (!fullscreen) {
-          setIsPanelOpen(false);
-        }
-      };
-
-      document.addEventListener('fullscreenchange', onChange);
-
-      return () => document.removeEventListener('fullscreenchange', onChange);
-    }, []);
-
-    const handlePickBackground = async (
-      event: React.ChangeEvent<HTMLInputElement>
-    ) => {
-      const file = event.target.files?.[0];
-
-      event.target.value = '';
-
-      if (!file || !activeId) {
-        setIsUploadingBackground(false);
-
+    const handleSnap = (position: SnapPosition) => {
+      if (!selectedWidget) {
         return;
       }
-
-      try {
-        const extension = (file.name.split('.').pop() ?? 'png').toLowerCase();
-        const bytes = new Uint8Array(await file.arrayBuffer());
-        const previous = backgroundTargetName
-          ? layouts.editingLayout?.backgroundImages?.[backgroundTargetName]
-          : undefined;
-
-        const fileName = await saveBackgroundImage(activeId, bytes, extension);
-
-        if (previous && previous !== fileName) {
-          void deleteBackgroundImage(previous);
-        }
-
-        if (backgroundTargetName) {
-          layouts.setMonitorBackground(backgroundTargetName, fileName);
-        }
-      } catch (error) {
-        console.error('Failed to save background image:', error);
-      } finally {
-        setIsUploadingBackground(false);
-      }
-    };
-
-    const handleClearBackground = () => {
-      if (!backgroundTargetName) return;
-
-      void deleteBackgroundImage(
-        editingLayout?.backgroundImages?.[backgroundTargetName]
-      );
-      layouts.setMonitorBackground(backgroundTargetName, undefined);
-    };
-
-    const handleDeleteLayout = () => {
-      if (!activeId) {
-        return;
-      }
-
-      for (const image of Object.values(
-        layouts.editingLayout?.backgroundImages ?? {}
-      )) {
-        void deleteBackgroundImage(image);
-      }
-
-      deleteLayout(gestureStores, activeId);
-    };
-
-    const layoutOptions = layouts.layouts.map((layout) => ({
-      value: layout.id,
-      label: layout.name,
-    }));
-
-    const layoutMonitorNames = new Set(
-      (editingLayout?.monitors ?? []).map((monitor) => monitor.name)
-    );
-
-    // The picker does double duty: it zooms the canvas to one screen, and it is
-    // how a screen joins the layout in the first place. Attached monitors that
-    // are not part of the layout yet are offered with an "add" hint.
-    const monitorOptions = [
-      {
-        value: ALL_MONITORS,
-        label: t('layoutEditor.allMonitors'),
-        inLayout: false,
-      },
-      ...monitors.map((monitor) => ({
-        value: monitor.name,
-        inLayout: layoutMonitorNames.has(monitor.name),
-        label: layoutMonitorNames.has(monitor.name)
-          ? `${monitor.name} · ${monitor.bounds.width}×${monitor.bounds.height}`
-          : `${monitor.name} · ${t('layoutEditor.monitorAdd')}`,
-      })),
-      // Remote screens live in the layout only — the machine has no display to
-      // offer them from, so they are listed straight from the layout itself.
-      ...(editingLayout?.monitors ?? [])
-        .filter(isRemoteMonitor)
-        .map((monitor) => ({
-          value: monitor.name,
-          inLayout: true,
-          label: `${monitor.name} · ${monitor.bounds.width}×${monitor.bounds.height} · ${t('layoutEditor.remoteScreenTag')}`,
-        })),
-    ];
-
-    const hasRemoteScreens = (editingLayout?.monitors ?? []).some(
-      isRemoteMonitor
-    );
-
-    const moveTargetOptions = (editingLayout?.monitors ?? [])
-      .filter((monitor) => monitor.name !== focusedMonitorName)
-      .map((monitor) => ({ value: monitor.name, label: monitor.name }));
-
-    // A screen's widgets go with it — they are its own set — so a mis-click
-    // here must not remove it without asking.
-    const handleRemoveMonitor = (monitorName: string) => {
-      if (!activeId) return;
-
-      const removeIt = () => {
-        removeMonitor(gestureStores, activeId, monitorName);
-
-        if (focusedMonitorName === monitorName) {
-          setFocusedMonitorName(null);
-        }
-      };
-
-      void modal.confirm({
-        title: t('layoutList.removeMonitorWithWidgets', {
-          count: liveWidgets.widgetsOnMonitorNamed(monitorName).length,
-        }),
-        okText: t('layoutEditor.delete'),
-        okButtonProps: { danger: true },
-        cancelText: t('layoutEditor.cancel'),
-        onOk: removeIt,
-        // Inside the editor: in fullscreen only the editor's own element is
-        // drawn, and a dialog mounted on the app root would never be seen.
-        getContainer: () => rootRef.current ?? document.body,
-      });
-    };
-
-    const handleSelectMonitor = (name: string) => {
-      if (name === ALL_MONITORS) {
-        setFocusedMonitorName(null);
-
-        return;
-      }
-
-      // A remote screen is already part of the layout, so selecting one only
-      // ever means focusing it.
-      if (
-        layoutMonitorNames.has(name) &&
-        !monitors.some((candidate) => candidate.name === name)
-      ) {
-        setFocusedMonitorName(name);
-
-        return;
-      }
-
-      const monitor = monitors.find((candidate) => candidate.name === name);
-
-      if (!monitor) return;
-
-      if (!layoutMonitorNames.has(name)) {
-        layouts.addMonitor({
-          name: monitor.name,
-          bounds: monitor.bounds,
-        });
-      }
-
-      setFocusedMonitorName(name);
-    };
-
-    const handleSnap = (pos: SnapPosition) => {
-      if (!selectedWidget) return;
 
       const widgetElement = document.querySelector<HTMLElement>(
         `[data-widget-id="${selectedWidget.id}"]`
@@ -417,10 +181,9 @@ export const LayoutEditor = observer(
         selectedWidget.contentSized && widgetElement
           ? widgetElement.offsetWidth
           : selectedWidget.userSettings.currentWidth;
-      // autoHeight widgets size themselves from content, so the stored
-      // currentHeight is stale -- measure the real rendered box and convert
-      // it from screen pixels (the canvas is zoomed via CSS transform: scale)
-      // back to world units using the known width as a scale reference.
+      // An auto-height widget sizes itself from its content, so the stored
+      // height is stale: measure the rendered box and convert it from screen
+      // pixels back to world units, the known width as the scale reference.
       const measuredHeight = (): number => {
         if (selectedWidget.contentSized && widgetElement) {
           return widgetElement.offsetHeight;
@@ -434,272 +197,86 @@ export const LayoutEditor = observer(
 
         return selectedWidget.userSettings.currentHeight;
       };
-      const height = measuredHeight();
       // Widget coordinates are virtual-desktop wide, so the corners are those
-      // of the screen the widget currently sits on, not of the desktop box.
-      const monitors = layouts.editingLayout?.monitors ?? [];
-      const screen = monitorForWidget(selectedWidget, monitors)?.bounds ?? {
+      // of the screen the widget sits on, not of the desktop box.
+      const screen = monitorForWidget(
+        selectedWidget,
+        editingLayout?.monitors ?? []
+      )?.bounds ?? {
         x: 0,
         y: 0,
         width: liveWidgets.overlayResolution.width,
         height: liveWidgets.overlayResolution.height,
       };
-      const left = screen.x + SNAP_MARGIN;
-      const right = screen.x + screen.width - width - SNAP_MARGIN;
-      const top = screen.y + SNAP_MARGIN;
-      const bottom = screen.y + screen.height - height - SNAP_MARGIN;
-      const centerX = Math.round(screen.x + (screen.width - width) / 2);
-      const centerY = Math.round(screen.y + (screen.height - height) / 2);
-      const positions = {
-        topLeft: { x: left, y: top },
-        topCenter: { x: centerX, y: top },
-        topRight: { x: right, y: top },
-        midLeft: { x: left, y: centerY },
-        center: { x: centerX, y: centerY },
-        midRight: { x: right, y: centerY },
-        bottomLeft: { x: left, y: bottom },
-        bottomCenter: { x: centerX, y: bottom },
-        bottomRight: { x: right, y: bottom },
-      };
+      const { x, y } = snappedPosition(
+        position,
+        { width, height: measuredHeight() },
+        screen
+      );
 
-      const { x, y } = positions[pos];
       liveWidgets.pushUndo();
       liveWidgets.updatePosition(selectedWidget.id, x, y);
     };
 
     const handleToggleRatioLock = () => {
-      if (!selectedWidget) return;
-
-      setLockedRatios((prev) => ({
-        ...prev,
-        [selectedWidget.id]: !prev[selectedWidget.id],
-      }));
-    };
-
-    const handleSelectWidget = (id: string) => {
-      setSelectedWidgetId(id === '' ? null : id);
-    };
-
-    const handleCreate = () => {
-      const trimmed = newName.trim();
-
-      if (!trimmed) {
-        return;
-      }
-
-      void createLayout(gestureStores, trimmed);
-      setNewName('');
-      setIsCreating(false);
-    };
-
-    const handleRenameConfirm = () => {
-      if (activeId && draftName.trim()) {
-        layouts.renameLayout(activeId, draftName);
-      }
-
-      setIsRenaming(false);
-    };
-
-    const handleCreateKeyDown = (event: React.KeyboardEvent) => {
-      // An IME (Japanese/Chinese/Korean) uses Enter to confirm a candidate
-      // word; committing here would swallow that keystroke mid-composition.
-      if (event.nativeEvent.isComposing) {
-        return;
-      }
-
-      if (event.key === 'Enter') {
-        handleCreate();
-      } else if (event.key === 'Escape') {
-        setIsCreating(false);
+      if (selectedWidgetId) {
+        editorUi.toggleRatioLock(selectedWidgetId);
       }
     };
-
-    const handleRenameKeyDown = (event: React.KeyboardEvent) => {
-      if (event.nativeEvent.isComposing) {
-        return;
-      }
-
-      if (event.key === 'Enter') {
-        handleRenameConfirm();
-      } else if (event.key === 'Escape') {
-        setIsRenaming(false);
-      }
-    };
-
-    const toolbarRef = useToolbarBottom(rootRef);
 
     if (activeMode === 'list') {
       return <LayoutList onOpenEditor={handleOpenEditorWithId} />;
     }
 
     return (
-      <ConfigProvider
-        getPopupContainer={() => rootRef.current || document.body}
-      >
+      <ConfigProvider getPopupContainer={dialogContainer}>
         <div
-          className={`${styles.root} ${isFullscreen ? styles.rootFullscreen : ''}`}
+          className={cx(styles.root, isFullscreen && styles.rootFullscreen)}
           ref={rootRef}
         >
           <header
             ref={toolbarRef}
-            className={`${styles.toolbar} ${
-              isFullscreen ? styles.toolbarFullscreen : ''
-            }`}
+            className={cx(
+              styles.toolbar,
+              isFullscreen && styles.toolbarFullscreen
+            )}
           >
-            {!isFullscreen && (
+            {isFullscreen ? (
+              <Tooltip title={t('layoutEditor.toggleWidgetPanel')}>
+                <Button
+                  size="small"
+                  type={editorUi.isPanelOpen ? 'primary' : 'text'}
+                  icon={<PanelLeft size={14} />}
+                  onClick={() => editorUi.setPanelOpen(!editorUi.isPanelOpen)}
+                />
+              </Tooltip>
+            ) : (
               <Button
                 size="small"
                 icon={<ArrowLeft size={14} />}
-                onClick={handleBack}
+                onClick={() => handleModeChange('list')}
               >
                 {t('layoutEditor.backToLayouts')}
               </Button>
             )}
 
-            {isFullscreen && (
-              <Tooltip title={t('layoutEditor.toggleWidgetPanel')}>
-                <Button
-                  size="small"
-                  type={isPanelOpen ? 'primary' : 'text'}
-                  icon={<PanelLeft size={14} />}
-                  onClick={() => setIsPanelOpen((open) => !open)}
-                />
-              </Tooltip>
-            )}
+            <LayoutNameField />
 
-            <div className={styles.layoutControls}>
-              {isCreating ? (
-                <>
-                  <Input
-                    ref={nameInputCallbackRef}
-                    size="small"
-                    placeholder={t('layoutEditor.newLayoutNamePlaceholder')}
-                    value={newName}
-                    onChange={(event) => setNewName(event.target.value)}
-                    onKeyDown={handleCreateKeyDown}
-                    className={styles.nameInput}
-                  />
-                  <Tooltip title={t('layoutEditor.create')}>
-                    <Button
-                      size="small"
-                      type="text"
-                      icon={<Check size={14} />}
-                      onClick={handleCreate}
-                    />
-                  </Tooltip>
-                  <Tooltip title={t('layoutEditor.cancel')}>
-                    <Button
-                      size="small"
-                      type="text"
-                      icon={<X size={14} />}
-                      onClick={() => setIsCreating(false)}
-                    />
-                  </Tooltip>
-                </>
-              ) : isRenaming ? (
-                <>
-                  <Input
-                    ref={nameInputCallbackRef}
-                    size="small"
-                    value={draftName}
-                    onChange={(event) => setDraftName(event.target.value)}
-                    onKeyDown={handleRenameKeyDown}
-                    className={styles.nameInput}
-                  />
-                  <Tooltip title={t('layoutEditor.saveName')}>
-                    <Button
-                      size="small"
-                      type="text"
-                      icon={<Check size={14} />}
-                      onClick={handleRenameConfirm}
-                    />
-                  </Tooltip>
-                  <Tooltip title={t('layoutEditor.cancel')}>
-                    <Button
-                      size="small"
-                      type="text"
-                      icon={<X size={14} />}
-                      onClick={() => setIsRenaming(false)}
-                    />
-                  </Tooltip>
-                </>
-              ) : (
-                <>
-                  <Select
-                    size="small"
-                    className={styles.layoutSelect}
-                    placeholder={t('layoutEditor.selectLayoutPlaceholder')}
-                    value={activeId ?? undefined}
-                    onChange={(id) => {
-                      layoutEditor.switchLayout(id);
-                    }}
-                    options={layoutOptions}
-                  />
-
-                  <Tooltip title={t('layoutEditor.newLayout')}>
-                    <Button
-                      size="small"
-                      type="text"
-                      icon={<Plus size={14} />}
-                      onClick={() => {
-                        setNewName('');
-                        pendingNameFocusRef.current = true;
-                        setIsCreating(true);
-                      }}
-                    />
-                  </Tooltip>
-
-                  <Tooltip title={t('layoutEditor.rename')}>
-                    <Button
-                      size="small"
-                      type="text"
-                      icon={<Pencil size={14} />}
-                      disabled={!editingLayout}
-                      onClick={() => {
-                        setDraftName(editingLayout?.name ?? '');
-                        pendingNameFocusRef.current = true;
-                        setIsRenaming(true);
-                      }}
-                    />
-                  </Tooltip>
-
-                  <Popconfirm
-                    title={t('layoutEditor.deleteLayoutConfirm')}
-                    okText={t('layoutEditor.delete')}
-                    okButtonProps={{ danger: true }}
-                    cancelText={t('layoutEditor.cancel')}
-                    disabled={!activeId}
-                    onConfirm={handleDeleteLayout}
-                  >
-                    <Tooltip title={t('layoutEditor.delete')}>
-                      <Button
-                        size="small"
-                        type="text"
-                        danger
-                        icon={<Trash2 size={14} />}
-                        disabled={!activeId}
-                      />
-                    </Tooltip>
-                  </Popconfirm>
-                </>
-              )}
-            </div>
-
-            {isEditingLayoutActive ? (
-              <span className={styles.activeChip}>
-                {t('layoutEditor.active')}
-              </span>
-            ) : (
+            {layoutEditor.previewMode ? (
               <Tooltip title={t('layoutEditor.applyLayoutTooltip')}>
                 <Button
                   size="small"
                   type="primary"
                   icon={<Play size={14} />}
-                  onClick={handleMakeActive}
+                  onClick={() => layoutEditor.activateLayout()}
                 >
                   {t('layoutEditor.makeActive')}
                 </Button>
               </Tooltip>
+            ) : (
+              <span className={styles.activeChip}>
+                {t('layoutEditor.active')}
+              </span>
             )}
 
             <AddRemoteScreenButton />
@@ -717,64 +294,9 @@ export const LayoutEditor = observer(
               </Tooltip>
             )}
 
-            <Tooltip title={t('layoutEditor.monitorTooltip')}>
-              <Select
-                size="small"
-                placeholder={
-                  <>
-                    <Monitor size={12} /> {t('layoutEditor.monitorPlaceholder')}
-                  </>
-                }
-                value={focusedMonitorName ?? ALL_MONITORS}
-                onChange={handleSelectMonitor}
-                options={monitorOptions}
-                optionRender={(option) => (
-                  <div className={styles.monitorOption}>
-                    <span className={styles.monitorOptionLabel}>
-                      {option.label}
-                    </span>
-
-                    {option.data.inLayout && (
-                      <button
-                        type="button"
-                        className={styles.monitorOptionRemove}
-                        tabIndex={-1}
-                        title={t('layoutEditor.removeMonitor')}
-                        // The click must not reach the option itself, or
-                        // removing a screen would also focus it.
-                        onMouseDown={(event) => {
-                          event.preventDefault();
-                          event.stopPropagation();
-                          handleRemoveMonitor(String(option.value));
-                        }}
-                      >
-                        <X size={12} />
-                      </button>
-                    )}
-                  </div>
-                )}
-                disabled={!editingLayout}
-                popupMatchSelectWidth={240}
-                style={{ minWidth: 180 }}
-              />
-            </Tooltip>
+            <MonitorPicker dialogContainer={dialogContainer} />
 
             <div className={styles.previewControls}>
-              <input
-                ref={(node) => {
-                  backgroundInputRef.current = node;
-
-                  if (node) {
-                    node.oncancel = () => setIsUploadingBackground(false);
-                  }
-                }}
-                type="file"
-                accept="image/png,image/jpeg,image/webp,image/avif,image/gif"
-                aria-label={t('layoutEditor.backgroundImageAria')}
-                hidden
-                onChange={(event) => void handlePickBackground(event)}
-              />
-
               <Tooltip title={t('layoutEditor.undoTooltip')}>
                 <Button
                   size="small"
@@ -815,7 +337,7 @@ export const LayoutEditor = observer(
                       appSettings.update({ editorGridSize: value })
                     }
                     options={GRID_SIZE_OPTIONS}
-                    style={{ minWidth: 72 }}
+                    style={{ minWidth: GRID_SELECT_MIN_WIDTH_PX }}
                   />
                 </Tooltip>
               )}
@@ -852,39 +374,14 @@ export const LayoutEditor = observer(
                 />
               </Tooltip>
 
-              <Tooltip title={t('layoutEditor.setBackgroundTooltip')}>
-                <Button
-                  size="small"
-                  type="text"
-                  icon={<Image size={14} />}
-                  disabled={!editingLayout}
-                  onClick={() => {
-                    if (backgroundInputRef.current) {
-                      setIsUploadingBackground(true);
-                      backgroundInputRef.current.click();
-                    }
-                  }}
-                />
-              </Tooltip>
-
-              {backgroundTargetName &&
-                editingLayout?.backgroundImages?.[backgroundTargetName] && (
-                  <Tooltip title={t('layoutEditor.clearBackgroundTooltip')}>
-                    <Button
-                      size="small"
-                      type="text"
-                      icon={<ImageOff size={14} />}
-                      onClick={handleClearBackground}
-                    />
-                  </Tooltip>
-                )}
+              <BackgroundControls />
 
               <Select
                 size="small"
-                value={scenarioId}
-                onChange={setScenarioId}
+                value={editorUi.scenarioId}
+                onChange={(id) => editorUi.setScenario(id)}
                 options={SCENARIO_OPTIONS}
-                style={{ minWidth: 150 }}
+                style={{ minWidth: SCENARIO_SELECT_MIN_WIDTH_PX }}
                 popupMatchSelectWidth={false}
               />
 
@@ -894,9 +391,11 @@ export const LayoutEditor = observer(
                 <Tooltip title={t('layoutEditor.toggleInspector')}>
                   <Button
                     size="small"
-                    type={isInspectorOpen ? 'primary' : 'text'}
+                    type={editorUi.isInspectorOpen ? 'primary' : 'text'}
                     icon={<PanelRight size={14} />}
-                    onClick={() => setIsInspectorOpen((open) => !open)}
+                    onClick={() =>
+                      editorUi.setInspectorOpen(!editorUi.isInspectorOpen)
+                    }
                   />
                 </Tooltip>
               )}
@@ -904,12 +403,13 @@ export const LayoutEditor = observer(
           </header>
 
           <div
-            className={`${styles.body} ${isFullscreen ? styles.bodyFullscreen : ''}`}
+            className={cx(styles.body, isFullscreen && styles.bodyFullscreen)}
           >
             <aside
-              className={`${
-                isFullscreen ? styles.panelDrawer : styles.panel
-              } ${isFullscreen && isPanelOpen ? styles.panelDrawerOpen : ''}`}
+              className={cx(
+                isFullscreen ? styles.panelDrawer : styles.panel,
+                isFullscreen && editorUi.isPanelOpen && styles.panelDrawerOpen
+              )}
             >
               {isFullscreen && (
                 <div className={styles.panelDrawerHeader}>
@@ -921,7 +421,7 @@ export const LayoutEditor = observer(
                       size="small"
                       type="text"
                       icon={<PanelLeftClose size={16} />}
-                      onClick={() => setIsPanelOpen(false)}
+                      onClick={() => editorUi.setPanelOpen(false)}
                     />
                   </Tooltip>
                 </div>
@@ -929,39 +429,37 @@ export const LayoutEditor = observer(
 
               <LayoutWidgetPanel
                 selectedWidgetId={selectedWidgetId}
-                onSelectWidget={handleSelectWidget}
+                onSelectWidget={(id) => editorUi.selectWidget(id)}
               />
             </aside>
 
             <main
-              className={`${styles.canvas} ${
-                isFullscreen ? styles.canvasFullscreen : ''
-              }`}
+              className={cx(
+                styles.canvas,
+                isFullscreen && styles.canvasFullscreen
+              )}
             >
               <LayoutCanvas
-                scenarioId={scenarioId}
+                scenarioId={editorUi.scenarioId}
                 showGrid={showGrid}
                 snapToGrid={snapToGrid}
                 gridSize={gridSize}
                 fullscreen={isFullscreen}
                 selectedWidgetId={selectedWidgetId}
-                onSelectWidget={handleSelectWidget}
-                isUploading={isUploadingBackground}
-                isRatioLocked={
-                  selectedWidgetId ? !!lockedRatios[selectedWidgetId] : false
-                }
-                focusedMonitorName={focusedMonitorName}
+                onSelectWidget={(id) => editorUi.selectWidget(id)}
+                isUploading={editorUi.isUploadingBackground}
+                isRatioLocked={editorUi.isSelectedRatioLocked}
+                focusedMonitorName={editorUi.focusedMonitorName}
               />
             </main>
 
             <aside
-              className={`${
-                isFullscreen ? styles.inspectorDrawer : styles.inspector
-              } ${
-                isFullscreen && isInspectorOpen
-                  ? styles.inspectorDrawerOpen
-                  : ''
-              }`}
+              className={cx(
+                isFullscreen ? styles.inspectorDrawer : styles.inspector,
+                isFullscreen &&
+                  editorUi.isInspectorOpen &&
+                  styles.inspectorDrawerOpen
+              )}
             >
               {isFullscreen && (
                 <div className={styles.panelDrawerHeader}>
@@ -973,7 +471,7 @@ export const LayoutEditor = observer(
                       size="small"
                       type="text"
                       icon={<PanelRightClose size={16} />}
-                      onClick={() => setIsInspectorOpen(false)}
+                      onClick={() => editorUi.setInspectorOpen(false)}
                     />
                   </Tooltip>
                 </div>
@@ -981,12 +479,10 @@ export const LayoutEditor = observer(
 
               <WidgetInspector
                 selectedWidgetId={selectedWidgetId}
-                isRatioLocked={
-                  selectedWidgetId ? !!lockedRatios[selectedWidgetId] : false
-                }
+                isRatioLocked={editorUi.isSelectedRatioLocked}
                 onToggleRatioLock={handleToggleRatioLock}
                 moveTargetOptions={moveTargetOptions}
-                onSelectWidget={setSelectedWidgetId}
+                onSelectWidget={(id) => editorUi.selectWidget(id)}
                 onSnap={handleSnap}
               />
             </aside>

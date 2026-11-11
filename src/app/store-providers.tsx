@@ -27,6 +27,7 @@ import { WidgetDefaultsContext } from '@entities/widget/widget-defaults-context'
 import { LayoutsContext } from '@entities/layout/layouts-context';
 import { SettingsMutationLogContext } from '@entities/layout/mutation-log-context';
 import { LayoutEditorContext } from '@features/layout-editor/layout-editor-context';
+import { LayoutEditorUiContext } from '@features/layout-editor/layout-editor-ui-context';
 import { AppSettingsContext } from '@entities/app-settings/app-settings-context';
 import { UnitsContext } from '@entities/app-settings/units-context';
 import { WidgetAutoHideContext } from '@features/widget-auto-hide/widget-auto-hide-context';
@@ -106,6 +107,7 @@ const mainStores = (root: MainRoot): ProvidedStore[] => [
   provide(MainRootContext, root),
   provide(MainLiveWidgetsContext, root.liveWidgets),
   provide(LayoutEditorContext, root.layoutEditor),
+  provide(LayoutEditorUiContext, root.layoutEditorUi),
   provide(AppUpdateContext, root.appUpdate),
   provide(CompanionAppsContext, root.companionApps),
   provide(VoiceCrewContext, root.voiceCrew),
