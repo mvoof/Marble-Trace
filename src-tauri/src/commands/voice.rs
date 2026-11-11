@@ -12,33 +12,34 @@ use tracing::{info, warn};
 
 use mt_model::app::crew::VoiceCrewSettings;
 use mt_model::app::voice::{
-    AudioDeviceView, PackFileError, VoiceComponentState, VoiceComponentView, VoiceDownloadProgress,
-    VoiceDraftCheck, VoicePackView, VoiceQuestionPreview, VoiceRecognisedView, VoiceStatus,
+    PackFileError, VoiceDownloadProgress, VoiceDraftCheck, VoicePackView, VoiceQuestionPreview,
+    VoiceRecognisedView, VoiceStatus,
 };
 use mt_model::contract::event_sink::EventSink;
 use mt_model::contract::events::EVENT_CREW_DOWNLOAD;
 use mt_telemetry::control::TelemetryCommand;
 use mt_telemetry::state::TelemetryState;
-use mt_voice::assets::catalog::{catalog, Component, ComponentKind};
+use mt_voice::assets::catalog::{catalog, Component};
 use mt_voice::assets::VoiceAssets;
 use mt_voice::cache::{generate, missing_lines};
 use mt_voice::capture::input_devices;
 use mt_voice::crew::{answer, output_config, pack_folder, preview_intent, CrewConfig};
+use mt_voice::engines::{config_for_language, disabled_config, known_language, recommended_voice};
 use mt_voice::folder::move_folder;
 use mt_voice::pack::catalog::reply_values;
 use mt_voice::pack::editor::{
     check_draft, draft_vosk_grammar, pack_view, recognise_draft, save_pack, with_draft_questions,
 };
 use mt_voice::pack::message::{Arg, Args};
-use mt_voice::pack::{load, VariantPicker, BUILT_IN_LANGUAGES};
+use mt_voice::pack::{load, VariantPicker};
 use mt_voice::pack_files::{export_pack, import_pack};
-use mt_voice::playback::{output_devices, AudioDevice};
+use mt_voice::playback::output_devices;
+use mt_voice::views::{component_view, device_views};
 use mt_voice::voice_out::Utterance;
 
 use crate::sink::TauriSink;
 use crate::voice::{default_voice_root, voice_root, VoiceCrewState};
 
-const FALLBACK_LANGUAGE: &str = "en";
 const MIN_SPEED: f32 = 0.5;
 const MAX_SPEED: f32 = 2.0;
 /// Progress is sent at most this often — a download is thousands of chunks.
@@ -131,7 +132,7 @@ pub async fn move_voice_folder(
         return Ok(());
     }
 
-    let stopped = disabled(state.crew().config());
+    let stopped = disabled_config(state.crew().config());
 
     state.configure(stopped);
 
@@ -139,23 +140,6 @@ pub async fn move_voice_folder(
         .await
         .map_err(|error| error.to_string())?
         .map_err(|error| error.to_string())
-}
-
-fn known_language(language: &str) -> String {
-    if BUILT_IN_LANGUAGES.contains(&language) {
-        language.to_string()
-    } else {
-        FALLBACK_LANGUAGE.to_string()
-    }
-}
-
-fn recommended_voice(language: &str) -> String {
-    catalog()
-        .recommended_for(language)
-        .into_iter()
-        .find(|component| component.kind == ComponentKind::TtsVoice)
-        .map(|component| component.id.clone())
-        .unwrap_or_default()
 }
 
 /// The downloads and their state, the imported voices, the audio devices.
@@ -190,46 +174,6 @@ pub async fn voice_status(app: AppHandle) -> Result<VoiceStatus, String> {
         inputs,
         outputs,
     })
-}
-
-fn component_view(assets: &VoiceAssets, component: &Component) -> VoiceComponentView {
-    let state = if assets.is_installed(component) {
-        VoiceComponentState::Installed
-    } else if assets.is_outdated(component) {
-        VoiceComponentState::Outdated
-    } else {
-        VoiceComponentState::Missing
-    };
-    let kind = match component.kind {
-        ComponentKind::TtsEngine => "ttsEngine",
-        ComponentKind::SttEngine => "sttEngine",
-        ComponentKind::TtsVoice => "ttsVoice",
-        ComponentKind::SttModel => "sttModel",
-    };
-
-    VoiceComponentView {
-        id: component.id.clone(),
-        kind: kind.to_string(),
-        language: component.language.clone(),
-        title: component.title.clone(),
-        license: component.license.clone(),
-        license_url: component.license_url.clone(),
-        size_bytes: component.size() as f64,
-        recommended: component.recommended,
-        sample_url: component.sample.clone(),
-        state,
-    }
-}
-
-fn device_views(devices: Vec<AudioDevice>) -> Vec<AudioDeviceView> {
-    devices
-        .into_iter()
-        .map(|device| AudioDeviceView {
-            id: device.id,
-            name: device.name,
-            is_default: device.is_default,
-        })
-        .collect()
 }
 
 fn catalog_component(id: &str) -> Result<&'static Component, String> {
@@ -366,10 +310,10 @@ pub async fn remove_custom_voice(
     state: State<'_, Arc<VoiceCrewState>>,
     name: String,
 ) -> Result<(), String> {
-    let previous = release_engines(&state);
+    let previous = state.crew().release_engines();
     let removed = VoiceAssets::new(voice_root(&app)?).remove_custom_voice(&name);
 
-    restore_engines(&state, previous);
+    state.crew().restore_engines(previous);
 
     removed.map_err(|error| error.to_string())
 }
@@ -382,53 +326,12 @@ pub async fn remove_voice_component(
 ) -> Result<(), String> {
     catalog_component(&id)?;
 
-    let previous = release_engines(&state);
+    let previous = state.crew().release_engines();
     let removed = VoiceAssets::new(voice_root(&app)?).remove(&id);
 
-    restore_engines(&state, previous);
+    state.crew().restore_engines(previous);
 
     removed.map_err(|error| error.to_string())
-}
-
-/// The engines are open while the crew runs; a removal lets go of them first
-/// and hands back the settings to restart with.
-fn release_engines(state: &VoiceCrewState) -> Option<CrewConfig> {
-    let mut crew = state.crew();
-    let previous = crew.config().cloned();
-
-    crew.configure(disabled(previous.as_ref()));
-
-    previous
-}
-
-/// Restarts the crew as it was before `release_engines`, with whatever is
-/// still installed.
-fn restore_engines(state: &VoiceCrewState, previous: Option<CrewConfig>) {
-    if let Some(config) = previous {
-        state.crew().configure(config);
-    }
-}
-
-/// The crew's settings with the voice switched off, to release the engines.
-fn disabled(config: Option<&CrewConfig>) -> CrewConfig {
-    match config {
-        Some(config) => CrewConfig {
-            enabled: false,
-            ..config.clone()
-        },
-        None => CrewConfig {
-            enabled: false,
-            language: FALLBACK_LANGUAGE.to_string(),
-            voice_root: PathBuf::new(),
-            voice: String::new(),
-            input_device: None,
-            output_device: None,
-            volume: 1.0,
-            length_scale: 1.0,
-            confidence_threshold: 0.0,
-            imperial: false,
-        },
-    }
 }
 
 /// What the tab's own actions run with: the crew's settings for `language`,
@@ -438,20 +341,11 @@ fn current_config(
     state: &VoiceCrewState,
     language: &str,
 ) -> Result<CrewConfig, String> {
-    let root = voice_root(app)?;
-    let base = disabled(state.crew().config());
-    let voice = if base.voice.is_empty() || base.language != language {
-        recommended_voice(language)
-    } else {
-        base.voice.clone()
-    };
-
-    Ok(CrewConfig {
-        voice,
-        voice_root: root,
-        language: language.to_string(),
-        ..base
-    })
+    Ok(config_for_language(
+        state.crew().config(),
+        voice_root(app)?,
+        language,
+    ))
 }
 
 #[tauri::command]
