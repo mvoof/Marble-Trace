@@ -19,6 +19,7 @@ import {
 } from '@shared/lib/car-signals';
 import { useReactiveDomWrite } from '@shared/hooks/useReactiveDomWrite';
 import { useBlinkHandle } from '@shared/hooks/useBlink';
+import { useLiveParts } from '@shared/ui/live/live-parts';
 
 import styles from './SpeedGear.module.scss';
 import type { InputTraceSettings } from '../settings-schema';
@@ -41,9 +42,10 @@ export const SpeedGear = observer(() => {
 
   const settings = useWidgetSettings<InputTraceSettings>('input-trace');
   const shiftBlink = useBlinkHandle();
+  const parts = useLiveParts<'speed' | 'gear'>();
 
   const rootRef = useReactiveDomWrite<HTMLDivElement>(
-    (element, scheduleWrite) => {
+    (_element, scheduleWrite) => {
       // oxlint-disable-next-line no-restricted-properties
       const carDynamics = player.carDynamics;
       const speed = carDynamics?.speed ?? 0;
@@ -82,25 +84,17 @@ export const SpeedGear = observer(() => {
         : '';
 
       scheduleWrite(() => {
-        const speed = element.querySelector(`.${styles.speedValue}`);
-        const gear = element.querySelector(`.${styles.gear}`);
+        parts.text('speed', speedText);
+        parts.style('speed', 'color', speedColor || null);
+        parts.text('gear', gearText);
+        parts.style('gear', 'color', gearColor || null);
+        parts.toggleClass('gear', styles.blinkPulse, isBlink);
 
-        if (speed instanceof HTMLElement) {
-          speed.textContent = speedText;
-          speed.style.color = speedColor;
-        }
-
-        if (gear instanceof HTMLElement) {
-          gear.style.color = gearColor;
-          gear.classList.toggle(styles.blinkPulse, isBlink);
-          gear.textContent = gearText;
-        }
-
-        shiftBlink.attach(gear);
+        shiftBlink.attach(parts.elementOf('gear'));
         shiftBlink.run(isBlink ? REDLINE_BLINK : null);
       });
     },
-    [player, units, backendComputed, sessionStore, settings, shiftBlink]
+    [player, units, backendComputed, sessionStore, settings, shiftBlink, parts]
   );
 
   if (!settings.showSpeedGear) {
@@ -110,12 +104,12 @@ export const SpeedGear = observer(() => {
   return (
     <div ref={rootRef} className={styles.speedGear}>
       <div className={styles.speed}>
-        <span className={styles.speedValue} />
+        <span ref={parts.ref('speed')} className={styles.speedValue} />
 
         <span className={styles.speedUnit}>{speedUnit(units.unitSystem)}</span>
       </div>
 
-      <span className={styles.gear} />
+      <span ref={parts.ref('gear')} className={styles.gear} />
     </div>
   );
 });

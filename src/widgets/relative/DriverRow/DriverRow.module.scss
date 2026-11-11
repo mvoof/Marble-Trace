@@ -206,11 +206,12 @@
   color: $widget-text-primary;
 }
 
-.driverNameLappedBehind {
+// Written live as `data-lap` on the name.
+.driverName[data-lap='behind'] {
   color: $widget-status-info;
 }
 
-.driverNameLappingUs {
+.driverName[data-lap='lapping'] {
   color: $widget-status-danger;
 }
 
@@ -228,14 +229,15 @@
   text-align: right;
 }
 
-.f2Positive {
+// Written live as `data-sign` on the gap.
+.f2Time[data-sign='ahead'] {
   color: $widget-status-danger;
 }
 
-.f2Negative {
+.f2Time[data-sign='behind'] {
   color: $widget-status-info;
 }
 
-.f2Player {
+.f2Time[data-sign='player'] {
   color: $widget-status-caution;
 }

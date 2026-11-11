@@ -88,11 +88,22 @@ const SIZE_CLASS: Record<StatChipSize, string> = {
   md: styles.chipMd,
 };
 
+interface WrittenChip {
+  textElement: HTMLSpanElement;
+  className: string;
+  toneColor: string | undefined;
+  text: string;
+}
+
+/** What each live chip last received, so an unchanged tick writes nothing. */
+const writtenChips = new WeakMap<HTMLElement, WrittenChip>();
+
 /**
  * Turns a span written outside React — a gap cell that updates every tick —
  * into a chip that is its lead alone, built as the component builds one.
  * `toneColor`, a data-driven color, wins over `tone` as it does on the
- * component.
+ * component. The text node is built once per element, and each part is
+ * written only when it changed: an unchanged tick leaves the DOM untouched.
  */
 export const writeStatChip = (
   element: HTMLElement,
@@ -102,13 +113,7 @@ export const writeStatChip = (
   look: StatChipLook = 'plain',
   toneColor?: string
 ): void => {
-  if (toneColor === undefined) {
-    element.style.removeProperty('--chip-data');
-  } else {
-    element.style.setProperty('--chip-data', toneColor);
-  }
-
-  element.className = [
+  const className = [
     styles.chip,
     styles.chipSingle,
     toneColor === undefined ? TONE_CLASS[tone] : styles.toneData,
@@ -120,10 +125,37 @@ export const writeStatChip = (
     .filter(Boolean)
     .join(' ');
 
-  const textElement = document.createElement('span');
-  textElement.className = styles.leadText;
-  textElement.textContent = text;
-  element.replaceChildren(textElement);
+  let written = writtenChips.get(element);
+
+  if (!written || written.textElement.parentElement !== element) {
+    const textElement = document.createElement('span');
+    textElement.className = styles.leadText;
+    element.replaceChildren(textElement);
+
+    written = { textElement, className: '', toneColor: undefined, text: '' };
+    writtenChips.set(element, written);
+    element.style.removeProperty('--chip-data');
+  }
+
+  if (written.toneColor !== toneColor) {
+    written.toneColor = toneColor;
+
+    if (toneColor === undefined) {
+      element.style.removeProperty('--chip-data');
+    } else {
+      element.style.setProperty('--chip-data', toneColor);
+    }
+  }
+
+  if (written.className !== className) {
+    written.className = className;
+    element.className = className;
+  }
+
+  if (written.text !== text || written.textElement.textContent !== text) {
+    written.text = text;
+    written.textElement.textContent = text;
+  }
 };
 
 const ICON_SIZE_PX = 12;

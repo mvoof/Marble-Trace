@@ -97,6 +97,17 @@ Use it only for hot fields, and only through that primitive. A hand-rolled
 signal: the shared primitive is what `grep` finds and what tells a reviewer the
 bypass was deliberate.
 
+The write itself goes through the kit in `shared/ui/live/`, not by hand:
+
+- `useLiveParts` names the nodes a run writes (`ref={parts.ref('speed')}`) in
+  place of `querySelector` inside a frame, and applies `text`, `state` (a
+  `data-*` attribute the SCSS selects on), `style` and `toggleClass` only when
+  the value changed — an unchanged tick touches no DOM;
+- `LiveText` is the common case, one value in one node, in one line;
+- `writeStatChip` builds its chip once per node and rewrites only what moved.
+
+A state is a `data-*` attribute, not a set of classes to remove and add.
+
 The compass ring is the worked example. `RotatingRing` writes one custom
 property, `--compass-yaw`; the group rotates by it and the cardinal labels
 counter-rotate by it in CSS, so one write per frame turns the whole ring and

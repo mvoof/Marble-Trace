@@ -21,6 +21,7 @@ import {
   resolveRowPosition,
 } from '@widgets/relative/relative-utils';
 import { useReactiveDomWrite } from '@shared/hooks/useReactiveDomWrite';
+import { useLiveParts } from '@shared/ui/live/live-parts';
 
 import styles from './DriverRow.module.scss';
 import { useBackendComputedStore } from '@entities/cars/computed-context';
@@ -28,6 +29,9 @@ import { usePlayerStore } from '@entities/player/player-context';
 import { TowTime } from '@entities/player/TowTime/TowTime';
 import { TrackDistance } from '../TrackDistance/TrackDistance';
 import type { RelativeWidgetSettings } from '../settings-schema';
+
+/** A car more than half a lap off the player is a lap down, or lapping. */
+const LAP_STATE_THRESHOLD = 0.5;
 
 interface DriverRowProps {
   carIdx: number;
@@ -50,6 +54,8 @@ export const DriverRow = observer(({ carIdx, index }: DriverRowProps) => {
     (identity) => identity.carIdx === carIdx
   );
 
+  const parts = useLiveParts<'name'>();
+
   const gapRef = useReactiveDomWrite<HTMLSpanElement>(
     (element, scheduleWrite) => {
       // oxlint-disable-next-line no-restricted-properties
@@ -65,20 +71,20 @@ export const DriverRow = observer(({ carIdx, index }: DriverRowProps) => {
         ? computeRelativeGap(liveDriver, livePlayer)
         : 0;
 
-      const gapText =
+      const relativeGapText =
         relativeGap > 0
           ? `+${relativeGap.toFixed(1)}`
           : relativeGap < 0
             ? relativeGap.toFixed(1)
             : '0.0';
 
-      const gapClass = liveDriver.isPlayer
-        ? styles.f2Player
+      const gapSign = liveDriver.isPlayer
+        ? 'player'
         : relativeGap > 0
-          ? styles.f2Positive
+          ? 'ahead'
           : relativeGap < 0
-            ? styles.f2Negative
-            : styles.f2Player;
+            ? 'behind'
+            : 'player';
 
       const lapDiff = livePlayer
         ? liveDriver.lap +
@@ -86,31 +92,29 @@ export const DriverRow = observer(({ carIdx, index }: DriverRowProps) => {
           (livePlayer.lap + livePlayer.lapDistPct)
         : 0;
 
+      const lapState = liveDriver.isPlayer
+        ? null
+        : lapDiff < -LAP_STATE_THRESHOLD
+          ? 'behind'
+          : lapDiff > LAP_STATE_THRESHOLD
+            ? 'lapping'
+            : null;
+
       scheduleWrite(() => {
-        element.classList.remove(
-          styles.f2Player,
-          styles.f2Positive,
-          styles.f2Negative
-        );
-        element.classList.add(gapClass);
-        element.textContent = liveDriver.isPlayer ? '-' : gapText;
+        const gapText = liveDriver.isPlayer ? '-' : relativeGapText;
 
-        const row = element.closest('[data-relative-row]');
-        const name = row?.querySelector(`.${styles.driverName}`);
-
-        if (name instanceof HTMLElement) {
-          name.classList.toggle(
-            styles.driverNameLappedBehind,
-            !liveDriver.isPlayer && lapDiff < -0.5
-          );
-          name.classList.toggle(
-            styles.driverNameLappingUs,
-            !liveDriver.isPlayer && lapDiff > 0.5
-          );
+        if (element.textContent !== gapText) {
+          element.textContent = gapText;
         }
+
+        if (element.dataset.sign !== gapSign) {
+          element.dataset.sign = gapSign;
+        }
+
+        parts.state('name', 'lap', lapState);
       });
     },
-    [computed, carIdx]
+    [computed, carIdx, parts]
   );
 
   if (!driver) {
@@ -213,6 +217,7 @@ export const DriverRow = observer(({ carIdx, index }: DriverRowProps) => {
         )}
 
         <span
+          ref={parts.ref('name')}
           className={[
             styles.driverName,
             driver.isPlayer ? styles.driverNamePlayer : '',
