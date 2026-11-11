@@ -47,6 +47,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Twitch Chat:** The chat could fail to connect right after startup, so no messages arrived and chat commands went unanswered. It now connects.
 - **Settings Saved Right Away:** The voice crew settings, the car length and the interact mode settings were written to disk only when the main window closed, so a crash or a forced close lost them. Every setting is now saved within half a second of the change.
 - **Update Checks:** Only the main window checks for updates now, on your schedule once the settings have loaded. Every overlay window used to check as well, on the default schedule.
 - **Engine Panel — Oil Pressure:** Oil pressure always read 0.0 bar; it now shows the real pressure, in bar or psi.

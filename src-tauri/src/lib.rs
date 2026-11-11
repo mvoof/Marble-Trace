@@ -44,6 +44,9 @@ const BASE_DPI: f64 = 96.0;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
+    // Fails only when a provider is already installed, which is the goal.
+    let _ = rustls::crypto::aws_lc_rs::default_provider().install_default();
+
     let result = with_plugins(Builder::default())
         .setup(setup)
         .invoke_handler(commands::invoke_handler())

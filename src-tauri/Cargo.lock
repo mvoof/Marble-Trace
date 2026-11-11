@@ -2810,6 +2810,7 @@ dependencies = [
  "mt-telemetry",
  "mt-voice",
  "reqwest 0.13.5",
+ "rustls",
  "serde",
  "serde_json",
  "specta",
