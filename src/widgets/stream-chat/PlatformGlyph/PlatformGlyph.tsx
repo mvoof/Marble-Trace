@@ -3,6 +3,7 @@ import { observer } from 'mobx-react-lite';
 import type { ChatPlatform } from '@shared/contracts/generated/bindings';
 
 import styles from './PlatformGlyph.module.scss';
+import { cx } from '@shared/lib/class-names';
 
 interface PlatformGlyphProps {
   platform: ChatPlatform;
@@ -24,9 +25,7 @@ export const PlatformGlyph = observer(
 
     return (
       <svg
-        className={[styles.glyph, platformClass, className]
-          .filter(Boolean)
-          .join(' ')}
+        className={cx(styles.glyph, platformClass, className)}
         viewBox="0 0 24 24"
         aria-hidden="true"
       >

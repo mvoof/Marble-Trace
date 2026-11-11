@@ -2,6 +2,7 @@ import React from 'react';
 import { observer } from 'mobx-react-lite';
 
 import styles from './StandingsHeaderCell.module.scss';
+import { cx } from '@shared/lib/class-names';
 
 interface StandingsHeaderCellProps {
   align?: 'left' | 'center' | 'right';
@@ -25,13 +26,11 @@ export const StandingsHeaderCell = observer(
     children,
   }: StandingsHeaderCellProps) => (
     <span
-      className={[
+      className={cx(
         styles.th,
         ALIGN_CLASS[align],
-        endsBlock ? styles.thBlockEnd : undefined,
-      ]
-        .filter(Boolean)
-        .join(' ')}
+        endsBlock ? styles.thBlockEnd : undefined
+      )}
       title={title}
     >
       {children}

@@ -16,7 +16,7 @@ import type { RaceDashWidgetSettings } from '../settings-schema';
 
 export const StatsStrip = observer(() => {
   const player = usePlayerStore();
-  const { sessionInfo, session } = useSessionStore();
+  const { session, currentSession } = useSessionStore();
   const { leaderBestLapTime } = useCarsStore();
   const playerPosition = usePlayerPositionStore();
 
@@ -29,8 +29,6 @@ export const StatsStrip = observer(() => {
   );
   const positionColor = positionBandColor(position ?? null, settings);
 
-  const sessions = sessionInfo?.sessions;
-  const currentSession = sessions?.[sessionInfo?.currentSessionNum ?? 0];
   const totalLapsStr = currentSession?.sessionLaps
     ? resolveSessionLaps(
         currentSession.sessionLaps,

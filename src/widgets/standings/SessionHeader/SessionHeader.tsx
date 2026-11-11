@@ -24,6 +24,7 @@ import { useSessionStore } from '@entities/session/session-context';
 import { usePlayerPositionStore } from '@entities/player/player-position-context';
 import { useStandingsWidgetStore } from '@widgets/standings/standings.store';
 import type { StandingsWidgetSettings } from '../settings-schema';
+import { cx } from '@shared/lib/class-names';
 
 // The session's own color, filled, with the type written near-black on it.
 const SESSION_TYPE_TONE: Record<SessionColorKey, StatChipTone> = {
@@ -40,7 +41,7 @@ const SESSION_TYPE_TONE: Record<SessionColorKey, StatChipTone> = {
 export const SessionHeader = observer(() => {
   const { driverIdentities, leaderLap } = useBackendComputedStore();
   const playerPosition = usePlayerPositionStore();
-  const { sessionInfo, session } = useSessionStore();
+  const { sessionInfo, session, currentSession } = useSessionStore();
   const { leaderBestLapTime } = useCarsStore();
   const standingsWidget = useStandingsWidgetStore();
 
@@ -60,8 +61,6 @@ export const SessionHeader = observer(() => {
       standingsWidget.allClassGroups.length
     );
 
-  const sessions = sessionInfo?.sessions;
-  const currentSession = sessions?.[sessionInfo?.currentSessionNum ?? 0];
   const trackName = sessionInfo?.trackDisplayName ?? '';
 
   const shownLap =
@@ -134,13 +133,11 @@ export const SessionHeader = observer(() => {
             tone={lapProgress.isFinalLap ? 'accent' : 'positive'}
           >
             <span
-              className={[
+              className={cx(
                 styles.lapsValue,
                 isLapLimited ? '' : styles.lapsMuted,
-                lapProgress.isFinalLap ? styles.lapsFinal : '',
-              ]
-                .filter(Boolean)
-                .join(' ')}
+                lapProgress.isFinalLap ? styles.lapsFinal : ''
+              )}
               style={{ minWidth: `${lapProgress.widthChars}ch` }}
             >
               {lapsDone}

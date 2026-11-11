@@ -12,6 +12,7 @@ import { useIncidentsWidgetStore } from '@entities/incidents/incidents-context';
 
 import styles from './FlagBands.module.scss';
 import type { LinearMapWidgetSettings } from '../settings-schema';
+import { cx } from '@shared/lib/class-names';
 
 /**
  * Flat fill rather than the track map's hazard stripes: the strip is 40 px tall
@@ -57,8 +58,7 @@ export const FlagBands = observer(({ isHorizontal }: FlagBandsProps) => {
     (element, scheduleWrite) => {
       const playerLapDistPct =
         // oxlint-disable-next-line no-restricted-properties
-        computed.relativeEntries.find((entry) => entry.isPlayer)?.lapDistPct ??
-        0;
+        computed.relativePlayerEntry?.lapDistPct ?? 0;
 
       const placements = incidentsStore.zones.flatMap((zone) => {
         const ranges = projectFlagZoneToWindow(zone, playerLapDistPct);
@@ -129,13 +129,11 @@ export const FlagBands = observer(({ isHorizontal }: FlagBandsProps) => {
     return null;
   }
 
-  const bandClass = [
+  const bandClass = cx(
     styles.flagBand,
     isHorizontal ? styles.flagBandHorizontal : styles.flagBandVertical,
-    isOutline ? styles.flagBandOutline : '',
-  ]
-    .filter(Boolean)
-    .join(' ');
+    isOutline ? styles.flagBandOutline : ''
+  );
 
   // Outline style keeps the colour on the band's edges and drops the fill, so
   // the dots inside it stay on plain background.

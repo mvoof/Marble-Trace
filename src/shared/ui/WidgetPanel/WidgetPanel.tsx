@@ -1,6 +1,7 @@
 import type { CSSProperties, ReactNode, Ref } from 'react';
 
 import styles from './WidgetPanel.module.scss';
+import { cx } from '@shared/lib/class-names';
 
 interface WidgetPanelProps {
   children: ReactNode;
@@ -29,15 +30,13 @@ export const WidgetPanel = ({
 }: WidgetPanelProps) => (
   <section
     ref={ref}
-    className={[
+    className={cx(
       styles.panel,
       fitContent && styles.fitContent,
       fitHeight && styles.fitHeight,
       edgeInset && styles.edgeInset,
-      className,
-    ]
-      .filter(Boolean)
-      .join(' ')}
+      className
+    )}
     style={{
       minWidth: `calc(${minWidth}px * var(--wfs, 1))`,
       flexDirection: direction,

@@ -10,6 +10,7 @@ import { useBackendComputedStore } from '@entities/cars/computed-context';
 import { useRelativeWidgetStore } from '@widgets/relative/relative.store';
 import type { RelativeWidgetSettings } from '../settings-schema';
 import { TrackDistance } from '../TrackDistance/TrackDistance';
+import { cx } from '@shared/lib/class-names';
 
 interface PaceCarRowProps {
   carIdx: number;
@@ -31,9 +32,8 @@ export const PaceCarRow = observer(({ carIdx, index }: PaceCarRowProps) => {
   const gapRef = useReactiveDomWrite<HTMLSpanElement>(
     (element, scheduleWrite) => {
       const paceCar = relativeWidget.paceCarRowOf(carIdx);
-      const livePlayer =
-        // oxlint-disable-next-line no-restricted-properties
-        computed.relativeEntries.find((entry) => entry.isPlayer) ?? null;
+      // oxlint-disable-next-line no-restricted-properties
+      const livePlayer = computed.relativePlayerEntry;
 
       if (!paceCar) {
         return;
@@ -64,16 +64,14 @@ export const PaceCarRow = observer(({ carIdx, index }: PaceCarRowProps) => {
   const gridTemplate = buildRelativeGridTemplate(settings);
   const formattedCarNumber = formatCarNumber(driver.carNumber);
 
-  const rowClass = [
+  const rowClass = cx(
     styles.paceCarRow,
     settings.rowPadding === 'narrow' ? styles.rowPaddingNarrow : '',
     settings.rowPadding === 'medium' ? styles.rowPaddingMedium : '',
     settings.rowPadding === 'wide' ? styles.rowPaddingWide : '',
     index % 2 !== 0 ? styles.rowOdd : '',
-    settings.showDistance ? styles.withDistance : '',
-  ]
-    .filter(Boolean)
-    .join(' ');
+    settings.showDistance ? styles.withDistance : ''
+  );
 
   return (
     <div
@@ -95,12 +93,10 @@ export const PaceCarRow = observer(({ carIdx, index }: PaceCarRowProps) => {
       {settings.showCountryFlag && <div className={styles.flagCell} />}
 
       <span
-        className={[
+        className={cx(
           styles.centerLabel,
-          settings.showCountryFlag ? styles.centerLabelWithFlag : '',
-        ]
-          .filter(Boolean)
-          .join(' ')}
+          settings.showCountryFlag ? styles.centerLabelWithFlag : ''
+        )}
       >
         {driver.userName}
       </span>

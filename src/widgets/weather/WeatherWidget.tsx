@@ -12,6 +12,7 @@ import { ForecastStrip } from './ForecastStrip/ForecastStrip';
 
 import styles from './WeatherWidget.module.scss';
 import type { WeatherWidgetSettings } from './settings-schema';
+import { cx } from '@shared/lib/class-names';
 
 // Matches the stacking rule in StatsGrid: two cells or fewer become one column.
 const MAX_CELLS_IN_ONE_COLUMN = 2;
@@ -50,14 +51,12 @@ export const WeatherWidget = observer(() => {
           takes the widget's whole lower band away.
         */}
         <div
-          className={[
+          className={cx(
             styles.horizontalTop,
             showCompass ? '' : styles.horizontalTopFlush,
             // Nothing below it to divide from: no cells row, no forecast.
-            !showCompass && !showForecast ? styles.horizontalTopLast : '',
-          ]
-            .filter(Boolean)
-            .join(' ')}
+            !showCompass && !showForecast ? styles.horizontalTopLast : ''
+          )}
         >
           {showCompass && (
             <div className={styles.compassSlot}>

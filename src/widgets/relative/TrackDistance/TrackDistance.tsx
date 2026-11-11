@@ -35,8 +35,7 @@ export const TrackDistance = observer(
       (element, scheduleWrite) => {
         const entry = isPaceCar
           ? relativeWidget.paceCarRowOf(carIdx)
-          : // oxlint-disable-next-line no-restricted-properties
-            computed.relativeEntries.find((row) => row.carIdx === carIdx);
+          : computed.relativeEntryOf(carIdx);
 
         const centerGap =
           entry && !entry.isPlayer

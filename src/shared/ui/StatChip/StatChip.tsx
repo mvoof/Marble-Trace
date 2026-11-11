@@ -3,6 +3,7 @@ import { observer } from 'mobx-react-lite';
 import type { LucideIcon } from 'lucide-react';
 
 import styles from './StatChip.module.scss';
+import { cx } from '@shared/lib/class-names';
 
 /**
  * The chip's color. A caller with a color of its own — a license class, a pit
@@ -113,17 +114,15 @@ export const writeStatChip = (
   look: StatChipLook = 'plain',
   toneColor?: string
 ): void => {
-  const className = [
+  const className = cx(
     styles.chip,
     styles.chipSingle,
     toneColor === undefined ? TONE_CLASS[tone] : styles.toneData,
     LOOK_CLASS[look],
     styles.lead,
     kind === 'label' ? styles.leadLabel : styles.leadNumber,
-    FILLED_LOOKS.has(look) ? styles.leadSolid : '',
-  ]
-    .filter(Boolean)
-    .join(' ');
+    FILLED_LOOKS.has(look) ? styles.leadSolid : ''
+  );
 
   let written = writtenChips.get(element);
 
@@ -222,28 +221,24 @@ export const StatChip = observer(
 
     return (
       <span
-        className={[
+        className={cx(
           styles.chip,
           hasValue ? '' : styles.chipSingle,
           !hasValue && UNFRAMED_ALONE.has(look) ? styles.chipSolid : '',
           SIZE_CLASS[size],
           toneClass,
           LOOK_CLASS[look],
-          className ?? '',
-        ]
-          .filter(Boolean)
-          .join(' ')}
+          className ?? ''
+        )}
         style={toneStyle}
       >
         {hasLead && (
           <span
-            className={[
+            className={cx(
               styles.lead,
               leadKind === 'label' ? styles.leadLabel : styles.leadNumber,
-              isFilled ? styles.leadSolid : '',
-            ]
-              .filter(Boolean)
-              .join(' ')}
+              isFilled ? styles.leadSolid : ''
+            )}
           >
             {Icon && <Icon size={ICON_SIZE_PX} className={styles.icon} />}
             {lead !== undefined && (
@@ -256,12 +251,10 @@ export const StatChip = observer(
           <span className={styles.value}>
             {/* Only the count turns red; its limit keeps the value's white. */}
             <span
-              className={[
+              className={cx(
                 valueDanger ? styles.valueDanger : '',
-                valueChars === undefined ? '' : styles.valueFixed,
-              ]
-                .filter(Boolean)
-                .join(' ')}
+                valueChars === undefined ? '' : styles.valueFixed
+              )}
               style={
                 valueChars === undefined
                   ? undefined

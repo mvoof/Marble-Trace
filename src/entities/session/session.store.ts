@@ -1,6 +1,7 @@
 import { makeAutoObservable, observableRef } from 'mobx';
 
 import type {
+  SessionEntry,
   SessionFrame,
   SessionSnapshot,
   SessionType,
@@ -44,11 +45,19 @@ export class SessionStore {
     return sof > 0 ? sof : null;
   }
 
+  /** The session being run now, or `null` while the sim names none. */
+  get currentSession(): SessionEntry | null {
+    const info = this.sessionInfo;
+
+    if (!info || info.currentSessionNum < 0) {
+      return null;
+    }
+
+    return info.sessions[info.currentSessionNum] ?? null;
+  }
+
   get currentSessionType(): SessionType | null {
-    if (!this.sessionInfo) return null;
-    const num = this.sessionInfo.currentSessionNum;
-    if (num === null || num === undefined || num < 0) return null;
-    return this.sessionInfo.sessions[num]?.sessionType ?? null;
+    return this.currentSession?.sessionType ?? null;
   }
 
   /**
@@ -72,7 +81,7 @@ export class SessionStore {
       return null;
     }
 
-    return info.sessions[info.currentSessionNum]?.sessionTypeLabel ?? null;
+    return this.currentSession?.sessionTypeLabel ?? null;
   }
 
   get isQualifyingSession(): boolean {

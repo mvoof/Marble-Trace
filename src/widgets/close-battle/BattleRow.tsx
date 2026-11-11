@@ -15,6 +15,7 @@ import {
 
 import styles from './BattleRow.module.scss';
 import type { CloseBattleWidgetSettings } from './settings-schema';
+import { cx } from '@shared/lib/class-names';
 
 // How far back a row of another class is pushed when the user asks for it.
 const OTHER_CLASS_DIM = 0.55;
@@ -96,15 +97,13 @@ export const BattleRow = observer(
           }
         >
           <div
-            className={[
+            className={cx(
               styles.row,
               settings.showClassBadge ? '' : styles.rowNoClass,
               settings.showDistance ? '' : styles.rowNoDistance,
               showLaps ? styles.rowLaps : '',
-              settings.showBrand ? styles.rowBrand : '',
-            ]
-              .filter(Boolean)
-              .join(' ')}
+              settings.showBrand ? styles.rowBrand : ''
+            )}
             style={
               {
                 opacity: isDimmed ? OTHER_CLASS_DIM : undefined,

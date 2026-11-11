@@ -50,6 +50,7 @@ import { usePlayerStore } from '@entities/player/player-context';
 import { TowTime } from '@entities/player/TowTime/TowTime';
 import { useStandingsWidgetStore } from '@widgets/standings/standings.store';
 import type { StandingsWidgetSettings } from '../settings-schema';
+import { cx } from '@shared/lib/class-names';
 
 // The leader and a lapped car read as chips — a state, not a distance; a
 // distance stays a plain number. Laps down are the only gap written "N L".
@@ -110,9 +111,7 @@ export const DriverRow = observer(
 
     // The cell that closes a group of columns carries the rule after it.
     const cellClass = (column: StandingsColumn, ...extra: string[]): string =>
-      [styles.cell, blockEnds.has(column) ? styles.blockEnd : '', ...extra]
-        .filter(Boolean)
-        .join(' ');
+      cx(styles.cell, blockEnds.has(column) ? styles.blockEnd : '', ...extra);
 
     // The gap is the row's one moving number: it is measured against the leader's
     // live entry and changes on every tick, so it is written straight to its span
@@ -134,10 +133,7 @@ export const DriverRow = observer(
           ? computed.driverEntryOf(leaderIdentity.carIdx)
           : null;
 
-        const sessions = session.sessionInfo?.sessions;
-        const isRaceSession =
-          sessions?.[session.sessionInfo?.currentSessionNum ?? 0]
-            ?.sessionType === 'Race';
+        const isRaceSession = session.currentSessionType === 'Race';
 
         const leads =
           (byClass ? liveDriver.liveClassPosition : liveDriver.livePosition) ===
@@ -227,7 +223,7 @@ export const DriverRow = observer(
     const showsTeamNames =
       settings.showTeamName && session.sessionInfo?.teamRacing === true;
 
-    const rowClass = [
+    const rowClass = cx(
       styles.driverRow,
       showsTeamNames ? styles.driverRowWithTeam : '',
       settings.rowPadding === 'narrow' ? styles.rowPaddingNarrow : '',
@@ -240,10 +236,8 @@ export const DriverRow = observer(
       startsPlayerWindow ? styles.driverRowWindowStart : '',
       standingsWidget.hoveredClassId === driver.carClassId
         ? styles.driverRowScrollTarget
-        : '',
-    ]
-      .filter(Boolean)
-      .join(' ');
+        : ''
+    );
 
     const rowFill = playerRowStyle(driver.isPlayer, settings.playerRowColor);
 

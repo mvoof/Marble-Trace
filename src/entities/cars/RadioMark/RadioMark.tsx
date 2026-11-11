@@ -5,6 +5,7 @@ import { useCarsStore } from '@entities/cars/cars-context';
 import { channelOfTransmission } from '@entities/cars/radio-channel';
 import { useSessionStore } from '@entities/session/session-context';
 import styles from './RadioMark.module.scss';
+import { cx } from '@shared/lib/class-names';
 
 const CHANNEL_CLASS: Record<RadioChannel, string> = {
   all: styles.channelAll,
@@ -42,13 +43,11 @@ export const RadioMark = observer(
 
     return (
       <span
-        className={[
+        className={cx(
           styles.mark,
           CHANNEL_CLASS[channel],
-          onPlayerRow ? styles.markOnPlayerRow : '',
-        ]
-          .filter(Boolean)
-          .join(' ')}
+          onPlayerRow ? styles.markOnPlayerRow : ''
+        )}
         aria-label="On the radio"
       >
         <Mic className={styles.icon} aria-hidden="true" />

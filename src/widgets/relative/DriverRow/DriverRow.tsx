@@ -29,6 +29,7 @@ import { usePlayerStore } from '@entities/player/player-context';
 import { TowTime } from '@entities/player/TowTime/TowTime';
 import { TrackDistance } from '../TrackDistance/TrackDistance';
 import type { RelativeWidgetSettings } from '../settings-schema';
+import { cx } from '@shared/lib/class-names';
 
 /** A car more than half a lap off the player is a lap down, or lapping. */
 const LAP_STATE_THRESHOLD = 0.5;
@@ -50,18 +51,15 @@ export const DriverRow = observer(({ carIdx, index }: DriverRowProps) => {
 
   const settings = useWidgetSettings<RelativeWidgetSettings>('relative');
 
-  const driver = computed.relativeIdentities.find(
-    (identity) => identity.carIdx === carIdx
-  );
+  const driver = computed.relativeIdentityByCarIdx.get(carIdx);
 
   const parts = useLiveParts<'name'>();
 
   const gapRef = useReactiveDomWrite<HTMLSpanElement>(
     (element, scheduleWrite) => {
+      const liveDriver = computed.relativeEntryOf(carIdx);
       // oxlint-disable-next-line no-restricted-properties
-      const entries = computed.relativeEntries;
-      const liveDriver = entries.find((entry) => entry.carIdx === carIdx);
-      const livePlayer = entries.find((entry) => entry.isPlayer) ?? null;
+      const livePlayer = computed.relativePlayerEntry;
 
       if (!liveDriver) {
         return;
@@ -151,7 +149,7 @@ export const DriverRow = observer(({ carIdx, index }: DriverRowProps) => {
 
   const position = resolveRowPosition(driver, settings.useLivePositions);
 
-  const rowClass = [
+  const rowClass = cx(
     styles.driverRow,
     settings.rowPadding === 'narrow' ? styles.rowPaddingNarrow : '',
     settings.rowPadding === 'medium' ? styles.rowPaddingMedium : '',
@@ -159,10 +157,8 @@ export const DriverRow = observer(({ carIdx, index }: DriverRowProps) => {
     driver.isPlayer ? styles.driverRowPlayer : '',
     index % 2 !== 0 ? styles.rowOdd : '',
     isOffTrack ? styles.driverRowOffTrack : '',
-    isOut ? styles.driverRowOut : '',
-  ]
-    .filter(Boolean)
-    .join(' ');
+    isOut ? styles.driverRowOut : ''
+  );
 
   const formattedCarNumber = formatCarNumber(driver.carNumber);
 
@@ -218,12 +214,10 @@ export const DriverRow = observer(({ carIdx, index }: DriverRowProps) => {
 
         <span
           ref={parts.ref('name')}
-          className={[
+          className={cx(
             styles.driverName,
-            driver.isPlayer ? styles.driverNamePlayer : '',
-          ]
-            .filter(Boolean)
-            .join(' ')}
+            driver.isPlayer ? styles.driverNamePlayer : ''
+          )}
         >
           {settings.abbreviateNames
             ? abbreviateName(driver.userName)

@@ -10,6 +10,7 @@ import { SteeringWheel } from './SteeringWheel/SteeringWheel';
 
 import styles from './InputTraceWidget.module.scss';
 import type { InputTraceSettings } from './settings-schema';
+import { cx } from '@shared/lib/class-names';
 
 export const InputTraceWidget = observer(() => {
   const settings = useWidgetSettings<InputTraceSettings>('input-trace');
@@ -49,14 +50,12 @@ export const InputTraceWidget = observer(() => {
   );
 
   // Beside the bars the graph is as tall as they are, stop to stop.
-  const chartClassName = [
+  const chartClassName = cx(
     styles.chartArea,
     !barsEffectivelyHidden &&
       settings.showInputValues &&
-      styles.chartBesideValues,
-  ]
-    .filter(Boolean)
-    .join(' ');
+      styles.chartBesideValues
+  );
 
   return (
     <WidgetPanel direction="row" gap={8} edgeInset className={styles.panel}>

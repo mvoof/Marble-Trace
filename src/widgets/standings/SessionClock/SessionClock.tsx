@@ -15,6 +15,7 @@ import { useBlink, type BlinkCycle } from '@shared/hooks/useBlink';
 import { StatChip, type StatChipTone } from '@shared/ui/StatChip/StatChip';
 import styles from './SessionClock.module.scss';
 import type { StandingsWidgetSettings } from '../settings-schema';
+import { cx } from '@shared/lib/class-names';
 
 const URGENCY_CLASS: Record<ClockUrgency, string> = {
   normal: '',
@@ -38,16 +39,13 @@ const CLOCK_WIDTH_CHARS = 9;
 const CRITICAL_BLINK: BlinkCycle = { stepMs: 1000, steps: 2 };
 
 export const SessionClock = observer(() => {
-  const { session, sessionInfo } = useSessionStore();
+  const { session, currentSession } = useSessionStore();
 
   const settings = useWidgetSettings<StandingsWidgetSettings>('standings');
 
   const sessionState = session?.session_state ?? null;
   const isEnded = isSessionEnded(sessionState);
   const remain = session?.session_time_remain ?? null;
-
-  const currentSession =
-    sessionInfo?.sessions?.[sessionInfo?.currentSessionNum ?? 0];
 
   // In a lap race the clock is context, not the thing that ends the session.
   const isLapLimited = isLapLimitedSession(
@@ -93,13 +91,11 @@ export const SessionClock = observer(() => {
     <StatChip lead="TIME" look="reading" tone={URGENCY_TONE[urgency]}>
       <span
         ref={clockRef}
-        className={[
+        className={cx(
           styles.clockValue,
           isLead ? '' : styles.clockMuted,
-          URGENCY_CLASS[urgency],
-        ]
-          .filter(Boolean)
-          .join(' ')}
+          URGENCY_CLASS[urgency]
+        )}
         style={{ minWidth: `${CLOCK_WIDTH_CHARS}ch` }}
       >
         {`${prefix}${main}${secs}`}
