@@ -1,6 +1,41 @@
 import { describe, expect, it } from 'vitest';
 
-import { resizeBox, type ResizeInput } from './resize-geometry';
+import { dragPosition, resizeBox, type ResizeInput } from './resize-geometry';
+
+describe('dragPosition', () => {
+  const start = { x: 100, y: 100 };
+  const size = { width: 200, height: 100 };
+  const snap = {
+    gridSize: 20,
+    area: { x: 0, y: 0, width: 1920, height: 1080 },
+  };
+
+  it('moves with the pointer, rounded', () => {
+    expect(dragPosition({ dx: 12.4, dy: -7.6, start, size })).toEqual({
+      x: 112,
+      y: 92,
+    });
+  });
+
+  it('puts the position on the grid with snapping on', () => {
+    expect(dragPosition({ dx: 13, dy: 7, start, size, snap })).toEqual({
+      x: 120,
+      y: 100,
+    });
+  });
+
+  it('centres on the screen when close to its centre lines', () => {
+    const position = dragPosition({
+      dx: 745,
+      dy: 383,
+      start,
+      size,
+      snap,
+    });
+
+    expect(position).toEqual({ x: 860, y: 490 });
+  });
+});
 
 const base: Omit<ResizeInput, 'direction' | 'dx' | 'dy'> = {
   start: { x: 100, y: 100, width: 200, height: 100 },

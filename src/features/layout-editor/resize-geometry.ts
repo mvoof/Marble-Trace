@@ -40,6 +40,63 @@ export interface ResizeInput {
 export const snapToGrid = (value: number, gridSize: number): number =>
   Math.round(value / gridSize) * gridSize;
 
+/** Snap distance (layout px) for centring a dragged widget on its screen. */
+const SNAP_CENTER_THRESHOLD = 24;
+
+/** The editor's snapping: the grid pitch, and the screen to centre on. */
+export interface DragSnap {
+  gridSize: number;
+  area: WidgetBox;
+}
+
+export interface DragInput {
+  /** Pointer travel since the press, in layout pixels. */
+  dx: number;
+  dy: number;
+  /** The stored position at the press. */
+  start: { x: number; y: number };
+  /** The stored size, which the centring measures. */
+  size: { width: number; height: number };
+  /** The editor's snapping with it on; the overlay has none. */
+  snap?: DragSnap | null;
+}
+
+/**
+ * The position a drag gives a widget: the start moved with the pointer, then,
+ * with snapping on, put on the grid — and onto the screen's centre lines when
+ * it comes close to them.
+ */
+export const dragPosition = ({
+  dx,
+  dy,
+  start,
+  size,
+  snap = null,
+}: DragInput): { x: number; y: number } => {
+  let x = Math.round(start.x + dx);
+  let y = Math.round(start.y + dy);
+
+  if (snap === null) {
+    return { x, y };
+  }
+
+  x = snapToGrid(x, snap.gridSize);
+  y = snapToGrid(y, snap.gridSize);
+
+  const centreX = snap.area.x + snap.area.width / 2;
+  const centreY = snap.area.y + snap.area.height / 2;
+
+  if (Math.abs(x + size.width / 2 - centreX) < SNAP_CENTER_THRESHOLD) {
+    x = Math.round(centreX - size.width / 2);
+  }
+
+  if (Math.abs(y + size.height / 2 - centreY) < SNAP_CENTER_THRESHOLD) {
+    y = Math.round(centreY - size.height / 2);
+  }
+
+  return { x, y };
+};
+
 /**
  * The box a resize drag gives a widget — the one rule the overlay's drag mode
  * and the layout editor both follow, so a widget resizes the same in both.

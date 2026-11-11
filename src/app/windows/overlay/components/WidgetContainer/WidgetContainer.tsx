@@ -1,5 +1,8 @@
-import React, { useCallback, useRef, type ReactNode } from 'react';
-import { resizeBox } from '@features/layout-editor/resize-geometry';
+import { type ReactNode } from 'react';
+import {
+  useWidgetGestures,
+  type GeometryWriter,
+} from '@features/layout-editor/use-widget-gestures';
 import { observer } from 'mobx-react-lite';
 import { ErrorBoundary } from '@shared/ui/ErrorBoundary';
 import {
@@ -36,28 +39,19 @@ export const WidgetContainer = observer(
 
     const widget = liveWidgets.getWidget(widgetId);
 
-    const isDraggingRef = useRef(false);
-    const isResizingRef = useRef(false);
+    // An overlay changes geometry only by command; main handles it.
+    const geometryWriter: GeometryWriter = {
+      move: (id, x, y) => settingsClient.moveWidget(id, x, y),
+      resize: (id, box) =>
+        settingsClient.resizeWidget(id, box.x, box.y, box.width, box.height),
+      end: (id) => settingsClient.endGeometry(id),
+    };
 
-    const dragStartRef = useRef({
-      mouseX: 0,
-      mouseY: 0,
-      widgetX: 0,
-      widgetY: 0,
-    });
-
-    const resizeStartRef = useRef({
-      mouseX: 0,
-      mouseY: 0,
-      widgetW: 0,
-      widgetH: 0,
-      widgetX: 0,
-      widgetY: 0,
-      // The box a content-sized widget drew at the press; its stored width is
-      // only the scale, not its size.
-      drawnW: 0,
-      drawnH: 0,
-    });
+    const { onDragMouseDown, onResizeMouseDown } = useWidgetGestures(
+      widgetId,
+      geometryWriter,
+      { widgets: liveWidgets, viewScale: 1, enabled: dragMode }
+    );
 
     const isConnected = simStore.status === 'connected';
     const isOnTrack = player.isOnTrack;
@@ -89,136 +83,6 @@ export const WidgetContainer = observer(
       designWidth,
       designHeight,
     });
-
-    const handleDragMouseDown = useCallback(
-      (e: React.MouseEvent) => {
-        if (!dragMode || e.button !== 0) return;
-
-        e.preventDefault();
-        e.stopPropagation();
-
-        const currentWidget = liveWidgets.getWidget(widgetId);
-
-        isDraggingRef.current = true;
-
-        dragStartRef.current = {
-          mouseX: e.clientX,
-          mouseY: e.clientY,
-          widgetX: currentWidget?.userSettings.x ?? 0,
-          widgetY: currentWidget?.userSettings.y ?? 0,
-        };
-
-        const onMouseMove = (ev: MouseEvent) => {
-          if (!isDraggingRef.current) return;
-
-          const dx = ev.clientX - dragStartRef.current.mouseX;
-          const dy = ev.clientY - dragStartRef.current.mouseY;
-
-          settingsClient.moveWidget(
-            widgetId,
-            Math.round(dragStartRef.current.widgetX + dx),
-            Math.round(dragStartRef.current.widgetY + dy)
-          );
-        };
-
-        const onMouseUp = () => {
-          isDraggingRef.current = false;
-          settingsClient.endGeometry(widgetId);
-          document.removeEventListener('mousemove', onMouseMove);
-          document.removeEventListener('mouseup', onMouseUp);
-        };
-
-        document.addEventListener('mousemove', onMouseMove);
-        document.addEventListener('mouseup', onMouseUp);
-      },
-      [dragMode, widgetId, liveWidgets, settingsClient]
-    );
-
-    const handleResizeMouseDown = useCallback(
-      (e: React.MouseEvent, direction: ResizeDirection) => {
-        if (!dragMode || e.button !== 0) return;
-
-        e.preventDefault();
-        e.stopPropagation();
-
-        const currentWidget = liveWidgets.getWidget(widgetId);
-        const drawnBox = (e.currentTarget as HTMLElement).closest<HTMLElement>(
-          '[data-widget-id]'
-        );
-
-        isResizingRef.current = true;
-
-        resizeStartRef.current = {
-          mouseX: e.clientX,
-          mouseY: e.clientY,
-          widgetW: currentWidget?.userSettings.currentWidth ?? designWidth,
-          widgetH: currentWidget?.userSettings.currentHeight ?? designHeight,
-          widgetX: currentWidget?.userSettings.x ?? 0,
-          widgetY: currentWidget?.userSettings.y ?? 0,
-          drawnW: drawnBox?.offsetWidth ?? 0,
-          drawnH: drawnBox?.offsetHeight ?? 0,
-        };
-
-        const onMouseMove = (ev: MouseEvent) => {
-          if (!isResizingRef.current) return;
-
-          const dx = ev.clientX - resizeStartRef.current.mouseX;
-          const dy = ev.clientY - resizeStartRef.current.mouseY;
-
-          const box = resizeBox({
-            direction,
-            dx,
-            dy,
-            start: {
-              x: resizeStartRef.current.widgetX,
-              y: resizeStartRef.current.widgetY,
-              width: resizeStartRef.current.widgetW,
-              height: resizeStartRef.current.widgetH,
-            },
-            drawn: {
-              width: resizeStartRef.current.drawnW,
-              height: resizeStartRef.current.drawnH,
-            },
-            design: { width: designWidth, height: designHeight },
-            widget: {
-              contentSized: widget?.contentSized,
-              scaleFromHeight: widget?.scaleFromHeight,
-              lockAspectRatio: widget?.lockAspectRatio,
-            },
-          });
-
-          settingsClient.resizeWidget(
-            widgetId,
-            box.x,
-            box.y,
-            box.width,
-            box.height
-          );
-        };
-
-        const onMouseUp = () => {
-          isResizingRef.current = false;
-          settingsClient.endGeometry(widgetId);
-
-          document.removeEventListener('mousemove', onMouseMove);
-          document.removeEventListener('mouseup', onMouseUp);
-        };
-
-        document.addEventListener('mousemove', onMouseMove);
-        document.addEventListener('mouseup', onMouseUp);
-      },
-      [
-        dragMode,
-        liveWidgets,
-        settingsClient,
-        widgetId,
-        designWidth,
-        designHeight,
-        widget?.lockAspectRatio,
-        widget?.scaleFromHeight,
-        widget?.contentSized,
-      ]
-    );
 
     const resizeDirections: ResizeDirection[] = resizeDirectionsFor({
       autoHeight,
@@ -255,7 +119,7 @@ export const WidgetContainer = observer(
           role="presentation"
           className={`${styles.dragWrapper} ${dragMode ? styles.draggingCursor : ''}`}
           style={isAutoSized ? boxSize : undefined}
-          onMouseDown={handleDragMouseDown}
+          onMouseDown={onDragMouseDown}
         >
           <ErrorBoundary>
             <div
@@ -284,7 +148,7 @@ export const WidgetContainer = observer(
                 key={direction}
                 role="presentation"
                 className={`${styles.resizeHandle} ${styles[`resizeHandle${direction.toUpperCase()}`]}`}
-                onMouseDown={(e) => handleResizeMouseDown(e, direction)}
+                onMouseDown={(event) => onResizeMouseDown(event, direction)}
               />
             ))}
         </div>

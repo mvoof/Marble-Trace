@@ -1,5 +1,8 @@
-import React, { useCallback, useEffect, useRef, type ReactNode } from 'react';
-import { resizeBox, snapToGrid } from '@features/layout-editor/resize-geometry';
+import { useRef, type ReactNode } from 'react';
+import {
+  useWidgetGestures,
+  type GeometryWriter,
+} from '@features/layout-editor/use-widget-gestures';
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
 import type { LiveWidgetsStore } from '@entities/layout/live-widgets.store';
@@ -8,14 +11,10 @@ import {
   resizeDirectionsFor,
   widgetBoxSize,
   widgetFrameStyle,
-  type ResizeDirection,
   widgetScaleOf,
 } from '@entities/widget/widget-frame';
 import { useRendersNothing } from './use-renders-nothing';
 import styles from './LayoutCanvas.module.scss';
-
-// Snap distance (overlay px) for centering a widget on the canvas axes.
-const SNAP_CENTER_THRESHOLD = 24;
 
 interface LayoutCanvasWidgetProps {
   widgetId: string;
@@ -31,9 +30,9 @@ interface LayoutCanvasWidgetProps {
 }
 
 // One positioned, draggable, resizable widget box on the editor canvas. Geometry
-// is read from and written to the main store in overlay-space px; screen-space
-// pointer deltas are divided by `fit` to convert back to overlay-space. Content
-// scaling (--wfs) mirrors the overlay's WidgetContainer.
+// is read from and written to the main store in overlay-space px; the canvas is
+// drawn at `fit`, so the gestures divide pointer travel by it. Content scaling
+// (--wfs) mirrors the overlay's WidgetContainer.
 export const LayoutCanvasWidget = observer(
   ({
     widgetId,
@@ -55,35 +54,35 @@ export const LayoutCanvasWidget = observer(
     const innerRef = useRef<HTMLDivElement | null>(null);
     const rendersNothing = useRendersNothing(innerRef);
 
-    const isDraggingRef = useRef(false);
-    const isResizingRef = useRef(false);
+    // The editor writes main's store directly; a resize moves the box only
+    // when a top or left edge moved it.
+    const geometryWriter: GeometryWriter = {
+      move: (id, x, y) => mainSettings.updatePosition(id, x, y),
+      resize: (id, box, start) => {
+        mainSettings.updateSize(id, box.width, box.height);
 
-    // Removes whichever document listeners a drag/resize gesture installed. Held
-    // in a ref so an unmount mid-gesture can tear them down (the gesture's own
-    // mouseup would otherwise never fire).
-    const detachListenersRef = useRef<(() => void) | null>(null);
+        if (box.x !== start.x || box.y !== start.y) {
+          mainSettings.updatePosition(id, box.x, box.y);
+        }
+      },
+      end: () => {},
+    };
 
-    useEffect(() => () => detachListenersRef.current?.(), []);
-
-    const dragStartRef = useRef({
-      mouseX: 0,
-      mouseY: 0,
-      widgetX: 0,
-      widgetY: 0,
-    });
-
-    const resizeStartRef = useRef({
-      mouseX: 0,
-      mouseY: 0,
-      widgetW: 0,
-      widgetH: 0,
-      widgetX: 0,
-      widgetY: 0,
-      // The box a content-sized widget drew at the press, in layout pixels
-      // (`offsetWidth` ignores the canvas zoom).
-      drawnW: 0,
-      drawnH: 0,
-    });
+    const { onDragMouseDown, onResizeMouseDown } = useWidgetGestures(
+      widgetId,
+      geometryWriter,
+      {
+        widgets: mainSettings,
+        viewScale: fit,
+        enabled: true,
+        onGestureStart: () => {
+          onSelect(widgetId);
+          mainSettings.pushUndo();
+        },
+        snap: snap ? { gridSize, area: world } : null,
+        keepsRatio: (moveEvent) => moveEvent.shiftKey || isRatioLocked,
+      }
+    );
 
     const x = widget?.userSettings.x ?? 100;
     const y = widget?.userSettings.y ?? 100;
@@ -118,186 +117,6 @@ export const LayoutCanvasWidget = observer(
 
     const frameBorderRadius = frameStyle.borderRadius;
 
-    const handleDragMouseDown = useCallback(
-      (event: React.MouseEvent) => {
-        if (event.button !== 0) {
-          return;
-        }
-
-        event.preventDefault();
-        event.stopPropagation();
-        onSelect(widgetId);
-
-        mainSettings.pushUndo();
-
-        const current = mainSettings.getWidget(widgetId);
-
-        isDraggingRef.current = true;
-        dragStartRef.current = {
-          mouseX: event.clientX,
-          mouseY: event.clientY,
-          widgetX: current?.userSettings.x ?? 0,
-          widgetY: current?.userSettings.y ?? 0,
-        };
-
-        const onMouseMove = (moveEvent: MouseEvent) => {
-          if (!isDraggingRef.current) {
-            return;
-          }
-
-          const dx = (moveEvent.clientX - dragStartRef.current.mouseX) / fit;
-          const dy = (moveEvent.clientY - dragStartRef.current.mouseY) / fit;
-
-          let newX = Math.round(dragStartRef.current.widgetX + dx);
-          let newY = Math.round(dragStartRef.current.widgetY + dy);
-
-          if (snap) {
-            newX = snapToGrid(newX, gridSize);
-            newY = snapToGrid(newY, gridSize);
-
-            const centreX = world.x + world.width / 2;
-            const centreY = world.y + world.height / 2;
-
-            if (Math.abs(newX + width / 2 - centreX) < SNAP_CENTER_THRESHOLD) {
-              newX = Math.round(centreX - width / 2);
-            }
-
-            if (Math.abs(newY + height / 2 - centreY) < SNAP_CENTER_THRESHOLD) {
-              newY = Math.round(centreY - height / 2);
-            }
-          }
-
-          mainSettings.updatePosition(widgetId, newX, newY);
-        };
-
-        const detach = () => {
-          document.removeEventListener('mousemove', onMouseMove);
-          document.removeEventListener('mouseup', onMouseUp);
-          detachListenersRef.current = null;
-        };
-
-        const onMouseUp = () => {
-          isDraggingRef.current = false;
-          detach();
-        };
-
-        document.addEventListener('mousemove', onMouseMove);
-        document.addEventListener('mouseup', onMouseUp);
-        detachListenersRef.current = detach;
-      },
-      [
-        fit,
-        mainSettings,
-        onSelect,
-        widgetId,
-        snap,
-        gridSize,
-        world,
-        width,
-        height,
-      ]
-    );
-
-    const handleResizeMouseDown = useCallback(
-      (event: React.MouseEvent, direction: ResizeDirection) => {
-        if (event.button !== 0) {
-          return;
-        }
-
-        event.preventDefault();
-        event.stopPropagation();
-        onSelect(widgetId);
-
-        mainSettings.pushUndo();
-
-        const current = mainSettings.getWidget(widgetId);
-        const drawnBox = (
-          event.currentTarget as HTMLElement
-        ).closest<HTMLElement>('[data-widget-id]');
-
-        isResizingRef.current = true;
-        resizeStartRef.current = {
-          mouseX: event.clientX,
-          mouseY: event.clientY,
-          widgetW: current?.userSettings.currentWidth ?? designWidth,
-          widgetH: current?.userSettings.currentHeight ?? designHeight,
-          widgetX: current?.userSettings.x ?? 0,
-          widgetY: current?.userSettings.y ?? 0,
-          drawnW: drawnBox?.offsetWidth ?? 0,
-          drawnH: drawnBox?.offsetHeight ?? 0,
-        };
-
-        const onMouseMove = (moveEvent: MouseEvent) => {
-          if (!isResizingRef.current) {
-            return;
-          }
-
-          const dx = (moveEvent.clientX - resizeStartRef.current.mouseX) / fit;
-          const dy = (moveEvent.clientY - resizeStartRef.current.mouseY) / fit;
-
-          const start = {
-            x: resizeStartRef.current.widgetX,
-            y: resizeStartRef.current.widgetY,
-            width: resizeStartRef.current.widgetW,
-            height: resizeStartRef.current.widgetH,
-          };
-          const box = resizeBox({
-            direction,
-            dx,
-            dy,
-            start,
-            drawn: {
-              width: resizeStartRef.current.drawnW,
-              height: resizeStartRef.current.drawnH,
-            },
-            design: { width: designWidth, height: designHeight },
-            widget: {
-              contentSized: widget?.contentSized,
-              scaleFromHeight: widget?.scaleFromHeight,
-              lockAspectRatio: widget?.lockAspectRatio,
-            },
-            snapGrid: snap ? gridSize : null,
-            keepRatio: moveEvent.shiftKey || isRatioLocked,
-          });
-
-          mainSettings.updateSize(widgetId, box.width, box.height);
-
-          if (box.x !== start.x || box.y !== start.y) {
-            mainSettings.updatePosition(widgetId, box.x, box.y);
-          }
-        };
-
-        const detach = () => {
-          document.removeEventListener('mousemove', onMouseMove);
-          document.removeEventListener('mouseup', onMouseUp);
-          detachListenersRef.current = null;
-        };
-
-        const onMouseUp = () => {
-          isResizingRef.current = false;
-          detach();
-        };
-
-        document.addEventListener('mousemove', onMouseMove);
-        document.addEventListener('mouseup', onMouseUp);
-        detachListenersRef.current = detach;
-      },
-      [
-        designHeight,
-        designWidth,
-        fit,
-        mainSettings,
-        onSelect,
-        widgetId,
-        snap,
-        gridSize,
-        isRatioLocked,
-        widget?.lockAspectRatio,
-        widget?.scaleFromHeight,
-        widget?.contentSized,
-      ]
-    );
-
     const resizeDirections = resizeDirectionsFor({
       autoHeight,
       contentSized,
@@ -318,7 +137,7 @@ export const LayoutCanvasWidget = observer(
         <div
           role="presentation"
           className={styles.dragWrapper}
-          onMouseDown={handleDragMouseDown}
+          onMouseDown={onDragMouseDown}
         >
           <div
             ref={innerRef}
@@ -355,7 +174,7 @@ export const LayoutCanvasWidget = observer(
                 className={`${styles.resizeHandle} ${
                   styles[`resizeHandle${direction.toUpperCase()}`]
                 }`}
-                onMouseDown={(event) => handleResizeMouseDown(event, direction)}
+                onMouseDown={(event) => onResizeMouseDown(event, direction)}
               />
             ))}
         </div>
