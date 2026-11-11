@@ -1,5 +1,7 @@
 import type { AppSettingsStore } from '@entities/app-settings/app-settings.store';
 import type { LiveWidgetsStore } from '@entities/layout/live-widgets.store';
+import { WIDGETS } from '@entities/widget/widget-catalog';
+
 import { visibilityActionWidget } from './actions';
 
 interface SettingsActionDeps {
@@ -15,9 +17,20 @@ interface SettingsActionDeps {
 const SETTINGS_ACTIONS: Record<string, (root: SettingsActionDeps) => void> = {
   'app:toggle-hide-all-widgets': (root) =>
     root.appSettings.toggleHideAllWidgets(),
-  'standings:cycle-view-mode': (root) =>
-    root.liveWidgets.cycleStandingsViewMode(),
-  'delta:cycle-reference': (root) => root.liveWidgets.cycleDeltaReference(),
+  // A widget's setting cycles, declared in its manifest.
+  ...Object.fromEntries(
+    WIDGETS.flatMap((manifest) =>
+      (manifest.hotkeyCycles ?? []).map((cycle) => [
+        cycle.action,
+        (root: SettingsActionDeps) =>
+          root.liveWidgets.cycleSetting(
+            manifest.id,
+            cycle.setting,
+            cycle.values
+          ),
+      ])
+    )
+  ),
 };
 
 export const applySettingsAction = (

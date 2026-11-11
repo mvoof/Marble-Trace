@@ -1,35 +1,50 @@
 import type { CSSProperties } from 'react';
-import type { WidgetUserSettings } from '@shared/contracts/widget-settings';
+import {
+  PILL_CORNER,
+  type WidgetFrameShape,
+  type WidgetUserSettings,
+} from '@shared/contracts/widget-settings';
 import { getContrastTextColor } from '@shared/lib/colors';
 
-// Widgets whose plate is not a plain rounded rectangle need the frame that
-// hosts them (overlay container, widget preview, layout editor) to clip with
-// a matching border-radius. Shared here so every frame renders the same shape.
+import { WIDGET_BY_ID } from './widget-catalog';
+
+/** A pill end: far past any widget's half-height, and never scaled. */
+const PILL_RADIUS = '9999px';
+
+/** The CSS radius of a frame shape, at the widget's scale. */
+export const frameShapeRadius = (
+  shape: WidgetFrameShape,
+  userSettings: Record<string, unknown>
+): string | undefined => {
+  if (shape.kind === 'circle') {
+    return '50%';
+  }
+
+  if (
+    shape.whenSetting !== undefined &&
+    userSettings[shape.whenSetting] !== true
+  ) {
+    return undefined;
+  }
+
+  return shape.radiiPx
+    .map((radius) =>
+      radius === PILL_CORNER ? PILL_RADIUS : `calc(${radius}px * var(--wfs, 1))`
+    )
+    .join(' ');
+};
+
+/**
+ * The radius every frame that hosts a widget clips with — overlay container,
+ * widget preview, layout editor — from the shape its manifest declares.
+ */
 export const widgetFrameBorderRadius = (
   widgetType: string,
   userSettings: Record<string, unknown>
 ): string | undefined => {
-  if (widgetType === 'input-trace' && userSettings.showSteering === true) {
-    return `calc(12px * var(--wfs, 1)) 9999px 9999px calc(12px * var(--wfs, 1))`;
-  }
+  const shape = WIDGET_BY_ID.get(widgetType)?.frameShape;
 
-  // The proximity radar is a scope: its plate is the circle the user colors
-  // through the ordinary background and border settings.
-  if (widgetType === 'proximity-radar') {
-    return '50%';
-  }
-
-  // The g-meter is a friction circle: its plate is that circle, so the frame
-  // clips round the same way the scope does.
-  if (widgetType === 'g-meter') {
-    return '50%';
-  }
-
-  if (widgetType === 'race-dash') {
-    return `calc(52px * var(--wfs, 1)) calc(14px * var(--wfs, 1)) calc(14px * var(--wfs, 1)) calc(52px * var(--wfs, 1))`;
-  }
-
-  return undefined;
+  return shape ? frameShapeRadius(shape, userSettings) : undefined;
 };
 
 export const DEFAULT_WIDGET_BACKGROUND = 'rgba(21, 22, 26, 0.8)';

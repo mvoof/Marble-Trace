@@ -1,4 +1,5 @@
 import type { WidgetManifest } from '@shared/contracts/widget-settings';
+import { LAP_DELTA_REFERENCE } from '@shared/contracts/widget-choices';
 import {
   COMMON_WIDGET_DEFAULTS,
   PANEL_APPEARANCE_DEFAULTS,
@@ -32,4 +33,11 @@ export const DELTA_MANIFEST: WidgetManifest = {
     ...DELTA_SETTINGS.defaults,
   },
   settingsSchema: DELTA_SETTINGS,
+  hotkeyCycles: [
+    {
+      action: 'delta:cycle-reference',
+      setting: 'reference',
+      values: LAP_DELTA_REFERENCE,
+    },
+  ],
 };

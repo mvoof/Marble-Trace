@@ -47,12 +47,6 @@ import {
 import type { WidgetMap } from '@entities/widget/widget-map';
 import type { WidgetDefaultsStore } from '@entities/widget/widget-defaults.store';
 import type { CapabilitiesPayload } from '@shared/contracts/generated/bindings';
-import {
-  LAP_DELTA_REFERENCE,
-  STANDINGS_VIEW_MODE,
-  type LapDeltaReference,
-  type StandingsViewMode,
-} from '@shared/contracts/widget-choices';
 
 const LAYOUT_TOAST_DURATION_MS = 3000;
 
@@ -146,8 +140,7 @@ type WidgetSettingsWrite =
   | 'sendToBack'
   | 'setHotkeysActOn'
   | 'toggleVisibilityByHotkey'
-  | 'cycleStandingsViewMode'
-  | 'cycleDeltaReference'
+  | 'cycleSetting'
   | 'moveWidgetToMonitor'
   | 'loadLayout'
   | 'selectLayout'
@@ -387,44 +380,24 @@ export class LiveWidgetsStore implements WidgetMap {
     return Array.from(types).sort();
   }
 
-  cycleStandingsViewMode() {
-    const leader = this.hotkeyLeaderOf('standings');
+  /**
+   * Steps a choice setting to its next value on every instance under the
+   * widget's hotkeys, from where the hotkey leader is — so a stream that had
+   * drifted from the driver's screen is brought back in line. The cycles are
+   * declared in the widgets' manifests (`hotkeyCycles`).
+   */
+  cycleSetting(type: string, setting: string, values: readonly string[]) {
+    const leader = this.hotkeyLeaderOf(type);
 
-    if (!leader) return;
-
-    const current = this.getSettings<{ viewMode: StandingsViewMode }>(
-      leader.id
-    );
-    const viewMode =
-      STANDINGS_VIEW_MODE[
-        (STANDINGS_VIEW_MODE.indexOf(current.viewMode) + 1) %
-          STANDINGS_VIEW_MODE.length
-      ];
-
-    // Every instance under the hotkeys lands on the same mode, so a stream
-    // that had drifted from the driver's screen is brought back in line.
-    for (const widget of this.hotkeyInstancesOf('standings')) {
-      this.updateUserSettings(widget.id, { viewMode });
+    if (!leader || values.length === 0) {
+      return;
     }
-  }
 
-  cycleDeltaReference() {
-    const leader = this.hotkeyLeaderOf('delta');
+    const current = String(this.getSettings(leader.id)[setting]);
+    const next = values[(values.indexOf(current) + 1) % values.length];
 
-    if (!leader) return;
-
-    const current = this.getSettings<{ reference: LapDeltaReference }>(
-      leader.id
-    );
-    const reference =
-      LAP_DELTA_REFERENCE[
-        (LAP_DELTA_REFERENCE.indexOf(current.reference) + 1) %
-          LAP_DELTA_REFERENCE.length
-      ];
-
-    // Same reasoning as the standings view mode above.
-    for (const widget of this.hotkeyInstancesOf('delta')) {
-      this.updateUserSettings(widget.id, { reference });
+    for (const widget of this.hotkeyInstancesOf(type)) {
+      this.updateUserSettings(widget.id, { [setting]: next });
     }
   }
 

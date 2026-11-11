@@ -1,5 +1,6 @@
 import type { WithFontScale } from '@shared/ui/StatChip/rating';
 import type { WidgetManifest } from '@shared/contracts/widget-settings';
+import { STANDINGS_VIEW_MODE } from '@shared/contracts/widget-choices';
 import {
   COMMON_WIDGET_DEFAULTS,
   PANEL_APPEARANCE_DEFAULTS,
@@ -59,4 +60,11 @@ export const STANDINGS_MANIFEST: WidgetManifest = {
     ...STANDINGS_SETTINGS.defaults,
   },
   settingsSchema: STANDINGS_SETTINGS,
+  hotkeyCycles: [
+    {
+      action: 'standings:cycle-view-mode',
+      setting: 'viewMode',
+      values: STANDINGS_VIEW_MODE,
+    },
+  ],
 };

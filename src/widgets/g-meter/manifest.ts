@@ -32,4 +32,6 @@ export const G_METER_MANIFEST: WidgetManifest = {
     ...G_METER_SETTINGS.defaults,
   },
   settingsSchema: G_METER_SETTINGS,
+  // A friction circle: its plate is that circle.
+  frameShape: { kind: 'circle' },
 };

@@ -1,6 +1,7 @@
-import type {
-  ResolveLayoutChange,
-  WidgetManifest,
+import {
+  PILL_CORNER,
+  type ResolveLayoutChange,
+  type WidgetManifest,
 } from '@shared/contracts/widget-settings';
 import {
   COMMON_WIDGET_DEFAULTS,
@@ -148,4 +149,10 @@ export const INPUT_TRACE_MANIFEST: WidgetManifest = {
     ...INPUT_TRACE_SETTINGS.defaults,
   },
   settingsSchema: INPUT_TRACE_SETTINGS,
+  // The wheel ends the plate in a half circle on the right.
+  frameShape: {
+    kind: 'corners',
+    radiiPx: [12, PILL_CORNER, PILL_CORNER, 12],
+    whenSetting: 'showSteering',
+  },
 };

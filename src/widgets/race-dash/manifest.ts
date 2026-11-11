@@ -65,4 +65,5 @@ export const RACE_DASH_MANIFEST: WidgetManifest = {
     ...RACE_DASH_SETTINGS.defaults,
   },
   settingsSchema: RACE_DASH_SETTINGS,
+  frameShape: { kind: 'corners', radiiPx: [52, 14, 14, 52] },
 };
