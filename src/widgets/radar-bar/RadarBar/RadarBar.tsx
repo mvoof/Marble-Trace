@@ -98,10 +98,8 @@ export const RadarBar = observer(({ side }: RadarBarProps) => {
     (element, scheduleWrite) => {
       const rawDist =
         side === 'left'
-          ? // oxlint-disable-next-line no-restricted-properties
-            computed.proximity?.radarDistances.leftDist
-          : // oxlint-disable-next-line no-restricted-properties
-            computed.proximity?.radarDistances.rightDist;
+          ? computed.proximity?.radarDistances.leftDist
+          : computed.proximity?.radarDistances.rightDist;
 
       if (rawDist === null || rawDist === undefined) {
         scheduleWrite(() => {
@@ -111,7 +109,6 @@ export const RadarBar = observer(({ side }: RadarBarProps) => {
         return;
       }
 
-      // oxlint-disable-next-line no-restricted-properties
       const formation = computed.proximity?.formation ?? false;
       const { carLength } = appSettings.appSettings;
       const { topPercent, heightPercent } = pillGeometryOf(rawDist, carLength);

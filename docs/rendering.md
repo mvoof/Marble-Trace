@@ -159,35 +159,34 @@ Actions' runner variance to fail on unchanged code, while every per-widget
 budget passed. The signal-to-noise on the aggregate tests did not justify
 keeping a Playwright stage in every pull request.
 
-**What is checked statically is narrower: the fact of a direct read, not the
-correctness of the contour.** `no-restricted-properties` (an override over the `.tsx`
-files of `src/{app,pages,widgets,features}/` and `src/shared/ui/` in `.oxlintrc.json`) fails the build on any read of a hot field's name
-— `carDynamics`, `carInputs`, `carPositions`, `lapDelta`, `relative`,
-`proximity`, `driverEntries`, `fieldEntries`, `relativeEntries` — property access and destructuring alike. The
-rule matches the property name alone, with no notion of "inside a component
-body" versus "inside `useReactiveDomWrite`/`useReactiveCanvasLoop`'s
-`reactiveEffect`" — oxlint 1.67 has no AST-selector rule (`no-restricted-syntax`)
-to make that distinction. So the escape hatch itself trips the rule wherever it
-lives in the same `.tsx` file, and needs an explicit
-`// oxlint-disable-next-line no-restricted-properties` on that line. That
-comment is deliberate, not a workaround: it is the same "what `grep` finds"
-signal "The escape hatch" section above asks for, now enforced rather than
-merely requested. Each field also carries a plain JSDoc block at its
-declaration (`PlayerStore`, `CarsStore`, `BackendComputedStore` in
-`src/entities/player/` and `src/entities/cars/`) naming the rule and pointing at this section, so it surfaces
-on hover wherever the field is referenced — a human-facing echo of the same
-rule, not a second mechanism. It deliberately carries no `@deprecated`: that
-tag strikes through every reference indiscriminately, including the legitimate
-one inside `useReactiveDomWrite`/`useReactiveCanvasLoop`, and a symbol crossed
-out next to its own `oxlint-disable-next-line` reads as a contradiction the
-lint rule doesn't actually have — the field isn't deprecated, reading it in the
-wrong place is.
+**What is checked statically is narrower: where a hot field is read, not the
+correctness of the contour.** `layers/reactive-hot-fields`, a rule of the
+project's own oxlint plugin (`scripts/lint/layers-plugin.mjs`, over the `.tsx`
+files of `src/{app,pages,widgets,features,entities}/` and `src/shared/ui/`),
+fails the build on a read of a hot field's name — `carDynamics`, `carInputs`,
+`carPositions`, `lapDelta`, `relative`, `proximity`, `driverEntries`,
+`fieldEntries`, `relativeEntries`, `relativePlayerEntry`, property access and
+destructuring alike — anywhere but inside a function handed to
+`useReactiveDomWrite` / `useReactiveCanvasLoop` or the `read` prop of
+`LiveText`. The escape hatch needs no comment; a read elsewhere does: the one
+standing exception, a 10 Hz shell/body split that re-renders a small component
+on purpose (`PositionBadge`), carries
+`// oxlint-disable-next-line layers/reactive-hot-fields` and a comment saying
+why. The rule matches names, so a CSS module class that shares one
+(`styles.relative`) is renamed rather than disabled.
+
+Each field also carries a plain JSDoc block at its declaration (`PlayerStore`,
+`CarsStore`, `BackendComputedStore` in `src/entities/player/` and
+`src/entities/cars/`) naming the rule and pointing at this section, so it
+surfaces on hover wherever the field is referenced. It deliberately carries no
+`@deprecated`: that tag strikes through every reference, including the
+legitimate ones inside a reactive write — the field isn't deprecated, reading it
+in the wrong place is.
 
 **What replaces the rest is review, not a runner.** A PR touching a widget that
 declares a hot field is expected to name, in review, which contour each hot
 field is on and why — the same information the retired harness would have
-measured, and the one thing neither the lint rule nor the JSDoc can check: a
-disabled line is trivially easy to add, hard to prove correct by grep alone.
+measured, and the one thing neither the lint rule nor the JSDoc can check.
 `docs/rules/widgets.md` and `docs/widget-authoring.md` carry the rule for anyone (human or
 AI) opening such a file. This is a real trade: a regression in a hot widget's
 allocation behavior can land and go unnoticed until someone profiles the

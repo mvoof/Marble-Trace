@@ -35,7 +35,7 @@ export const PositionBadge = observer(
     // escape hatch: `PositionBadge` is deliberately the smallest component
     // that re-renders on the field, split out of `ServiceFooter` for exactly
     // that reason. See "The hot/cold split" in docs/rendering.md.
-    // oxlint-disable-next-line no-restricted-properties
+    // oxlint-disable-next-line layers/reactive-hot-fields
     const { fieldEntries } = useBackendComputedStore();
     const playerPosition = usePlayerPositionStore();
     const pitServiceWidget = usePitServiceWidgetStore();

@@ -28,7 +28,6 @@ export const LiveSpeed = observer(
 
     const speedRef = useReactiveDomWrite<HTMLSpanElement>(
       (element, scheduleWrite) => {
-        // oxlint-disable-next-line no-restricted-properties
         const speed = player.carDynamics?.speed ?? 0;
         const text = formatSpeed(speed, unitSystem);
         const color = colorOf?.(speed) ?? null;

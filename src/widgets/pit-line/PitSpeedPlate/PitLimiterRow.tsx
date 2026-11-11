@@ -23,7 +23,6 @@ export const PitLimiterRow = observer(({ withUnit }: PitLimiterRowProps) => {
 
   const rowRef = useReactiveDomWrite<HTMLDivElement>(
     (element, scheduleWrite) => {
-      // oxlint-disable-next-line no-restricted-properties
       const speedMs = player.carDynamics?.speed ?? 0;
       const speedText = Math.round(speedMs * units.speedFactor).toString();
 

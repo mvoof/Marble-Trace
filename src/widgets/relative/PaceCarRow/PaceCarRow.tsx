@@ -32,7 +32,6 @@ export const PaceCarRow = observer(({ carIdx, index }: PaceCarRowProps) => {
   const gapRef = useReactiveDomWrite<HTMLSpanElement>(
     (element, scheduleWrite) => {
       const paceCar = relativeWidget.paceCarRowOf(carIdx);
-      // oxlint-disable-next-line no-restricted-properties
       const livePlayer = computed.relativePlayerEntry;
 
       if (!paceCar) {

@@ -88,9 +88,7 @@ export const RingBadge = observer(() => {
 
   const rootRef = useReactiveDomWrite<HTMLDivElement>(
     (_element, scheduleWrite) => {
-      // oxlint-disable-next-line no-restricted-properties
       const currentGear = player.carDynamics?.gear ?? 0;
-      // oxlint-disable-next-line no-restricted-properties
       const rpm = player.carDynamics?.rpm ?? 0;
       const sessionInfo = sessionStore.sessionInfo;
       const carStatus = player.carStatus;

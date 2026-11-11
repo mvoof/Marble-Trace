@@ -56,9 +56,7 @@ export const FlagBands = observer(({ isHorizontal }: FlagBandsProps) => {
 
   const containerRef = useReactiveDomWrite<HTMLDivElement>(
     (element, scheduleWrite) => {
-      const playerLapDistPct =
-        // oxlint-disable-next-line no-restricted-properties
-        computed.relativePlayerEntry?.lapDistPct ?? 0;
+      const playerLapDistPct = computed.relativePlayerEntry?.lapDistPct ?? 0;
 
       const placements = incidentsStore.zones.flatMap((zone) => {
         const ranges = projectFlagZoneToWindow(zone, playerLapDistPct);

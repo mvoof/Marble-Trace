@@ -11,6 +11,9 @@
 //   (checked to stay acyclic);
 // - shared/contracts imports nothing but itself.
 //
+// The second rule, `reactive-hot-fields`, keeps the hot telemetry fields out of
+// render bodies — see its section below.
+//
 // A file directly in a layer folder (`widgets/registry.ts`) belongs to no slice
 // and is shared by the layer. `import.meta.glob` is not an import and is not
 // checked: the catalogue and the registries read slices above them that way.
@@ -234,7 +237,122 @@ const boundaries = {
   },
 };
 
+// --- Hot fields --------------------------------------------------------------
+//
+// A hot telemetry field (`docs/rendering.md`) is read only where its change
+// cannot wake React: inside the function handed to `useReactiveDomWrite` or
+// `useReactiveCanvasLoop`, or the `read` prop of `LiveText`. A read anywhere
+// else in a component — its render body above all — re-renders it on every
+// tick. `no-restricted-properties` matched the name alone and needed a
+// disable at every legitimate read; this looks at where the read is.
+
+/** The calls whose function argument is a reactive write. */
+const REACTIVE_CALLEES = new Set([
+  'useReactiveDomWrite',
+  'useReactiveCanvasLoop',
+]);
+
+/** JSX props that take a function run inside a reactive write. */
+const REACTIVE_PROPS = new Set(['read']);
+
+const FUNCTION_TYPES = new Set([
+  'ArrowFunctionExpression',
+  'FunctionExpression',
+]);
+
+const calleeName = (callee) => {
+  if (callee.type === 'Identifier') {
+    return callee.name;
+  }
+
+  if (callee.type === 'MemberExpression' && !callee.computed) {
+    return callee.property.name;
+  }
+
+  return null;
+};
+
+/** Whether this function is the reactive effect of a write. */
+const isReactiveFunction = (fn) => {
+  const parent = fn.parent;
+
+  if (!parent) {
+    return false;
+  }
+
+  if (parent.type === 'CallExpression' && parent.arguments.includes(fn)) {
+    return REACTIVE_CALLEES.has(calleeName(parent.callee));
+  }
+
+  if (parent.type === 'JSXExpressionContainer') {
+    const attribute = parent.parent;
+
+    return (
+      attribute?.type === 'JSXAttribute' &&
+      REACTIVE_PROPS.has(attribute.name?.name)
+    );
+  }
+
+  return false;
+};
+
+const isInsideReactiveWrite = (node) => {
+  for (let current = node.parent; current; current = current.parent) {
+    if (FUNCTION_TYPES.has(current.type) && isReactiveFunction(current)) {
+      return true;
+    }
+  }
+
+  return false;
+};
+
+const reactiveHotFields = {
+  meta: {
+    type: 'problem',
+    schema: [
+      {
+        type: 'object',
+        properties: {
+          fields: { type: 'array', items: { type: 'string' } },
+        },
+        additionalProperties: false,
+      },
+    ],
+  },
+  create: (context) => {
+    const fields = new Set(context.options[0]?.fields ?? []);
+
+    const check = (node, name) => {
+      if (!fields.has(name) || isInsideReactiveWrite(node)) {
+        return;
+      }
+
+      context.report({
+        node,
+        message: `\`${name}\` is a hot field: read it only inside useReactiveDomWrite / useReactiveCanvasLoop, or LiveText's read — never in a render body. See docs/rendering.md.`,
+      });
+    };
+
+    return {
+      MemberExpression: (node) => {
+        if (!node.computed && node.property.type === 'Identifier') {
+          check(node, node.property.name);
+        }
+      },
+      Property: (node) => {
+        if (
+          node.parent?.type === 'ObjectPattern' &&
+          !node.computed &&
+          node.key.type === 'Identifier'
+        ) {
+          check(node, node.key.name);
+        }
+      },
+    };
+  },
+};
+
 export default {
   meta: { name: 'layers' },
-  rules: { boundaries },
+  rules: { boundaries, 'reactive-hot-fields': reactiveHotFields },
 };

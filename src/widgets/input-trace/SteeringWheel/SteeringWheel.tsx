@@ -38,7 +38,6 @@ const WheelCenter = observer(() => {
 
   const centerRef = useReactiveDomWrite<HTMLSpanElement>(
     (element, scheduleWrite) => {
-      // oxlint-disable-next-line no-restricted-properties
       const carDynamics = telemetry.carDynamics;
 
       const text = (() => {
@@ -145,7 +144,6 @@ export const SteeringWheel = observer(() => {
 
   const rotatorRef = useReactiveDomWrite<HTMLDivElement>(
     (element, scheduleWrite) => {
-      // oxlint-disable-next-line no-restricted-properties
       const rawAngle = telemetry.carDynamics?.steering_wheel_angle ?? 0;
 
       scheduleWrite(() => {

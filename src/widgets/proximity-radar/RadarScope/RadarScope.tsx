@@ -85,9 +85,7 @@ export const RadarScope = observer(() => {
   // overlay redrawing at the monitor's rate while the scope was up (ADR-0009).
   useReactiveCanvasLoop(
     (scheduleDraw) => {
-      // oxlint-disable-next-line no-restricted-properties
       const allCars = computed.proximity?.nearbyCars ?? [];
-      // oxlint-disable-next-line no-restricted-properties
       const formation = computed.proximity?.formation ?? false;
       // Read here, not in the render, so the autorun tracks every one of them.
       const settings =

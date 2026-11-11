@@ -460,7 +460,6 @@ export const GMeterTrace = observer(({ width, height }: GMeterTraceProps) => {
 
   useReactiveCanvasLoop(
     (scheduleDraw) => {
-      // oxlint-disable-next-line no-restricted-properties
       const dynamics = telemetry.carDynamics;
       const settings = liveWidgets.getSettings<GMeterWidgetSettings>(widgetId);
       const fontScale =
