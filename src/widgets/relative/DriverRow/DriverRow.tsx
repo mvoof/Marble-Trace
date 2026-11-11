@@ -13,7 +13,6 @@ import { useSessionStore } from '@entities/session/session-context';
 import { useReactiveDomWrite } from '@shared/hooks/useReactiveDomWrite';
 import { cx } from '@shared/lib/class-names';
 import { computeRelativeGap } from '@shared/lib/driver';
-import { isSessionEnded } from '@shared/lib/timer-utils';
 import { CountryFlag } from '@shared/ui/CountryFlag/CountryFlag';
 import { useLiveParts, writeText } from '@shared/ui/live/live-parts';
 import {
@@ -112,7 +111,7 @@ export const DriverRow = observer(({ carIdx, index }: DriverRowProps) => {
   }
 
   const state = driverRowStateOf(driver, {
-    isSessionEnded: isSessionEnded(session.session?.session_state ?? null),
+    isSessionEnded: session.isSessionEnded,
     isPlayerTowing: player.isTowing,
   });
 

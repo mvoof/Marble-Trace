@@ -7,6 +7,7 @@ import type {
   SessionType,
 } from '@shared/contracts/generated/bindings';
 import { computeClassSof } from '@shared/lib/driver';
+import { isSessionEnded } from '@shared/lib/timer-utils';
 
 export class SessionStore {
   session: SessionFrame | null = null;
@@ -54,6 +55,16 @@ export class SessionStore {
     }
 
     return info.sessions[info.currentSessionNum] ?? null;
+  }
+
+  /**
+   * Whether the session is in its cool-down. A computed boolean rather than
+   * `session.session_state` read in place: the session frame is replaced every
+   * second, and a table row that reads the frame redraws with it — every row,
+   * every second — for a value that changes once a session.
+   */
+  get isSessionEnded(): boolean {
+    return isSessionEnded(this.session?.session_state ?? null);
   }
 
   get currentSessionType(): SessionType | null {

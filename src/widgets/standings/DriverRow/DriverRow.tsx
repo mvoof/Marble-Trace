@@ -14,7 +14,6 @@ import { useReactiveDomWrite } from '@shared/hooks/useReactiveDomWrite';
 import { writeText } from '@shared/ui/live/live-parts';
 import { cx } from '@shared/lib/class-names';
 import { formatBrand } from '@shared/lib/driver';
-import { isSessionEnded } from '@shared/lib/timer-utils';
 import { CountryFlag } from '@shared/ui/CountryFlag/CountryFlag';
 import {
   isPitStatus,
@@ -186,7 +185,7 @@ export const DriverRow = observer(
     }
 
     const state = driverRowStateOf(driver, {
-      isSessionEnded: isSessionEnded(session.session?.session_state ?? null),
+      isSessionEnded: session.isSessionEnded,
       isPlayerTowing: player.isTowing,
     });
     const isPit = state.isPit;
