@@ -32,15 +32,15 @@ import { SESSION_PREVIEW_SCENARIOS } from '@features/preview/scenarios';
 import { isRemoteMonitor } from '@shared/lib/remote-screen';
 import { cx } from '@shared/lib/class-names';
 
-import { AddRemoteScreenButton } from './AddRemoteScreenButton';
-import { LayoutCanvas } from './LayoutCanvas';
-import { LayoutList } from './LayoutList';
-import { LayoutWidgetPanel } from './LayoutWidgetPanel';
+import { AddRemoteScreenButton } from './toolbar/AddRemoteScreenButton';
+import { LayoutCanvas } from './canvas/LayoutCanvas';
+import { LayoutList } from './list/LayoutList';
+import { LayoutWidgetPanel } from './panels/LayoutWidgetPanel';
 import { BackgroundControls } from './toolbar/BackgroundControls';
 import { LayoutNameField } from './toolbar/LayoutNameField';
 import { MonitorPicker } from './toolbar/MonitorPicker';
-import { useToolbarBottom } from './use-toolbar-bottom';
-import { WidgetInspector } from './WidgetInspector';
+import { useToolbarBottom } from './toolbar/use-toolbar-bottom';
+import { WidgetInspector } from './panels/WidgetInspector';
 import styles from './LayoutEditor.module.scss';
 
 // The canvas is seeded as a whole, so the bar offers the session-wide moments
