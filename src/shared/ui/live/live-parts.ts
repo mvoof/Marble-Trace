@@ -1,7 +1,10 @@
 import { useState } from 'react';
 
+/** A node a hot write targets: markup or SVG. */
+export type LiveElement = HTMLElement | SVGElement;
+
 interface LivePart {
-  element: HTMLElement | null;
+  element: LiveElement | null;
   written: Map<string, string>;
 }
 
@@ -14,14 +17,16 @@ interface LivePart {
  */
 export interface LiveParts<PartName extends string> {
   /** Ref callback for a node: `<span ref={parts.ref('speed')} />`. Stable per name. */
-  ref: (name: PartName) => (element: HTMLElement | null) => void;
+  ref: (name: PartName) => (element: LiveElement | null) => void;
   text: (name: PartName, text: string) => void;
   /** A state as a `data-*` attribute; `null` removes it. Styles select on it in SCSS. */
   state: (name: PartName, key: string, value: string | null) => void;
   /** A custom property or a plain style property. */
   style: (name: PartName, property: string, value: string | null) => void;
+  /** An attribute — an SVG path's `d`; `null` removes it. */
+  attribute: (name: PartName, attribute: string, value: string | null) => void;
   /** The node a name holds now — for a helper that takes an element, such as a blink. */
-  elementOf: (name: PartName) => HTMLElement | null;
+  elementOf: (name: PartName) => LiveElement | null;
   /** Toggles one class — for a class a shared stylesheet owns. */
   toggleClass: (name: PartName, className: string, isOn: boolean) => void;
 }
@@ -33,7 +38,7 @@ export const createLiveParts = <
   PartName extends string,
 >(): LiveParts<PartName> => {
   const partsByName = new Map<PartName, LivePart>();
-  const refsByName = new Map<PartName, (element: HTMLElement | null) => void>();
+  const refsByName = new Map<PartName, (element: LiveElement | null) => void>();
 
   const partOf = (name: PartName): LivePart => {
     let part = partsByName.get(name);
@@ -50,7 +55,7 @@ export const createLiveParts = <
     name: PartName,
     key: string,
     value: string,
-    write: (element: HTMLElement) => void
+    write: (element: LiveElement) => void
   ) => {
     const part = partOf(name);
 
@@ -103,6 +108,14 @@ export const createLiveParts = <
           element.style.setProperty(property, value);
         }
       }),
+    attribute: (name, attribute, value) =>
+      writeOnChange(name, `attr:${attribute}`, value ?? ABSENT, (element) => {
+        if (value === null) {
+          element.removeAttribute(attribute);
+        } else {
+          element.setAttribute(attribute, value);
+        }
+      }),
     toggleClass: (name, className, isOn) =>
       writeOnChange(name, `class:${className}`, isOn ? '1' : '0', (element) => {
         element.classList.toggle(className, isOn);
@@ -117,4 +130,44 @@ export const useLiveParts = <
   const [parts] = useState(() => createLiveParts<PartName>());
 
   return parts;
+};
+
+/** The text of the element a reactive write targets, written only when it changed. */
+export const writeText = (element: LiveElement, text: string): void => {
+  if (element.textContent !== text) {
+    element.textContent = text;
+  }
+};
+
+const writtenStyles = new WeakMap<LiveElement, Map<string, string>>();
+
+/**
+ * A style property of the element a reactive write targets, written only when
+ * it changed; `null` removes it.
+ */
+export const writeStyle = (
+  element: LiveElement,
+  property: string,
+  value: string | null
+): void => {
+  let written = writtenStyles.get(element);
+
+  if (!written) {
+    written = new Map();
+    writtenStyles.set(element, written);
+  }
+
+  const next = value ?? ABSENT;
+
+  if (written.get(property) === next) {
+    return;
+  }
+
+  written.set(property, next);
+
+  if (value === null) {
+    element.style.removeProperty(property);
+  } else {
+    element.style.setProperty(property, value);
+  }
 };

@@ -4,16 +4,5 @@
   font-weight: 700;
   line-height: 0.95;
   font-variant-numeric: tabular-nums;
-  color: var(--rpm-value-color, #{$widget-text-primary});
-}
-
-// `REDLINE_BLINK` writes the step.
-.blinkPulse[data-blink-step='1'] {
-  opacity: 0.35;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .blinkPulse[data-blink-step='1'] {
-    opacity: 1;
-  }
+  color: $widget-text-primary;
 }

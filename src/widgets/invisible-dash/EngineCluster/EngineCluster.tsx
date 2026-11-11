@@ -1,119 +1,48 @@
-import { useWidgetSettings } from '@entities/layout/useWidgetSettings';
 import { observer } from 'mobx-react-lite';
 
-import {
-  computeRpmZoneState,
-  REDLINE_BLINK,
-  rpmDigitColorsOf,
-  shiftDigitState,
-} from '@shared/lib/car-signals';
-import { formatSpeed, speedUnit } from '@shared/lib/telemetry-format';
-import { useReactiveDomWrite } from '@shared/hooks/useReactiveDomWrite';
-import { useBlinkHandle } from '@shared/hooks/useBlink';
-import { useBackendComputedStore } from '@entities/cars/computed-context';
-import { targetSpeedColor } from '@entities/corner-speeds/target-speed';
-import { usePlayerStore } from '@entities/player/player-context';
-import { useSessionStore } from '@entities/session/session-context';
 import { useUnitsStore } from '@entities/app-settings/units-context';
+import { useTargetSpeedColor } from '@entities/corner-speeds/useTargetSpeedColor';
+import { useWidgetSettings } from '@entities/layout/useWidgetSettings';
+import { LiveSpeed } from '@entities/player/readouts/LiveSpeed';
+import { ShiftDigit } from '@entities/player/readouts/ShiftDigit';
+import { rpmDigitColorsOf } from '@shared/lib/car-signals';
+import { speedUnit } from '@shared/lib/telemetry-format';
 
 import { ShiftBar } from '../ShiftBar/ShiftBar';
-
-import styles from './EngineCluster.module.scss';
 import type { InvisibleDashWidgetSettings } from '../settings-schema';
-
-const RPM_PERCENT_BASE = 100;
-
-const RPM_COLOR_PROPERTY = '--dash-rpm-color';
+import styles from './EngineCluster.module.scss';
 
 /**
- * The revs and the speed. Both move on every physics tick, so the cluster is
- * markup React renders once and a single pass per animation frame fills. See
- * `docs/rendering.md`.
- *
- * With the blink on, the RPM number flashes at the shift point on a timer, not
- * a CSS animation (ADR-0009).
- *
- * With the target colour on, the speed takes the on-target or over-target
- * colour against the lit corner target, written with the number.
+ * The revs and the speed. With the blink on, the RPM number flashes at the
+ * shift point; with the target colour on, the speed takes the on-target or
+ * over-target colour against the lit corner target.
  */
 export const EngineCluster = observer(() => {
-  const player = usePlayerStore();
-  const sessionStore = useSessionStore();
   const units = useUnitsStore();
-  const backendComputed = useBackendComputedStore();
 
   const settings =
     useWidgetSettings<InvisibleDashWidgetSettings>('invisible-dash');
-  const shiftBlink = useBlinkHandle();
 
-  const rootRef = useReactiveDomWrite<HTMLDivElement>(
-    (element, scheduleWrite) => {
-      // oxlint-disable-next-line no-restricted-properties
-      const rpm = Math.round(player.carDynamics?.rpm ?? 0);
-      const { pct, zone } = computeRpmZoneState(
-        rpm,
-        sessionStore.sessionInfo,
-        player.carStatus,
-        // oxlint-disable-next-line no-restricted-properties
-        player.carDynamics?.gear ?? 0
-      );
-
-      const rpmText =
-        settings.rpmFormat === 'percent'
-          ? `${Math.round(pct * RPM_PERCENT_BASE)}%`
-          : String(rpm);
-
-      const { color: rpmColor, isBlink } = shiftDigitState(zone, {
-        colors: settings.colorizeRpmByZone ? rpmDigitColorsOf(settings) : null,
-        blink: settings.blinkAtShift,
-      });
-
-      // oxlint-disable-next-line no-restricted-properties
-      const speed = player.carDynamics?.speed ?? 0;
-      const speedText = formatSpeed(speed, units.unitSystem);
-
-      const speedColor = settings.showSpeedTargetColor
-        ? targetSpeedColor(speed, backendComputed.cornerSpeeds, {
-            onTarget: settings.speedOnTargetColor,
-            over: settings.speedOverTargetColor,
-          })
-        : '';
-
-      scheduleWrite(() => {
-        element.style.setProperty(RPM_COLOR_PROPERTY, rpmColor ?? '');
-
-        const rpmValue = element.querySelector(`.${styles.rpm}`);
-
-        if (rpmValue instanceof HTMLElement) {
-          rpmValue.classList.toggle(styles.blinkPulse, isBlink);
-          rpmValue.textContent = rpmText;
-        }
-
-        shiftBlink.attach(rpmValue);
-        shiftBlink.run(isBlink ? REDLINE_BLINK : null);
-
-        const speedValue = element.querySelector(`.${styles.speed}`);
-
-        if (speedValue instanceof HTMLElement) {
-          speedValue.textContent = speedText;
-          speedValue.style.color = speedColor;
-        }
-      });
-    },
-    [player, sessionStore, units, backendComputed, settings, shiftBlink]
-  );
+  const speedColorOf = useTargetSpeedColor(settings);
 
   if (!settings.showSpeed && !settings.showRpm && !settings.showShiftBar) {
     return null;
   }
 
   return (
-    <div ref={rootRef} className={styles.root}>
+    <div className={styles.root}>
       {settings.showShiftBar && <ShiftBar />}
 
       {settings.showRpm && (
         <div className={styles.row}>
-          <span className={styles.rpm} />
+          <ShiftDigit
+            format={settings.rpmFormat === 'percent' ? 'rpmPercent' : 'rpm'}
+            zoneColors={
+              settings.colorizeRpmByZone ? rpmDigitColorsOf(settings) : null
+            }
+            blink={settings.blinkAtShift}
+            className={styles.rpm}
+          />
 
           <span className={styles.caption}>RPM</span>
         </div>
@@ -121,7 +50,11 @@ export const EngineCluster = observer(() => {
 
       {settings.showSpeed && (
         <div className={styles.row}>
-          <span className={styles.speed} />
+          <LiveSpeed
+            unitSystem={units.unitSystem}
+            colorOf={speedColorOf}
+            className={styles.speed}
+          />
 
           <span className={styles.unit}>{speedUnit(units.unitSystem)}</span>
         </div>

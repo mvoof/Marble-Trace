@@ -16,7 +16,6 @@
 // Both numbers reserve their widest reading, so a digit rolling over never
 // shifts the column — and with it the gear digit standing next to it.
 .rpm {
-  color: var(--dash-rpm-color, inherit);
   min-width: 5ch;
   font-size: wfs(26 * $ss);
   line-height: 1;
@@ -39,18 +38,6 @@
   letter-spacing: 0.2em;
   text-transform: uppercase;
   color: color-mix(in srgb, currentColor 78%, transparent);
-}
-
-// The shift point flash, written by `useBlinkHandle` — a timer, never a CSS
-// animation (ADR-0009).
-.blinkPulse[data-blink-step='1'] {
-  opacity: 0.35;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .blinkPulse[data-blink-step='1'] {
-    opacity: 1;
-  }
 }
 
 // Narrow widget: the numbers stop shrinking. The captions stay — the readout
