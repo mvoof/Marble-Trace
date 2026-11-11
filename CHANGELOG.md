@@ -39,6 +39,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Battery:** A new look in the tables' chip style: a BAT chip over taller slanted cells with the charge as a large figure beside them, all coloured by charge — green, yellow, red; the deploy modes on their own strip with the selected one in a quiet chip; and IDLE, DEPLOY or REGEN as a bright chip beside the MGU-K power, which takes the state's colour while it flows. The LAP chip keeps one width when the lap's energy turns negative or passes 10 MJ.
 - **Widget Fonts:** Widgets are set in Inter, with figures in JetBrains Mono, in place of Rajdhani and Consolas.
 - **Input Trace:** The pedal bars are a little narrower, with a stop at the bottom and the top that lights in the pedal's colour once the pedal is touched and when it is fully pressed; the figures sit above the bars instead of on them. The graph is as tall as the bars, and the widget has room above and below. The speed and gear sit at the top of their block, with the entry, apex and exit speeds as chips under them, the one to read now bright and the others dimmed.
+- **Relative — Finished and Retired Cars:** The Relative reads a car's state as Standings does. A car that took the checkered flag shows the checkered flag and is no longer greyed out once it parks in the garage, a retired car is greyed out, and after the session ends nobody is greyed out for being in the garage.
 
 ### Removed
 
@@ -46,6 +47,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Settings Saved Right Away:** The voice crew settings, the car length and the interact mode settings were written to disk only when the main window closed, so a crash or a forced close lost them. Every setting is now saved within half a second of the change.
+- **Update Checks:** Only the main window checks for updates now, on your schedule once the settings have loaded. Every overlay window used to check as well, on the default schedule.
 - **Engine Panel — Oil Pressure:** Oil pressure always read 0.0 bar; it now shows the real pressure, in bar or psi.
 - **Pit Service — Projected Position:** The `P5 → P8` estimate now counts the time the pit lane itself costs, measured from the stops the field makes, on top of the standing still, and shows on the way to the pits, not only in the box. A car a lap down right behind you no longer counts as a place lost, a car more than half a lap back still does, and the estimate no longer needs the Relative widget on screen to work.
 - **TCR Badge:** A TCR class with the Audi RS3 LMS Gen2 in it is badged TCR, not by the series name the sim gives it.
