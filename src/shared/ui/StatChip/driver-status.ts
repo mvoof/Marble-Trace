@@ -41,10 +41,9 @@ export interface DriverStatusState {
   /**
    * A car that has taken the flag keeps its result rather than being labelled
    * out, off-track or in the pits — where it parked afterwards says nothing.
-   * Standings pass this; Relative has no notion of a finished car.
    */
   isFinished?: boolean;
-  /** Relative makes the pit badge optional; Standings always shows it. */
+  /** The table's "pit indicator" setting. */
   showPit?: boolean;
 }
 

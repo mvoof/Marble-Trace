@@ -1,86 +1,22 @@
+@use '../../../entities/cars/driver-table/driver-row' as *;
+
 // Driver row — grid layout for strict column alignment
 // Columns: pos | car# | name+badges(1fr) | lic? | iR? | gap
 .driverRow {
-  --chip-line: #{$table-chip-line};
-  // A row's chips are a step lower than the bars' — 18px over the line's 14 —
-  // and tight at the sides, so they sit beside the name instead of over it.
-  // The row keeps its height ($chip-outer-height).
-  --chip-pad-y: #{ws(1)};
-  --chip-lead-padding: #{ws(1) sp(xxs)};
-  --chip-solid-padding-x: #{sp(xs)};
-  --chip-value-padding-x: #{sp(xs)};
-  // The chips are notes on the driver: a weight under the position, the number
-  // and the name, and the readings in the secondary white, so the row reads
-  // by who first.
-  --chip-lead-weight: 600;
-  --chip-solid-weight: 700;
-  --chip-value-weight: 600;
-  --chip-value-text: #{$widget-text-secondary};
+  @include driver-row;
+  @include row-paddings;
 
-  display: grid;
-  // Cells fill the row's height so a column's stripe runs edge to edge; each
-  // cell centres its own content.
-  align-items: stretch;
-  column-gap: sp(xxxs);
-  padding: 0 sp(md);
-  position: relative;
   // Don't let a too-short container squish rows into each other — clip extra
   // rows (the list is overflow: hidden) instead of overlapping their text.
   flex-shrink: 0;
   overflow: hidden;
-  border-bottom: 1px solid $table-row-rule;
-  line-height: 1.15;
-  font-size: fs(xs);
-  background: $table-row-bg;
-
-  // Class marker, matching the one the standings rows and the class header
-  // carry. A pseudo-element rather than a border so the grid columns keep
-  // their measured width.
-  &::before {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: 0;
-    bottom: 0;
-    width: 3px;
-    background: var(--row-class-marker, transparent);
-  }
 }
 
-.rowOdd {
-  background: $table-row-bg-alt;
-}
+@include row-states;
 
+// The player's row draws over its neighbours.
 .driverRowPlayer {
   z-index: 10;
-  background: $widget-row-player-bg;
-}
-
-.driverRowOffTrack {
-  opacity: 0.5;
-  filter: grayscale(100%);
-
-  &.driverRowPlayer {
-    filter: grayscale(100%);
-    opacity: 0.5;
-  }
-}
-
-.driverRowOut {
-  opacity: 0.45;
-  filter: grayscale(100%);
-
-  &.driverRowPlayer {
-    background: $widget-row-player-bg;
-    filter: grayscale(100%);
-    opacity: 0.45;
-  }
-}
-
-// A thin rule after each group — who, how rated — and none between the columns
-// of one group: the standings rows carry the same rules.
-.blockEnd {
-  border-right: 1px solid $table-rule;
 }
 
 // Safety rating and iRating — one chip, whichever of the two is shown.
@@ -88,32 +24,6 @@
   display: flex;
   align-items: center;
   justify-content: center;
-}
-
-// The row's vertical padding sits in its cells, not on the row: a padded row
-// would leave the column stripes short of its edges. Two classes, so the
-// padding outranks each cell's own `padding` shorthand.
-@mixin row-padding($space) {
-  & > * {
-    padding-top: $space;
-    padding-bottom: $space;
-    // At least a chip tall inside the padding (the cells are border-box), so
-    // every row is one height whichever chips it holds — the widget counts the
-    // rows it can fit from the first one.
-    min-height: calc(#{$chip-outer-height} + #{$space} * 2);
-  }
-}
-
-.driverRow.rowPaddingNarrow {
-  @include row-padding(sp(xxxs));
-}
-
-.driverRow.rowPaddingMedium {
-  @include row-padding(sp(xxs));
-}
-
-.driverRow.rowPaddingWide {
-  @include row-padding(sp(xs));
 }
 
 // Every value cell keeps a little room on both sides, so a value never touches
@@ -139,10 +49,6 @@
   color: $widget-text-primary;
 }
 
-.driverPositionPlayer {
-  color: $widget-text-primary;
-}
-
 // Country flag cell
 .countryFlagCell {
   display: flex;
@@ -157,27 +63,6 @@
   justify-content: flex-end;
 }
 
-// Car number — the badge carries the class color
-.driverCarNumber {
-  font-size: fs(xs);
-  font-weight: 800;
-  // One height with the row's chips: their line, edges and 1px padding.
-  line-height: calc(#{$table-chip-line} + 2px);
-  font-family: $font-mono;
-  padding: ws(1) sp(xxs);
-  border-radius: radius(sm);
-  white-space: nowrap;
-
-  // Sized for three digits, the widest number the field can hold, so a one-digit
-  // badge is the same box as a three-digit one and the column stays a straight
-  // edge. Inline-block, or min-width is ignored; content-box, so the padding
-  // sits outside the three digits.
-  display: inline-block;
-  box-sizing: border-box;
-  min-width: ws(30);
-  text-align: center;
-}
-
 // Info block — name only, fills 1fr grid column
 .infoBlock {
   display: flex;
@@ -190,28 +75,12 @@
   padding-right: sp(sm);
 }
 
-.driverName {
-  font-family: $font-widget;
-  font-weight: 800;
-  font-size: fs(sm);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  color: $widget-text-primary;
-  min-width: 0;
-  flex: 1;
-}
-
-.driverNamePlayer {
-  color: $widget-text-primary;
-}
-
 // Written live as `data-lap` on the name.
-.driverName[data-lap='behind'] {
+.infoBlock [data-lap='behind'] {
   color: $widget-status-info;
 }
 
-.driverName[data-lap='lapping'] {
+.infoBlock [data-lap='lapping'] {
   color: $widget-status-danger;
 }
 

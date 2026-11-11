@@ -1,65 +1,14 @@
+@use '../../../entities/cars/driver-table/driver-row' as *;
+
 .driverRow {
-  --chip-line: #{$table-chip-line};
-  // A row's chips are a step lower than the bars' — 18px over the line's 14 —
-  // and tight at the sides, so they sit beside the name instead of over it.
-  // The row keeps its height ($chip-outer-height).
-  --chip-pad-y: #{ws(1)};
-  --chip-lead-padding: #{ws(1) sp(xxs)};
-  --chip-solid-padding-x: #{sp(xs)};
-  --chip-value-padding-x: #{sp(xs)};
-  // The chips are notes on the driver: a weight under the position, the number
-  // and the name, and the readings in the secondary white, so the row reads
-  // by who first.
-  --chip-lead-weight: 600;
-  --chip-solid-weight: 700;
-  --chip-value-weight: 600;
-  --chip-value-text: #{$widget-text-secondary};
-
-  display: grid;
-  // Cells fill the row's height so a column's stripe runs edge to edge; each
-  // cell centres its own content.
-  align-items: stretch;
-  column-gap: sp(xxxs);
-  padding: 0 sp(md);
-  border-bottom: 1px solid $table-row-rule;
-  position: relative;
-  line-height: 1.15;
-  font-size: fs(xs);
-  background: $table-row-bg;
-
-  &:hover:not(.driverRowPlayer) {
-    background-color: $widget-row-hover;
-  }
-
-  // Class marker, matching the one the class header carries. A pseudo-element
-  // rather than a border so the grid columns keep their measured width.
-  &::before {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: 0;
-    bottom: 0;
-    width: 3px;
-    background: var(--row-class-marker, transparent);
-  }
+  @include driver-row;
+  @include row-paddings;
 }
 
-.rowOdd {
-  background: $table-row-bg-alt;
-}
+@include row-states;
 
-.driverRowPlayer {
-  background: $widget-row-player-bg;
-}
-
-.driverRowOffTrack {
-  opacity: 0.5;
-  filter: grayscale(100%);
-}
-
-.driverRowOut {
-  opacity: 0.45;
-  filter: grayscale(100%);
+.driverRowHoverable:hover {
+  background-color: $widget-row-hover;
 }
 
 // First row of the "around the player" block — detaches it from the top block
@@ -91,39 +40,6 @@
 
 .cellRight {
   justify-content: flex-end;
-}
-
-// A thin rule after the last column of each group — who, how rated, where in
-// the race, how fast, in what car. Between groups only: a rule after every
-// column turns the row back into a grid of boxes.
-.blockEnd {
-  border-right: 1px solid $table-rule;
-}
-
-// The row's vertical padding sits in its cells, not on the row: a padded row
-// would leave the column stripes short of its edges. Two classes, so the
-// padding outranks each cell's own `padding` shorthand.
-@mixin row-padding($space) {
-  & > * {
-    padding-top: $space;
-    padding-bottom: $space;
-    // At least a chip tall inside the padding (the cells are border-box), so
-    // every row is one height whichever chips it holds — the widget counts the
-    // rows it can fit from the first one.
-    min-height: calc(#{$chip-outer-height} + #{$space} * 2);
-  }
-}
-
-.driverRow.rowPaddingNarrow {
-  @include row-padding(sp(xxxs));
-}
-
-.driverRow.rowPaddingMedium {
-  @include row-padding(sp(xxs));
-}
-
-.driverRow.rowPaddingWide {
-  @include row-padding(sp(xs));
 }
 
 // The second line is paid for out of the row's padding, so a team event costs
@@ -215,69 +131,6 @@
   display: flex;
   align-items: center;
   justify-content: center;
-}
-
-// Car number — the badge carries the class color
-.carNumber {
-  font-family: $font-mono;
-  font-size: fs(xs);
-  font-weight: 800;
-  // One height with the row's chips: their line, edges and 1px padding.
-  line-height: calc(#{$table-chip-line} + 2px);
-  padding: ws(1) sp(xxs);
-  border-radius: radius(sm);
-  white-space: nowrap;
-
-  // Sized for three digits, the widest number the field can hold, so a one-digit
-  // badge is the same box as a three-digit one and the column stays a straight
-  // edge. Inline-block, or min-width is ignored; content-box, so the padding
-  // sits outside the three digits.
-  display: inline-block;
-  box-sizing: border-box;
-  min-width: ws(30);
-  text-align: center;
-}
-
-// Driver name
-.driverName {
-  font-family: $font-widget;
-  font-weight: 800;
-  font-size: fs(sm);
-  color: $widget-text-primary;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  flex: 1 1 0;
-  min-width: 0;
-}
-
-.driverNamePlayer {
-  color: $widget-text-primary;
-}
-
-// Name over team. The name steps down a size so the pair fits the row; the
-// team's box holds its height even with no text, so rows stay one height.
-.nameStack {
-  display: flex;
-  flex: 1 1 0;
-  flex-direction: column;
-  justify-content: center;
-  min-width: 0;
-  line-height: 1.1;
-
-  .driverName {
-    flex: none;
-    font-size: fs(xxs);
-  }
-}
-
-.teamName {
-  min-height: 1lh;
-  font-size: fs(xxxs);
-  color: $widget-text-secondary;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 // Class badge
