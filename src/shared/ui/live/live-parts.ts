@@ -3,9 +3,20 @@ import { useState } from 'react';
 /** A node a hot write targets: markup or SVG. */
 export type LiveElement = HTMLElement | SVGElement;
 
+/** What a part was last written, per kind of write, so a frame allocates no key. */
+interface WrittenValues {
+  text: string | null;
+  state: Map<string, string>;
+  style: Map<string, string>;
+  attribute: Map<string, string>;
+  classes: Map<string, boolean>;
+}
+
+type KeyedWrite = 'state' | 'style' | 'attribute';
+
 interface LivePart {
   element: LiveElement | null;
-  written: Map<string, string>;
+  written: WrittenValues;
 }
 
 /**
@@ -31,8 +42,23 @@ export interface LiveParts<PartName extends string> {
   toggleClass: (name: PartName, className: string, isOn: boolean) => void;
 }
 
-const TEXT_KEY = 'text';
 const ABSENT = '\u0000';
+
+const emptyWritten = (): WrittenValues => ({
+  text: null,
+  state: new Map(),
+  style: new Map(),
+  attribute: new Map(),
+  classes: new Map(),
+});
+
+const forgetWritten = (written: WrittenValues): void => {
+  written.text = null;
+  written.state.clear();
+  written.style.clear();
+  written.attribute.clear();
+  written.classes.clear();
+};
 
 export const createLiveParts = <
   PartName extends string,
@@ -44,27 +70,30 @@ export const createLiveParts = <
     let part = partsByName.get(name);
 
     if (!part) {
-      part = { element: null, written: new Map() };
+      part = { element: null, written: emptyWritten() };
       partsByName.set(name, part);
     }
 
     return part;
   };
 
-  const writeOnChange = (
+  /** The node to write, or null when it is gone or already holds the value. */
+  const changedElement = (
     name: PartName,
+    kind: KeyedWrite,
     key: string,
-    value: string,
-    write: (element: LiveElement) => void
-  ) => {
+    value: string
+  ): LiveElement | null => {
     const part = partOf(name);
+    const written = part.written[kind];
 
-    if (!part.element || part.written.get(key) === value) {
-      return;
+    if (!part.element || written.get(key) === value) {
+      return null;
     }
 
-    part.written.set(key, value);
-    write(part.element);
+    written.set(key, value);
+
+    return part.element;
   };
 
   return {
@@ -80,7 +109,7 @@ export const createLiveParts = <
           }
 
           part.element = element;
-          part.written.clear();
+          forgetWritten(part.written);
         };
         refsByName.set(name, ref);
       }
@@ -88,38 +117,70 @@ export const createLiveParts = <
       return ref;
     },
     elementOf: (name) => partsByName.get(name)?.element ?? null,
-    text: (name, text) =>
-      writeOnChange(name, TEXT_KEY, text, (element) => {
-        element.textContent = text;
-      }),
-    state: (name, key, value) =>
-      writeOnChange(name, `state:${key}`, value ?? ABSENT, (element) => {
-        if (value === null) {
-          delete element.dataset[key];
-        } else {
-          element.dataset[key] = value;
-        }
-      }),
-    style: (name, property, value) =>
-      writeOnChange(name, `style:${property}`, value ?? ABSENT, (element) => {
-        if (value === null) {
-          element.style.removeProperty(property);
-        } else {
-          element.style.setProperty(property, value);
-        }
-      }),
-    attribute: (name, attribute, value) =>
-      writeOnChange(name, `attr:${attribute}`, value ?? ABSENT, (element) => {
-        if (value === null) {
-          element.removeAttribute(attribute);
-        } else {
-          element.setAttribute(attribute, value);
-        }
-      }),
-    toggleClass: (name, className, isOn) =>
-      writeOnChange(name, `class:${className}`, isOn ? '1' : '0', (element) => {
-        element.classList.toggle(className, isOn);
-      }),
+    text: (name, text) => {
+      const part = partOf(name);
+
+      if (!part.element || part.written.text === text) {
+        return;
+      }
+
+      part.written.text = text;
+      part.element.textContent = text;
+    },
+    state: (name, key, value) => {
+      const element = changedElement(name, 'state', key, value ?? ABSENT);
+
+      if (!element) {
+        return;
+      }
+
+      if (value === null) {
+        delete element.dataset[key];
+      } else {
+        element.dataset[key] = value;
+      }
+    },
+    style: (name, property, value) => {
+      const element = changedElement(name, 'style', property, value ?? ABSENT);
+
+      if (!element) {
+        return;
+      }
+
+      if (value === null) {
+        element.style.removeProperty(property);
+      } else {
+        element.style.setProperty(property, value);
+      }
+    },
+    attribute: (name, attribute, value) => {
+      const element = changedElement(
+        name,
+        'attribute',
+        attribute,
+        value ?? ABSENT
+      );
+
+      if (!element) {
+        return;
+      }
+
+      if (value === null) {
+        element.removeAttribute(attribute);
+      } else {
+        element.setAttribute(attribute, value);
+      }
+    },
+    toggleClass: (name, className, isOn) => {
+      const part = partOf(name);
+
+      if (!part.element || part.written.classes.get(className) === isOn) {
+        return;
+      }
+
+      part.written.classes.set(className, isOn);
+      part.element.classList.toggle(className, isOn);
+    },
   };
 };
 
