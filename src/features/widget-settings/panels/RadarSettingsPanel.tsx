@@ -13,7 +13,8 @@ import { useUnitsStore } from '@entities/app-settings/units-context';
 import styles from '@features/widget-settings/WidgetSettings.module.scss';
 import { Card } from '../Card';
 import { useWidgetEditor } from '../WidgetEditorContext';
-import { panelRows, usePanelWidgetId } from '../setting-rows';
+import { panelRows } from '../setting-rows';
+import { usePanelSettings } from '../use-panel-settings';
 import { schemaRows } from '../schema-rows';
 import {
   PROXIMITY_RADAR_SETTINGS,
@@ -65,19 +66,9 @@ const ScopeReadout = observer(
 );
 
 const ScopeCard = observer(() => {
-  const liveWidgets = useWidgetEditor();
-  const panelWidgetId = usePanelWidgetId('proximity-radar');
+  const [settings, update] =
+    usePanelSettings<ProximityRadarSettings>('proximity-radar');
   const { t } = useTranslation('widgets');
-
-  const settings =
-    liveWidgets.getSettings<ProximityRadarSettings>(panelWidgetId);
-
-  const update = (partial: Partial<ProximityRadarSettings>) => {
-    liveWidgets.updateUserSettings(panelWidgetId, {
-      ...settings,
-      ...partial,
-    });
-  };
 
   return (
     <>

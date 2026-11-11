@@ -3,8 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Segmented } from 'antd';
 import styles from '@features/widget-settings/WidgetSettings.module.scss';
 import { Card } from '@features/widget-settings/Card';
-import { useWidgetEditor } from '@features/widget-settings/WidgetEditorContext';
-import { usePanelWidgetId } from '@features/widget-settings/setting-rows';
+import { usePanelSettings } from '@features/widget-settings/use-panel-settings';
 import { schemaRows } from '@features/widget-settings/schema-rows';
 import { G_METER_SETTINGS, type GMeterWidgetSettings } from './settings-schema';
 
@@ -15,11 +14,8 @@ const { Row, useLabels } = schemaRows(G_METER_SETTINGS);
 
 // The scale's members are numbers, read as "<n>G" in every language.
 const ScaleRow = observer(() => {
-  const liveWidgets = useWidgetEditor();
-  const panelWidgetId = usePanelWidgetId('g-meter');
+  const [{ scale }, update] = usePanelSettings<GMeterWidgetSettings>('g-meter');
   const { title } = useLabels('scale');
-  const { scale } =
-    liveWidgets.getSettings<GMeterWidgetSettings>(panelWidgetId);
 
   return (
     <div className={styles.fieldGroup}>
@@ -31,9 +27,7 @@ const ScaleRow = observer(() => {
           label: `${option}G`,
           value: option,
         }))}
-        onChange={(value) =>
-          liveWidgets.updateUserSettings(panelWidgetId, { scale: value })
-        }
+        onChange={(value) => update({ scale: value })}
       />
     </div>
   );

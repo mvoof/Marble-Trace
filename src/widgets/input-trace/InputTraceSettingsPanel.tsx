@@ -1,15 +1,13 @@
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
-import { ColorPicker, Select, Slider, Space, Switch } from 'antd';
+import { Select, Slider } from 'antd';
 import styles from '@features/widget-settings/WidgetSettings.module.scss';
 import { Card } from '@features/widget-settings/Card';
+import { ColorToggleRow } from '@features/widget-settings/ColorToggleRow';
 import { RpmZoneColorGrid } from '@features/widget-settings/RpmZoneColorGrid';
 import { SettingRow } from '@features/widget-settings/SettingRow';
-import { useWidgetEditor } from '@features/widget-settings/WidgetEditorContext';
-import {
-  panelRows,
-  usePanelWidgetId,
-} from '@features/widget-settings/setting-rows';
+import { usePanelSettings } from '@features/widget-settings/use-panel-settings';
+import { panelRows } from '@features/widget-settings/setting-rows';
 import { schemaRows } from '@features/widget-settings/schema-rows';
 import { useAppSettingsStore } from '@entities/app-settings/app-settings-context';
 import {
@@ -60,8 +58,8 @@ const hasGearZoneColor = (settings: InputTraceSettings): boolean =>
   settings.showSpeedGear && settings.colorizeGearByZone;
 
 export const InputTraceSettingsPanel = observer(() => {
-  const liveWidgets = useWidgetEditor();
-  const panelWidgetId = usePanelWidgetId('input-trace');
+  const [settings, update] =
+    usePanelSettings<InputTraceSettings>('input-trace');
   const appSettings = useAppSettingsStore();
   const { t } = useTranslation('widgets');
 
@@ -69,15 +67,6 @@ export const InputTraceSettingsPanel = observer(() => {
   // it is edited once in the app settings — read-only here, where it only
   // gives the zoom its real-world angle.
   const steeringLock = appSettings.appSettings.steeringLock;
-
-  const settings = liveWidgets.getSettings<InputTraceSettings>(panelWidgetId);
-
-  const update = (partial: Partial<InputTraceSettings>) => {
-    liveWidgets.updateUserSettings(panelWidgetId, {
-      ...settings,
-      ...partial,
-    });
-  };
 
   return (
     <>
@@ -97,113 +86,72 @@ export const InputTraceSettingsPanel = observer(() => {
 
       <Card title={t('settingsPanels.inputTrace.graphSettings')}>
         <div className={styles.fieldGroup}>
-          <SettingRow
+          <ColorToggleRow
             title={t('settingsPanels.inputTrace.showThrottle')}
             desc={t('settingsPanels.inputTrace.showThrottleDesc')}
-          >
-            <Space>
-              <ColorPicker
-                value={settings.throttleColor}
-                onChange={(c) => update({ throttleColor: c.toHexString() })}
-              />
-              <Switch
-                checked={settings.showThrottle}
-                onChange={(v) => update({ showThrottle: v })}
-              />
-            </Space>
-          </SettingRow>
+            color={settings.throttleColor}
+            onColorChange={(color) => update({ throttleColor: color })}
+            checked={settings.showThrottle}
+            onCheckedChange={(checked) => update({ showThrottle: checked })}
+          />
         </div>
 
         <div className={styles.fieldGroup}>
-          <SettingRow
+          <ColorToggleRow
             title={t('settingsPanels.inputTrace.showBrake')}
             desc={t('settingsPanels.inputTrace.showBrakeDesc')}
-          >
-            <Space>
-              <ColorPicker
-                value={settings.brakeColor}
-                onChange={(c) => update({ brakeColor: c.toHexString() })}
-              />
-              <Switch
-                checked={settings.showBrake}
-                onChange={(v) => update({ showBrake: v })}
-              />
-            </Space>
-          </SettingRow>
+            color={settings.brakeColor}
+            onColorChange={(color) => update({ brakeColor: color })}
+            checked={settings.showBrake}
+            onCheckedChange={(checked) => update({ showBrake: checked })}
+          />
         </div>
 
         <DependentBlock dependsOn="showBrake">
-          <SettingRow
+          <ColorToggleRow
             title={t('settingsPanels.inputTrace.showAbs')}
             desc={t('settingsPanels.inputTrace.showAbsDesc')}
-          >
-            <Space>
-              <ColorPicker
-                value={settings.absColor}
-                onChange={(c) => update({ absColor: c.toHexString() })}
-              />
-              <Switch
-                checked={settings.showAbs}
-                onChange={(v) => update({ showAbs: v })}
-              />
-            </Space>
-          </SettingRow>
+            color={settings.absColor}
+            onColorChange={(color) => update({ absColor: color })}
+            checked={settings.showAbs}
+            onCheckedChange={(checked) => update({ showAbs: checked })}
+          />
         </DependentBlock>
 
         <div className={styles.fieldGroup}>
-          <SettingRow
+          <ColorToggleRow
             title={t('settingsPanels.inputTrace.showClutch')}
             desc={t('settingsPanels.inputTrace.showClutchDesc')}
-          >
-            <Space>
-              <ColorPicker
-                value={settings.clutchColor}
-                onChange={(c) => update({ clutchColor: c.toHexString() })}
-              />
-              <Switch
-                checked={settings.showClutch}
-                onChange={(v) => update({ showClutch: v })}
-              />
-            </Space>
-          </SettingRow>
+            color={settings.clutchColor}
+            onColorChange={(color) => update({ clutchColor: color })}
+            checked={settings.showClutch}
+            onCheckedChange={(checked) => update({ showClutch: checked })}
+          />
         </div>
 
         <div className={styles.fieldGroup}>
-          <SettingRow
+          <ColorToggleRow
             title={t('settingsPanels.inputTrace.showSteeringTrace')}
             desc={t('settingsPanels.inputTrace.showSteeringTraceDesc')}
-          >
-            <Space>
-              <ColorPicker
-                value={settings.steeringTraceColor}
-                onChange={(c) =>
-                  update({ steeringTraceColor: c.toRgbString() })
-                }
-              />
-              <Switch
-                checked={isSteeringTraceShown(settings)}
-                onChange={(v) => update({ showSteeringTrace: v })}
-              />
-            </Space>
-          </SettingRow>
+            color={settings.steeringTraceColor}
+            colorFormat="rgb"
+            onColorChange={(color) => update({ steeringTraceColor: color })}
+            checked={isSteeringTraceShown(settings)}
+            onCheckedChange={(checked) =>
+              update({ showSteeringTrace: checked })
+            }
+          />
         </div>
 
         <DependentBlock dependsOn={isSteeringTraceShown}>
-          <SettingRow
+          <ColorToggleRow
             title={t('settingsPanels.inputTrace.showSlide')}
             desc={t('settingsPanels.inputTrace.showSlideDesc')}
-          >
-            <Space>
-              <ColorPicker
-                value={settings.slideColor}
-                onChange={(c) => update({ slideColor: c.toHexString() })}
-              />
-              <Switch
-                checked={settings.showSlide}
-                onChange={(v) => update({ showSlide: v })}
-              />
-            </Space>
-          </SettingRow>
+            color={settings.slideColor}
+            onColorChange={(color) => update({ slideColor: color })}
+            checked={settings.showSlide}
+            onCheckedChange={(checked) => update({ showSlide: checked })}
+          />
         </DependentBlock>
 
         <DependentBlock dependsOn={isSteeringTraceShown}>

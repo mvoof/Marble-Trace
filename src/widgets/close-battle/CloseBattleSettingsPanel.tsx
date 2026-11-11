@@ -7,8 +7,7 @@ import { toDisplayDistance, toMeters } from './close-battle-utils';
 import styles from '@features/widget-settings/WidgetSettings.module.scss';
 import { Card } from '@features/widget-settings/Card';
 import { SettingRow } from '@features/widget-settings/SettingRow';
-import { useWidgetEditor } from '@features/widget-settings/WidgetEditorContext';
-import { usePanelWidgetId } from '@features/widget-settings/setting-rows';
+import { usePanelSettings } from '@features/widget-settings/use-panel-settings';
 import { schemaRows } from '@features/widget-settings/schema-rows';
 import {
   CLOSE_BATTLE_SETTINGS,
@@ -43,20 +42,10 @@ const areTicksShown = (settings: CloseBattleWidgetSettings): boolean =>
   settings.showAxis && settings.showTicks;
 
 export const CloseBattleSettingsPanel = observer(() => {
-  const liveWidgets = useWidgetEditor();
-  const panelWidgetId = usePanelWidgetId('close-battle');
+  const [settings, update] =
+    usePanelSettings<CloseBattleWidgetSettings>('close-battle');
   const units = useUnitsStore();
   const { t } = useTranslation('widgets');
-
-  const settings =
-    liveWidgets.getSettings<CloseBattleWidgetSettings>(panelWidgetId);
-
-  const update = (partial: Partial<CloseBattleWidgetSettings>) => {
-    liveWidgets.updateUserSettings(panelWidgetId, {
-      ...settings,
-      ...partial,
-    });
-  };
 
   const isGapTrigger = settings.trigger === 'gap';
   const isMetric = units.isMetric;

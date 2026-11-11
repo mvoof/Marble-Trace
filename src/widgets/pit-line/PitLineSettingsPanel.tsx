@@ -6,8 +6,7 @@ import styles from '@features/widget-settings/WidgetSettings.module.scss';
 import { useUnitsStore } from '@entities/app-settings/units-context';
 
 import { Card } from '@features/widget-settings/Card';
-import { useWidgetEditor } from '@features/widget-settings/WidgetEditorContext';
-import { usePanelWidgetId } from '@features/widget-settings/setting-rows';
+import { usePanelSettings } from '@features/widget-settings/use-panel-settings';
 import { schemaRows } from '@features/widget-settings/schema-rows';
 import { distanceScale } from '@features/widget-settings/distance-scale';
 import {
@@ -26,14 +25,11 @@ const { Row, useLabels } = schemaRows(PIT_LINE_SETTINGS);
 const { revealOnApproachM } = PIT_LINE_SETTINGS.shape;
 
 export const PitLineSettingsPanel = observer(() => {
-  const liveWidgets = useWidgetEditor();
-  const panelWidgetId = usePanelWidgetId('pit-line');
+  const [settings, update] =
+    usePanelSettings<PitLineWidgetSettings>('pit-line');
   const { t } = useTranslation('widgets');
   const units = useUnitsStore();
   const revealLabels = useLabels('revealOnApproachM');
-
-  const settings =
-    liveWidgets.getSettings<PitLineWidgetSettings>(panelWidgetId);
 
   const isImperial = units.unitSystem === 'imperial';
 
@@ -43,13 +39,6 @@ export const PitLineSettingsPanel = observer(() => {
     stepM: APPROACH_STEP_M,
     stepFt: APPROACH_STEP_FT,
   });
-
-  const update = (partial: Partial<PitLineWidgetSettings>) => {
-    liveWidgets.updateUserSettings(panelWidgetId, {
-      ...settings,
-      ...partial,
-    });
-  };
 
   return (
     <>

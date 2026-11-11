@@ -6,8 +6,7 @@ import styles from '@features/widget-settings/WidgetSettings.module.scss';
 
 import { Card } from '@features/widget-settings/Card';
 import { RpmZoneColorGrid } from '@features/widget-settings/RpmZoneColorGrid';
-import { useWidgetEditor } from '@features/widget-settings/WidgetEditorContext';
-import { usePanelWidgetId } from '@features/widget-settings/setting-rows';
+import { usePanelSettings } from '@features/widget-settings/use-panel-settings';
 import { schemaRows } from '@features/widget-settings/schema-rows';
 import {
   INVISIBLE_DASH_SETTINGS,
@@ -26,19 +25,9 @@ const hasSpeedTargetColor = (settings: InvisibleDashWidgetSettings): boolean =>
   settings.showSpeed && settings.showSpeedTargetColor;
 
 export const InvisibleDashSettingsPanel = observer(() => {
-  const liveWidgets = useWidgetEditor();
-  const panelWidgetId = usePanelWidgetId(WIDGET_ID);
+  const [settings, update] =
+    usePanelSettings<InvisibleDashWidgetSettings>(WIDGET_ID);
   const { t } = useTranslation('widgets');
-
-  const settings =
-    liveWidgets.getSettings<InvisibleDashWidgetSettings>(panelWidgetId);
-
-  const update = (partial: Partial<InvisibleDashWidgetSettings>) => {
-    liveWidgets.updateUserSettings(panelWidgetId, {
-      ...settings,
-      ...partial,
-    });
-  };
 
   const isProjection = settings.renderMode === 'projection';
 

@@ -1,18 +1,16 @@
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
-import { ColorPicker, InputNumber } from 'antd';
+import { InputNumber } from 'antd';
 
 import { speedUnit } from '@shared/lib/telemetry-format';
 import { Card } from '@features/widget-settings/Card';
+import { ColorGrid } from '@features/widget-settings/ColorGrid';
 import { RpmZoneColorGrid } from '@features/widget-settings/RpmZoneColorGrid';
 
 import styles from '@features/widget-settings/WidgetSettings.module.scss';
 import { useUnitsStore } from '@entities/app-settings/units-context';
-import { useWidgetEditor } from '@features/widget-settings/WidgetEditorContext';
-import {
-  panelRows,
-  usePanelWidgetId,
-} from '@features/widget-settings/setting-rows';
+import { usePanelSettings } from '@features/widget-settings/use-panel-settings';
+import { panelRows } from '@features/widget-settings/setting-rows';
 import { schemaRows } from '@features/widget-settings/schema-rows';
 import {
   RACE_DASH_SETTINGS,
@@ -22,25 +20,23 @@ import {
 // Widget ids this panel configures — read by the panel registry.
 export const PANEL_WIDGET_IDS = ['race-dash'];
 
+const POSITION_BAND_KEYS = [
+  'positionColorP1',
+  'positionColorTop3',
+  'positionColorTop5',
+  'positionColorTop10',
+  'positionColorRest',
+] as const;
+
 const { DependentBlock } = panelRows<RaceDashWidgetSettings>();
 const { Row } = schemaRows(RACE_DASH_SETTINGS);
 const { pitSpeedLimitOverride, nearLimitDelta } = RACE_DASH_SETTINGS.shape;
 
 export const RaceDashSettingsPanel = observer(() => {
   const units = useUnitsStore();
-  const liveWidgets = useWidgetEditor();
-  const panelWidgetId = usePanelWidgetId('race-dash');
+  const [settings, update] =
+    usePanelSettings<RaceDashWidgetSettings>('race-dash');
   const { t } = useTranslation('widgets');
-
-  const settings =
-    liveWidgets.getSettings<RaceDashWidgetSettings>(panelWidgetId);
-
-  const update = (partial: Partial<RaceDashWidgetSettings>) => {
-    liveWidgets.updateUserSettings(panelWidgetId, {
-      ...settings,
-      ...partial,
-    });
-  };
 
   return (
     <>
@@ -110,79 +106,15 @@ export const RaceDashSettingsPanel = observer(() => {
         </div>
 
         <DependentBlock dependsOn="colorizePosition">
-          <span className={styles.fieldLabel}>
-            {t('settingsPanels.raceDash.positionBands')}
-          </span>
-
-          <div className={styles.rpmColorGrid}>
-            <div className={styles.rpmColorItem}>
-              <span className={styles.rpmColorLabel}>
-                {t('settingsPanels.raceDash.positionColorP1')}
-              </span>
-              <ColorPicker
-                value={settings.positionColorP1}
-                onChange={(color) =>
-                  update({ positionColorP1: color.toHexString() })
-                }
-              />
-            </div>
-
-            <div className={styles.rpmColorLine} />
-
-            <div className={styles.rpmColorItem}>
-              <span className={styles.rpmColorLabel}>
-                {t('settingsPanels.raceDash.positionColorTop3')}
-              </span>
-              <ColorPicker
-                value={settings.positionColorTop3}
-                onChange={(color) =>
-                  update({ positionColorTop3: color.toHexString() })
-                }
-              />
-            </div>
-
-            <div className={styles.rpmColorLine} />
-
-            <div className={styles.rpmColorItem}>
-              <span className={styles.rpmColorLabel}>
-                {t('settingsPanels.raceDash.positionColorTop5')}
-              </span>
-              <ColorPicker
-                value={settings.positionColorTop5}
-                onChange={(color) =>
-                  update({ positionColorTop5: color.toHexString() })
-                }
-              />
-            </div>
-
-            <div className={styles.rpmColorLine} />
-
-            <div className={styles.rpmColorItem}>
-              <span className={styles.rpmColorLabel}>
-                {t('settingsPanels.raceDash.positionColorTop10')}
-              </span>
-              <ColorPicker
-                value={settings.positionColorTop10}
-                onChange={(color) =>
-                  update({ positionColorTop10: color.toHexString() })
-                }
-              />
-            </div>
-
-            <div className={styles.rpmColorLine} />
-
-            <div className={styles.rpmColorItem}>
-              <span className={styles.rpmColorLabel}>
-                {t('settingsPanels.raceDash.positionColorRest')}
-              </span>
-              <ColorPicker
-                value={settings.positionColorRest}
-                onChange={(color) =>
-                  update({ positionColorRest: color.toHexString() })
-                }
-              />
-            </div>
-          </div>
+          <ColorGrid
+            caption={t('settingsPanels.raceDash.positionBands')}
+            items={POSITION_BAND_KEYS.map((key) => ({
+              key,
+              label: t(`settingsPanels.raceDash.${key}`),
+              color: settings[key],
+            }))}
+            onChange={(key, color) => update({ [key]: color })}
+          />
         </DependentBlock>
       </Card>
 
