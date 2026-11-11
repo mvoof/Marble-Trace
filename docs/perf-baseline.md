@@ -438,3 +438,37 @@ the rate set through `overlayUpdateHz` in the settings file.
 - A rate changed mid-run shows here as a bundle count between the two: a first
   pair of runs read 47.67 and 32.23 bundles/s because the setting was toggled in
   the main window while they ran. Leave the app alone during a run.
+
+## 2026-11-12 — architecture audit
+
+`main` at b2f01467 against `refactor/architecture-audit` at 2f4bdea7, each a
+fresh `--build`. Tape and offset as before, `--runs 3`, the developer's layout
+of 20 widgets on `DISPLAY1` at 30 Hz. Each cell is the mean of three runs.
+
+| metric                            | main  | branch | change |
+| --------------------------------- | ----- | ------ | ------ |
+| tick p50 (µs)                     | 40    | 44     | noise  |
+| tick p99 (µs)                     | 554   | 580    | noise  |
+| overlay-DISPLAY1 bundles/s        | 26.43 | 26.43  | —      |
+| overlay-DISPLAY1 KiB/s            | 798   | 798    | —      |
+| overlay-DISPLAY1 DOM mutations/s  | 963   | 393    | −59 %  |
+| overlay-DISPLAY1 alloc (MiB/s)    | 5.54  | 5.87   | +6 %   |
+| overlay-DISPLAY1 apply p99 (ms)   | 1.33  | 1.37   | —      |
+| overlay-DISPLAY1 first paint (ms) | 1623  | 1559   | noise  |
+
+- **DOM mutations −59 %.** Every hot write goes through `shared/ui/live` and
+  touches the node only when its value changed; before, most writes repeated
+  the value already there. The game pays per change of the overlay
+  (ADR-0009), so this is the number that should reach it — not confirmed with
+  `npm run perf:game` yet.
+- **The tick did not get faster.** One encoding per group instead of one per
+  recipient plus the mirror, but the difference sits on the ticks that do not
+  publish as well, where delivery does not run: it is build-to-build spread.
+  As the audit expected, B1 is a simplification, not a speed-up.
+- **Allocation +6 %**, spread under 1 % — real. Not the live-write kit: making
+  its writes allocate nothing on an unchanged value (2f4bdea7) left the number
+  where it was. A 30 s `--heap` of each puts the extra in React render/commit
+  (+0.09 MiB/s) and in the standings helpers it calls (+0.06; the file itself
+  is unchanged), which points at the Standings row rendering more often since
+  its split into shared parts. The rest is within the sampler's spread.
+  Unresolved.
