@@ -42,9 +42,9 @@ prints saved reports side by side.
 
 | row                     | source                                                                                                                                                                                                |
 | ----------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| tick p50/p99/max        | wall time of one `emit_domain_frames` pass (processors, assembly, mask, quantize, delivery), every tick of the span. The time the `dev` build spends sizing bundles is subtracted                     |
-| `<recipient>` bundles/s | `mt-telemetry/src/delivery/counters.rs`, per window label. `@remote` is the remote-screen mirror                                                                                                      |
-| `<recipient>` KiB/s     | serialized JSON length of what that recipient was sent (a second serialization, `dev` only)                                                                                                           |
+| tick p50/p99/max        | wall time of one `emit_domain_frames` pass (processors, assembly, mask, quantize, delivery), every tick of the span. Encoding each group's bundle once is part of delivery and of this time           |
+| `<recipient>` bundles/s | `mt-telemetry/src/delivery/counters.rs`, per window label. `@remote` is what the remote hub is handed                                                                                                 |
+| `<recipient>` KiB/s     | serialized JSON length of what that recipient was sent — the one encoding delivery made, in every build                                                                                               |
 | first paint             | navigation start to the overlay's `first-contentful-paint`, observed from the entry module before React mounts (`app/sync/dev/perf-cold-start.ts`) — the overlay's cold start, settings read included |
 | heap at first paint     | `usedJSHeapSize` read as that paint is observed: what the window boots into, before the tape fills the stores                                                                                         |
 | alloc MiB/s             | sum of positive `usedJSHeapSize` deltas every 50 ms. Run with `--enable-precise-memory-info`, which the script sets. Never RSS                                                                        |

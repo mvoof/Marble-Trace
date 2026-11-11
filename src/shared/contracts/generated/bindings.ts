@@ -1000,8 +1000,8 @@ export type DeliverySet = {
   elapsedMs: number;
   bundles: number;
   /**
-   * Serialized JSON bytes of those bundles. `None` in a build that does not
-   * size them — sizing is a second serialization, so only `dev` pays it.
+   * Serialized JSON bytes of those bundles — the length of the one encoding
+   * delivery made. `None` when the label was sent nothing that was encoded.
    * Saturates rather than wraps; a measurement run resets it first.
    */
   bytes: number | null;

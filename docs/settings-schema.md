@@ -60,9 +60,9 @@ store.get('settings')
       ▼
 runMigrations(blob)          ← shared/settings-schema, pure, works on raw JSON
       ▼
-hydrateStores(root, blob)    ← app/sync/persistence
+hydrateStores(root, blob)    ← app/sync/main/persistence
       ▼
-decodeLayout / decodeTemplates ← app/sync/settings-file
+decodeLayout / decodeTemplates ← app/sync/main/settings-file
       ▼
 checkedSettings(type, …)     ← entities/widget/widget-catalog, each widget's overrides against its schema
       ▼

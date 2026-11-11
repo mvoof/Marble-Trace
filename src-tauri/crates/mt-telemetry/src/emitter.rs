@@ -149,25 +149,60 @@ impl TelemetryBundle {
     /// remote rate limit thins only the ticks that hold none: dropping one
     /// that carries the session clock or the fuel numbers would make them skip
     /// with the motion data.
+    ///
+    /// Every field is named, with no `..`: a field added to the bundle does not
+    /// compile until it is sorted here as overlay-clock or slow.
     pub fn carries_slow_fields(&self) -> bool {
-        self.car_idx.is_some()
-            || self.pace_car.is_some()
-            || self.radio.is_some()
-            || self.chassis.is_some()
-            || self.lap_timing.is_some()
-            || self.proximity.is_some()
-            || self.driver_entries.is_some()
-            || self.relative.is_some()
-            || self.car_status.is_some()
-            || self.fuel.is_some()
-            || self.pit_stops.is_some()
-            || self.pit_service.is_some()
-            || self.pit_auto.is_some()
-            || self.session.is_some()
-            || self.environment.is_some()
-            || self.lap_log.is_some()
-            || self.track_recording.is_some()
-            || self.safety_rating.is_some()
+        let Self {
+            // On the overlay clock.
+            car_dynamics: _,
+            car_inputs: _,
+            input_samples: _,
+            car_positions: _,
+            lap_delta: _,
+            coach: _,
+            corner_speeds: _,
+            incidents: _,
+            pit_target: _,
+            // Slower than the overlay clock.
+            car_idx,
+            pace_car,
+            radio,
+            chassis,
+            lap_timing,
+            proximity,
+            driver_entries,
+            relative,
+            car_status,
+            fuel,
+            pit_stops,
+            pit_service,
+            pit_auto,
+            session,
+            environment,
+            lap_log,
+            track_recording,
+            safety_rating,
+        } = self;
+
+        car_idx.is_some()
+            || pace_car.is_some()
+            || radio.is_some()
+            || chassis.is_some()
+            || lap_timing.is_some()
+            || proximity.is_some()
+            || driver_entries.is_some()
+            || relative.is_some()
+            || car_status.is_some()
+            || fuel.is_some()
+            || pit_stops.is_some()
+            || pit_service.is_some()
+            || pit_auto.is_some()
+            || session.is_some()
+            || environment.is_some()
+            || lap_log.is_some()
+            || track_recording.is_some()
+            || safety_rating.is_some()
     }
 }
 
