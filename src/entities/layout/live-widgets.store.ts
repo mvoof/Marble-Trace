@@ -524,7 +524,6 @@ export class LiveWidgetsStore implements WidgetMap {
   }
 
   getWidget(id: string): WidgetDefaultConfig | undefined {
-    void this.mutations.changeToken;
     return this.widgets.get(id);
   }
 
@@ -1186,8 +1185,6 @@ export class LiveWidgetsStore implements WidgetMap {
   getSettings<SpecificSettings extends object = Record<string, unknown>>(
     widgetId: string
   ): BaseUserSettings & SpecificSettings {
-    void this.mutations.changeToken;
-
     const widget = this.getWidget(widgetId);
 
     // A copy asks by its own id, so the shipped defaults are found through its
