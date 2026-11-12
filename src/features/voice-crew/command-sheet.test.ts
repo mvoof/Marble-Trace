@@ -171,6 +171,10 @@ describe('command sheet', () => {
     expect(html).toContain('<li>我第几</li>');
   });
 
+  it('names the largest number the crew hears', () => {
+    expect(sheet(pack({}))).toContain('A number from 0 to 200');
+  });
+
   it('escapes the five HTML characters', () => {
     expect(escapeHtml(`<a href="x">'&'</a>`)).toBe(
       '&lt;a href=&quot;x&quot;&gt;&#39;&amp;&#39;&lt;/a&gt;'

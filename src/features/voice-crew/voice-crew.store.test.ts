@@ -1,11 +1,14 @@
 import { describe, expect, it, vi } from 'vitest';
 
+import type { TFunction } from 'i18next';
 import type { VoicePackView } from '@shared/contracts/generated/bindings';
 import { VoiceCrewStore } from './voice-crew.store';
 
 const voiceService = vi.hoisted(() => ({
   saveVoicePack: vi.fn(),
   voicePack: vi.fn(),
+  pickVoiceSheetTarget: vi.fn(),
+  exportVoiceSheet: vi.fn(),
 }));
 
 vi.mock('@shared/api/voice.service', () => voiceService);
@@ -212,5 +215,36 @@ describe('voice crew pack saving', () => {
     await Promise.all([first, second]);
 
     expect(store.pack?.language).toBe('ru');
+  });
+});
+
+describe('voice crew cheat sheet', () => {
+  const labels = () => ((key: string) => key) as unknown as TFunction;
+
+  it('keeps the import warning when the sheet is exported', async () => {
+    const store = storeWith(packWithQuestion());
+
+    store.importedSwitchedOff = ['Car'];
+    voiceService.pickVoiceSheetTarget.mockResolvedValueOnce('C:/sheet.html');
+    voiceService.exportVoiceSheet.mockResolvedValueOnce(undefined);
+
+    const done = await store.exportSheet(labels);
+
+    expect(done).toEqual({ action: 'sheetExported', path: 'C:/sheet.html' });
+    expect(store.importedSwitchedOff).toEqual(['Car']);
+  });
+
+  it('writes no sheet when the pack was edited behind the dialog', async () => {
+    const store = storeWith(packWithQuestion());
+
+    voiceService.exportVoiceSheet.mockClear();
+    voiceService.pickVoiceSheetTarget.mockImplementationOnce(() => {
+      store.dirty = true;
+
+      return Promise.resolve('C:/sheet.html');
+    });
+
+    expect(await store.exportSheet(labels)).toBeNull();
+    expect(voiceService.exportVoiceSheet).not.toHaveBeenCalled();
   });
 });

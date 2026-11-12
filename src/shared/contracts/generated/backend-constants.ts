@@ -76,6 +76,11 @@ export const VOICE_CHAT_MACRO_ACTION = 'chat.macro';
 export const VOICE_CHAT_MACRO_COUNT = 15;
 
 /**
+ * The largest number the `{number}` slot hears, said in words.
+ */
+export const VOICE_MAX_SPOKEN_NUMBER = 200;
+
+/**
  * Distance buckets a reference lap is recorded into: index `i` covers
  * `lap_dist_pct` in `[i / count, (i+1) / count)`. The coach records the lap
  * in progress on the same grid to compare the two traces bucket for

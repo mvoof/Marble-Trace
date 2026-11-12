@@ -1376,7 +1376,7 @@
       },
       "values": "Valores que puedes nombrar",
       "number": "número",
-      "numberNote": "Un número del 0 al 200, dicho con palabras: «cuarenta», «ciento veinte»."
+      "numberNote": "Un número del 0 al {{max}}, dicho con palabras: «cuarenta», «ciento veinte»."
     }
   }
 }

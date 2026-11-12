@@ -64,6 +64,9 @@ ts_values! {
     /// The sim's chat macro slots run from 1 to this.
     pub const CHAT_MACRO_COUNT: u32 = 15 => VOICE_CHAT_MACRO_COUNT;
 
+    /// The largest number the `{number}` slot hears, said in words.
+    pub const MAX_SPOKEN_NUMBER: u32 = 200 => VOICE_MAX_SPOKEN_NUMBER;
+
     /// Distance buckets a reference lap is recorded into: index `i` covers
     /// `lap_dist_pct` in `[i / count, (i+1) / count)`. The coach records the lap
     /// in progress on the same grid to compare the two traces bucket for

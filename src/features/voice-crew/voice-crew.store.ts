@@ -1256,7 +1256,8 @@ export class VoiceCrewStore {
 
     const path = await pickVoiceSheetTarget(pack.language);
 
-    if (path === null) {
+    // The editor stays open behind the dialog: an edit made meanwhile is not saved.
+    if (path === null || this.dirty || this.pack !== pack) {
       return null;
     }
 
@@ -1303,7 +1304,11 @@ export class VoiceCrewStore {
   ): Promise<{ value: T } | null> {
     this.busy = true;
     this.packFileFailure = null;
-    this.importedSwitchedOff = [];
+
+    // Only a new import replaces the questions it switched off.
+    if (action === 'import') {
+      this.importedSwitchedOff = [];
+    }
 
     try {
       const value = await work();

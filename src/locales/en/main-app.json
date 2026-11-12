@@ -1376,7 +1376,7 @@
       },
       "values": "Values you can name",
       "number": "number",
-      "numberNote": "A number from 0 to 200, said in words: “forty”, “one hundred twenty”."
+      "numberNote": "A number from 0 to {{max}}, said in words: “forty”, “one hundred twenty”."
     }
   }
 }

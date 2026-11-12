@@ -143,6 +143,8 @@ fn sheet_failed(error: impl ToString) -> PackFileError {
 
 /// Writes the commands sheet the page built from the saved pack and opens it
 /// in the browser. Only an `.html` file: the page hands the path and the text.
+/// The sheet is saved once written; a browser that does not open is logged,
+/// not reported as a failed export.
 #[tauri::command]
 pub async fn export_voice_sheet(
     app: AppHandle,
@@ -161,9 +163,16 @@ pub async fn export_voice_sheet(
         )));
     }
 
-    fs::write(&path, html).map_err(sheet_failed)?;
+    let written = path.clone();
 
-    app.opener()
-        .open_path(path.to_string_lossy(), None::<&str>)
-        .map_err(sheet_failed)
+    tauri::async_runtime::spawn_blocking(move || fs::write(&written, html))
+        .await
+        .map_err(sheet_failed)?
+        .map_err(sheet_failed)?;
+
+    if let Err(error) = app.opener().open_path(path.to_string_lossy(), None::<&str>) {
+        warn!(path = %path.display(), %error, "voice sheet saved but not opened");
+    }
+
+    Ok(())
 }
