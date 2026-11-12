@@ -952,7 +952,13 @@
         "noPackExport": "Este idioma aún no tiene un paquete propio — guarda primero un cambio.",
         "noPackImport": "El archivo no contiene un paquete de voz: no hay phrases.json ni commands.json dentro.",
         "brokenFile": "{{file}}: {{mistake}}"
-      }
+      },
+      "sheet": "Chuleta",
+      "sheetDesc": "Los comandos que puedes decir, con tus cambios, en una página para imprimir o tener a mano. Se abre en el navegador; Ctrl+P la imprime o guarda un PDF.",
+      "sheetButton": "Exportar chuleta",
+      "sheetSaveFirst": "Guarda primero los cambios: la chuleta se hace con el paquete guardado.",
+      "sheetExported": "Chuleta guardada: {{path}}",
+      "sheetFailed": "La chuleta no se guardó"
     },
     "questions": {
       "title": "Tus preguntas",
@@ -1356,6 +1362,21 @@
       "makeRequired": "Siempre se dice",
       "makeChoice": "Convertir en «una de»",
       "makeWords": "Convertir en palabras simples"
+    },
+    "cheatSheet": {
+      "title": "Comandos de voz",
+      "meta": "Paquete: {{language}} · exportado el {{date}}",
+      "legend": "a / b — di uno de ellos; [ ] — se puede omitir; ‹ › — un valor que nombras.",
+      "command": "Comando",
+      "sections": {
+        "fuel": "Combustible",
+        "tires": "Neumáticos",
+        "pit": "Reparaciones y otras órdenes de boxes",
+        "race": "Preguntas sobre la carrera"
+      },
+      "values": "Valores que puedes nombrar",
+      "number": "número",
+      "numberNote": "Un número del 0 al 200, dicho con palabras: «cuarenta», «ciento veinte»."
     }
   }
 }

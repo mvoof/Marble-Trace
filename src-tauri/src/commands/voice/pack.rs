@@ -1,10 +1,12 @@
 //! The pack editor: reading, saving, checking, exporting and importing a
 //! language's pack, and synthesising its lines.
 
+use std::fs;
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 
 use tauri::{AppHandle, State};
+use tauri_plugin_opener::OpenerExt;
 use tracing::warn;
 
 use mt_model::app::voice::{PackFileError, VoiceDraftCheck, VoicePackView, VoiceRecognisedView};
@@ -17,6 +19,8 @@ use mt_voice::pack_files::{export_pack, import_pack};
 
 use super::current_config;
 use crate::voice::{voice_root, VoiceCrewState};
+
+const SHEET_EXTENSION: &str = "html";
 
 #[tauri::command]
 pub async fn voice_pack(
@@ -129,4 +133,37 @@ pub async fn import_voice_pack(
     state.crew().reload();
 
     Ok(switched_off)
+}
+
+fn sheet_failed(error: impl ToString) -> PackFileError {
+    PackFileError::Failed {
+        detail: error.to_string(),
+    }
+}
+
+/// Writes the commands sheet the page built from the saved pack and opens it
+/// in the browser. Only an `.html` file: the page hands the path and the text.
+#[tauri::command]
+pub async fn export_voice_sheet(
+    app: AppHandle,
+    path: String,
+    html: String,
+) -> Result<(), PackFileError> {
+    let path = PathBuf::from(path);
+    let is_html = path
+        .extension()
+        .is_some_and(|extension| extension.eq_ignore_ascii_case(SHEET_EXTENSION));
+
+    if !is_html {
+        return Err(sheet_failed(format!(
+            "not an .{SHEET_EXTENSION} file: {}",
+            path.display()
+        )));
+    }
+
+    fs::write(&path, html).map_err(sheet_failed)?;
+
+    app.opener()
+        .open_path(path.to_string_lossy(), None::<&str>)
+        .map_err(sheet_failed)
 }

@@ -19,6 +19,7 @@ import type {
 } from '@shared/contracts/generated/bindings';
 
 const PACK_EXTENSIONS = ['zip'];
+const SHEET_EXTENSIONS = ['html'];
 const VOICE_EXTENSIONS = ['onnx'];
 
 /** Starts, reconfigures or stops the backend's voice crew. */
@@ -164,6 +165,18 @@ export const pickPackArchiveTarget = (
   save({
     defaultPath: `marble-trace-voice-${language}.zip`,
     filters: [{ name: 'Voice pack', extensions: PACK_EXTENSIONS }],
+  });
+
+/** Writes the sheet and opens it in the browser; rejects with a `PackFileError`. */
+export const exportVoiceSheet = (path: string, html: string): Promise<void> =>
+  invoke('export_voice_sheet', { path, html });
+
+export const pickVoiceSheetTarget = (
+  language: string
+): Promise<string | null> =>
+  save({
+    defaultPath: `marble-trace-voice-commands-${language}.html`,
+    filters: [{ name: 'HTML', extensions: SHEET_EXTENSIONS }],
   });
 
 export const revealVoiceFolder = (path: string): Promise<void> =>

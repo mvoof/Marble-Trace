@@ -952,7 +952,13 @@
         "noPackExport": "This language has no pack of your own yet — save an edit first.",
         "noPackImport": "The archive holds no voice pack: there is no phrases.json or commands.json in it.",
         "brokenFile": "{{file}}: {{mistake}}"
-      }
+      },
+      "sheet": "Cheat sheet",
+      "sheetDesc": "The commands you can say, with your edits, as a page to print or keep beside the wheel. Opens in the browser; Ctrl+P prints it or saves a PDF.",
+      "sheetButton": "Export sheet",
+      "sheetSaveFirst": "Save the changes first: the sheet is made from the saved pack.",
+      "sheetExported": "Sheet saved: {{path}}",
+      "sheetFailed": "The sheet was not saved"
     },
     "questions": {
       "title": "Your questions",
@@ -1356,6 +1362,21 @@
       "makeRequired": "Always said",
       "makeChoice": "Make it \"one of\"",
       "makeWords": "Make it plain words"
+    },
+    "cheatSheet": {
+      "title": "Voice commands",
+      "meta": "Pack: {{language}} · exported {{date}}",
+      "legend": "a / b — say one of them; [ ] — may be left out; ‹ › — a value you name.",
+      "command": "Command",
+      "sections": {
+        "fuel": "Fuel",
+        "tires": "Tyres",
+        "pit": "Repairs and other pit orders",
+        "race": "Questions about the race"
+      },
+      "values": "Values you can name",
+      "number": "number",
+      "numberNote": "A number from 0 to 200, said in words: “forty”, “one hundred twenty”."
     }
   }
 }

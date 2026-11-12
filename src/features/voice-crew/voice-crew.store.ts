@@ -1,9 +1,11 @@
 import { makeAutoObservable, reaction, runInAction, toJS } from 'mobx';
+import type { TFunction } from 'i18next';
 
 import {
   cancelVoiceDownload,
   checkVoiceDraft,
   exportVoicePack,
+  exportVoiceSheet,
   generateVoiceLines,
   importCustomVoice,
   configureVoiceCrew,
@@ -19,6 +21,7 @@ import {
   pickPackArchiveTarget,
   pickVoiceFiles,
   pickVoiceFolder,
+  pickVoiceSheetTarget,
   previewVoiceLine,
   previewVoiceQuestion,
   recogniseVoiceSentence,
@@ -58,6 +61,7 @@ import {
   type AppSettingsStore,
 } from '@entities/app-settings/app-settings.store';
 import type { UnitsStore } from '@entities/app-settings/units.store';
+import { buildCommandSheet } from './command-sheet';
 import { questionIssueKey, questionIssuePlace } from './issue-location';
 
 /** Which numbers take which plural form, language by language (CLDR). */
@@ -94,11 +98,12 @@ export interface VoiceSentenceTrial {
 /** What a pack export or import that went through did. */
 export type PackFileDone =
   | { action: 'exported'; path: string }
+  | { action: 'sheetExported'; path: string }
   | { action: 'imported' };
 
 /** What went wrong with a pack archive, and on which way. */
 export interface PackFileFailure {
-  action: 'export' | 'import';
+  action: 'export' | 'import' | 'sheet';
   error: PackFileError;
 }
 
@@ -1232,6 +1237,39 @@ export class VoiceCrewStore {
     );
 
     return done ? { action: 'exported', path } : null;
+  }
+
+  /**
+   * The saved pack's commands as a printable page, labelled in the pack's
+   * language by `labelsFor`, opened in the browser once written. `null`
+   * when there are unsaved edits, the driver closed the file dialog or the
+   * export failed.
+   */
+  async exportSheet(
+    labelsFor: (language: string) => TFunction
+  ): Promise<PackFileDone | null> {
+    const pack = this.pack;
+
+    if (!pack || this.dirty) {
+      return null;
+    }
+
+    const path = await pickVoiceSheetTarget(pack.language);
+
+    if (path === null) {
+      return null;
+    }
+
+    const html = buildCommandSheet(
+      toJS(pack),
+      labelsFor(pack.language),
+      new Date()
+    );
+    const done = await this.runPackFile('sheet', () =>
+      exportVoiceSheet(path, html)
+    );
+
+    return done ? { action: 'sheetExported', path } : null;
   }
 
   /** `null` when the driver closed the file dialog or the import failed. */

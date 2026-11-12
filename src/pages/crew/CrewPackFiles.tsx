@@ -1,7 +1,7 @@
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
-import { Alert, App, Button } from 'antd';
-import { Download, FolderOpen, Upload } from 'lucide-react';
+import { Alert, App, Button, Tooltip } from 'antd';
+import { Download, FileText, FolderOpen, Upload } from 'lucide-react';
 import type { PackFileFailure } from '@features/voice-crew/voice-crew.store';
 import { useVoiceCrewStore } from '@features/voice-crew/voice-crew-context';
 import { SettingsCard } from '@shared/ui/SettingsCard/SettingsCard';
@@ -11,7 +11,7 @@ import { useMistakeText } from './useMistakeText';
 /** The user's pack on disk: open it, share it, take one in. */
 export const CrewPackFiles = observer(() => {
   const crew = useVoiceCrewStore();
-  const { t } = useTranslation('main-app');
+  const { t, i18n } = useTranslation('main-app');
   const { message } = App.useApp();
   const { mistakeText } = useMistakeText();
   const folder = crew.pack?.folder;
@@ -44,6 +44,28 @@ export const CrewPackFiles = observer(() => {
     if (done?.action === 'exported') {
       void message.success(t('crewPage.pack.exported', { path: done.path }));
     }
+  };
+
+  const exportSheet = async () => {
+    const done = await crew.exportSheet((language) =>
+      i18n.getFixedT(language, 'main-app')
+    );
+
+    if (done?.action === 'sheetExported') {
+      void message.success(
+        t('crewPage.pack.sheetExported', { path: done.path })
+      );
+    }
+  };
+
+  const failureTitle = (action: PackFileFailure['action']): string => {
+    if (action === 'sheet') {
+      return t('crewPage.pack.sheetFailed');
+    }
+
+    return action === 'export'
+      ? t('crewPage.pack.exportFailed')
+      : t('crewPage.pack.importFailed');
   };
 
   const importPack = async () => {
@@ -112,11 +134,7 @@ export const CrewPackFiles = observer(() => {
             type="error"
             showIcon
             closable={{ onClose: () => crew.dismissPackFileFailure() }}
-            title={
-              failure.action === 'export'
-                ? t('crewPage.pack.exportFailed')
-                : t('crewPage.pack.importFailed')
-            }
+            title={failureTitle(failure.action)}
             description={failureText(failure)}
           />
         )}
@@ -130,6 +148,30 @@ export const CrewPackFiles = observer(() => {
             description={crew.importedSwitchedOff.join(', ')}
           />
         )}
+      </div>
+
+      <div className={styles.fieldGroup}>
+        <div className={styles.fieldRow}>
+          <div className={styles.fieldTexts}>
+            <div className={styles.fieldTitle}>{t('crewPage.pack.sheet')}</div>
+
+            <div className={styles.fieldDesc}>
+              {t('crewPage.pack.sheetDesc')}
+            </div>
+          </div>
+
+          <Tooltip
+            title={crew.dirty ? t('crewPage.pack.sheetSaveFirst') : null}
+          >
+            <Button
+              icon={<FileText size={14} />}
+              disabled={crew.busy || crew.dirty || !crew.pack}
+              onClick={() => void exportSheet()}
+            >
+              {t('crewPage.pack.sheetButton')}
+            </Button>
+          </Tooltip>
+        </div>
       </div>
 
       <div className={styles.fieldGroup}>
