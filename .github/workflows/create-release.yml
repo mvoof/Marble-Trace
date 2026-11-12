@@ -19,7 +19,7 @@ jobs:
     name: Validate Release
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
 
       - name: Verify CHANGELOG.md has entry for this version
         shell: bash
@@ -99,14 +99,13 @@ jobs:
     environment: release
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
       - name: Setup Dependencies
         uses: ./.github/actions/setup-dependencies
         with:
-          node-version: '20'
           platform: ${{ matrix.platform }}
 
       - name: Generate Release Notes
@@ -129,7 +128,7 @@ jobs:
 
       - name: Build Tauri Application
         id: tauri
-        uses: tauri-apps/tauri-action@v0
+        uses: tauri-apps/tauri-action@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}

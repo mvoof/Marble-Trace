@@ -5,6 +5,9 @@
   "version": "0.28.0",
   "license": "GPL-3.0-or-later",
   "type": "module",
+  "engines": {
+    "node": ">=26"
+  },
   "repository": {
     "url": "https://github.com/mvoof/Marble-Trace"
   },

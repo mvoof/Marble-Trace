@@ -26,13 +26,13 @@ jobs:
       # The default branch, never the tag: CHANGELOG.md is cumulative and holds
       # the released section, while a tag cut before this workflow landed has no
       # script to run.
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
         with:
           ref: ${{ github.event.repository.default_branch }}
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
-          node-version: '20'
+          node-version-file: '.nvmrc'
 
       - name: Resolve Release URL
         id: release
