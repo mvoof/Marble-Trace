@@ -5,6 +5,7 @@
 //! whether a file is absent or merely unreadable, and to move one aside before
 //! it rewrites it.
 
+use std::io::Write;
 use std::path::{Path, PathBuf};
 use std::time::{SystemTime, UNIX_EPOCH};
 
@@ -122,13 +123,15 @@ fn is_settings_document(bytes: &[u8]) -> bool {
 }
 
 /// Writes through a temporary file renamed into place, so an interrupted write
-/// leaves the old target whole instead of a truncated one.
+/// leaves the old target whole instead of a truncated one. The temporary file
+/// is synced before the rename: otherwise a power loss can land the rename on
+/// disk ahead of the data, and the target is replaced by an empty file.
 fn write_replacing(target: &Path, bytes: &[u8]) -> Result<(), String> {
     let mut temporary_name = target.as_os_str().to_owned();
     temporary_name.push(".tmp");
     let temporary = PathBuf::from(temporary_name);
 
-    let written = std::fs::write(&temporary, bytes)
+    let written = write_synced(&temporary, bytes)
         .and_then(|()| std::fs::rename(&temporary, target))
         .map_err(|e| format!("write failed: {e}"));
 
@@ -137,6 +140,13 @@ fn write_replacing(target: &Path, bytes: &[u8]) -> Result<(), String> {
     }
 
     written
+}
+
+fn write_synced(path: &Path, bytes: &[u8]) -> std::io::Result<()> {
+    let mut file = std::fs::File::create(path)?;
+    file.write_all(bytes)?;
+
+    file.sync_all()
 }
 
 /// Writes the contents rather than `fs::copy`ing the file: a copy keeps the
