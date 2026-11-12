@@ -130,6 +130,46 @@ Before the first save at a new version, the old file is copied to
 `settings.v{n}.bak` by the `backup_settings_file` backend command —
 `tauri-plugin-store` can only touch the live file.
 
+### The last-good copy
+
+`tauri-plugin-store` saves with a plain `fs::write`, so a killed process or a
+power loss mid-save can leave `settings.json` truncated. Against that, every
+start whose file loads as `current` and hydrates copies it to
+`settings.last-good.json` (`keep_last_good_settings`, best effort and not
+awaited — startup never waits on it). The copy is written to a temporary file
+and renamed into place, so an interrupted copy leaves the previous one whole,
+and its contents are written rather than `fs::copy`ed, so its modification time
+is when the copy was made — on Windows a copy keeps the source's. A `migrated`
+file is not copied: it is still the old format on disk until the first save,
+and is `current` from the next start. A locked file — `corrupt`, `too-old`,
+`from-the-future` — never replaces the copy.
+
+A zero-byte `settings.json` counts as present (`settings_file_exists`), so it
+locks as `corrupt` rather than being seeded with defaults: the plugin's write
+truncates first, which makes an empty file the most common half-written save,
+and defaults saved over it would replace the last-good copy one start later.
+
+When the lock is `corrupt` and a copy exists that parses as a store file with a
+`settings` object, `SettingsLockBanner` offers it back with the time it was
+written (`last_good_settings_saved_at`). `restore_last_good_settings` renames
+the unreadable file aside as `settings.corrupt-<unix seconds>.json`, so it can
+still be sent to us, then renames the last-good copy into its place — undoing
+the first rename if the second fails, so a failed restore never leaves the
+directory without `settings.json`. The copy is moved, not copied: a start that
+loads it cleanly keeps it again, and one that locks on it has no copy to offer
+instead of the same one in a loop. A failed restore stays on the banner with a
+message. A restore whose relaunch fails keeps the session locked — its defaults
+must not be saved over the restored file — and the banner drops both actions
+(a reset would delete what was just restored) and asks for a manual restart. A
+successful one relaunches the app, and the restored file goes
+through the whole load pipeline, migrations included.
+
+**A locked main window closes its store handle** (`holdLockedSettings`). The
+plugin saves every store it holds open when the app exits, a relaunch included,
+so an open handle would write its cache over the file: an empty `{}` over a
+corrupt one, over the file a reset just deleted, or over the one a restore just
+put back.
+
 ## When you do NOT need a migration
 
 - **Adding a field with a default.** A widget stores only its overrides, so the

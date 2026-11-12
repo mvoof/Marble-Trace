@@ -3,7 +3,10 @@ import {
   requestDragMode,
   requestInteractMode,
 } from '@shared/api/hotkeys.service';
-import { deleteSettingsFile } from '@shared/api/settings.service';
+import {
+  deleteSettingsFile,
+  restoreLastGoodSettings,
+} from '@shared/api/settings.service';
 import { relaunchApp } from '@shared/api/updater.service';
 import { DEFAULT_OVERLAY_UPDATE_HZ } from '@shared/contracts/generated/backend-constants';
 import { mergeWithDefaults } from '@shared/lib/deep-merge';
@@ -32,6 +35,8 @@ export const resolveAppLanguage = (language: AppLanguage) =>
 
 /** The language the crew speaks; `app` follows the interface. */
 export type VoiceLanguage = 'app' | 'ru' | 'en' | 'es' | 'zh';
+
+export type LastGoodRestoreStatus = 'idle' | 'failed' | 'restored';
 
 export const DEFAULT_APP_SETTINGS = {
   // Interact mode: mouse events reach the overlay without unlocking widget
@@ -218,6 +223,20 @@ export class AppSettingsStore {
   settingsLockReason: SettingsLockReason | null = null;
 
   /**
+   * When `settings.last-good.json` was written, in epoch milliseconds — the
+   * copy a corrupt lock can restore. `null` when there is none, or when the
+   * settings are not locked as corrupt.
+   */
+  lastGoodSettingsSavedAt: number | null = null;
+
+  /**
+   * How the last restore of the last-good copy went. `restored` means the file
+   * is back on disk but the relaunch failed: the session stays locked — its
+   * defaults must not be saved over the restored file — and the user restarts.
+   */
+  lastGoodRestoreStatus: LastGoodRestoreStatus = 'idle';
+
+  /**
    * The overlay's mouse modes. Owned by the hotkey dispatcher in the backend —
    * their keys fire there — and mirrored here from `app://overlay-modes`
    * (`applyOverlayModes`). A setter asks the dispatcher; it never writes these.
@@ -240,6 +259,14 @@ export class AppSettingsStore {
   lockSettings(reason: SettingsLockReason) {
     this.settingsLocked = true;
     this.settingsLockReason = reason;
+  }
+
+  setLastGoodSettingsSavedAt(savedAt: number | null) {
+    this.lastGoodSettingsSavedAt = savedAt;
+  }
+
+  setLastGoodRestoreStatus(status: LastGoodRestoreStatus) {
+    this.lastGoodRestoreStatus = status;
   }
 
   applySettings(saved: Partial<AppSettings>) {
@@ -344,5 +371,36 @@ export class AppSettingsStore {
   async resetSettings() {
     await deleteSettingsFile();
     await relaunchApp();
+  }
+
+  /**
+   * The other way out of a corrupt lock: put the last-good copy back and start
+   * again, so it is read like any other file — migrations included. The
+   * unreadable file is kept aside rather than deleted.
+   *
+   * A failed restore leaves the files as they were and stays on this window,
+   * flagged for the banner, instead of relaunching into the same lock. A
+   * restore whose relaunch fails has already moved the copy, so the banner
+   * drops its actions and asks for a manual restart.
+   */
+  async restoreLastGoodSettings() {
+    this.setLastGoodRestoreStatus('idle');
+
+    try {
+      await restoreLastGoodSettings();
+    } catch (error) {
+      console.error('Failed to restore the last good settings:', error);
+      this.setLastGoodRestoreStatus('failed');
+
+      return;
+    }
+
+    try {
+      await relaunchApp();
+    } catch (error) {
+      console.error('Settings restored, but the relaunch failed:', error);
+      this.setLastGoodSettingsSavedAt(null);
+      this.setLastGoodRestoreStatus('restored');
+    }
   }
 }

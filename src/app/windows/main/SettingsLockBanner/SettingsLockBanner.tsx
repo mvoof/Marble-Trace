@@ -1,4 +1,4 @@
-import { Alert, Button, Popconfirm } from 'antd';
+import { Alert, Button, Popconfirm, Space } from 'antd';
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
 import { useAppSettingsStore } from '@entities/app-settings/app-settings-context';
@@ -8,12 +8,15 @@ import { useAppSettingsStore } from '@entities/app-settings/app-settings-context
  * app is running on defaults and refuses to write, so this banner is the only
  * thing telling the user why their layouts are missing — and the only way out
  * short of editing the file by hand.
+ *
+ * A corrupt file with a last-good copy beside it can be restored in one click.
  */
 export const SettingsLockBanner = observer(() => {
   const appSettings = useAppSettingsStore();
-  const { t } = useTranslation('main-app');
+  const { t, i18n } = useTranslation('main-app');
 
-  const { settingsLockReason } = appSettings;
+  const { settingsLockReason, lastGoodSettingsSavedAt, lastGoodRestoreStatus } =
+    appSettings;
 
   if (!settingsLockReason) return null;
 
@@ -21,23 +24,75 @@ export const SettingsLockBanner = observer(() => {
     void appSettings.resetSettings();
   };
 
+  const handleRestore = () => {
+    void appSettings.restoreLastGoodSettings();
+  };
+
+  // The file is back on disk and only the relaunch failed: a reset now would
+  // delete what was just restored, so no action is left but a manual restart.
+  if (lastGoodRestoreStatus === 'restored') {
+    return (
+      <Alert
+        title={t(`settingsLock.${settingsLockReason}.title`)}
+        description={t('settingsLock.restoredRestartRequired')}
+        type="warning"
+        showIcon
+      />
+    );
+  }
+
+  const canRestore =
+    settingsLockReason === 'corrupt' && lastGoodSettingsSavedAt !== null;
+
+  const description = t(`settingsLock.${settingsLockReason}.description`);
+
   return (
     <Alert
       title={t(`settingsLock.${settingsLockReason}.title`)}
-      description={t(`settingsLock.${settingsLockReason}.description`)}
+      description={
+        canRestore ? (
+          <>
+            {description}{' '}
+            {t('settingsLock.lastGoodAvailable', {
+              date: new Date(lastGoodSettingsSavedAt).toLocaleString(
+                i18n.language
+              ),
+            })}
+            {lastGoodRestoreStatus === 'failed' && (
+              <> {t('settingsLock.restoreFailed')}</>
+            )}
+          </>
+        ) : (
+          description
+        )
+      }
       type="error"
       showIcon
       action={
-        <Popconfirm
-          title={t('settingsLock.resetConfirm')}
-          okText={t('settingsLock.resetOk')}
-          cancelText={t('settingsLock.resetCancel')}
-          onConfirm={handleReset}
-        >
-          <Button size="small" danger>
-            {t('settingsLock.reset')}
-          </Button>
-        </Popconfirm>
+        <Space orientation="vertical">
+          {canRestore && (
+            <Popconfirm
+              title={t('settingsLock.restoreConfirm')}
+              okText={t('settingsLock.restoreOk')}
+              cancelText={t('settingsLock.resetCancel')}
+              onConfirm={handleRestore}
+            >
+              <Button size="small" type="primary">
+                {t('settingsLock.restore')}
+              </Button>
+            </Popconfirm>
+          )}
+          <Popconfirm
+            title={t('settingsLock.resetConfirm')}
+            okText={t('settingsLock.resetOk')}
+            cancelText={t('settingsLock.resetCancel')}
+            onConfirm={handleReset}
+          >
+            <Button size="small" danger>
+              {t('settingsLock.reset')}
+            </Button>
+          </Popconfirm>
+        </Space>
       }
     />
   );
