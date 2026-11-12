@@ -1,6 +1,7 @@
 import { observer } from 'mobx-react-lite';
 
 import { useReactiveDomWrite } from '@shared/hooks/useReactiveDomWrite';
+import { writeText } from '@shared/ui/live/live-parts';
 import { useBackendComputedStore } from '@entities/cars/computed-context';
 import { formatPitStopTime } from '@widgets/standings/standings-utils';
 
@@ -27,7 +28,7 @@ export const PitStopTime = observer(({ carIdx }: PitStopTimeProps) => {
       const seconds = liveDriver.pitElapsedS ?? liveDriver.lastPitS;
 
       scheduleWrite(() => {
-        element.textContent = formatPitStopTime(seconds);
+        writeText(element, formatPitStopTime(seconds));
       });
     },
     [computed, carIdx]

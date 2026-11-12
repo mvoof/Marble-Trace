@@ -10,6 +10,7 @@ import { useBlink } from '@shared/hooks/useBlink';
 
 import styles from './FlagZoneStripes.module.scss';
 import type { FlagZoneStyle } from '@shared/contracts/widget-choices';
+import { cx } from '@shared/lib/class-names';
 
 interface FlagZoneStripesProps {
   zones: FlagZone[];
@@ -91,13 +92,11 @@ export const FlagZoneStripes = observer(
         return null;
       }
 
-      const layerClass = [
+      const layerClass = cx(
         styles.zoneLayer,
         layerIsActive ? '' : styles.zoneLayerCleared,
-        blink && layerIsActive ? styles.zoneLayerBlink : '',
-      ]
-        .filter(Boolean)
-        .join(' ');
+        blink && layerIsActive ? styles.zoneLayerBlink : ''
+      );
 
       return (
         <g

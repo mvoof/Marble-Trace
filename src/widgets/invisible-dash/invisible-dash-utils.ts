@@ -25,22 +25,6 @@ export const shiftBarColor = (
   return settings.rpmColorLow;
 };
 
-/**
- * Text the gear digit shows. iRacing reports 0 for neutral and -1 for reverse,
- * and the projection has no room for a word.
- */
-export const formatGear = (gear: number): string => {
-  if (gear < 0) {
-    return 'R';
-  }
-
-  if (gear === 0) {
-    return 'N';
-  }
-
-  return String(gear);
-};
-
 // How far the readout tilts away from the driver at full depth. Steep enough
 // to read as lying on the road rather than on the glass; past this the glyphs
 // foreshorten faster than they gain distance.

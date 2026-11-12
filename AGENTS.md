@@ -85,8 +85,10 @@ compiler, test, or review). Read the file for the area before editing it.
   screens are read-only (ADR-0007).
 - **Every component is `observer()`.** Hot fields (`carDynamics`, `carInputs`,
   `carPositions`, `lapDelta`, `driverEntries`, `relative`, `proximity`,
-  `fieldEntries`, `relativeEntries`) are read only inside `useReactiveDomWrite` /
-  `useReactiveCanvasLoop` (`docs/rendering.md`).
+  `fieldEntries`, `relativeEntries`, `relativePlayerEntry`) are read only inside
+  `useReactiveDomWrite` / `useReactiveCanvasLoop` — lint holds it
+  (`layers/reactive-hot-fields`); writes go through `shared/ui/live`
+  (`docs/rendering.md`).
 - **One overlay clock.** Publish only on it; nothing animates between bundles —
   state-change transitions only, blinking through `useBlink` (ADR-0009).
 - **Gated telemetry is declared** in the widget's `manifest.ts`

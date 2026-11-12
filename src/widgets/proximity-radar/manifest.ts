@@ -45,4 +45,7 @@ export const PROXIMITY_RADAR_MANIFEST: WidgetManifest = {
     ...PROXIMITY_RADAR_SETTINGS.defaults,
   },
   settingsSchema: PROXIMITY_RADAR_SETTINGS,
+  // A scope: its plate is the circle the user colors through the ordinary
+  // background and border settings.
+  frameShape: { kind: 'circle' },
 };

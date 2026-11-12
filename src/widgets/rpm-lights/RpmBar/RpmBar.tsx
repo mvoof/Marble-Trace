@@ -6,6 +6,7 @@ import {
 } from '@shared/lib/car-signals';
 import { WidgetPanel } from '@shared/ui/WidgetPanel/WidgetPanel';
 import { useReactiveDomWrite } from '@shared/hooks/useReactiveDomWrite';
+import { useLiveParts } from '@shared/ui/live/live-parts';
 import { useBlinkHandle, type BlinkCycle } from '@shared/hooks/useBlink';
 import { useWidgetSettings } from '@entities/layout/useWidgetSettings';
 import { usePlayerStore } from '@entities/player/player-context';
@@ -19,6 +20,8 @@ import {
 } from '../led-shape';
 import styles from '../RpmLightsWidget.module.scss';
 import type { RpmLightsWidgetSettings } from '../settings-schema';
+
+type LedPart = `led${number}`;
 
 /** The shift light: an eight-per-second flash, dim and lit 60 ms each. */
 const SHIFT_BLINK: BlinkCycle = { stepMs: 60, steps: 2 };
@@ -36,6 +39,8 @@ export const RpmBar = observer(() => {
   const settings = useWidgetSettings<RpmLightsWidgetSettings>('rpm-lights');
   const shiftBlink = useBlinkHandle();
 
+  const parts = useLiveParts<LedPart>();
+
   const barRef = useReactiveDomWrite<HTMLElement>(
     (element, scheduleWrite) => {
       const colors = {
@@ -46,12 +51,10 @@ export const RpmBar = observer(() => {
         limit: settings.rpmColorLimit,
       };
 
-      // oxlint-disable-next-line no-restricted-properties
       const rpm = player.carDynamics?.rpm ?? 0;
       const { shiftRpm, blinkRpm } = computeShiftThresholds(
         sessionStore.sessionInfo,
         player.carStatus,
-        // oxlint-disable-next-line no-restricted-properties
         player.carDynamics?.gear ?? 0
       );
 
@@ -82,18 +85,14 @@ export const RpmBar = observer(() => {
         shiftBlink.run(isShift ? SHIFT_BLINK : null);
 
         for (const [index, color] of ledColors.entries()) {
-          const led = element.children[index];
+          const led: LedPart = `led${index}`;
 
-          if (!(led instanceof HTMLElement)) {
-            continue;
-          }
-
-          led.classList.toggle(styles.segLit, color !== null);
-          led.style.setProperty(LED_COLOR_PROPERTY, color ?? LED_OFF);
+          parts.toggleClass(led, styles.segLit, color !== null);
+          parts.style(led, LED_COLOR_PROPERTY, color ?? LED_OFF);
         }
       });
     },
-    [player, sessionStore, settings, shiftBlink]
+    [player, sessionStore, settings, shiftBlink, parts]
   );
 
   const ledStyle = ledShapeStyle(settings.ledShape);
@@ -106,7 +105,12 @@ export const RpmBar = observer(() => {
       className={styles.bar}
     >
       {Array.from({ length: LED_COUNT }, (_unused, index) => (
-        <div key={`led-${index}`} className={styles.seg} style={ledStyle} />
+        <div
+          key={`led-${index}`}
+          ref={parts.ref(`led${index}`)}
+          className={styles.seg}
+          style={ledStyle}
+        />
       ))}
     </WidgetPanel>
   );

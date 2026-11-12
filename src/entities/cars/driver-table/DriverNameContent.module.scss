@@ -1,0 +1,36 @@
+.driverName {
+  font-family: $font-widget;
+  font-weight: 800;
+  font-size: fs(sm);
+  color: $widget-text-primary;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+// Name over team. The name steps down a size so the pair fits the row; the
+// team's box holds its height even with no text, so rows stay one height.
+.nameStack {
+  display: flex;
+  flex: 1 1 0;
+  flex-direction: column;
+  justify-content: center;
+  min-width: 0;
+  line-height: 1.1;
+
+  .driverName {
+    flex: none;
+    font-size: fs(xxs);
+  }
+}
+
+.teamName {
+  min-height: 1lh;
+  font-size: fs(xxxs);
+  color: $widget-text-secondary;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

@@ -35,7 +35,7 @@ export class BackendComputedStore {
   /**
    * Heavy 10 Hz per-car frame — never read directly in a component render
    * body. Read it inside `useReactiveDomWrite`/`useReactiveCanvasLoop`;
-   * `oxlint` enforces this (`no-restricted-properties`) for `src/{app,pages,widgets,features}/**\/*.tsx`.
+   * `oxlint` enforces this (`layers/reactive-hot-fields`).
    * @remarks See "The hot/cold split" in `docs/rendering.md`.
    */
   proximity: ProximityFrame | null = null;
@@ -43,7 +43,7 @@ export class BackendComputedStore {
   /**
    * Heavy 10 Hz per-car frame — never read directly in a component render
    * body. Read it inside `useReactiveDomWrite`/`useReactiveCanvasLoop`;
-   * `oxlint` enforces this (`no-restricted-properties`) for `src/{app,pages,widgets,features}/**\/*.tsx`.
+   * `oxlint` enforces this (`layers/reactive-hot-fields`).
    * @remarks See "The hot/cold split" in `docs/rendering.md`.
    */
   relative: RelativeFrame | null = null;
@@ -51,7 +51,7 @@ export class BackendComputedStore {
   /**
    * Heavy 10 Hz per-car frame — never read directly in a component render
    * body. Read it inside `useReactiveDomWrite`/`useReactiveCanvasLoop`;
-   * `oxlint` enforces this (`no-restricted-properties`) for `src/{app,pages,widgets,features}/**\/*.tsx`.
+   * `oxlint` enforces this (`layers/reactive-hot-fields`).
    * @remarks See "The hot/cold split" in `docs/rendering.md`.
    */
   driverEntries: DriverEntriesFrame | null = null;
@@ -67,7 +67,7 @@ export class BackendComputedStore {
   /**
    * 60 Hz hot field — never read directly in a component render body. Read it
    * inside `useReactiveDomWrite`/`useReactiveCanvasLoop`; `oxlint` enforces
-   * this (`no-restricted-properties`) for `src/{app,pages,widgets,features}/**\/*.tsx`.
+   * this (`layers/reactive-hot-fields`).
    * @remarks See "The hot/cold split" in `docs/rendering.md`.
    */
   lapDelta: LapDeltaFrame | null = null;
@@ -237,7 +237,12 @@ export class BackendComputedStore {
    * writes to the DOM — a component that reads it in render wakes on every tick.
    */
   driverEntryOf(carIdx: number): DriverEntry | null {
-    return this.fieldEntries.find((entry) => entry.carIdx === carIdx) ?? null;
+    return this.fieldEntryByCarIdx.get(carIdx) ?? null;
+  }
+
+  /** `fieldEntries` by car, built once per frame for every row that looks one up. */
+  get fieldEntryByCarIdx(): ReadonlyMap<number, DriverEntry> {
+    return new Map(this.fieldEntries.map((entry) => [entry.carIdx, entry]));
   }
 
   /** The relative field as it is drawn, without the numbers that move. */
@@ -245,9 +250,37 @@ export class BackendComputedStore {
     return this.relativeIdentityCache.identitiesOf(this.relativeEntries);
   }
 
+  /** `relativeIdentities` by car; a row looks itself up here in render. */
+  get relativeIdentityByCarIdx(): ReadonlyMap<number, CarIdentity> {
+    return new Map(
+      this.relativeIdentities.map((identity) => [identity.carIdx, identity])
+    );
+  }
+
   /** The relative field, joined with the roster like `fieldEntries`. */
   get relativeEntries(): DriverEntry[] {
     return this.relativeJoin.join(this.relative?.entries ?? [], this.roster);
+  }
+
+  /** `relativeEntries` by car, built once per frame. */
+  get relativeEntryByCarIdx(): ReadonlyMap<number, DriverEntry> {
+    return new Map(this.relativeEntries.map((entry) => [entry.carIdx, entry]));
+  }
+
+  /**
+   * One car's live relative entry. Read inside a reaction that writes to the
+   * DOM, like `driverEntryOf`.
+   */
+  relativeEntryOf(carIdx: number): DriverEntry | null {
+    return this.relativeEntryByCarIdx.get(carIdx) ?? null;
+  }
+
+  /**
+   * The player's live relative entry, found once per frame for every row. A
+   * hot field: read it inside a reaction that writes to the DOM.
+   */
+  get relativePlayerEntry(): DriverEntry | null {
+    return this.relativeEntries.find((entry) => entry.isPlayer) ?? null;
   }
 
   updateRelative(frame: RelativeFrame) {

@@ -3,6 +3,7 @@ import { observer } from 'mobx-react-lite';
 import type { LucideIcon } from 'lucide-react';
 
 import styles from './StatChip.module.scss';
+import { cx } from '@shared/lib/class-names';
 
 /**
  * The chip's color. A caller with a color of its own — a license class, a pit
@@ -88,11 +89,21 @@ const SIZE_CLASS: Record<StatChipSize, string> = {
   md: styles.chipMd,
 };
 
+interface WrittenChip {
+  textElement: HTMLSpanElement;
+  toneColor: string | undefined;
+  text: string;
+}
+
+/** What each live chip last received, so an unchanged tick writes nothing. */
+const writtenChips = new WeakMap<HTMLElement, WrittenChip>();
+
 /**
  * Turns a span written outside React — a gap cell that updates every tick —
  * into a chip that is its lead alone, built as the component builds one.
  * `toneColor`, a data-driven color, wins over `tone` as it does on the
- * component.
+ * component. The text node is built once per element, and each part is
+ * written only when it changed: an unchanged tick leaves the DOM untouched.
  */
 export const writeStatChip = (
   element: HTMLElement,
@@ -102,28 +113,62 @@ export const writeStatChip = (
   look: StatChipLook = 'plain',
   toneColor?: string
 ): void => {
-  if (toneColor === undefined) {
-    element.style.removeProperty('--chip-data');
-  } else {
-    element.style.setProperty('--chip-data', toneColor);
-  }
-
-  element.className = [
+  const className = cx(
     styles.chip,
     styles.chipSingle,
     toneColor === undefined ? TONE_CLASS[tone] : styles.toneData,
     LOOK_CLASS[look],
     styles.lead,
     kind === 'label' ? styles.leadLabel : styles.leadNumber,
-    FILLED_LOOKS.has(look) ? styles.leadSolid : '',
-  ]
-    .filter(Boolean)
-    .join(' ');
+    FILLED_LOOKS.has(look) ? styles.leadSolid : ''
+  );
 
-  const textElement = document.createElement('span');
-  textElement.className = styles.leadText;
-  textElement.textContent = text;
-  element.replaceChildren(textElement);
+  let written = writtenChips.get(element);
+
+  if (!written || written.textElement.parentElement !== element) {
+    const textElement = document.createElement('span');
+    textElement.className = styles.leadText;
+    element.replaceChildren(textElement);
+
+    written = { textElement, toneColor: undefined, text: '' };
+    writtenChips.set(element, written);
+    element.style.removeProperty('--chip-data');
+  }
+
+  if (written.toneColor !== toneColor) {
+    written.toneColor = toneColor;
+
+    if (toneColor === undefined) {
+      element.style.removeProperty('--chip-data');
+    } else {
+      element.style.setProperty('--chip-data', toneColor);
+    }
+  }
+
+  // Compared with the node, not the record: a chip React rendered over has
+  // lost its class while the record still holds it.
+  if (element.className !== className) {
+    element.className = className;
+  }
+
+  if (written.text !== text || written.textElement.textContent !== text) {
+    written.text = text;
+    written.textElement.textContent = text;
+  }
+};
+
+/**
+ * Empties an element `writeStatChip` wrote, back to a bare span; a no-op on
+ * one that holds no chip, so a frame with nothing to show writes nothing.
+ */
+export const clearStatChip = (element: HTMLElement): void => {
+  if (!writtenChips.delete(element)) {
+    return;
+  }
+
+  element.className = '';
+  element.style.removeProperty('--chip-data');
+  element.replaceChildren();
 };
 
 const ICON_SIZE_PX = 12;
@@ -190,28 +235,24 @@ export const StatChip = observer(
 
     return (
       <span
-        className={[
+        className={cx(
           styles.chip,
           hasValue ? '' : styles.chipSingle,
           !hasValue && UNFRAMED_ALONE.has(look) ? styles.chipSolid : '',
           SIZE_CLASS[size],
           toneClass,
           LOOK_CLASS[look],
-          className ?? '',
-        ]
-          .filter(Boolean)
-          .join(' ')}
+          className ?? ''
+        )}
         style={toneStyle}
       >
         {hasLead && (
           <span
-            className={[
+            className={cx(
               styles.lead,
               leadKind === 'label' ? styles.leadLabel : styles.leadNumber,
-              isFilled ? styles.leadSolid : '',
-            ]
-              .filter(Boolean)
-              .join(' ')}
+              isFilled ? styles.leadSolid : ''
+            )}
           >
             {Icon && <Icon size={ICON_SIZE_PX} className={styles.icon} />}
             {lead !== undefined && (
@@ -224,12 +265,10 @@ export const StatChip = observer(
           <span className={styles.value}>
             {/* Only the count turns red; its limit keeps the value's white. */}
             <span
-              className={[
+              className={cx(
                 valueDanger ? styles.valueDanger : '',
-                valueChars === undefined ? '' : styles.valueFixed,
-              ]
-                .filter(Boolean)
-                .join(' ')}
+                valueChars === undefined ? '' : styles.valueFixed
+              )}
               style={
                 valueChars === undefined
                   ? undefined

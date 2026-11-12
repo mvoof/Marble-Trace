@@ -83,7 +83,7 @@ export const PitStrategyCard = observer(() => {
 
           <Switch
             checked={settings.pitAutoFuel}
-            onChange={(checked) => appSettings.setPitAutoFuel(checked)}
+            onChange={(checked) => appSettings.update({ pitAutoFuel: checked })}
           />
         </div>
       </div>
@@ -102,7 +102,9 @@ export const PitStrategyCard = observer(() => {
 
           <Switch
             checked={settings.pitAutoTires}
-            onChange={(checked) => appSettings.setPitAutoTires(checked)}
+            onChange={(checked) =>
+              appSettings.update({ pitAutoTires: checked })
+            }
           />
         </div>
       </div>
@@ -124,7 +126,7 @@ export const PitStrategyCard = observer(() => {
               step={WEAR_THRESHOLD_STEP_PCT}
               value={settings.pitAutoTireWearThreshold}
               onChange={(value) =>
-                appSettings.setPitAutoTireWearThreshold(value)
+                appSettings.update({ pitAutoTireWearThreshold: value })
               }
               className={styles.sliderWidth}
             />
@@ -156,7 +158,7 @@ export const PitStrategyCard = observer(() => {
               value: step,
             }))}
             onChange={(value) =>
-              appSettings.setPitFuelAdjustStep(value as FuelAdjustStep)
+              appSettings.update({ pitFuelAdjustStep: value as FuelAdjustStep })
             }
           />
         </div>
@@ -184,7 +186,7 @@ export const PitStrategyCard = observer(() => {
               value: option.kpa,
             }))}
             onChange={(value) =>
-              appSettings.setPitPressureAdjustStep(Number(value))
+              appSettings.update({ pitPressureAdjustStep: Number(value) })
             }
           />
         </div>

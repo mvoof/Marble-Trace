@@ -420,7 +420,7 @@ export class FpsDiagnosticsStore {
     const settings = this.root.liveWidgets;
     const original = this.restoreTo?.enabledWidgetIds ?? [];
 
-    this.root.appSettings.setHideAllWidgets(step.kind === 'hidden');
+    this.root.appSettings.update({ hideAllWidgets: step.kind === 'hidden' });
 
     for (const widgetId of original) {
       const enabled =
@@ -443,7 +443,7 @@ export class FpsDiagnosticsStore {
       this.root.liveWidgets.setWidgetEnabled(widgetId, true);
     }
 
-    this.root.appSettings.setHideAllWidgets(snapshot.hideAllWidgets);
+    this.root.appSettings.update({ hideAllWidgets: snapshot.hideAllWidgets });
     this.restoreTo = null;
   }
 

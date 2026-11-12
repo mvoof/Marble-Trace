@@ -4,6 +4,7 @@ import {
   resizeDirectionsFor,
   scaleFromCorner,
   widgetBoxSize,
+  widgetFrameBorderRadius,
 } from './widget-frame';
 
 describe('resizeDirectionsFor', () => {
@@ -89,5 +90,30 @@ describe('scaleFromCorner', () => {
         minWidth,
       })
     ).toEqual(start);
+  });
+});
+
+describe('widgetFrameBorderRadius', () => {
+  it('clips a scope round', () => {
+    expect(widgetFrameBorderRadius('proximity-radar', {})).toBe('50%');
+  });
+
+  it('scales the corners a manifest declares', () => {
+    expect(widgetFrameBorderRadius('race-dash', {})).toBe(
+      'calc(52px * var(--wfs, 1)) calc(14px * var(--wfs, 1)) calc(14px * var(--wfs, 1)) calc(52px * var(--wfs, 1))'
+    );
+  });
+
+  it('keeps a shape tied to a setting only while it is on', () => {
+    expect(
+      widgetFrameBorderRadius('input-trace', { showSteering: false })
+    ).toBe(undefined);
+    expect(widgetFrameBorderRadius('input-trace', { showSteering: true })).toBe(
+      'calc(12px * var(--wfs, 1)) 9999px 9999px calc(12px * var(--wfs, 1))'
+    );
+  });
+
+  it('leaves a plain plate to the stylesheet', () => {
+    expect(widgetFrameBorderRadius('fuel', {})).toBe(undefined);
   });
 });

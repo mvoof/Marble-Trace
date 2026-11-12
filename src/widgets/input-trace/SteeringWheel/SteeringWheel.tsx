@@ -5,6 +5,12 @@ import { usePlayerStore } from '@entities/player/player-context';
 import { useUnitsStore } from '@entities/app-settings/units-context';
 import { steeringAngleDeg } from '@shared/lib/car-signals';
 import { useReactiveDomWrite } from '@shared/hooks/useReactiveDomWrite';
+import { formatGear } from '@shared/lib/telemetry-format';
+import {
+  useLiveParts,
+  writeStyle,
+  writeText,
+} from '@shared/ui/live/live-parts';
 import Logo from '@assets/brand-mark.svg?react';
 import { getWheelArt } from './WheelArt';
 import { useInputTraceWidgetStore } from '../input-trace.store';
@@ -15,21 +21,6 @@ import type { InputTraceSettings } from '../settings-schema';
 const STEERING_ANGLE_PROPERTY = '--steering-angle';
 
 const MARKER_COLOR_PROPERTY = '--steering-marker-color';
-
-const NEUTRAL_GEAR_LABEL = 'N';
-const REVERSE_GEAR_LABEL = 'R';
-
-const gearLabelOf = (gear: number): string => {
-  if (gear === 0) {
-    return NEUTRAL_GEAR_LABEL;
-  }
-
-  if (gear === -1) {
-    return REVERSE_GEAR_LABEL;
-  }
-
-  return String(gear);
-};
 
 /**
  * What the wheel's hub reads: the gear, the speed, the steering angle, or the
@@ -43,15 +34,15 @@ const WheelCenter = observer(() => {
 
   const settings = useWidgetSettings<InputTraceSettings>('input-trace');
   const display = settings.steeringCenterDisplay;
+  const parts = useLiveParts<'number' | 'speed' | 'gear'>();
 
   const centerRef = useReactiveDomWrite<HTMLSpanElement>(
     (element, scheduleWrite) => {
-      // oxlint-disable-next-line no-restricted-properties
       const carDynamics = telemetry.carDynamics;
 
       const text = (() => {
         if (display === 'gear') {
-          return gearLabelOf(carDynamics?.gear ?? 0);
+          return formatGear(carDynamics?.gear ?? 0);
         }
 
         if (display === 'speed') {
@@ -68,38 +59,26 @@ const WheelCenter = observer(() => {
       const speedText = Math.round(
         (carDynamics?.speed ?? 0) * units.speedFactor
       ).toString();
-      const gearText = gearLabelOf(carDynamics?.gear ?? 0);
+      const gearText = formatGear(carDynamics?.gear ?? 0);
 
       scheduleWrite(() => {
         if (display === 'speed-gear') {
-          const speed = element.querySelector(`.${styles.speedGearSpeed}`);
-          const gear = element.querySelector(`.${styles.speedGearGear}`);
-
-          if (speed instanceof HTMLElement) {
-            speed.textContent = speedText;
-          }
-
-          if (gear instanceof HTMLElement) {
-            gear.textContent = gearText;
-          }
+          parts.text('speed', speedText);
+          parts.text('gear', gearText);
 
           return;
         }
 
         if (display === 'angle') {
-          const number = element.querySelector(`.${styles.centerNum}`);
-
-          if (number instanceof HTMLElement) {
-            number.textContent = text;
-          }
+          parts.text('number', text);
 
           return;
         }
 
-        element.textContent = text;
+        writeText(element, text);
       });
     },
-    [telemetry, units, display]
+    [telemetry, units, display, parts]
   );
 
   if (display === 'none') {
@@ -117,7 +96,7 @@ const WheelCenter = observer(() => {
         ref={centerRef}
         className={`${styles.centerText} ${styles.centerAngle}`}
       >
-        <span className={styles.centerNum} />
+        <span ref={parts.ref('number')} className={styles.centerNum} />
         <span className={styles.centerUnit}>°</span>
       </span>
     );
@@ -126,9 +105,9 @@ const WheelCenter = observer(() => {
   if (display === 'speed-gear') {
     return (
       <span key={display} ref={centerRef} className={styles.speedGear}>
-        <span className={styles.speedGearSpeed} />
+        <span ref={parts.ref('speed')} className={styles.speedGearSpeed} />
         <span className={styles.speedGearDivider} />
-        <span className={styles.speedGearGear} />
+        <span ref={parts.ref('gear')} className={styles.speedGearGear} />
       </span>
     );
   }
@@ -165,11 +144,10 @@ export const SteeringWheel = observer(() => {
 
   const rotatorRef = useReactiveDomWrite<HTMLDivElement>(
     (element, scheduleWrite) => {
-      // oxlint-disable-next-line no-restricted-properties
       const rawAngle = telemetry.carDynamics?.steering_wheel_angle ?? 0;
 
       scheduleWrite(() => {
-        element.style.setProperty(STEERING_ANGLE_PROPERTY, `${-rawAngle}rad`);
+        writeStyle(element, STEERING_ANGLE_PROPERTY, `${-rawAngle}rad`);
       });
     },
     [telemetry, settings.steeringWheelStyle, settings.showSteering, customSrc]

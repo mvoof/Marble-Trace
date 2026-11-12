@@ -188,11 +188,14 @@ export const StandingsContent = observer(() => {
       return none;
     }
 
+    // Wheel event delegation: one lookup per event, not a write inside a frame.
+    /* oxlint-disable no-restricted-properties */
     if (target.closest(`[${CLASS_HEADER_ATTRIBUTE}]`)) {
       return { classId: null, onClassHeader: true };
     }
 
     const row = target.closest(`[${ROW_KEY_ATTRIBUTE}]`);
+    /* oxlint-enable no-restricted-properties */
     const carIdx = Number(row?.getAttribute(ROW_KEY_ATTRIBUTE));
 
     if (!row || Number.isNaN(carIdx)) {

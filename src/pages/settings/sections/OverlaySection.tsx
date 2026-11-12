@@ -33,7 +33,7 @@ export const OverlaySection = observer(() => {
 
             <Switch
               checked={appSettings.appSettings.hideAllWidgets}
-              onChange={(v) => appSettings.setHideAllWidgets(v)}
+              onChange={(v) => appSettings.update({ hideAllWidgets: v })}
             />
           </div>
         </div>
@@ -52,7 +52,9 @@ export const OverlaySection = observer(() => {
 
             <Switch
               checked={appSettings.appSettings.hideWidgetsWhenGameClosed}
-              onChange={(v) => appSettings.setHideWidgetsWhenGameClosed(v)}
+              onChange={(v) =>
+                appSettings.update({ hideWidgetsWhenGameClosed: v })
+              }
             />
           </div>
         </div>
@@ -73,7 +75,9 @@ export const OverlaySection = observer(() => {
 
             <Segmented<number>
               value={appSettings.appSettings.overlayUpdateHz}
-              onChange={(rateHz) => appSettings.setOverlayUpdateHz(rateHz)}
+              onChange={(rateHz) =>
+                appSettings.update({ overlayUpdateHz: rateHz })
+              }
               options={OVERLAY_UPDATE_HZ_OPTIONS.map((rateHz) => ({
                 label: `${rateHz} Hz`,
                 value: rateHz,
@@ -104,7 +108,7 @@ export const OverlaySection = observer(() => {
               max={STEERING_LOCK_MAX_DEG}
               step={STEERING_LOCK_STEP_DEG}
               value={appSettings.appSettings.steeringLock}
-              onChange={(v) => appSettings.setSteeringLock(v)}
+              onChange={(v) => appSettings.update({ steeringLock: v })}
               className={styles.sliderWidth}
             />
           </div>

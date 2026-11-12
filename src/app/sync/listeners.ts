@@ -6,7 +6,7 @@ import type { OverlayRoot } from '@app/roots/overlay-root';
 import type { OverlayModes } from '@shared/contracts/generated/bindings';
 import type { ControlMessage } from '@shared/contracts/client-protocol';
 import { getOverlayModes } from '@shared/api/hotkeys.service';
-import { applyControl } from './client-sync';
+import { applyControl } from './client/client-sync';
 import {
   CLIENT_CONTROL_EVENT,
   OVERLAY_MODES_EVENT,

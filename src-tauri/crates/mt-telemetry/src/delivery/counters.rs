@@ -9,7 +9,7 @@
 use std::collections::HashMap;
 use std::time::Instant;
 
-use crate::emitter::TelemetryBundle;
+use crate::bundle::TelemetryBundle;
 
 /// The one recipient there is before the mask is split per window: the
 /// broadcast every subscribed webview takes.
@@ -59,8 +59,8 @@ pub struct DeliverySet {
     /// guessed at from an assumed tick.
     pub elapsed_ms: u32,
     pub bundles: u32,
-    /// Serialized JSON bytes of those bundles. `None` in a build that does not
-    /// size them — sizing is a second serialization, so only `dev` pays it.
+    /// Serialized JSON bytes of those bundles — the length of the one encoding
+    /// delivery made. `None` when the label was sent nothing that was encoded.
     /// Saturates rather than wraps; a measurement run resets it first.
     pub bytes: Option<u32>,
     pub fields: Vec<FieldDelivery>,
@@ -121,8 +121,8 @@ impl DeliveryCounters {
 
     /// Records one bundle against a label. Unknown labels are ignored — a
     /// recipient that never registered is not something to start counting
-    /// halfway through. `size` is the bundle's serialized length, when the
-    /// build measures it.
+    /// halfway through. `size` is the length of the bundle as encoded for
+    /// delivery.
     pub fn record(&mut self, label: &str, bundle: &TelemetryBundle, size: Option<usize>) {
         let Some(counters) = self.labels.get_mut(label) else {
             return;
@@ -179,7 +179,7 @@ impl DeliveryCounters {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::emitter::{apply_event_mask, TelemetryBundle};
+    use crate::bundle::{apply_event_mask, TelemetryBundle};
     use mt_computations::field::driver_entries::DriverEntriesFrame;
     use mt_model::contract::telemetry_events::EVENT_CAR_POSITIONS;
     use mt_model::sim::cars::CarPositionsFrame;

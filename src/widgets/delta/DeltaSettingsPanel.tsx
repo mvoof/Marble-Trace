@@ -5,11 +5,8 @@ import { Segmented, Slider } from 'antd';
 import type { LapDeltaReference } from '@shared/contracts/widget-choices';
 import styles from '@features/widget-settings/WidgetSettings.module.scss';
 import { Card } from '@features/widget-settings/Card';
-import { useWidgetEditor } from '@features/widget-settings/WidgetEditorContext';
-import {
-  panelRows,
-  usePanelWidgetId,
-} from '@features/widget-settings/setting-rows';
+import { usePanelSettings } from '@features/widget-settings/use-panel-settings';
+import { panelRows } from '@features/widget-settings/setting-rows';
 import { schemaRows } from '@features/widget-settings/schema-rows';
 import { DELTA_SETTINGS, type DeltaWidgetSettings } from './settings-schema';
 
@@ -29,17 +26,8 @@ const referenceDescOf = (t: TFunction): Record<LapDeltaReference, string> => ({
 });
 
 export const DeltaSettingsPanel = observer(() => {
-  const liveWidgets = useWidgetEditor();
-  const panelWidgetId = usePanelWidgetId('delta');
+  const [settings, update] = usePanelSettings<DeltaWidgetSettings>('delta');
   const { t } = useTranslation('widgets');
-  const settings = liveWidgets.getSettings<DeltaWidgetSettings>(panelWidgetId);
-
-  const update = (partial: Partial<DeltaWidgetSettings>) => {
-    liveWidgets.updateUserSettings(panelWidgetId, {
-      ...settings,
-      ...partial,
-    });
-  };
 
   return (
     <>

@@ -209,7 +209,7 @@ export const RemoteScreensSection = observer(() => {
             max={MAX_PORT}
             value={settings.remotePort}
             disabled={!remoteEnabled}
-            onCommit={(value) => appSettings.setRemotePort(value)}
+            onCommit={(value) => appSettings.update({ remotePort: value })}
           />
 
           <CommittedNumberInput
@@ -218,7 +218,9 @@ export const RemoteScreensSection = observer(() => {
             suffix="Hz"
             value={settings.remoteTelemetryHz}
             disabled={!remoteEnabled}
-            onCommit={(value) => appSettings.setRemoteTelemetryHz(value)}
+            onCommit={(value) =>
+              appSettings.update({ remoteTelemetryHz: value })
+            }
           />
         </Flex>
       </div>
@@ -238,7 +240,7 @@ export const RemoteScreensSection = observer(() => {
           <Switch
             checked={settings.remoteLan}
             disabled={!remoteEnabled}
-            onChange={(checked) => appSettings.setRemoteLan(checked)}
+            onChange={(checked) => appSettings.update({ remoteLan: checked })}
           />
 
           <span className={styles.fieldDesc}>

@@ -166,6 +166,39 @@
     },
     {
       "files": [
+        "src/app/sync/overlay/**",
+        "src/app/sync/remote/**",
+        "src/app/sync/client/**",
+        "src/app/sync/listeners.ts"
+      ],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "patterns": [
+              {
+                "group": ["@app/sync/main/**", "**/sync/main/**", "../main/**"],
+                "message": "app/sync/main/ runs in the main window only — an overlay, a remote screen and the code both share never load it."
+              },
+              {
+                "group": ["@tauri-apps/api/core"],
+                "message": "Tauri invoke is wrapped by src/shared/api/ — call a service instead."
+              },
+              {
+                "group": ["@tauri-apps/api/event"],
+                "message": "Tauri events are wrapped by src/shared/api/events.service.ts — use listenTo/emitToApp/emitToOverlays."
+              },
+              {
+                "group": ["@app/windows/**"],
+                "message": "sync/ wires transport to stores. The UI is downstream of both."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "files": [
         "src/shared/api/**",
         "src/entities/layout/layout-background.ts"
       ],
@@ -175,7 +208,7 @@
     },
     {
       "files": [
-        "src/app/sync/persistence-sync.ts",
+        "src/app/sync/main/persistence-sync.ts",
         "src/entities/track/track-map.store.ts"
       ],
       "rules": {
@@ -292,6 +325,10 @@
           {
             "patterns": [
               {
+                "group": ["@app/sync/main/**", "**/sync/main/**", "../main/**"],
+                "message": "app/sync/main/ runs in the main window only — an overlay, a remote screen and the code both share never load it."
+              },
+              {
                 "group": [
                   "@app/roots/main-root",
                   "@app/roots/main-root-context",
@@ -322,6 +359,38 @@
                 "message": "The UI talks to stores only; Tauri sits behind src/shared/api/. Only the window shells may reach their own window, in the override below."
               }
             ]
+          }
+        ]
+      }
+    },
+    {
+      "files": ["src/widgets/**/*.tsx"],
+      "rules": {
+        "no-restricted-properties": [
+          "error",
+          {
+            "property": "textContent",
+            "message": "A hot write goes through the kit in shared/ui/live (useLiveParts, LiveText, writeText, writeStyle, writeState): named parts, state as a data-attribute, no DOM lookup inside a frame (docs/rendering.md)."
+          },
+          {
+            "property": "classList",
+            "message": "A hot write goes through the kit in shared/ui/live (useLiveParts, LiveText, writeText, writeStyle, writeState): named parts, state as a data-attribute, no DOM lookup inside a frame (docs/rendering.md)."
+          },
+          {
+            "property": "querySelector",
+            "message": "A hot write goes through the kit in shared/ui/live (useLiveParts, LiveText, writeText, writeStyle, writeState): named parts, state as a data-attribute, no DOM lookup inside a frame (docs/rendering.md)."
+          },
+          {
+            "property": "querySelectorAll",
+            "message": "A hot write goes through the kit in shared/ui/live (useLiveParts, LiveText, writeText, writeStyle, writeState): named parts, state as a data-attribute, no DOM lookup inside a frame (docs/rendering.md)."
+          },
+          {
+            "property": "closest",
+            "message": "A hot write goes through the kit in shared/ui/live (useLiveParts, LiveText, writeText, writeStyle, writeState): named parts, state as a data-attribute, no DOM lookup inside a frame (docs/rendering.md)."
+          },
+          {
+            "property": "dataset",
+            "message": "A hot write goes through the kit in shared/ui/live (useLiveParts, LiveText, writeText, writeStyle, writeState): named parts, state as a data-attribute, no DOM lookup inside a frame (docs/rendering.md)."
           }
         ]
       }
@@ -364,6 +433,10 @@
           "error",
           {
             "patterns": [
+              {
+                "group": ["@app/sync/main/**", "**/sync/main/**", "../main/**"],
+                "message": "app/sync/main/ runs in the main window only — an overlay, a remote screen and the code both share never load it."
+              },
               {
                 "group": [
                   "@app/roots/main-root",
@@ -409,46 +482,25 @@
         "src/pages/**/*.tsx",
         "src/widgets/**/*.tsx",
         "src/shared/ui/**/*.tsx",
-        "src/features/**/*.tsx"
+        "src/features/**/*.tsx",
+        "src/entities/**/*.tsx"
       ],
       "rules": {
-        "no-restricted-properties": [
+        "layers/reactive-hot-fields": [
           "error",
           {
-            "property": "carDynamics",
-            "message": "Hot field (60 Hz) — read only inside useReactiveDomWrite/useReactiveCanvasLoop, never in render body. See docs/rendering.md."
-          },
-          {
-            "property": "carInputs",
-            "message": "Hot field (60 Hz) — read only inside useReactiveDomWrite/useReactiveCanvasLoop, never in render body. See docs/rendering.md."
-          },
-          {
-            "property": "carPositions",
-            "message": "Hot field (60 Hz) — read only inside useReactiveDomWrite/useReactiveCanvasLoop, never in render body. See docs/rendering.md."
-          },
-          {
-            "property": "lapDelta",
-            "message": "Hot field (60 Hz) — read only inside useReactiveDomWrite/useReactiveCanvasLoop, never in render body. See docs/rendering.md."
-          },
-          {
-            "property": "relative",
-            "message": "Heavy per-car frame (10 Hz) — read only inside useReactiveDomWrite/useReactiveCanvasLoop, never in render body. See docs/rendering.md."
-          },
-          {
-            "property": "proximity",
-            "message": "Per-car frame on the overlay clock — read only inside useReactiveDomWrite/useReactiveCanvasLoop, never in render body. See docs/rendering.md."
-          },
-          {
-            "property": "driverEntries",
-            "message": "Heavy per-car frame (10 Hz) — read only inside useReactiveDomWrite/useReactiveCanvasLoop, never in render body. See docs/rendering.md."
-          },
-          {
-            "property": "fieldEntries",
-            "message": "Heavy per-car frame (10 Hz), joined with the session roster — read only inside useReactiveDomWrite/useReactiveCanvasLoop, never in render body. See docs/rendering.md."
-          },
-          {
-            "property": "relativeEntries",
-            "message": "Heavy per-car frame (10 Hz), joined with the session roster — read only inside useReactiveDomWrite/useReactiveCanvasLoop, never in render body. See docs/rendering.md."
+            "fields": [
+              "carDynamics",
+              "carInputs",
+              "carPositions",
+              "lapDelta",
+              "relative",
+              "proximity",
+              "driverEntries",
+              "fieldEntries",
+              "relativeEntries",
+              "relativePlayerEntry"
+            ]
           }
         ]
       }
@@ -461,7 +513,7 @@
       ],
       "rules": {
         "no-restricted-imports": "off",
-        "no-restricted-properties": "off",
+        "layers/reactive-hot-fields": "off",
         "layers/boundaries": "off"
       }
     }

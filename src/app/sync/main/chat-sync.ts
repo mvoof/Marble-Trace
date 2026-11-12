@@ -1,0 +1,81 @@
+import { reaction, type IReactionDisposer, compareStructural } from 'mobx';
+
+import {
+  setChatCommandsSilent,
+  startChatStreamSilent,
+  stopChatStreamSilent,
+} from '@shared/api/twitch.service';
+import { chatCommandsConfigOf } from '@entities/app-settings/app-settings.store';
+import { emitStreamChatCleared } from '@shared/api/events.service';
+import type { RendererCore } from '@app/roots/renderer-core';
+
+const STREAM_CHAT_WIDGET_ID = 'stream-chat';
+
+/**
+ * Stream-chat connectors. MAIN window only — overlays just listen to the
+ * resulting `chat://` events.
+ *
+ * Requires a hydrated settings store: the connect reaction is `fireImmediately`
+ * and would otherwise open (or refuse to open) sockets based on the shipped
+ * defaults rather than the user's channel.
+ */
+export const registerChatReactions = (
+  root: RendererCore
+): IReactionDisposer[] => [
+  // Restarting on any source change keeps a single code path for "connect" and
+  // "reconnect with new settings".
+  reaction(
+    () => ({
+      // A disabled widget means nobody is reading chat, so the sockets and the
+      // Helix polling should not be running either. The widgets page renders
+      // its preview against a seeded store, so it never needs a live
+      // connection.
+      // Asked of the layout on screen, not the one in the editor: opening a
+      // layout without the chat widget must not tear down the connectors the
+      // driver is reading from.
+      // Chat commands read chat with no widget on screen.
+      enabled:
+        root.appSettings.appSettings.streamChatCommandsEnabled ||
+        root.liveWidgets.liveWidgets.some(
+          (widget) =>
+            widget.id === STREAM_CHAT_WIDGET_ID && widget.userSettings.enabled
+        ),
+      config: {
+        twitchChannel: root.appSettings.appSettings.streamChatTwitchChannel,
+        youtubeTarget: root.appSettings.appSettings.streamChatYoutubeTarget,
+        twitchClientId: root.appSettings.appSettings.streamChatTwitchClientId,
+        // Tokens stay in the OS credential store; this only signals that the
+        // signed-in state changed and the connectors should restart.
+        authRevision: root.appSettings.appSettings.streamChatAuthRevision,
+      },
+    }),
+    ({ enabled, config }) => {
+      const hasTarget = Boolean(
+        config.twitchChannel?.trim() || config.youtubeTarget?.trim()
+      );
+
+      if (enabled && hasTarget) {
+        startChatStreamSilent(config);
+      } else {
+        // Nothing to read, or nothing to read it with: tear the connectors down
+        // and drop the buffer so re-enabling starts on live messages instead of
+        // a stale backlog.
+        stopChatStreamSilent();
+        root.chat.reset();
+        void emitStreamChatCleared();
+      }
+    },
+    { equals: compareStructural, fireImmediately: true, delay: 400 }
+  ),
+  reaction(
+    () =>
+      chatCommandsConfigOf(root.appSettings.appSettings, {
+        imperial: root.units.unitSystem === 'imperial',
+        classSof: root.session.playerClassSof,
+      }),
+    (config) => {
+      setChatCommandsSilent(config);
+    },
+    { equals: compareStructural, fireImmediately: true }
+  ),
+];

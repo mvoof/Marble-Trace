@@ -4,8 +4,7 @@ import { Slider } from 'antd';
 import styles from '@features/widget-settings/WidgetSettings.module.scss';
 import { Card } from '@features/widget-settings/Card';
 import { SettingRow } from '@features/widget-settings/SettingRow';
-import { useWidgetEditor } from '@features/widget-settings/WidgetEditorContext';
-import { usePanelWidgetId } from '@features/widget-settings/setting-rows';
+import { usePanelSettings } from '@features/widget-settings/use-panel-settings';
 import { schemaRows } from '@features/widget-settings/schema-rows';
 import {
   RELATIVE_SETTINGS,
@@ -21,13 +20,10 @@ const { nameColumnWidth } = RELATIVE_SETTINGS.shape;
 const NAME_COLUMN_SLIDER_WIDTH_PX = 160;
 
 export const RelativeSettingsPanel = observer(() => {
-  const liveWidgets = useWidgetEditor();
-  const panelWidgetId = usePanelWidgetId('relative');
+  const [settings, update] =
+    usePanelSettings<RelativeWidgetSettings>('relative');
   const { t } = useTranslation('widgets');
   const nameColumnLabels = useLabels('nameColumnWidth');
-
-  const settings =
-    liveWidgets.getSettings<RelativeWidgetSettings>(panelWidgetId);
 
   return (
     <>
@@ -48,11 +44,7 @@ export const RelativeSettingsPanel = observer(() => {
               step={nameColumnWidth.step}
               value={settings.nameColumnWidth}
               tooltip={{ formatter: (value) => `${value ?? 0} px` }}
-              onChange={(value) =>
-                liveWidgets.updateUserSettings(panelWidgetId, {
-                  nameColumnWidth: value,
-                })
-              }
+              onChange={(value) => update({ nameColumnWidth: value })}
             />
           </SettingRow>
         </div>

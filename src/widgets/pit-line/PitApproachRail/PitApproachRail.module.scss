@@ -19,17 +19,17 @@ $go-steps: 14;
 }
 
 // Inside the braking point the column flashes (`BRAKE_BLINK`).
-.urgencybrake {
+.rail[data-urgency='brake'] {
   background: $widget-surface-cell;
 }
 
-.urgencybrake[data-blink-step='1'] {
+.rail[data-urgency='brake'][data-blink-step='1'] {
   background: rgba($race-red, 0.22);
 }
 
 // Standing in the stall: the lane behind the bar goes green, so the column says
 // "stop here" with the one colour the driver already reads as done.
-.urgencyarrived .fill {
+.rail[data-urgency='arrived'] .fill {
   background: rgba($race-green, 0.4);
 }
 

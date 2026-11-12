@@ -21,6 +21,3 @@ reqwest.workspace = true
 axum.workspace = true
 local-ip-address.workspace = true
 
-[dev-dependencies]
-# The rate-limit test encodes a real bundle.
-mt-telemetry.workspace = true

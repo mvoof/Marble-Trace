@@ -1,6 +1,6 @@
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
-import { useAppSettingsStore } from '@entities/app-settings/app-settings-context';
+import { useAppUpdateStore } from '@features/app-update/app-update-context';
 // AppFooter belongs to app/ (ticket 08), where shared/api is allowed (decisions.md 4).
 // oxlint-disable-next-line no-restricted-imports
 import { openExternalLink } from '@shared/api/external-link';
@@ -17,7 +17,7 @@ const handleOpen = (url: string) => openExternalLink(url);
 // Slim footer: external links, and the app version on the right.
 export const AppFooter = observer(() => {
   const { i18n } = useTranslation();
-  const appSettings = useAppSettingsStore();
+  const appUpdate = useAppUpdateStore();
 
   const discordUrl = i18n.language?.toLowerCase().startsWith('ru')
     ? DISCORD_URL_RU
@@ -44,8 +44,8 @@ export const AppFooter = observer(() => {
         ))}
       </div>
 
-      {appSettings.currentVersion && (
-        <span className={styles.version}>v{appSettings.currentVersion}</span>
+      {appUpdate.currentVersion && (
+        <span className={styles.version}>v{appUpdate.currentVersion}</span>
       )}
     </footer>
   );

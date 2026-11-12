@@ -23,6 +23,7 @@ import { SpeedGapChip } from './SpeedGapChip/SpeedGapChip';
 
 import styles from './CallRow.module.scss';
 import type { CoachWidgetSettings } from '../settings-schema';
+import { cx } from '@shared/lib/class-names';
 
 /** Brake urgency at or above this pre-arms the row before the hard BRAKE call fires. */
 const BRAKE_SOON_URGENCY = 0.7;
@@ -82,19 +83,15 @@ const PhaseCell = observer(
           ? lossColor
           : gainColor;
 
-    const cellClass = [
+    const cellClass = cx(
       styles.phase,
-      time?.kind === 'running' ? styles.phaseActive : '',
-    ]
-      .filter(Boolean)
-      .join(' ');
+      time?.kind === 'running' ? styles.phaseActive : ''
+    );
 
-    const valueClass = [
+    const valueClass = cx(
       styles.phaseValue,
-      time === null ? styles.phaseValueEmpty : '',
-    ]
-      .filter(Boolean)
-      .join(' ');
+      time === null ? styles.phaseValueEmpty : ''
+    );
 
     return (
       <span
@@ -183,15 +180,13 @@ export const CallRow = observer(() => {
         ? settings.brakeColor
         : undefined;
 
-  const fillClass = [
+  const fillClass = cx(
     styles.urgencyFill,
     brakeSoon ? styles.urgencyFillSoon : '',
     !brakeSoon && advisory !== 'brake' && advisory !== 'gas'
       ? styles.urgencyFillIdle
-      : '',
-  ]
-    .filter(Boolean)
-    .join(' ');
+      : ''
+  );
 
   return (
     <div className={styles.root}>

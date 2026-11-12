@@ -15,16 +15,17 @@ use tracing::{debug, info, warn};
 
 use crate::control::{TelemetryCommand, TelemetryRun};
 use crate::delivery::scheduler::EmitScheduler;
-use crate::emitter::{
-    emit_domain_frames, EmitContext, EVENT_CAPABILITIES, EVENT_DISCONNECTED, EVENT_SESSION_INFO,
-    EVENT_STATUS, EVENT_TRACK_SHAPE, EVENT_WEATHER_FORECAST,
-};
 use crate::io_worker::{IoWorker, SessionUpdate};
 use crate::loop_state::LoopState;
 use crate::state::TelemetryServiceState;
+use crate::tick::{
+    emit_domain_frames, EmitContext, EVENT_CAPABILITIES, EVENT_DISCONNECTED, EVENT_SESSION_INFO,
+    EVENT_STATUS, EVENT_TRACK_SHAPE, EVENT_WEATHER_FORECAST,
+};
 use mt_computations::ProcessorCommand;
 use mt_model::app::crew::CrewSink;
 use mt_model::computed::track_shape::TrackShapePayload;
+use mt_model::contract::bundle_tap::BundleTap;
 use mt_model::contract::capabilities::Capabilities;
 use mt_model::contract::capabilities::CapabilitiesPayload;
 use mt_model::contract::defaults::SOURCE_TICK_HZ;
@@ -54,6 +55,8 @@ pub struct TelemetryHost {
     pub connect: SourceFactory,
     /// The voice crew's ear on the telemetry thread; `None` runs without one.
     pub crew: Option<Arc<dyn CrewSink>>,
+    /// The remote screens' feed; `None` runs without them.
+    pub remote: Option<Arc<dyn BundleTap>>,
 }
 
 /// Spawn the dedicated telemetry thread; returns an error if the OS refuses.
@@ -78,6 +81,7 @@ pub fn spawn_telemetry_thread(
                 data_dir,
                 connect,
                 crew,
+                remote,
             } = host;
 
             loop {
@@ -116,6 +120,7 @@ pub fn spawn_telemetry_thread(
                     capabilities,
                     data_dir: data_dir.clone(),
                     crew: crew.clone(),
+                    remote: remote.clone(),
                 };
 
                 run_telemetry_loop(&sink, source.as_mut(), &service, &mut state, session);
@@ -172,6 +177,7 @@ struct LoopSession<'a> {
     capabilities: Capabilities,
     data_dir: Option<PathBuf>,
     crew: Option<Arc<dyn CrewSink>>,
+    remote: Option<Arc<dyn BundleTap>>,
 }
 
 fn run_telemetry_loop(
@@ -294,6 +300,7 @@ fn run_telemetry_loop(
 
         let ctx = EmitContext {
             sink: sink.as_ref(),
+            remote: session.remote.as_deref(),
             io: &io,
             frame: &frame,
             due,
@@ -304,16 +311,10 @@ fn run_telemetry_loop(
             crew: session.crew.as_deref(),
         };
 
-        #[cfg(feature = "dev")]
-        {
-            let measuring = emit_domain_frames(ctx);
-            let elapsed = started.elapsed().saturating_sub(measuring);
-
-            lock_or_recover(&service.tick_timings).record(elapsed);
-        }
-
-        #[cfg(not(feature = "dev"))]
         emit_domain_frames(ctx);
+
+        #[cfg(feature = "dev")]
+        lock_or_recover(&service.tick_timings).record(started.elapsed());
     }
 }
 

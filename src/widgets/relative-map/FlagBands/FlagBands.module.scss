@@ -32,17 +32,17 @@
   border-width: 2px;
 }
 
-.flagBandBehind {
+.flagBand[data-dimmed='true'] {
   opacity: 0.09;
 }
 
 // The layer carries the step (`FLAG_ZONE_BLINK`); only a live band ahead dims.
-.bandLayer[data-blink-step='1'] .flagBandBlink {
+.bandLayer[data-blink-step='1'] .flagBand[data-blink='true'] {
   opacity: 0.09;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .bandLayer[data-blink-step='1'] .flagBandBlink {
+  .bandLayer[data-blink-step='1'] .flagBand[data-blink='true'] {
     opacity: 0.22;
   }
 }

@@ -1,17 +1,13 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { runInAction } from 'mobx';
 import { MainRoot } from '@app/roots/main-root';
-import { registerPitServiceMainReactions } from '@app/sync/pit-service-sync';
+import { registerPitServiceMainReactions } from '@app/sync/main/pit-service-sync';
 import type { SavedLayout } from '@shared/contracts/widget-settings';
 
 // setWidgets pushes a few settings to the backend through the service layer,
 // which has no Tauri runtime to talk to under vitest.
 vi.mock('@shared/api/settings.service', () => ({
-  setPitWarningLapsSilent: vi.fn(),
-  setFuelAvgWindowSilent: vi.fn(),
-  setFuelCountYellowLapsSilent: vi.fn(),
-  setCarLengthSilent: vi.fn(),
-  setOverlayUpdateHzSilent: vi.fn(),
+  setTelemetrySettingsSilent: vi.fn(),
 }));
 const setPitStrategySilentMock = vi.hoisted(() => vi.fn());
 
@@ -83,8 +79,8 @@ describe('isWidgetOnScreen', () => {
   // what main pushes with the strategy.
   it('takes pit-service auto mode down with the layout switch', () => {
     runInAction(() => {
-      root.appSettings.setPitAutoFuel(true);
-      root.appSettings.setPitAutoTires(false);
+      root.appSettings.update({ pitAutoFuel: true });
+      root.appSettings.update({ pitAutoTires: false });
     });
 
     const disposers = registerPitServiceMainReactions(root);

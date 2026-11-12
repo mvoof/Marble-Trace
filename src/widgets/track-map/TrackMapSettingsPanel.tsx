@@ -3,11 +3,8 @@ import { useTranslation } from 'react-i18next';
 import { InputNumber, Row as GridRow, Col, Slider } from 'antd';
 import styles from '@features/widget-settings/WidgetSettings.module.scss';
 import { Card } from '@features/widget-settings/Card';
-import { useWidgetEditor } from '@features/widget-settings/WidgetEditorContext';
-import {
-  panelRows,
-  usePanelWidgetId,
-} from '@features/widget-settings/setting-rows';
+import { usePanelSettings } from '@features/widget-settings/use-panel-settings';
+import { panelRows } from '@features/widget-settings/setting-rows';
 import { schemaRows } from '@features/widget-settings/schema-rows';
 import {
   TRACK_MAP_SETTINGS,
@@ -46,12 +43,10 @@ interface StylingCellProps {
 }
 
 const StylingCell = observer(({ setting }: StylingCellProps) => {
-  const liveWidgets = useWidgetEditor();
-  const panelWidgetId = usePanelWidgetId('track-map');
+  const [settings, update] =
+    usePanelSettings<TrackMapWidgetSettings>('track-map');
   const { title } = useLabels(setting);
   const field = TRACK_MAP_SETTINGS.shape[setting];
-  const settings =
-    liveWidgets.getSettings<TrackMapWidgetSettings>(panelWidgetId);
 
   return (
     <Col span={12}>
@@ -61,31 +56,18 @@ const StylingCell = observer(({ setting }: StylingCellProps) => {
         value={settings[setting]}
         min={field.min}
         max={field.max}
-        onChange={(value) =>
-          value !== null &&
-          liveWidgets.updateUserSettings(panelWidgetId, { [setting]: value })
-        }
+        onChange={(value) => value !== null && update({ [setting]: value })}
       />
     </Col>
   );
 });
 
 export const TrackMapSettingsPanel = observer(() => {
-  const liveWidgets = useWidgetEditor();
-  const panelWidgetId = usePanelWidgetId('track-map');
+  const [settings, update] =
+    usePanelSettings<TrackMapWidgetSettings>('track-map');
   const { t } = useTranslation('widgets');
   const zoomLevelLabels = useLabels('zoomLevel');
   const opacityLabels = useLabels('zoomCircleOpacity');
-
-  const settings =
-    liveWidgets.getSettings<TrackMapWidgetSettings>(panelWidgetId);
-
-  const update = (partial: Partial<TrackMapWidgetSettings>) => {
-    liveWidgets.updateUserSettings(panelWidgetId, {
-      ...settings,
-      ...partial,
-    });
-  };
 
   return (
     <>

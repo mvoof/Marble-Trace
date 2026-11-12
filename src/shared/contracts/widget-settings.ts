@@ -96,6 +96,40 @@ export type ResolveLayoutChange = (
 ) => LayoutChangeResult | null;
 
 /**
+ * A hotkey that steps one of a widget's choice settings through its values —
+ * every instance under the widget's hotkeys lands on the same value.
+ */
+export interface HotkeyCycle {
+  /** The settings action id the backend sends (`hotkey-actions.ts`). */
+  action: string;
+  setting: string;
+  values: readonly string[];
+}
+
+/** A corner rounded so far it reads as the end of a pill. */
+export const PILL_CORNER = 'pill';
+
+/**
+ * The shape of a widget's plate when it is not a plain rounded rectangle, so
+ * every frame that hosts it — the overlay, the editor, the preview, a remote
+ * screen — clips the same way.
+ */
+export type WidgetFrameShape =
+  | { kind: 'circle' }
+  | {
+      kind: 'corners';
+      /** Top-left, top-right, bottom-right, bottom-left, in px at the design scale. */
+      radiiPx: readonly [
+        number | typeof PILL_CORNER,
+        number | typeof PILL_CORNER,
+        number | typeof PILL_CORNER,
+        number | typeof PILL_CORNER,
+      ];
+      /** The shape holds only while this boolean setting is on. */
+      whenSetting?: string;
+    };
+
+/**
  * What a widget declares about itself, in its own `manifest.ts`. Plain data:
  * no React, so the catalog the stores read carries no UI with it. The id →
  * component map lives in `widgets/registry.ts`.
@@ -151,6 +185,10 @@ export interface WidgetManifest extends WidgetMeta {
    * they picked.
    */
   previewBaseline?: boolean;
+  /** Hotkeys that cycle a setting of this widget. */
+  hotkeyCycles?: readonly HotkeyCycle[];
+  /** The plate's shape, when it is not a plain rounded rectangle. */
+  frameShape?: WidgetFrameShape;
 }
 
 export interface WidgetConfig extends WidgetManifest {

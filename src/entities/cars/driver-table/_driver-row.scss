@@ -1,0 +1,109 @@
+@use '@/styles/functions' as *;
+@use '@/styles/variables' as *;
+@use '@/styles/widget-tokens' as *;
+
+// The driver table's row, shared by Standings and Relative as mixins: each
+// widget keeps its own module classes, so its overrides sit in the same file
+// as the rules they override and no cross-module cascade order matters.
+// `DriverRowShell` assembles the classes these mixins style. A partial gets
+// none of the injected tokens, so it loads them itself.
+
+// The row itself — grid, rule, the class marker and the chips' row look.
+@mixin driver-row {
+  --chip-line: #{$table-chip-line};
+  // A row's chips are a step lower than the bars' — 18px over the line's 14 —
+  // and tight at the sides, so they sit beside the name instead of over it.
+  // The row keeps its height ($chip-outer-height).
+  --chip-pad-y: #{ws(1)};
+  --chip-lead-padding: #{ws(1) sp(xxs)};
+  --chip-solid-padding-x: #{sp(xs)};
+  --chip-value-padding-x: #{sp(xs)};
+  // The chips are notes on the driver: a weight under the position, the number
+  // and the name, and the readings in the secondary white, so the row reads
+  // by who first.
+  --chip-lead-weight: 600;
+  --chip-solid-weight: 700;
+  --chip-value-weight: 600;
+  --chip-value-text: #{$widget-text-secondary};
+
+  display: grid;
+  // Cells fill the row's height so a column's stripe runs edge to edge; each
+  // cell centres its own content.
+  align-items: stretch;
+  column-gap: sp(xxxs);
+  padding: 0 sp(md);
+  border-bottom: 1px solid $table-row-rule;
+  position: relative;
+  line-height: 1.15;
+  font-size: fs(xs);
+  background: $table-row-bg;
+
+  // Class marker, matching the one the class header carries. A pseudo-element
+  // rather than a border so the grid columns keep their measured width.
+  &::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background: var(--row-class-marker, transparent);
+  }
+}
+
+// The row's vertical padding sits in its cells, not on the row: a padded row
+// would leave the column stripes short of its edges.
+@mixin row-padding($space) {
+  & > * {
+    padding-top: $space;
+    padding-bottom: $space;
+    // At least a chip tall inside the padding (the cells are border-box), so
+    // every row is one height whichever chips it holds — the widget counts the
+    // rows it can fit from the first one.
+    min-height: calc(#{$chip-outer-height} + #{$space} * 2);
+  }
+}
+
+// Include inside the row's selector. Two classes, so the padding outranks
+// each cell's own `padding` shorthand.
+@mixin row-paddings {
+  &.rowPaddingNarrow {
+    @include row-padding(sp(xxxs));
+  }
+
+  &.rowPaddingMedium {
+    @include row-padding(sp(xxs));
+  }
+
+  &.rowPaddingWide {
+    @include row-padding(sp(xs));
+  }
+}
+
+// Include at the module's root, after the row: odd, player, off track, out.
+@mixin row-states {
+  .rowOdd {
+    background: $table-row-bg-alt;
+  }
+
+  .driverRowPlayer {
+    background: $widget-row-player-bg;
+  }
+
+  .driverRowOffTrack {
+    opacity: 0.5;
+    filter: grayscale(100%);
+  }
+
+  .driverRowOut {
+    opacity: 0.45;
+    filter: grayscale(100%);
+  }
+
+  // A thin rule after the last column of each group — who, how rated, where
+  // in the race. Between groups only: a rule after every column turns the row
+  // back into a grid of boxes.
+  .blockEnd {
+    border-right: 1px solid $table-rule;
+  }
+}

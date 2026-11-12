@@ -1,25 +1,24 @@
-﻿import { useWidgetSettings } from '@entities/layout/useWidgetSettings';
-import type { CSSProperties } from 'react';
 import { observer } from 'mobx-react-lite';
-import {
-  abbreviateName,
-  formatBrand,
-  formatCarNumber,
-  TRACK_SURFACE_IN_PIT_STALL,
-  TRACK_SURFACE_OFF_TRACK,
-} from '@shared/lib/driver';
-import { parseDriverFlags } from '@shared/lib/driver';
-import { isSessionEnded } from '@shared/lib/timer-utils';
+
+import { useWidgetSettings } from '@entities/layout/useWidgetSettings';
+import { useBackendComputedStore } from '@entities/cars/computed-context';
+import { CarNumberBadge } from '@entities/cars/driver-table/CarNumberBadge';
+import { DriverNameContent } from '@entities/cars/driver-table/DriverNameContent';
+import { driverRowStateOf } from '@entities/cars/driver-table/driver-row-state';
+import { DriverRowShell } from '@entities/cars/driver-table/DriverRowShell';
+import { RatingCells } from '@entities/cars/driver-table/RatingCells';
+import { usePlayerStore } from '@entities/player/player-context';
+import { TowTime } from '@entities/player/TowTime/TowTime';
+import { useSessionStore } from '@entities/session/session-context';
+import { useReactiveDomWrite } from '@shared/hooks/useReactiveDomWrite';
+import { writeText } from '@shared/ui/live/live-parts';
+import { cx } from '@shared/lib/class-names';
+import { formatBrand } from '@shared/lib/driver';
+import { CountryFlag } from '@shared/ui/CountryFlag/CountryFlag';
 import {
   isPitStatus,
-  resolveDriverStatuses,
+  type DriverStatus,
 } from '@shared/ui/StatChip/driver-status';
-import { RadioMark } from '@entities/cars/RadioMark/RadioMark';
-import { getContrastTextColor, playerRowStyle } from '@shared/lib/colors';
-import { CountryFlag } from '@shared/ui/CountryFlag/CountryFlag';
-import { DriverFlagBadge } from '@shared/ui/DriverFlagBadge/DriverFlagBadge';
-import { IRatingChip, SafetyRatingChip } from '@shared/ui/StatChip/RatingChip';
-import { ratingChipParts } from '@shared/ui/StatChip/rating';
 import { StatChip, writeStatChip } from '@shared/ui/StatChip/StatChip';
 import { TireBadge } from '@shared/ui/TireBadge/TireBadge';
 import {
@@ -37,19 +36,14 @@ import {
   type StandingsColumn,
   type StandingsGapInfo,
 } from '@widgets/standings/standings-utils';
-import { PosChange } from './PosChange';
-import { PositionCell } from './PositionCell';
+import { useStandingsWidgetStore } from '@widgets/standings/standings.store';
+
+import type { StandingsWidgetSettings } from '../settings-schema';
 import { IrChangeCell } from './IrChangeCell';
 import { PitStopTime } from './PitStopTime';
-
+import { PosChange } from './PosChange';
+import { PositionCell } from './PositionCell';
 import styles from './DriverRow.module.scss';
-import { useReactiveDomWrite } from '@shared/hooks/useReactiveDomWrite';
-import { useBackendComputedStore } from '@entities/cars/computed-context';
-import { useSessionStore } from '@entities/session/session-context';
-import { usePlayerStore } from '@entities/player/player-context';
-import { TowTime } from '@entities/player/TowTime/TowTime';
-import { useStandingsWidgetStore } from '@widgets/standings/standings.store';
-import type { StandingsWidgetSettings } from '../settings-schema';
 
 // The leader and a lapped car read as chips — a state, not a distance; a
 // distance stays a plain number. Laps down are the only gap written "N L".
@@ -73,10 +67,15 @@ const writeGap = (
     return;
   }
 
-  element.className = gapInfo.isEmpty
+  const className = gapInfo.isEmpty
     ? `${styles.gapEmpty} ${styles.cellEmpty}`
     : valueClass;
-  element.textContent = gapInfo.value;
+
+  if (element.className !== className) {
+    element.className = className;
+  }
+
+  writeText(element, gapInfo.value);
 };
 
 const LAP_DELTA_TONE_CLASS: Record<LapDeltaTone, string> = {
@@ -110,9 +109,7 @@ export const DriverRow = observer(
 
     // The cell that closes a group of columns carries the rule after it.
     const cellClass = (column: StandingsColumn, ...extra: string[]): string =>
-      [styles.cell, blockEnds.has(column) ? styles.blockEnd : '', ...extra]
-        .filter(Boolean)
-        .join(' ');
+      cx(styles.cell, blockEnds.has(column) ? styles.blockEnd : '', ...extra);
 
     // The gap is the row's one moving number: it is measured against the leader's
     // live entry and changes on every tick, so it is written straight to its span
@@ -134,10 +131,7 @@ export const DriverRow = observer(
           ? computed.driverEntryOf(leaderIdentity.carIdx)
           : null;
 
-        const sessions = session.sessionInfo?.sessions;
-        const isRaceSession =
-          sessions?.[session.sessionInfo?.currentSessionNum ?? 0]
-            ?.sessionType === 'Race';
+        const isRaceSession = session.currentSessionType === 'Race';
 
         const leads =
           (byClass ? liveDriver.liveClassPosition : liveDriver.livePosition) ===
@@ -190,72 +184,23 @@ export const DriverRow = observer(
       return null;
     }
 
-    const isInGarage = driver.trackSurface === 'NotInWorld';
-
-    // Latched in the backend once the car crosses the line under the checkered
-    // flag, so this outlives the drive back to the garage. It outranks retirement
-    // too: a driver who takes the flag and then quits the session is reported by
-    // the sim with a reason-out, but what he did in the race was finish it.
-    const isFinished = driver.isFinished;
-
-    // Once the session is over everybody drops to the garage, so leaving the world
-    // is no longer a status worth flagging — only a sim-confirmed retirement is.
-    const isOut =
-      !isFinished &&
-      (driver.isRetired ||
-        (isInGarage &&
-          !isSessionEnded(session.session?.session_state ?? null)));
-
-    const isPit =
-      !isOut &&
-      (driver.trackSurface === TRACK_SURFACE_IN_PIT_STALL || driver.onPitRoad);
-
-    const pitState = driver.pitState;
-    const flagType = parseDriverFlags(driver.rawFlags);
-
-    // The tow truck has the car: it left the world without going through the pit
-    // lane, which OUT alone would not tell apart from a garage exit. A towed
-    // player sits in the stall while the tow counts down — that is the tow too,
-    // not a stop.
-    const isTowed =
-      (driver.isTowed || (driver.isPlayer && player.isTowing)) && !isFinished;
-
-    const isOffTrack = driver.trackSurface === TRACK_SURFACE_OFF_TRACK;
+    const state = driverRowStateOf(driver, {
+      isSessionEnded: session.isSessionEnded,
+      isPlayerTowing: player.isTowing,
+    });
+    const isPit = state.isPit;
 
     // Every row of a team event takes the second line, an unnamed team too, so
     // the table keeps one row height while teams come and go.
-    const showsTeamNames =
-      settings.showTeamName && session.sessionInfo?.teamRacing === true;
+    const showsTeamNames = settings.showTeamName && session.isTeamRacing;
 
-    const rowClass = [
-      styles.driverRow,
-      showsTeamNames ? styles.driverRowWithTeam : '',
-      settings.rowPadding === 'narrow' ? styles.rowPaddingNarrow : '',
-      settings.rowPadding === 'medium' ? styles.rowPaddingMedium : '',
-      settings.rowPadding === 'wide' ? styles.rowPaddingWide : '',
-      driver.isPlayer ? styles.driverRowPlayer : '',
-      index % 2 !== 0 ? styles.rowOdd : '',
-      isOffTrack ? styles.driverRowOffTrack : '',
-      isOut ? styles.driverRowOut : '',
-      startsPlayerWindow ? styles.driverRowWindowStart : '',
-      standingsWidget.hoveredClassId === driver.carClassId
-        ? styles.driverRowScrollTarget
-        : '',
-    ]
-      .filter(Boolean)
-      .join(' ');
-
-    const rowFill = playerRowStyle(driver.isPlayer, settings.playerRowColor);
-
-    // The stripe is painted by a pseudo-element, so the class color reaches it
-    // through a variable — the same 3px marker the class header carries.
-    const rowStyle = {
-      gridTemplateColumns: gridTemplate,
-      ...rowFill,
-      '--row-class-marker': driver.carClassColor,
-    } as CSSProperties;
-
-    const formattedCarNumber = formatCarNumber(driver.carNumber);
+    const rowClass = cx(
+      showsTeamNames && styles.driverRowWithTeam,
+      !driver.isPlayer && styles.driverRowHoverable,
+      startsPlayerWindow && styles.driverRowWindowStart,
+      standingsWidget.hoveredClassId === driver.carClassId &&
+        styles.driverRowScrollTarget
+    );
 
     const classBest = standingsWidget.classBestLapMap.get(driver.carClassId);
     const isClassBestLap =
@@ -274,60 +219,40 @@ export const DriverRow = observer(
       standingsWidget.lapDeltas.get(carIdx)
     );
 
-    // Read from the identity, so the list changes with the row's own render and
-    // adds none: a pit stop or a tow is the rare event the row redraws for.
-    // What the SR chip shows; 'none' only with the column off.
-    const srContent = ratingChipParts(settings).sr;
-    const statusChips = resolveDriverStatuses({
-      flagType,
-      isTowed,
-      isOut,
-      isOffTrack,
-      isPit,
-      pitState,
-      isFinished,
-      showPit: settings.showPitIndicator,
-    });
-
     // What rides on a chip's dark half: the time on pit road, the tow.
-    const pitDetail = settings.showPitStopTime ? (
-      <PitStopTime carIdx={carIdx} />
-    ) : undefined;
+    const chipDetail = (status: DriverStatus) => {
+      if (!settings.showPitStopTime) {
+        return undefined;
+      }
 
-    const towDetail =
-      settings.showPitStopTime && driver.isPlayer && player.isTowing ? (
-        <TowTime />
-      ) : undefined;
+      if (status === 'tow') {
+        return driver.isPlayer && player.isTowing ? <TowTime /> : undefined;
+      }
 
-    const driverName = (
-      <span
-        className={`${styles.driverName} ${driver.isPlayer ? styles.driverNamePlayer : ''}`}
-      >
-        {settings.abbreviateNames
-          ? abbreviateName(driver.userName)
-          : driver.userName}
-      </span>
-    );
+      return isPitStatus(status) ? <PitStopTime carIdx={carIdx} /> : undefined;
+    };
 
     return (
-      <div
+      <DriverRowShell
+        classes={styles}
+        gridTemplate={gridTemplate}
+        classColor={driver.carClassColor}
+        rowPadding={settings.rowPadding}
+        isPlayer={driver.isPlayer}
+        isOdd={index % 2 !== 0}
+        state={state}
+        playerRowColor={settings.playerRowColor}
         className={rowClass}
-        style={rowStyle}
         data-driver-row
         data-row-key={carIdx}
       >
         <PositionCell carIdx={carIdx} />
 
         <div className={cellClass('carNumber', styles.carNumberCell)}>
-          <span
-            className={styles.carNumber}
-            style={{
-              backgroundColor: driver.carClassColor,
-              color: getContrastTextColor(driver.carClassColor),
-            }}
-          >
-            {formattedCarNumber}
-          </span>
+          <CarNumberBadge
+            carNumber={driver.carNumber}
+            classColor={driver.carClassColor}
+          />
         </div>
 
         {settings.showPosChange && (
@@ -343,61 +268,23 @@ export const DriverRow = observer(
         )}
 
         <div className={cellClass('name', styles.nameCell)}>
-          {settings.showDriverFlags &&
-            (isFinished ? (
-              <DriverFlagBadge type="checkered" />
-            ) : (
-              flagType !== 'none' && <DriverFlagBadge type={flagType} />
-            ))}
-
-          {showsTeamNames ? (
-            <div className={styles.nameStack}>
-              {driverName}
-              <span className={styles.teamName}>{driver.teamName}</span>
-            </div>
-          ) : (
-            driverName
-          )}
-
-          {settings.showRadioMark && (
-            <RadioMark carIdx={driver.carIdx} onPlayerRow={driver.isPlayer} />
-          )}
-
-          {statusChips.map((chip) => (
-            <StatChip
-              key={chip.status}
-              lead={chip.label}
-              look="reading"
-              tone={chip.tone}
-            >
-              {chip.status === 'tow'
-                ? towDetail
-                : isPitStatus(chip.status)
-                  ? pitDetail
-                  : undefined}
-            </StatChip>
-          ))}
+          <DriverNameContent
+            driver={driver}
+            state={state}
+            abbreviate={settings.abbreviateNames}
+            showDriverFlags={settings.showDriverFlags}
+            showRadioMark={settings.showRadioMark}
+            showPitIndicator={settings.showPitIndicator}
+            teamName={showsTeamNames ? driver.teamName : undefined}
+            chipDetail={chipDetail}
+          />
         </div>
 
-        {srContent !== 'none' && (
-          <div className={cellClass('sr', styles.cellCenter)}>
-            <SafetyRatingChip
-              licString={driver.licString}
-              content={srContent}
-              badgeStyle={settings.licBadgeStyle}
-            />
-          </div>
-        )}
-
-        {settings.showIRating && (
-          <div className={cellClass('ir', styles.cellCenter)}>
-            <IRatingChip
-              iRating={driver.iRating}
-              abbreviate={settings.abbreviateIRating}
-              hasBackground={settings.showIRatingChip}
-            />
-          </div>
-        )}
+        <RatingCells
+          driver={driver}
+          settings={settings}
+          cellClassName={(column) => cellClass(column, styles.cellCenter)}
+        />
 
         {settings.showIrChange && (
           <div className={cellClass('irChange', styles.cellCenter)}>
@@ -484,7 +371,7 @@ export const DriverRow = observer(
             <TireBadge tire={driver.tireCompound} />
           </div>
         )}
-      </div>
+      </DriverRowShell>
     );
   }
 );

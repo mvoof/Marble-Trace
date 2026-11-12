@@ -1,0 +1,20 @@
+// Car number — the badge carries the class color
+.carNumber {
+  font-family: $font-mono;
+  font-size: fs(xs);
+  font-weight: 800;
+  // One height with the row's chips: their line, edges and 1px padding.
+  line-height: calc(#{$table-chip-line} + 2px);
+  padding: ws(1) sp(xxs);
+  border-radius: radius(sm);
+  white-space: nowrap;
+
+  // Sized for three digits, the widest number the field can hold, so a one-digit
+  // badge is the same box as a three-digit one and the column stays a straight
+  // edge. Inline-block, or min-width is ignored; content-box, so the padding
+  // sits outside the three digits.
+  display: inline-block;
+  box-sizing: border-box;
+  min-width: ws(30);
+  text-align: center;
+}

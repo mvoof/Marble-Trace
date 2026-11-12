@@ -16,14 +16,14 @@ export class PlayerStore {
   /**
    * 60 Hz hot field — never read directly in a component render body. Read it
    * inside `useReactiveDomWrite`/`useReactiveCanvasLoop`; `oxlint` enforces
-   * this (`no-restricted-properties`) for `src/{app,pages,widgets,features}/**\/*.tsx`.
+   * this (`layers/reactive-hot-fields`).
    * @remarks See "The hot/cold split" in `docs/rendering.md`.
    */
   carDynamics: CarDynamicsFrame | null = null;
   /**
    * 60 Hz hot field — never read directly in a component render body. Read it
    * inside `useReactiveDomWrite`/`useReactiveCanvasLoop`; `oxlint` enforces
-   * this (`no-restricted-properties`) for `src/{app,pages,widgets,features}/**\/*.tsx`.
+   * this (`layers/reactive-hot-fields`).
    * @remarks See "The hot/cold split" in `docs/rendering.md`.
    */
   carInputs: CarInputsFrame | null = null;

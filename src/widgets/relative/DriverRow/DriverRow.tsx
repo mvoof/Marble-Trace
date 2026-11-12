@@ -1,33 +1,35 @@
-import { useWidgetSettings } from '@entities/layout/useWidgetSettings';
-import type { CSSProperties } from 'react';
 import { observer } from 'mobx-react-lite';
-import {
-  abbreviateName,
-  formatCarNumber,
-  TRACK_SURFACE_IN_PIT_STALL,
-  TRACK_SURFACE_OFF_TRACK,
-} from '@shared/lib/driver';
-import { computeRelativeGap, parseDriverFlags } from '@shared/lib/driver';
-import { resolveDriverStatuses } from '@shared/ui/StatChip/driver-status';
-import { RadioMark } from '@entities/cars/RadioMark/RadioMark';
-import { getContrastTextColor, playerRowStyle } from '@shared/lib/colors';
+
+import { useWidgetSettings } from '@entities/layout/useWidgetSettings';
+import { useBackendComputedStore } from '@entities/cars/computed-context';
+import { CarNumberBadge } from '@entities/cars/driver-table/CarNumberBadge';
+import { DriverNameContent } from '@entities/cars/driver-table/DriverNameContent';
+import { driverRowStateOf } from '@entities/cars/driver-table/driver-row-state';
+import { DriverRowShell } from '@entities/cars/driver-table/DriverRowShell';
+import { RatingCells } from '@entities/cars/driver-table/RatingCells';
+import { usePlayerStore } from '@entities/player/player-context';
+import { TowTime } from '@entities/player/TowTime/TowTime';
+import { useSessionStore } from '@entities/session/session-context';
+import { useReactiveDomWrite } from '@shared/hooks/useReactiveDomWrite';
+import { cx } from '@shared/lib/class-names';
+import { computeRelativeGap } from '@shared/lib/driver';
 import { CountryFlag } from '@shared/ui/CountryFlag/CountryFlag';
-import { DriverFlagBadge } from '@shared/ui/DriverFlagBadge/DriverFlagBadge';
-import { StatChip } from '@shared/ui/StatChip/StatChip';
-import { IRatingChip, SafetyRatingChip } from '@shared/ui/StatChip/RatingChip';
-import { ratingChipParts } from '@shared/ui/StatChip/rating';
+import {
+  useLiveParts,
+  writeState,
+  writeText,
+} from '@shared/ui/live/live-parts';
 import {
   buildRelativeGridTemplate,
   resolveRowPosition,
 } from '@widgets/relative/relative-utils';
-import { useReactiveDomWrite } from '@shared/hooks/useReactiveDomWrite';
 
-import styles from './DriverRow.module.scss';
-import { useBackendComputedStore } from '@entities/cars/computed-context';
-import { usePlayerStore } from '@entities/player/player-context';
-import { TowTime } from '@entities/player/TowTime/TowTime';
 import { TrackDistance } from '../TrackDistance/TrackDistance';
 import type { RelativeWidgetSettings } from '../settings-schema';
+import styles from './DriverRow.module.scss';
+
+/** A car more than half a lap off the player is a lap down, or lapping. */
+const LAP_STATE_THRESHOLD = 0.5;
 
 interface DriverRowProps {
   carIdx: number;
@@ -43,19 +45,18 @@ interface DriverRowProps {
 export const DriverRow = observer(({ carIdx, index }: DriverRowProps) => {
   const computed = useBackendComputedStore();
   const player = usePlayerStore();
+  const session = useSessionStore();
 
   const settings = useWidgetSettings<RelativeWidgetSettings>('relative');
 
-  const driver = computed.relativeIdentities.find(
-    (identity) => identity.carIdx === carIdx
-  );
+  const driver = computed.relativeIdentityByCarIdx.get(carIdx);
+
+  const parts = useLiveParts<'name'>();
 
   const gapRef = useReactiveDomWrite<HTMLSpanElement>(
     (element, scheduleWrite) => {
-      // oxlint-disable-next-line no-restricted-properties
-      const entries = computed.relativeEntries;
-      const liveDriver = entries.find((entry) => entry.carIdx === carIdx);
-      const livePlayer = entries.find((entry) => entry.isPlayer) ?? null;
+      const liveDriver = computed.relativeEntryOf(carIdx);
+      const livePlayer = computed.relativePlayerEntry;
 
       if (!liveDriver) {
         return;
@@ -65,20 +66,20 @@ export const DriverRow = observer(({ carIdx, index }: DriverRowProps) => {
         ? computeRelativeGap(liveDriver, livePlayer)
         : 0;
 
-      const gapText =
+      const relativeGapText =
         relativeGap > 0
           ? `+${relativeGap.toFixed(1)}`
           : relativeGap < 0
             ? relativeGap.toFixed(1)
             : '0.0';
 
-      const gapClass = liveDriver.isPlayer
-        ? styles.f2Player
+      const gapSign = liveDriver.isPlayer
+        ? 'player'
         : relativeGap > 0
-          ? styles.f2Positive
+          ? 'ahead'
           : relativeGap < 0
-            ? styles.f2Negative
-            : styles.f2Player;
+            ? 'behind'
+            : 'player';
 
       const lapDiff = livePlayer
         ? liveDriver.lap +
@@ -86,99 +87,53 @@ export const DriverRow = observer(({ carIdx, index }: DriverRowProps) => {
           (livePlayer.lap + livePlayer.lapDistPct)
         : 0;
 
+      const lapState = liveDriver.isPlayer
+        ? null
+        : lapDiff < -LAP_STATE_THRESHOLD
+          ? 'behind'
+          : lapDiff > LAP_STATE_THRESHOLD
+            ? 'lapping'
+            : null;
+
       scheduleWrite(() => {
-        element.classList.remove(
-          styles.f2Player,
-          styles.f2Positive,
-          styles.f2Negative
-        );
-        element.classList.add(gapClass);
-        element.textContent = liveDriver.isPlayer ? '-' : gapText;
+        const gapText = liveDriver.isPlayer ? '-' : relativeGapText;
 
-        const row = element.closest('[data-relative-row]');
-        const name = row?.querySelector(`.${styles.driverName}`);
+        writeText(element, gapText);
 
-        if (name instanceof HTMLElement) {
-          name.classList.toggle(
-            styles.driverNameLappedBehind,
-            !liveDriver.isPlayer && lapDiff < -0.5
-          );
-          name.classList.toggle(
-            styles.driverNameLappingUs,
-            !liveDriver.isPlayer && lapDiff > 0.5
-          );
-        }
+        writeState(element, 'sign', gapSign);
+
+        parts.state('name', 'lap', lapState);
       });
     },
-    [computed, carIdx]
+    [computed, carIdx, parts]
   );
 
   if (!driver) {
     return null;
   }
 
-  const isOut = driver.trackSurface === 'NotInWorld';
-  const isOffTrack = !isOut && driver.trackSurface === TRACK_SURFACE_OFF_TRACK;
-
-  const isPit =
-    !isOut &&
-    (driver.trackSurface === TRACK_SURFACE_IN_PIT_STALL || driver.onPitRoad);
-
-  const pitState = driver.pitState;
-  const flagType = parseDriverFlags(driver.rawFlags);
-
-  // A towed player sits in the stall while the tow counts down — that is the
-  // tow, not a stop.
-  const isTowed = driver.isTowed || (driver.isPlayer && player.isTowing);
-
-  // Read from the identity, so the list changes with the row's own render and
-  // adds none: a pit stop or a tow is the rare event the row redraws for.
-  // What the SR chip shows; 'none' only with the column off.
-  const srContent = ratingChipParts(settings).sr;
-  const statusChips = resolveDriverStatuses({
-    flagType,
-    isTowed,
-    isOut,
-    isOffTrack,
-    isPit,
-    pitState,
-    showPit: settings.showPitIndicator,
+  const state = driverRowStateOf(driver, {
+    isSessionEnded: session.isSessionEnded,
+    isPlayerTowing: player.isTowing,
   });
 
   const position = resolveRowPosition(driver, settings.useLivePositions);
 
-  const rowClass = [
-    styles.driverRow,
-    settings.rowPadding === 'narrow' ? styles.rowPaddingNarrow : '',
-    settings.rowPadding === 'medium' ? styles.rowPaddingMedium : '',
-    settings.rowPadding === 'wide' ? styles.rowPaddingWide : '',
-    driver.isPlayer ? styles.driverRowPlayer : '',
-    index % 2 !== 0 ? styles.rowOdd : '',
-    isOffTrack ? styles.driverRowOffTrack : '',
-    isOut ? styles.driverRowOut : '',
-  ]
-    .filter(Boolean)
-    .join(' ');
-
-  const formattedCarNumber = formatCarNumber(driver.carNumber);
-
-  const gridTemplate = buildRelativeGridTemplate(settings);
-
-  const rowFill = playerRowStyle(driver.isPlayer, settings.playerRowColor);
-
-  // The stripe is painted by a pseudo-element, so the class color reaches it
-  // through a variable — the same marker Standings rows carry.
-  const rowStyle = {
-    gridTemplateColumns: gridTemplate,
-    ...rowFill,
-    '--row-class-marker': driver.carClassColor,
-  } as CSSProperties;
-
   return (
-    <div className={rowClass} style={rowStyle} data-relative-row>
+    <DriverRowShell
+      classes={styles}
+      gridTemplate={buildRelativeGridTemplate(settings)}
+      classColor={driver.carClassColor}
+      rowPadding={settings.rowPadding}
+      isPlayer={driver.isPlayer}
+      isOdd={index % 2 !== 0}
+      state={state}
+      playerRowColor={settings.playerRowColor}
+      data-relative-row
+    >
       <div className={styles.posBlock}>
         <span
-          className={`${styles.driverPosition} ${driver.isPlayer ? styles.driverPositionPlayer : ''}`}
+          className={styles.driverPosition}
           style={
             driver.isPlayer ? { color: settings.playerAccentColor } : undefined
           }
@@ -189,15 +144,10 @@ export const DriverRow = observer(({ carIdx, index }: DriverRowProps) => {
 
       {settings.showCarNumber && (
         <div className={styles.carNumberCell}>
-          <span
-            className={styles.driverCarNumber}
-            style={{
-              backgroundColor: driver.carClassColor,
-              color: getContrastTextColor(driver.carClassColor),
-            }}
-          >
-            {formattedCarNumber}
-          </span>
+          <CarNumberBadge
+            carNumber={driver.carNumber}
+            classColor={driver.carClassColor}
+          />
         </div>
       )}
 
@@ -207,64 +157,34 @@ export const DriverRow = observer(({ carIdx, index }: DriverRowProps) => {
         </div>
       )}
 
-      <div className={`${styles.infoBlock} ${styles.blockEnd}`}>
-        {settings.showDriverFlags && flagType !== 'none' && (
-          <DriverFlagBadge type={flagType} />
-        )}
-
-        <span
-          className={[
-            styles.driverName,
-            driver.isPlayer ? styles.driverNamePlayer : '',
-          ]
-            .filter(Boolean)
-            .join(' ')}
-        >
-          {settings.abbreviateNames
-            ? abbreviateName(driver.userName)
-            : driver.userName}
-        </span>
-
-        {settings.showRadioMark && (
-          <RadioMark carIdx={driver.carIdx} onPlayerRow={driver.isPlayer} />
-        )}
-
-        {statusChips.map((chip) => (
-          <StatChip
-            key={chip.status}
-            lead={chip.label}
-            look="reading"
-            tone={chip.tone}
-          >
-            {chip.status === 'tow' && driver.isPlayer && player.isTowing ? (
+      <div className={cx(styles.infoBlock, styles.blockEnd)}>
+        <DriverNameContent
+          driver={driver}
+          state={state}
+          abbreviate={settings.abbreviateNames}
+          showDriverFlags={settings.showDriverFlags}
+          showRadioMark={settings.showRadioMark}
+          showPitIndicator={settings.showPitIndicator}
+          chipDetail={(status) =>
+            status === 'tow' && driver.isPlayer && player.isTowing ? (
               <TowTime />
-            ) : undefined}
-          </StatChip>
-        ))}
+            ) : undefined
+          }
+          nameRef={parts.ref('name')}
+        />
       </div>
 
       {/* The rule closes the rating group after whichever of the two ends it. */}
-      {srContent !== 'none' && (
-        <div
-          className={`${styles.colRating} ${settings.showIRating ? '' : styles.blockEnd}`}
-        >
-          <SafetyRatingChip
-            licString={driver.licString}
-            content={srContent}
-            badgeStyle={settings.licBadgeStyle}
-          />
-        </div>
-      )}
-
-      {settings.showIRating && (
-        <div className={`${styles.colRating} ${styles.blockEnd}`}>
-          <IRatingChip
-            iRating={driver.iRating}
-            abbreviate={settings.abbreviateIRating}
-            hasBackground={settings.showIRatingChip}
-          />
-        </div>
-      )}
+      <RatingCells
+        driver={driver}
+        settings={settings}
+        cellClassName={(column) =>
+          cx(
+            styles.colRating,
+            (column === 'ir' || !settings.showIRating) && styles.blockEnd
+          )
+        }
+      />
 
       <div className={styles.f2Block}>
         <span ref={gapRef} className={styles.f2Time} />
@@ -273,6 +193,6 @@ export const DriverRow = observer(({ carIdx, index }: DriverRowProps) => {
       {settings.showDistance && (
         <TrackDistance carIdx={driver.carIdx} isPaceCar={false} />
       )}
-    </div>
+    </DriverRowShell>
   );
 });

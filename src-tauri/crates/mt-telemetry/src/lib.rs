@@ -4,14 +4,16 @@
 
 pub mod delivery;
 
+pub mod bundle;
 pub mod control;
 pub mod crew;
-pub mod emitter;
 pub mod io_worker;
 pub mod loop_state;
 pub mod runtime;
+pub mod settings;
 pub mod state;
 pub mod storage;
+pub mod tick;
 #[cfg(feature = "dev")]
 pub mod tick_timings;
 
@@ -20,8 +22,9 @@ pub mod tick_timings;
 #[cfg(feature = "dev")]
 pub fn register_types(types: &mut specta::TypeCollection) {
     types
-        .register::<emitter::TelemetryBundle>()
-        .register::<emitter::TelemetrySlowBundle>()
+        .register::<bundle::TelemetryBundle>()
+        .register::<bundle::TelemetrySlowBundle>()
         .register::<delivery::counters::DeliverySet>()
-        .register::<delivery::counters::FieldDelivery>();
+        .register::<delivery::counters::FieldDelivery>()
+        .register::<settings::TelemetrySettings>();
 }

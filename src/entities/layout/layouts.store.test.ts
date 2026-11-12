@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 
 import { MainRoot } from '@app/roots/main-root';
-import { buildSettings } from '@app/sync/persistence';
+import { buildSettings } from '@app/sync/main/persistence';
 
 import { LayoutsStore } from './layouts.store';
 import { deleteLayout } from '@features/layout-editor/layout-gestures';

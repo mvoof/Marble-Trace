@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
-import { initDiagnosticsHudSync } from '@app/sync/diagnostics-hud-sync';
+import { initDiagnosticsHudSync } from '@app/sync/overlay/diagnostics-hud-sync';
 import {
   useDiagnosticsHudStore,
   useHudRoot,

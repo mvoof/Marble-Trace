@@ -3,11 +3,8 @@ import { useTranslation } from 'react-i18next';
 import { InputNumber, Segmented, Slider } from 'antd';
 import styles from '@features/widget-settings/WidgetSettings.module.scss';
 import { Card } from '@features/widget-settings/Card';
-import { useWidgetEditor } from '@features/widget-settings/WidgetEditorContext';
-import {
-  panelRows,
-  usePanelWidgetId,
-} from '@features/widget-settings/setting-rows';
+import { usePanelSettings } from '@features/widget-settings/use-panel-settings';
+import { panelRows } from '@features/widget-settings/setting-rows';
 import { schemaRows } from '@features/widget-settings/schema-rows';
 import { FUEL_SETTINGS, type FuelWidgetSettings } from './settings-schema';
 
@@ -19,21 +16,11 @@ const { Row, useLabels } = schemaRows(FUEL_SETTINGS);
 const { barWidth, pitWarningLaps, fuelAvgWindow } = FUEL_SETTINGS.shape;
 
 export const FuelSettingsPanel = observer(() => {
-  const liveWidgets = useWidgetEditor();
-  const panelWidgetId = usePanelWidgetId('fuel');
+  const [settings, update] = usePanelSettings<FuelWidgetSettings>('fuel');
   const { t } = useTranslation('widgets');
   const barWidthLabels = useLabels('barWidth');
   const pitWarningLabels = useLabels('pitWarningLaps');
   const avgWindowLabels = useLabels('fuelAvgWindow');
-
-  const settings = liveWidgets.getSettings<FuelWidgetSettings>(panelWidgetId);
-
-  const update = (partial: Partial<FuelWidgetSettings>) => {
-    liveWidgets.updateUserSettings(panelWidgetId, {
-      ...settings,
-      ...partial,
-    });
-  };
 
   return (
     <>

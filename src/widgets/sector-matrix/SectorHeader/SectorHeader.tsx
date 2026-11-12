@@ -1,4 +1,4 @@
-﻿import { observer } from 'mobx-react-lite';
+import { observer } from 'mobx-react-lite';
 
 import { StatChip } from '@shared/ui/StatChip/StatChip';
 import { FixedDigits } from '@shared/ui/FixedDigits/FixedDigits';

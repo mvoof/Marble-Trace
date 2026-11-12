@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 
-import { initRemoteSync } from '@app/sync/remote-sync';
+import { initRemoteSync } from '@app/sync/remote/remote-sync';
 import { RemoteScreenStore } from '@features/remote-screens/remote-screen.store';
 import { RemoteScreenContext } from '@features/remote-screens/remote-screen-context';
 import { RemoteRoot } from '@app/roots/remote-root';

@@ -22,7 +22,7 @@
 }
 
 // The car alongside has left the bar's range: the pill is gone, the bar stays.
-.pillEmpty {
+.pill[data-empty='true'] {
   display: none;
 }
 

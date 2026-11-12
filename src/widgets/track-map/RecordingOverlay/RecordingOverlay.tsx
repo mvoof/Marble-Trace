@@ -1,4 +1,4 @@
-﻿import { observer } from 'mobx-react-lite';
+import { observer } from 'mobx-react-lite';
 
 import styles from './RecordingOverlay.module.scss';
 import { useSessionStore } from '@entities/session/session-context';

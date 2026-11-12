@@ -7,6 +7,7 @@ import { PlatformGlyph } from '../PlatformGlyph/PlatformGlyph';
 
 import styles from './ChatMessageRow.module.scss';
 import type { StreamChatWidgetSettings } from '../settings-schema';
+import { cx } from '@shared/lib/class-names';
 
 interface ChatMessageRowProps {
   message: ChatMessage;
@@ -33,15 +34,13 @@ export const ChatMessageRow = observer(({ message }: ChatMessageRowProps) => {
       highlight.kind === 'raid' ||
       highlight.kind === 'follow');
 
-  const rowClass = [
+  const rowClass = cx(
     styles.row,
     settings.compactRows ? styles.rowCompact : '',
     isEvent ? styles.rowHighlight : '',
     highlight?.kind === 'paid' ? styles.rowPaid : '',
-    highlight?.kind === 'firstMessage' ? styles.rowFirst : '',
-  ]
-    .filter(Boolean)
-    .join(' ');
+    highlight?.kind === 'firstMessage' ? styles.rowFirst : ''
+  );
 
   return (
     // Marks the row for the fit measurement, which has to tell the messages
@@ -81,9 +80,7 @@ export const ChatMessageRow = observer(({ message }: ChatMessageRowProps) => {
                   ) : (
                     <span
                       key={`${badge.kind}-${badge.label}`}
-                      className={[styles.badge, BADGE_CLASS[badge.kind]]
-                        .filter(Boolean)
-                        .join(' ')}
+                      className={cx(styles.badge, BADGE_CLASS[badge.kind])}
                     >
                       {badge.label}
                     </span>

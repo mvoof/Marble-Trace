@@ -7,112 +7,11 @@
   gap: sp(md);
 }
 
-.toolbar {
-  display: flex;
-  align-items: center;
-  // Left controls stay packed against the left edge on a wide window; the
-  // preview controls are pushed to the right edge by their own auto margin.
-  justify-content: flex-start;
-  gap: sp(md);
-  row-gap: sp(xs);
-  flex: 0 0 auto;
-  // The bar carries more tools than fit a window that is not maximised, and a
-  // tool the user cannot see is a tool they do not have. Every group wraps
-  // onto as many rows as the width needs rather than running off the edge.
-  flex-wrap: wrap;
-}
-
-.layoutControls {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  row-gap: sp(xxs);
-  gap: sp(xxs);
-}
-
-.layoutSelect {
-  min-width: 180px;
-}
-
-.nameInput {
-  width: 180px;
-}
-
-.previewControls {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: sp(sm);
-  row-gap: sp(xs);
-  // Pushed to the right edge only while the bar is still one row: once it
-  // wraps, an auto margin would strand the group against the far edge with a
-  // hole beside it.
-  margin-left: auto;
-}
-
-.activeChip {
-  color: #52c41a;
-  font-size: fs(xs);
-  font-family: $font-mono;
-  font-weight: 600;
-  padding: 2px sp(xxs);
-  border: 1px solid rgba(82, 196, 26, 0.35);
-  border-radius: radius(sm);
-  white-space: nowrap;
-}
-
-.resolutionLabel {
-  color: #8b8e98;
-  font-family: $font-mono;
-  font-size: fs(xs);
-}
-
-.coords {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  row-gap: sp(xxs);
-  gap: sp(xxs);
-}
-
-.coordLabel {
-  color: #5e626d;
-  font-family: $font-mono;
-  font-size: fs(xs);
-  margin-left: sp(xxs);
-}
-
-.coordInput {
-  width: 64px;
-}
-
 // Fullscreen: the canvas fills the whole screen edge-to-edge and the toolbar
 // floats on top as a translucent panel so the overlay underneath stays visible.
 .rootFullscreen {
   position: relative;
   background: #000;
-}
-
-// Small floating panel centered at the top instead of a full-width bar. Width
-// shrinks to its content; the widget-panel toggle sits at its left edge.
-.toolbarFullscreen {
-  position: absolute;
-  top: sp(sm);
-  left: 50%;
-  z-index: 40;
-  width: auto;
-  justify-content: flex-start;
-  gap: sp(sm);
-  transform: translateX(-50%);
-  // Never wider than the screen it floats over: past that the panel would
-  // centre itself with its ends cut off on both sides.
-  max-width: calc(100% - #{sp(xl)});
-  justify-content: center;
-  padding: sp(xs) sp(sm);
-  background: rgba(11, 12, 16, 0.55);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: radius(lg);
-  backdrop-filter: blur(6px);
 }
 
 .body {
@@ -129,87 +28,6 @@
   gap: 0;
 }
 
-.panel {
-  flex: 0 0 260px;
-  min-height: 0;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-}
-
-.panelDrawer {
-  position: absolute;
-  // Below the floating toolbar, whatever height it wrapped to — measured, not
-  // assumed, since the bar takes a second row as soon as the window narrows.
-  top: var(--editor-toolbar-bottom, 56px);
-  left: sp(md);
-  bottom: sp(sm);
-  z-index: 30;
-  width: 280px;
-  display: flex;
-  flex-direction: column;
-  overflow: visible;
-  padding: sp(sm);
-  background: rgba(11, 12, 16, 0.55);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: radius(lg);
-  backdrop-filter: blur(6px);
-  transform: translateX(calc(-100% - #{sp(md)}));
-  transition: transform 0.2s ease;
-}
-
-.panelDrawerOpen {
-  transform: translateX(0);
-}
-
-.panelDrawerHeader {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex: 0 0 auto;
-  margin-bottom: sp(xs);
-}
-
-.panelDrawerTitle {
-  color: #e0e0e0;
-  font-size: fs(sm);
-  font-weight: 600;
-}
-
-// The inspector holds its width whether or not a widget is selected: a column
-// that comes and goes would rescale the canvas on every click.
-.inspector {
-  flex: 0 0 320px;
-  min-height: 0;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-}
-
-// Fullscreen mirrors the widget list: an overlay drawer, on the other side.
-.inspectorDrawer {
-  position: absolute;
-  top: var(--editor-toolbar-bottom, 56px);
-  right: sp(md);
-  bottom: sp(sm);
-  z-index: 30;
-  width: 320px;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  padding: sp(sm);
-  background: rgba(11, 12, 16, 0.92);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: radius(lg);
-  backdrop-filter: blur(6px);
-  transform: translateX(calc(100% + #{sp(md)}));
-  transition: transform 0.2s ease;
-}
-
-.inspectorDrawerOpen {
-  transform: translateX(0);
-}
-
 .canvas {
   position: relative;
   flex: 1 1 0;
@@ -219,33 +37,4 @@
 
 .canvasFullscreen {
   background: #000;
-}
-
-.monitorOption {
-  display: flex;
-  align-items: center;
-  gap: sp(sm);
-}
-
-.monitorOptionLabel {
-  flex: 1 1 auto;
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.monitorOptionRemove {
-  flex: 0 0 auto;
-  padding: 0;
-  border: none;
-  background: none;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  color: #8b8e98;
-
-  &:hover {
-    color: $race-red;
-  }
 }

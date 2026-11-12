@@ -1,11 +1,13 @@
 import { makeAutoObservable, observableRef } from 'mobx';
 
 import type {
+  SessionEntry,
   SessionFrame,
   SessionSnapshot,
   SessionType,
 } from '@shared/contracts/generated/bindings';
 import { computeClassSof } from '@shared/lib/driver';
+import { isSessionEnded } from '@shared/lib/timer-utils';
 
 export class SessionStore {
   session: SessionFrame | null = null;
@@ -44,11 +46,38 @@ export class SessionStore {
     return sof > 0 ? sof : null;
   }
 
+  /** The session being run now, or `null` while the sim names none. */
+  get currentSession(): SessionEntry | null {
+    const info = this.sessionInfo;
+
+    if (!info || info.currentSessionNum < 0) {
+      return null;
+    }
+
+    return info.sessions[info.currentSessionNum] ?? null;
+  }
+
+  /**
+   * Whether the session is in its cool-down. A computed boolean rather than
+   * `session.session_state` read in place: the session frame is replaced every
+   * second, and a table row that reads the frame redraws with it — every row,
+   * every second — for a value that changes once a session.
+   */
+  get isSessionEnded(): boolean {
+    return isSessionEnded(this.session?.session_state ?? null);
+  }
+
+  /**
+   * Whether this is a team event. A computed boolean for the same reason as
+   * `isSessionEnded`: the session info is replaced on every YAML update, and a
+   * row reading it in place redraws with it for a flag fixed for the event.
+   */
+  get isTeamRacing(): boolean {
+    return this.sessionInfo?.teamRacing === true;
+  }
+
   get currentSessionType(): SessionType | null {
-    if (!this.sessionInfo) return null;
-    const num = this.sessionInfo.currentSessionNum;
-    if (num === null || num === undefined || num < 0) return null;
-    return this.sessionInfo.sessions[num]?.sessionType ?? null;
+    return this.currentSession?.sessionType ?? null;
   }
 
   /**
@@ -72,7 +101,7 @@ export class SessionStore {
       return null;
     }
 
-    return info.sessions[info.currentSessionNum]?.sessionTypeLabel ?? null;
+    return this.currentSession?.sessionTypeLabel ?? null;
   }
 
   get isQualifyingSession(): boolean {

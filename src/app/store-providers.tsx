@@ -20,12 +20,14 @@ import { RadarWidgetContext } from '@entities/radar/radar-context';
 import { PitServiceWidgetContext } from '@features/pit-service/pit-service-context';
 import { TrackMapWidgetContext } from '@entities/track/track-map-context';
 import { TrackRotationContext } from '@entities/track/track-rotation-context';
+import { LayoutToastContext } from '@entities/layout/layout-toast-context';
 import { LiveWidgetsContext } from '@entities/layout/live-widgets-context';
 import { MainLiveWidgetsContext } from '@entities/layout/main-live-widgets-context';
 import { WidgetDefaultsContext } from '@entities/widget/widget-defaults-context';
 import { LayoutsContext } from '@entities/layout/layouts-context';
 import { SettingsMutationLogContext } from '@entities/layout/mutation-log-context';
 import { LayoutEditorContext } from '@features/layout-editor/layout-editor-context';
+import { LayoutEditorUiContext } from '@features/layout-editor/layout-editor-ui-context';
 import { AppSettingsContext } from '@entities/app-settings/app-settings-context';
 import { UnitsContext } from '@entities/app-settings/units-context';
 import { WidgetAutoHideContext } from '@features/widget-auto-hide/widget-auto-hide-context';
@@ -37,6 +39,7 @@ import { FpsDiagnosticsContext } from '@features/diagnostics/fps-diagnostics-con
 import { DiagnosticsExportContext } from '@features/diagnostics/diagnostics-export-context';
 import { TelemetryInspectorContext } from '@features/telemetry-inspector/telemetry-inspector-context';
 import { TwitchAuthContext } from '@features/twitch-auth/twitch-auth-context';
+import { AppUpdateContext } from '@features/app-update/app-update-context';
 import { CompanionAppsContext } from '@features/companion-apps/companion-apps-context';
 import { VoiceCrewContext } from '@features/voice-crew/voice-crew-context';
 import { RemoteDevicesContext } from '@features/remote-screens/remote-devices-context';
@@ -75,6 +78,7 @@ const coreStores = (core: RendererCore): ProvidedStore[] => [
   provide(PitServiceWidgetContext, core.pitServiceWidget),
   provide(TrackMapWidgetContext, core.trackMapWidget),
   provide(LiveWidgetsContext, core.liveWidgets),
+  provide(LayoutToastContext, core.layoutToast),
   provide(WidgetDefaultsContext, core.widgetDefaults),
   provide(LayoutsContext, core.layouts),
   provide(SettingsMutationLogContext, core.settingsMutations),
@@ -103,6 +107,8 @@ const mainStores = (root: MainRoot): ProvidedStore[] => [
   provide(MainRootContext, root),
   provide(MainLiveWidgetsContext, root.liveWidgets),
   provide(LayoutEditorContext, root.layoutEditor),
+  provide(LayoutEditorUiContext, root.layoutEditorUi),
+  provide(AppUpdateContext, root.appUpdate),
   provide(CompanionAppsContext, root.companionApps),
   provide(VoiceCrewContext, root.voiceCrew),
   provide(TwitchAuthContext, root.twitchAuth),

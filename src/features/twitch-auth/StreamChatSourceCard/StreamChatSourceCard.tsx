@@ -35,7 +35,9 @@ export const StreamChatSourceCard = observer(() => {
             value={settings.streamChatTwitchChannel}
             placeholder={t('settingsPage.streamChat.twitchChannelPlaceholder')}
             onChange={(event) =>
-              appSettings.setStreamChatTwitchChannel(event.target.value)
+              appSettings.update({
+                streamChatTwitchChannel: event.target.value,
+              })
             }
           />
 
@@ -53,7 +55,9 @@ export const StreamChatSourceCard = observer(() => {
             value={settings.streamChatYoutubeTarget}
             placeholder={t('settingsPage.streamChat.youtubeTargetPlaceholder')}
             onChange={(event) =>
-              appSettings.setStreamChatYoutubeTarget(event.target.value)
+              appSettings.update({
+                streamChatYoutubeTarget: event.target.value,
+              })
             }
           />
 
@@ -76,7 +80,9 @@ export const StreamChatSourceCard = observer(() => {
 
             <Switch
               checked={settings.streamChatHideCommands}
-              onChange={(value) => appSettings.setStreamChatHideCommands(value)}
+              onChange={(value) =>
+                appSettings.update({ streamChatHideCommands: value })
+              }
             />
           </div>
         </div>
@@ -89,7 +95,7 @@ export const StreamChatSourceCard = observer(() => {
           <Input
             value={settings.streamChatIgnoredBots}
             onChange={(event) =>
-              appSettings.setStreamChatIgnoredBots(event.target.value)
+              appSettings.update({ streamChatIgnoredBots: event.target.value })
             }
           />
 
@@ -121,7 +127,9 @@ export const StreamChatSourceCard = observer(() => {
             <Input
               value={settings.streamChatTwitchClientId}
               onChange={(event) =>
-                appSettings.setStreamChatTwitchClientId(event.target.value)
+                appSettings.update({
+                  streamChatTwitchClientId: event.target.value,
+                })
               }
             />
 

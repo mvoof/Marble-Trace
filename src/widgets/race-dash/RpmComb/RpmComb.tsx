@@ -45,9 +45,7 @@ export const RpmComb = observer(() => {
 
   const rootRef = useReactiveDomWrite<SVGSVGElement>(
     (element, scheduleWrite) => {
-      // oxlint-disable-next-line no-restricted-properties
       const gear = player.carDynamics?.gear ?? 0;
-      // oxlint-disable-next-line no-restricted-properties
       const rpm = player.carDynamics?.rpm ?? 0;
 
       const { pct, zone } = computeRpmZoneState(

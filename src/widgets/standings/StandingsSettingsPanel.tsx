@@ -8,8 +8,7 @@ import {
 import styles from '@features/widget-settings/WidgetSettings.module.scss';
 import { Card } from '@features/widget-settings/Card';
 import { SettingRow } from '@features/widget-settings/SettingRow';
-import { useWidgetEditor } from '@features/widget-settings/WidgetEditorContext';
-import { usePanelWidgetId } from '@features/widget-settings/setting-rows';
+import { usePanelSettings } from '@features/widget-settings/use-panel-settings';
 import { schemaRows } from '@features/widget-settings/schema-rows';
 import {
   STANDINGS_SETTINGS,
@@ -40,23 +39,13 @@ const isLapProgressShown = (settings: StandingsWidgetSettings): boolean =>
   settings.showSessionHeader && settings.showLapProgress;
 
 export const StandingsSettingsPanel = observer(() => {
-  const liveWidgets = useWidgetEditor();
-  const panelWidgetId = usePanelWidgetId('standings');
+  const [settings, update] =
+    usePanelSettings<StandingsWidgetSettings>('standings');
   const { t } = useTranslation('widgets');
   const nameColumnLabels = useLabels('nameColumnWidth');
   const aheadLabels = useLabels('driversAhead');
   const behindLabels = useLabels('driversBehind');
   const scrollResetLabels = useLabels('scrollResetSeconds');
-
-  const settings =
-    liveWidgets.getSettings<StandingsWidgetSettings>(panelWidgetId);
-
-  const update = (partial: Partial<StandingsWidgetSettings>) => {
-    liveWidgets.updateUserSettings(panelWidgetId, {
-      ...settings,
-      ...partial,
-    });
-  };
 
   return (
     <>

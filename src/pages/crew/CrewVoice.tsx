@@ -62,7 +62,7 @@ export const CrewVoice = observer(() => {
             checked={settings.voiceEnabled}
             disabled={!crew.ready}
             onChange={(checked) =>
-              appSettings.setVoiceSettings({ voiceEnabled: checked })
+              appSettings.update({ voiceEnabled: checked })
             }
           />
         </div>
@@ -84,7 +84,7 @@ export const CrewVoice = observer(() => {
                 : t(`crewPage.voice.languages.${language}`),
             }))}
             onChange={(language) => {
-              appSettings.setVoiceSettings({
+              appSettings.update({
                 voiceLanguage: language,
                 voiceName: '',
               });
@@ -102,9 +102,7 @@ export const CrewVoice = observer(() => {
             className={styles.control}
             value={settings.voiceName}
             options={voices}
-            onChange={(voiceName) =>
-              appSettings.setVoiceSettings({ voiceName })
-            }
+            onChange={(voiceName) => appSettings.update({ voiceName })}
           />
         </div>
       </div>
@@ -118,7 +116,7 @@ export const CrewVoice = observer(() => {
             value={settings.voiceOutputDevice}
             options={outputs}
             onChange={(voiceOutputDevice) =>
-              appSettings.setVoiceSettings({ voiceOutputDevice })
+              appSettings.update({ voiceOutputDevice })
             }
           />
         </div>
@@ -133,7 +131,7 @@ export const CrewVoice = observer(() => {
             value={settings.voiceInputDevice}
             options={inputs}
             onChange={(voiceInputDevice) =>
-              appSettings.setVoiceSettings({ voiceInputDevice })
+              appSettings.update({ voiceInputDevice })
             }
           />
         </div>
@@ -153,9 +151,7 @@ export const CrewVoice = observer(() => {
             max={1}
             step={VOLUME_STEP}
             value={settings.voiceVolume}
-            onChange={(voiceVolume) =>
-              appSettings.setVoiceSettings({ voiceVolume })
-            }
+            onChange={(voiceVolume) => appSettings.update({ voiceVolume })}
           />
         </div>
       </div>
@@ -172,9 +168,7 @@ export const CrewVoice = observer(() => {
             max={SPEED_MAX}
             step={SPEED_STEP}
             value={settings.voiceSpeed}
-            onChange={(voiceSpeed) =>
-              appSettings.setVoiceSettings({ voiceSpeed })
-            }
+            onChange={(voiceSpeed) => appSettings.update({ voiceSpeed })}
           />
         </div>
       </div>
@@ -200,7 +194,7 @@ export const CrewVoice = observer(() => {
             step={CONFIDENCE_STEP}
             value={settings.voiceConfidence}
             onChange={(voiceConfidence) =>
-              appSettings.setVoiceSettings({ voiceConfidence })
+              appSettings.update({ voiceConfidence })
             }
           />
         </div>

@@ -23,7 +23,7 @@ interface RaceClusterProps {
 
 export const RaceCluster = observer(({ backdrop, curve }: RaceClusterProps) => {
   const player = usePlayerStore();
-  const { sessionInfo, session } = useSessionStore();
+  const { session, currentSession } = useSessionStore();
   const { leaderBestLapTime } = useCarsStore();
   const playerPosition = usePlayerPositionStore();
 
@@ -40,8 +40,6 @@ export const RaceCluster = observer(({ backdrop, curve }: RaceClusterProps) => {
   );
 
   const currentLap = player.lapTiming?.lap;
-  const currentSession =
-    sessionInfo?.sessions?.[sessionInfo?.currentSessionNum ?? 0];
   const totalLapsStr = currentSession?.sessionLaps
     ? resolveSessionLaps(
         currentSession.sessionLaps,

@@ -5,6 +5,7 @@ import { StatCell } from './StatCell';
 
 import styles from './StatsGrid.module.scss';
 import type { WeatherWidgetSettings } from '../settings-schema';
+import { cx } from '@shared/lib/class-names';
 
 // Beside the conditions the plate is a narrow column, so two cells read better
 // stacked than squeezed into two columns of half its width.
@@ -40,13 +41,11 @@ export const StatsGrid = observer(
 
     return (
       <div
-        className={[
+        className={cx(
           styles.statsGrid,
           horizontal ? styles.statsRow : '',
-          isSingleColumn ? styles.singleColumn : '',
-        ]
-          .filter(Boolean)
-          .join(' ')}
+          isSingleColumn ? styles.singleColumn : ''
+        )}
       >
         <StatCell type="trackTemp" horizontal={horizontal} />
         <StatCell type="humidity" horizontal={horizontal} />

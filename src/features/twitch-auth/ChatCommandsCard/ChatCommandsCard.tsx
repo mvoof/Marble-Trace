@@ -45,13 +45,13 @@ export const ChatCommandsCard = observer(() => {
 
   const handleCooldownChange = (value: number | null) => {
     if (value !== null) {
-      appSettings.setStreamChatCommandCooldownSeconds(value);
+      appSettings.update({ streamChatCommandCooldownSeconds: value });
     }
   };
 
   const handleGlobalCooldownChange = (value: number | null) => {
     if (value !== null) {
-      appSettings.setStreamChatCommandGlobalCooldownSeconds(value);
+      appSettings.update({ streamChatCommandGlobalCooldownSeconds: value });
     }
   };
 
@@ -77,7 +77,7 @@ export const ChatCommandsCard = observer(() => {
             <Switch
               checked={settings.streamChatCommandsEnabled}
               onChange={(value) =>
-                appSettings.setStreamChatCommandsEnabled(value)
+                appSettings.update({ streamChatCommandsEnabled: value })
               }
             />
           </div>

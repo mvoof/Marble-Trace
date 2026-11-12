@@ -7,6 +7,7 @@ import { useTelemetryInspectorStore } from '@features/telemetry-inspector/teleme
 import type { InspectorRow } from '@features/telemetry-inspector/inspector';
 import { formatInspectorValue } from './format-value';
 import styles from './TelemetryInspectorSection.module.scss';
+import { cx } from '@shared/lib/class-names';
 
 /** Indent per nesting level, in pixels. */
 const INDENT_STEP = 14;
@@ -33,13 +34,11 @@ export const InspectorRowLine = observer(({ row }: InspectorRowLineProps) => {
       ? row.length - limit
       : 0;
 
-  const className = [
+  const className = cx(
     styles.row,
     isAbsent ? styles.rowAbsent : '',
-    row.expandable ? styles.rowBranch : '',
-  ]
-    .filter(Boolean)
-    .join(' ');
+    row.expandable ? styles.rowBranch : ''
+  );
 
   return (
     <>

@@ -6,7 +6,10 @@ import { deleteLayout } from '@features/layout-editor/layout-gestures';
 import type { LayoutsStore } from './layouts.store';
 import type { LayoutEditorStore } from '@features/layout-editor/layout-editor.store';
 import type { LiveWidgetsStore } from './live-widgets.store';
-import type { StandingsViewMode } from '@shared/contracts/widget-choices';
+import {
+  STANDINGS_VIEW_MODE,
+  type StandingsViewMode,
+} from '@shared/contracts/widget-choices';
 
 const FULL_CAPABILITIES: CapabilitiesPayload = {
   playerDynamics: true,
@@ -906,11 +909,6 @@ describe('every settings write leaves its mark', () => {
       expected: { changes: true },
     },
     {
-      name: 'updateLayout',
-      run: (store) => store.updateLayout('layout-race'),
-      expected: { changes: true },
-    },
-    {
       name: 'renameLayout',
       run: (_store, layouts) => layouts.renameLayout('layout-race', 'Renamed'),
       expected: { changes: true },
@@ -1299,7 +1297,7 @@ describe('widgets belong to their monitor', () => {
     store.updateUserSettings('standings', { viewMode: 'all' });
     store.updateUserSettings(streamId, { viewMode: 'cycling' });
 
-    store.cycleStandingsViewMode();
+    store.cycleSetting('standings', 'viewMode', STANDINGS_VIEW_MODE);
 
     // Advanced from the driver's screen, and the stream brought in line.
     expect([viewOf('standings'), viewOf(streamId)]).toEqual([
@@ -1322,7 +1320,7 @@ describe('widgets belong to their monitor', () => {
       'standings'
     ).viewMode;
 
-    store.cycleStandingsViewMode();
+    store.cycleSetting('standings', 'viewMode', STANDINGS_VIEW_MODE);
 
     expect(
       store.getSettings<{ viewMode: StandingsViewMode }>('standings').viewMode

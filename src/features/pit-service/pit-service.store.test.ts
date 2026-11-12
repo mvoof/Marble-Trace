@@ -28,11 +28,7 @@ vi.mock('@shared/api/telemetry.service', () => ({
   setActiveEventsSilent: vi.fn(),
 }));
 vi.mock('@shared/api/settings.service', () => ({
-  setPitWarningLapsSilent: vi.fn(),
-  setFuelAvgWindowSilent: vi.fn(),
-  setFuelCountYellowLapsSilent: vi.fn(),
-  setCarLengthSilent: vi.fn(),
-  setOverlayUpdateHzSilent: vi.fn(),
+  setTelemetrySettingsSilent: vi.fn(),
 }));
 
 // RendererCore subscribes to sim events on construction; the node test
@@ -64,9 +60,7 @@ describe('PitServiceWidgetStore — pit orders', () => {
   };
 
   const setStrategy = (partial: Partial<PitStrategy>) => {
-    runInAction(() =>
-      rootStore.appSettings.setPitStrategy(partial as PitStrategy)
-    );
+    runInAction(() => rootStore.appSettings.update(partial as PitStrategy));
   };
 
   // The split across stops is the backend's now, so the fixture seeds the

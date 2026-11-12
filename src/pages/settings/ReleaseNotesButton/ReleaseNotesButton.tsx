@@ -2,14 +2,14 @@ import { useState } from 'react';
 import { Button, Modal } from 'antd';
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
-import { useAppSettingsStore } from '@entities/app-settings/app-settings-context';
+import { useAppUpdateStore } from '@features/app-update/app-update-context';
 import styles from './ReleaseNotesButton.module.scss';
 
 export const ReleaseNotesButton = observer(() => {
-  const appSettings = useAppSettingsStore();
+  const appUpdate = useAppUpdateStore();
   const { t } = useTranslation('main-app');
   const [isOpen, setIsOpen] = useState(false);
-  const { releaseNotes, availableVersion } = appSettings;
+  const { releaseNotes, availableVersion } = appUpdate;
 
   if (!releaseNotes) return null;
 

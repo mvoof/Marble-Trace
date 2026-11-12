@@ -1000,8 +1000,8 @@ export type DeliverySet = {
   elapsedMs: number;
   bundles: number;
   /**
-   * Serialized JSON bytes of those bundles. `None` in a build that does not
-   * size them — sizing is a second serialization, so only `dev` pays it.
+   * Serialized JSON bytes of those bundles — the length of the one encoding
+   * delivery made. `None` when the label was sent nothing that was encoded.
    * Saturates rather than wraps; a measurement run resets it first.
    */
   bytes: number | null;
@@ -2899,6 +2899,31 @@ export type TelemetryBundle = {
   trackRecording?: TrackRecordingFrame | null;
   pitTarget?: PitTargetFrame | null;
   pitAuto?: PitAutoFrame | null;
+};
+
+/**
+ * What `set_telemetry_settings` carries.
+ */
+export type TelemetrySettings = {
+  /**
+   * The player's car length, which turns a centre-to-centre distance into
+   * the gap between bumpers.
+   */
+  carLengthM: number;
+  /**
+   * How often a bundle is published; a divisor of `SOURCE_TICK_HZ`. The
+   * processors keep running at the source's rate (ADR-0009).
+   */
+  overlayUpdateHz: number;
+  pitWarningLaps: number;
+  /**
+   * Recent laps averaged for fuel use; 0 is the whole session.
+   */
+  fuelAvgWindow: number;
+  /**
+   * Whether laps under a local yellow count towards fuel use.
+   */
+  fuelCountYellowLaps: boolean;
 };
 
 /**

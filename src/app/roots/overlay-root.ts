@@ -4,7 +4,7 @@ import {
   type AppWindowStores,
 } from './app-window-stores';
 import type { BindingsStore } from '@features/hotkey-bindings/bindings.store';
-import { SettingsClientStore } from '@app/sync/settings-client.store';
+import { SettingsClientStore } from '@app/sync/overlay/settings-client.store';
 import type { SettingsPanelUiStore } from '@entities/widget/settings-panel-ui.store';
 
 /**

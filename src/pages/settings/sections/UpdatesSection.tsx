@@ -4,6 +4,7 @@ import { Button, Select, Switch } from 'antd';
 import { AlertCircle, ArrowUpCircle, Clock, RefreshCw } from 'lucide-react';
 import { ReleaseNotesButton } from '@pages/settings/ReleaseNotesButton/ReleaseNotesButton';
 import { useAppSettingsStore } from '@entities/app-settings/app-settings-context';
+import { useAppUpdateStore } from '@features/app-update/app-update-context';
 import { SettingsCard } from '@shared/ui/SettingsCard/SettingsCard';
 import styles from '../SettingsPage.module.scss';
 
@@ -11,6 +12,7 @@ const UPDATE_IN_PROGRESS = ['available', 'downloading', 'ready'];
 
 export const UpdatesSection = observer(() => {
   const appSettings = useAppSettingsStore();
+  const appUpdate = useAppUpdateStore();
   const { t, i18n } = useTranslation('main-app');
 
   const intervalOptions = [
@@ -37,7 +39,7 @@ export const UpdatesSection = observer(() => {
 
           <Switch
             checked={appSettings.appSettings.autoUpdate}
-            onChange={(v) => appSettings.setAutoUpdate(v)}
+            onChange={(v) => appSettings.update({ autoUpdate: v })}
           />
         </div>
       </div>
@@ -57,7 +59,9 @@ export const UpdatesSection = observer(() => {
           <Select
             className={styles.selectWidth}
             value={appSettings.appSettings.updateCheckInterval}
-            onChange={(v: number) => appSettings.setUpdateCheckInterval(v)}
+            onChange={(v: number) =>
+              appSettings.update({ updateCheckInterval: v })
+            }
             options={intervalOptions}
             disabled={!appSettings.appSettings.autoUpdate}
           />
@@ -70,7 +74,7 @@ export const UpdatesSection = observer(() => {
             <div className={styles.fieldTitle}>
               {t('settingsPage.applicationUpdates.currentVersion')}{' '}
               <span className={styles.versionLabel}>
-                v{appSettings.currentVersion}
+                v{appUpdate.currentVersion}
               </span>
             </div>
 
@@ -88,27 +92,27 @@ export const UpdatesSection = observer(() => {
             )}
 
             <div className={`${styles.fieldDesc} ${styles.fieldDescOffset}`}>
-              {appSettings.updateStatus === 'idle' &&
+              {appUpdate.status === 'idle' &&
                 t('settingsPage.applicationUpdates.upToDate')}
 
-              {appSettings.updateStatus === 'checking' &&
+              {appUpdate.status === 'checking' &&
                 t('settingsPage.applicationUpdates.checkingForUpdates')}
 
-              {appSettings.updateStatus === 'available' && (
+              {appUpdate.status === 'available' && (
                 <span className={styles.statusSuccess}>
                   {t('settingsPage.applicationUpdates.newVersionAvailable', {
-                    version: appSettings.availableVersion,
+                    version: appUpdate.availableVersion,
                   })}
                 </span>
               )}
 
-              {appSettings.updateStatus === 'downloading' &&
+              {appUpdate.status === 'downloading' &&
                 t('settingsPage.applicationUpdates.downloadingUpdate')}
 
-              {appSettings.updateStatus === 'ready' &&
+              {appUpdate.status === 'ready' &&
                 t('settingsPage.applicationUpdates.updateDownloaded')}
 
-              {appSettings.updateStatus === 'error' && (
+              {appUpdate.status === 'error' && (
                 <span className={styles.statusError}>
                   <AlertCircle size={12} className={styles.errorIcon} />
                   {t('settingsPage.applicationUpdates.updateCheckFailed')}
@@ -117,18 +121,18 @@ export const UpdatesSection = observer(() => {
             </div>
           </div>
 
-          {UPDATE_IN_PROGRESS.includes(appSettings.updateStatus) ? (
+          {UPDATE_IN_PROGRESS.includes(appUpdate.status) ? (
             <div className={styles.updateActions}>
               <ReleaseNotesButton />
 
               <Button
                 type="primary"
                 icon={<ArrowUpCircle size={16} />}
-                onClick={() => void appSettings.installUpdate()}
-                loading={appSettings.updateStatus === 'downloading'}
-                disabled={appSettings.updateStatus === 'ready'}
+                onClick={() => void appUpdate.installUpdate()}
+                loading={appUpdate.status === 'downloading'}
+                disabled={appUpdate.status === 'ready'}
               >
-                {appSettings.updateStatus === 'ready'
+                {appUpdate.status === 'ready'
                   ? t('settingsPage.applicationUpdates.restarting')
                   : t('settingsPage.applicationUpdates.installAndRestart')}
               </Button>
@@ -139,16 +143,14 @@ export const UpdatesSection = observer(() => {
                 <RefreshCw
                   size={16}
                   className={
-                    appSettings.updateStatus === 'checking'
-                      ? 'anticon-spin'
-                      : ''
+                    appUpdate.status === 'checking' ? 'anticon-spin' : ''
                   }
                 />
               }
-              onClick={() => void appSettings.checkForUpdates()}
-              disabled={appSettings.updateStatus === 'checking'}
+              onClick={() => void appUpdate.checkForUpdates()}
+              disabled={appUpdate.status === 'checking'}
             >
-              {appSettings.updateStatus === 'checking'
+              {appUpdate.status === 'checking'
                 ? t('settingsPage.applicationUpdates.checkingEllipsis')
                 : t('settingsPage.applicationUpdates.checkForUpdates')}
             </Button>

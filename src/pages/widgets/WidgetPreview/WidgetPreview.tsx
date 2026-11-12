@@ -8,7 +8,11 @@ import { componentForWidget } from '@widgets/registry';
 import { WidgetInstanceScope } from '@widgets/instance-scope/WidgetInstanceScope';
 import { WidgetIdContext } from '@entities/widget/WidgetIdContext';
 import { ErrorBoundary } from '@shared/ui/ErrorBoundary';
-import { widgetBoxSize, widgetFrameStyle } from '@entities/widget/widget-frame';
+import {
+  widgetBoxSize,
+  widgetFrameStyle,
+  widgetScaleOf,
+} from '@entities/widget/widget-frame';
 import {
   seedScenario,
   DEFAULT_PREVIEW_SCENARIO_ID,
@@ -103,9 +107,13 @@ export const WidgetPreview = observer(
       contentSized,
       overflowVisible,
     } = widget;
-    const widgetScale = widget.scaleFromHeight
-      ? userSettings.currentHeight / widget.designHeight
-      : userSettings.currentWidth / designWidth;
+    const widgetScale = widgetScaleOf({
+      scaleFromHeight: widget.scaleFromHeight,
+      width: userSettings.currentWidth,
+      height: userSettings.currentHeight,
+      designWidth,
+      designHeight: widget.designHeight,
+    });
     const frameStyle = widgetFrameStyle({
       widgetType: widget ? widget.type : widgetId,
       userSettings,

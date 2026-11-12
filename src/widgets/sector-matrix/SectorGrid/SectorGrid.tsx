@@ -1,7 +1,12 @@
 import { observer } from 'mobx-react-lite';
 
 import { useReactiveDomWrite } from '@shared/hooks/useReactiveDomWrite';
-import { writeStatChip } from '@shared/ui/StatChip/StatChip';
+import { clearStatChip, writeStatChip } from '@shared/ui/StatChip/StatChip';
+import {
+  useLiveParts,
+  writeState,
+  type LiveParts,
+} from '@shared/ui/live/live-parts';
 import { usePlayerStore } from '@entities/player/player-context';
 import { useBackendComputedStore } from '@entities/cars/computed-context';
 
@@ -13,7 +18,8 @@ interface Props {
 }
 
 const DELTA_PART = 'delta';
-const TIME_PART = 'time';
+
+type CellPart = `cell${number}` | `delta${number}` | `time${number}`;
 
 // Past two rows the cells tighten, so a long track's matrix stays short.
 const COMPACT_ABOVE_COUNT = 6;
@@ -33,19 +39,16 @@ const colsForCount = (count: number): number => {
   return Math.min(count, MAX_COLUMNS);
 };
 
+/**
+ * A cell's delta: a stat chip, or nothing. `writeStatChip` and `writeState`
+ * each write only what changed, so an unchanged frame touches nothing.
+ */
 const writeDelta = (slot: HTMLElement, state: SectorChipState): void => {
   const { delta } = state;
-  const key = delta === null ? '' : `${delta.tone}|${delta.text}`;
-
-  if (slot.dataset['key'] === key) {
-    return;
-  }
-
-  slot.dataset['key'] = key;
 
   if (delta === null) {
-    slot.className = styles.deltaSlot;
-    slot.replaceChildren();
+    writeState(slot, 'delta', null);
+    clearStatChip(slot);
 
     return;
   }
@@ -57,11 +60,7 @@ const writeDelta = (slot: HTMLElement, state: SectorChipState): void => {
     delta.text,
     'reading'
   );
-  slot.classList.add(styles.deltaSlot, styles.deltaChip);
-
-  if (delta.isLive) {
-    slot.classList.add(styles.deltaLive);
-  }
+  writeState(slot, 'delta', delta.isLive ? 'live' : 'chip');
 };
 
 /**
@@ -70,24 +69,20 @@ const writeDelta = (slot: HTMLElement, state: SectorChipState): void => {
  * markup React writes once and a single pass per animation frame fills. See
  * `docs/rendering.md`.
  */
-const applyCellState = (cell: Element, state: SectorChipState): void => {
-  if (!(cell instanceof HTMLElement)) {
-    return;
-  }
+const applyCellState = (
+  parts: LiveParts<CellPart>,
+  sectorIndex: number,
+  state: SectorChipState
+): void => {
+  parts.state(`cell${sectorIndex}`, 'kind', state.kind);
 
-  cell.dataset['kind'] = state.kind;
-
-  const delta = cell.querySelector(`[data-part="${DELTA_PART}"]`);
+  const delta = parts.elementOf(`delta${sectorIndex}`);
 
   if (delta instanceof HTMLElement) {
     writeDelta(delta, state);
   }
 
-  const time = cell.querySelector(`[data-part="${TIME_PART}"]`);
-
-  if (time instanceof HTMLElement && time.textContent !== state.displayTime) {
-    time.textContent = state.displayTime;
-  }
+  parts.text(`time${sectorIndex}`, state.displayTime);
 };
 
 export const SectorGrid = observer(({ sectorCount }: Props) => {
@@ -97,8 +92,10 @@ export const SectorGrid = observer(({ sectorCount }: Props) => {
   const cols = colsForCount(sectorCount);
   const isCompact = sectorCount > COMPACT_ABOVE_COUNT;
 
+  const parts = useLiveParts<CellPart>();
+
   const gridRef = useReactiveDomWrite<HTMLDivElement>(
-    (element, scheduleWrite) => {
+    (_element, scheduleWrite) => {
       const currentSectorIdx = computed.currentSectorIdx;
       const sectorTimes = computed.sectorTimes;
       const sectorDeltas = computed.sectorDeltas;
@@ -118,15 +115,11 @@ export const SectorGrid = observer(({ sectorCount }: Props) => {
 
       scheduleWrite(() => {
         for (const [sectorIndex, state] of cellStates.entries()) {
-          const cell = element.children[sectorIndex];
-
-          if (cell) {
-            applyCellState(cell, state);
-          }
+          applyCellState(parts, sectorIndex, state);
         }
       });
     },
-    [computed, player, sectorCount]
+    [computed, player, sectorCount, parts]
   );
 
   return (
@@ -138,16 +131,20 @@ export const SectorGrid = observer(({ sectorCount }: Props) => {
       {Array.from({ length: sectorCount }, (_unused, sectorIndex) => (
         <div
           key={sectorIndex}
+          ref={parts.ref(`cell${sectorIndex}`)}
           className={`${styles.cell} ${sectorIndex >= cols ? styles.ruleTop : ''}`}
           data-kind="empty"
         >
           <div className={styles.cellTop}>
             <span className={styles.label}>S{sectorIndex + 1}</span>
 
-            <span className={styles.deltaSlot} data-part={DELTA_PART} />
+            <span
+              ref={parts.ref(`delta${sectorIndex}`)}
+              data-part={DELTA_PART}
+            />
           </div>
 
-          <div className={styles.time} data-part={TIME_PART} />
+          <div ref={parts.ref(`time${sectorIndex}`)} className={styles.time} />
         </div>
       ))}
     </div>

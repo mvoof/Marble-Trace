@@ -40,21 +40,21 @@ prints saved reports side by side.
 
 ### What each row is
 
-| row                     | source                                                                                                                                                                                            |
-| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| tick p50/p99/max        | wall time of one `emit_domain_frames` pass (processors, assembly, mask, quantize, delivery), every tick of the span. The time the `dev` build spends sizing bundles is subtracted                 |
-| `<recipient>` bundles/s | `mt-telemetry/src/delivery/counters.rs`, per window label. `@remote` is the remote-screen mirror                                                                                                  |
-| `<recipient>` KiB/s     | serialized JSON length of what that recipient was sent (a second serialization, `dev` only)                                                                                                       |
-| first paint             | navigation start to the overlay's `first-contentful-paint`, observed from the entry module before React mounts (`app/sync/perf-cold-start.ts`) — the overlay's cold start, settings read included |
-| heap at first paint     | `usedJSHeapSize` read as that paint is observed: what the window boots into, before the tape fills the stores                                                                                     |
-| alloc MiB/s             | sum of positive `usedJSHeapSize` deltas every 50 ms. Run with `--enable-precise-memory-info`, which the script sets. Never RSS                                                                    |
-| long tasks ≥50 ms       | `PerformanceObserver('longtask')`. 50 ms is the API's floor                                                                                                                                       |
-| frames over budget      | `requestAnimationFrame` gaps over 25 ms (a 60 Hz frame and a half). The finer-grained stand-in for "tasks over 16 ms", which no browser API reports                                               |
-| DOM mutations/s         | `MutationObserver` records on the overlay's `body`                                                                                                                                                |
-| observer wake-ups/s     | `mobx.spy` reactions. A no-op in a production MobX, so always `—` in these runs                                                                                                                   |
-| apply p50/p99/max       | `applyTelemetryBundle` per bundle, MobX reactions included. Ticks that do not carry the 1 Hz tier                                                                                                 |
-| apply 1 Hz full         | the same, on the 1 Hz full bundles (`session` present)                                                                                                                                            |
-| heap bucket             | sampling heap profile (16 KiB interval, collected objects included), each sample charged to the first matching frame on its stack                                                                 |
+| row                     | source                                                                                                                                                                                                |
+| ----------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| tick p50/p99/max        | wall time of one `emit_domain_frames` pass (processors, assembly, mask, quantize, delivery), every tick of the span. Encoding each group's bundle once is part of delivery and of this time           |
+| `<recipient>` bundles/s | `mt-telemetry/src/delivery/counters.rs`, per window label. `@remote` is what the remote hub is handed                                                                                                 |
+| `<recipient>` KiB/s     | serialized JSON length of what that recipient was sent — the one encoding delivery made, in every build                                                                                               |
+| first paint             | navigation start to the overlay's `first-contentful-paint`, observed from the entry module before React mounts (`app/sync/dev/perf-cold-start.ts`) — the overlay's cold start, settings read included |
+| heap at first paint     | `usedJSHeapSize` read as that paint is observed: what the window boots into, before the tape fills the stores                                                                                         |
+| alloc MiB/s             | sum of positive `usedJSHeapSize` deltas every 50 ms. Run with `--enable-precise-memory-info`, which the script sets. Never RSS                                                                        |
+| long tasks ≥50 ms       | `PerformanceObserver('longtask')`. 50 ms is the API's floor                                                                                                                                           |
+| frames over budget      | `requestAnimationFrame` gaps over 25 ms (a 60 Hz frame and a half). The finer-grained stand-in for "tasks over 16 ms", which no browser API reports                                                   |
+| DOM mutations/s         | `MutationObserver` records on the overlay's `body`                                                                                                                                                    |
+| observer wake-ups/s     | `mobx.spy` reactions. A no-op in a production MobX, so always `—` in these runs                                                                                                                       |
+| apply p50/p99/max       | `applyTelemetryBundle` per bundle, MobX reactions included. Ticks that do not carry the 1 Hz tier                                                                                                     |
+| apply 1 Hz full         | the same, on the 1 Hz full bundles (`session` present)                                                                                                                                                |
+| heap bucket             | sampling heap profile (16 KiB interval, collected objects included), each sample charged to the first matching frame on its stack                                                                     |
 
 Limits of the method:
 
@@ -438,3 +438,49 @@ the rate set through `overlayUpdateHz` in the settings file.
 - A rate changed mid-run shows here as a bundle count between the two: a first
   pair of runs read 47.67 and 32.23 bundles/s because the setting was toggled in
   the main window while they ran. Leave the app alone during a run.
+
+## 2026-11-12 — architecture audit
+
+`main` at b2f01467 against `refactor/architecture-audit` at 2f4bdea7, each a
+fresh `--build`. Tape and offset as before, `--runs 3`, the developer's layout
+of 20 widgets on `DISPLAY1` at 30 Hz. Each cell is the mean of three runs.
+
+| metric                            | main  | branch | change |
+| --------------------------------- | ----- | ------ | ------ |
+| tick p50 (µs)                     | 40    | 44     | noise  |
+| tick p99 (µs)                     | 554   | 580    | noise  |
+| overlay-DISPLAY1 bundles/s        | 26.43 | 26.43  | —      |
+| overlay-DISPLAY1 KiB/s            | 798   | 798    | —      |
+| overlay-DISPLAY1 DOM mutations/s  | 963   | 393    | −59 %  |
+| overlay-DISPLAY1 alloc (MiB/s)    | 5.54  | 5.87   | +6 %   |
+| overlay-DISPLAY1 apply p99 (ms)   | 1.33  | 1.37   | —      |
+| overlay-DISPLAY1 first paint (ms) | 1623  | 1559   | noise  |
+
+- **DOM mutations −59 %.** Every hot write goes through `shared/ui/live` and
+  touches the node only when its value changed; before, most writes repeated
+  the value already there. The game pays per change of the overlay
+  (ADR-0009), so this is the number that should reach it — not confirmed with
+  `npm run perf:game` yet.
+- **The tick did not get faster.** One encoding per group instead of one per
+  recipient plus the mirror, but the difference sits on the ticks that do not
+  publish as well, where delivery does not run: it is build-to-build spread.
+  As the audit expected, B1 is a simplification, not a speed-up.
+- **Allocation: a regression found and fixed.** The table above read +6 %
+  (spread under 1 %). Bisected with one 30 s run per commit (`--seconds 30`
+  — compare only runs of the same span; the 30 s and 60 s windows cover
+  different laps and differ by ~0.2 MiB/s on their own):
+
+  | commit                                | alloc (MiB/s) |
+  | ------------------------------------- | ------------- |
+  | `main` b2f01467                       | 5.34          |
+  | 819f1ff8 (car lookups by index)       | 5.28          |
+  | 8fa7a977 (one driver row for tables)  | 5.59          |
+  | every later commit up to 57ef0fab     | 5.57–5.70     |
+  | f1680978 (row reads `isSessionEnded`) | 5.39          |
+
+  The shared row state read `session.session?.session_state` in render. The
+  session frame is replaced every second, so every Relative row — which had
+  not read the session before — redrew once a second with its four observer
+  parts. `SessionStore.isSessionEnded` is a computed boolean; the rows wake
+  when it flips. Single 30 s runs spread about ±0.04 MiB/s, so 5.39 against
+  5.34 is level with `main`.

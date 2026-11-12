@@ -3,8 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Slider } from 'antd';
 import styles from '@features/widget-settings/WidgetSettings.module.scss';
 import { Card } from '@features/widget-settings/Card';
-import { useWidgetEditor } from '@features/widget-settings/WidgetEditorContext';
-import { usePanelWidgetId } from '@features/widget-settings/setting-rows';
+import { usePanelSettings } from '@features/widget-settings/use-panel-settings';
 import { schemaRows } from '@features/widget-settings/schema-rows';
 import { useUnitsStore } from '@entities/app-settings/units-context';
 import { distanceScale } from '@features/widget-settings/distance-scale';
@@ -26,15 +25,12 @@ const { Row, useLabels } = schemaRows(PIT_SERVICE_SETTINGS);
 const { revealOnApproachM, commandRevealSeconds } = PIT_SERVICE_SETTINGS.shape;
 
 export const PitServiceSettingsPanel = observer(() => {
-  const liveWidgets = useWidgetEditor();
-  const panelWidgetId = usePanelWidgetId('pit-service');
+  const [settings, update] =
+    usePanelSettings<PitServiceWidgetSettings>('pit-service');
   const { t } = useTranslation('widgets');
   const units = useUnitsStore();
   const revealLabels = useLabels('revealOnApproachM');
   const commandRevealLabels = useLabels('commandRevealSeconds');
-
-  const settings =
-    liveWidgets.getSettings<PitServiceWidgetSettings>(panelWidgetId);
 
   // Both distances are stored in meters and shown in whatever the app is set
   // to: a driver on imperial reads and drags feet, and the file still holds the
@@ -47,13 +43,6 @@ export const PitServiceSettingsPanel = observer(() => {
     stepM: APPROACH_STEP_M,
     stepFt: APPROACH_STEP_FT,
   });
-
-  const update = (partial: Partial<PitServiceWidgetSettings>) => {
-    liveWidgets.updateUserSettings(panelWidgetId, {
-      ...settings,
-      ...partial,
-    });
-  };
 
   return (
     <>

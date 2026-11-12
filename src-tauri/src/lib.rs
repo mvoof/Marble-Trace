@@ -7,7 +7,7 @@ mod logging;
 #[cfg(feature = "dev")]
 mod perf_run;
 mod process_priority;
-mod remote_mirror;
+mod remote_events;
 mod settings_snapshot;
 mod sim;
 mod sink;
@@ -44,6 +44,9 @@ const BASE_DPI: f64 = 96.0;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
+    // Fails only when a provider is already installed, which is the goal.
+    let _ = rustls::crypto::aws_lc_rs::default_provider().install_default();
+
     let result = with_plugins(Builder::default())
         .setup(setup)
         .invoke_handler(commands::invoke_handler())
@@ -104,7 +107,7 @@ fn setup(app: &mut App) -> Result<(), Box<dyn Error>> {
     // Registered before any server can start: the hub simply drops
     // everything while no browser is connected.
     let remote_state = RemoteState::default();
-    remote_mirror::attach(app.handle(), Arc::clone(&remote_state.hub));
+    remote_events::attach(app.handle(), Arc::clone(&remote_state.hub));
     // Before the hotkeys, whose push-to-talk reaches it; idle until the main
     // window pushes the crew's settings.
     app.manage(VoiceCrewState::new(app.handle()));

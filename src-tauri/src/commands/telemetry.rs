@@ -13,14 +13,16 @@ use crate::sim::connect_source;
 use crate::sink::TauriSink;
 use crate::voice::VoiceCrewState;
 use mt_model::app::crew::CrewSink;
-use mt_model::contract::defaults::{MAX_FUEL_AVG_WINDOW, SOURCE_TICK_HZ};
+use mt_model::contract::bundle_tap::BundleTap;
 use mt_model::sim::session::SessionSnapshot;
 use mt_model::utils::lock_or_recover;
+use mt_remote::control::RemoteState;
 use mt_source::raw::{RawSession, RawValues, RawVarMeta};
 use mt_source::SourceFrame;
 use mt_telemetry::delivery::counters::DeliverySet;
 use mt_telemetry::delivery::masks::REMOTE_LABEL;
 use mt_telemetry::runtime::{spawn_telemetry_thread, TelemetryHost};
+use mt_telemetry::settings::TelemetrySettings;
 use mt_telemetry::state::TelemetryState;
 
 #[tauri::command]
@@ -52,11 +54,13 @@ pub async fn start_telemetry_stream(
         .inspect_err(|error| warn!("No app data dir, tracks and laps are not stored: {error}"))
         .ok();
     let crew: Arc<dyn CrewSink> = app.state::<Arc<VoiceCrewState>>().inner().clone();
+    let remote: Arc<dyn BundleTap> = app.state::<RemoteState>().hub.clone();
     let host = TelemetryHost {
         sink: Arc::new(TauriSink(app)),
         data_dir,
         connect: connect_source,
         crew: Some(crew),
+        remote: Some(remote),
     };
 
     spawn_telemetry_thread(host, state.service.clone(), run)
@@ -97,10 +101,10 @@ pub async fn set_active_events(
 
 /// Records what the remote screens are asking for.
 ///
-/// They have no webview of their own here — `src-tauri/src/remote_mirror.rs` taps the global
-/// event stream — so their appetite is registered under a reserved pseudo-label
-/// instead of a window's. Keeping it in the registry rather than implied by the
-/// broadcast is what lets the later move to `emit_to` be a transport swap.
+/// They have no webview of their own here — the telemetry runtime feeds the
+/// remote hub directly — so their appetite is registered under a reserved
+/// pseudo-label instead of a window's, and grouped with any window that wants
+/// the same fields.
 #[tauri::command]
 pub async fn set_remote_active_events(
     state: State<'_, TelemetryState>,
@@ -146,91 +150,18 @@ pub async fn clear_remote_active_events(state: State<'_, TelemetryState>) -> Res
     Ok(())
 }
 
+/// The user's telemetry settings, whole: the car length, the overlay rate and
+/// the fuel strategy. Main sends them on start and on every change, so the
+/// runtime always runs on exactly what the settings say.
 #[tauri::command]
-pub async fn set_pit_warning_laps(
+pub async fn set_telemetry_settings(
     state: State<'_, TelemetryState>,
-    laps: f32,
+    settings: TelemetrySettings,
 ) -> Result<(), String> {
-    if !laps.is_finite() || laps < 0.0 {
-        return Err("pit_warning_laps must be a finite non-negative number".to_string());
-    }
+    settings.validate().map_err(|error| error.to_string())?;
+    state.service.configure(|config| settings.apply_to(config));
 
-    state
-        .service
-        .configure(|config| config.fuel.pit_warning_laps = laps);
-
-    Ok(())
-}
-
-/// Number of recent laps averaged for fuel consumption. 0 = the whole session.
-#[tauri::command]
-pub async fn set_fuel_avg_window(
-    state: State<'_, TelemetryState>,
-    window: u32,
-) -> Result<(), String> {
-    if window > MAX_FUEL_AVG_WINDOW {
-        return Err(format!(
-            "fuel_avg_window must be between 0 (all laps) and {MAX_FUEL_AVG_WINDOW}"
-        ));
-    }
-
-    state
-        .service
-        .configure(|config| config.fuel.avg_window = window as usize);
-
-    debug!("Fuel average window updated to: {window}");
-
-    Ok(())
-}
-
-/// Whether laps under a local yellow count towards fuel consumption.
-#[tauri::command]
-pub async fn set_fuel_count_yellow_laps(
-    state: State<'_, TelemetryState>,
-    count: bool,
-) -> Result<(), String> {
-    state
-        .service
-        .configure(|config| config.fuel.count_local_yellow_laps = count);
-
-    debug!("Fuel count local yellow laps updated to: {count}");
-
-    Ok(())
-}
-
-#[tauri::command]
-pub async fn set_car_length(state: State<'_, TelemetryState>, length: f32) -> Result<(), String> {
-    if !(0.5..=15.0).contains(&length) || !length.is_finite() {
-        return Err("Car length must be a finite value between 0.5 and 15.0 meters".to_string());
-    }
-
-    state
-        .service
-        .configure(|config| config.car_length_m = length);
-
-    debug!("Car length updated in backend to: {}m", length);
-
-    Ok(())
-}
-
-/// How often the overlays are sent a bundle. The processors keep running at
-/// the source's rate; only publication follows this (ADR-0009).
-#[tauri::command]
-pub async fn set_overlay_update_hz(
-    state: State<'_, TelemetryState>,
-    hz: u32,
-) -> Result<(), String> {
-    if hz == 0 || hz > SOURCE_TICK_HZ || !SOURCE_TICK_HZ.is_multiple_of(hz) {
-        return Err(format!(
-            "Overlay update rate must divide {SOURCE_TICK_HZ} Hz evenly, got {hz} Hz"
-        ));
-    }
-
-    state
-        .service
-        .configure(|config| config.overlay_update_hz = hz);
-
-    debug!("Overlay update rate set to {hz} Hz");
+    debug!(?settings, "Telemetry settings applied");
 
     Ok(())
 }

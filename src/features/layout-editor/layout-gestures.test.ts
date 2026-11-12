@@ -3,7 +3,18 @@ import { describe, expect, it, vi, beforeEach } from 'vitest';
 import { PreviewCore } from '@app/roots/renderer-core';
 import { layoutGestureStores } from '@features/layout-editor/layout-gestures';
 
-import { alignMonitorsToHardware, removeMonitor } from './layout-gestures';
+import { deleteBackgroundImage } from '@entities/layout/layout-background';
+
+import {
+  alignMonitorsToHardware,
+  deleteLayoutAndBackgrounds,
+  removeMonitor,
+} from './layout-gestures';
+
+vi.mock('@entities/layout/layout-background', async (importOriginal) => ({
+  ...(await importOriginal<object>()),
+  deleteBackgroundImage: vi.fn(),
+}));
 
 vi.mock('@shared/api/events.service', () => ({
   emitLayoutActivated: vi.fn(),
@@ -14,9 +25,7 @@ vi.mock('@shared/api/events.service', () => ({
 }));
 
 vi.mock('@shared/api/settings.service', () => ({
-  setFuelAvgWindowSilent: vi.fn(),
-  setFuelCountYellowLapsSilent: vi.fn(),
-  setPitWarningLapsSilent: vi.fn(),
+  setTelemetrySettingsSilent: vi.fn(),
   setActiveEventsSilent: vi.fn(),
 }));
 
@@ -88,5 +97,42 @@ describe('gestures that rebuild a widget list', () => {
     expect(root.liveWidgets.getWidget('fuel')!.userSettings.x).toBe(
       ON_RIGHT_X + 1920
     );
+  });
+});
+
+describe('deleting a layout', () => {
+  it('deletes its background pictures with it', () => {
+    const root = new PreviewCore();
+
+    root.liveWidgets.setLayouts(
+      [
+        {
+          id: 'layout-race',
+          name: 'Race',
+          createdAt: 0,
+          monitors: [LEFT, RIGHT],
+          widgets: [],
+          backgroundImages: { DISPLAY1: 'left.png', DISPLAY2: 'right.png' },
+        },
+        {
+          id: 'layout-practice',
+          name: 'Practice',
+          createdAt: 0,
+          monitors: [LEFT],
+          widgets: [],
+        },
+      ],
+      'layout-race'
+    );
+    vi.mocked(deleteBackgroundImage).mockClear();
+
+    deleteLayoutAndBackgrounds(layoutGestureStores(root), 'layout-race');
+
+    expect(vi.mocked(deleteBackgroundImage).mock.calls).toEqual([
+      ['left.png'],
+      ['right.png'],
+    ]);
+    expect(root.layouts.byId('layout-race')).toBeUndefined();
+    expect(root.layouts.editingLayoutId).toBe('layout-practice');
   });
 });

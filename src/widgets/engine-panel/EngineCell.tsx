@@ -1,6 +1,7 @@
 import { type ReactNode } from 'react';
 import { observer } from 'mobx-react-lite';
 import styles from './EnginePanelWidget.module.scss';
+import { cx } from '@shared/lib/class-names';
 
 export interface EngineCellProps {
   label: string;
@@ -21,9 +22,7 @@ export const EngineCell = observer(
     className = '',
     children,
   }: EngineCellProps) => {
-    const classes = [styles.cell, lead ? styles.lead : '', className]
-      .filter(Boolean)
-      .join(' ');
+    const classes = cx(styles.cell, lead ? styles.lead : '', className);
 
     return (
       <div className={classes}>

@@ -1,0 +1,272 @@
+// ── Widget box ───────────────────────────────────────────────
+.widgetBox {
+  position: absolute;
+}
+
+.dragWrapper {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  cursor: grab;
+
+  &:active {
+    cursor: grabbing;
+  }
+}
+
+.widgetInner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border-radius: rem(6);
+  border: 2px solid;
+  overflow: hidden;
+}
+
+// The widget drew nothing: its own frame folds away and the stand-in below
+// takes its place.
+.widgetInnerEmpty {
+  height: 0;
+  border: none;
+}
+
+// What a widget with nothing to show in this scenario looks like on the
+// canvas: its stored size, its name, and why it is empty.
+.emptyWidget {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: rem(4);
+  border: 1px dashed rgba(255, 255, 255, 0.25);
+  border-radius: rem(6);
+  background: rgba(15, 16, 19, 0.6);
+  text-align: center;
+  overflow: hidden;
+}
+
+.emptyWidgetLabel {
+  color: #c7cad2;
+  font-size: rem(14);
+  font-weight: 600;
+}
+
+.emptyWidgetHint {
+  color: #8b8e98;
+  font-size: rem(11);
+}
+
+.overflowVisible {
+  overflow: visible;
+}
+
+// A dedicated sibling, not a descendant of widgetInner — mirrors the
+// overlay's F9 drag-mode selection box (WidgetContainer.module.scss).
+// Widgets like RaceDash have internal elements with their own explicit
+// z-index (pit banner, ring glow layers) that can escape widgetInner's
+// own outline in some Chromium paint-order edge cases; a sibling with a
+// high z-index of its own composites above all of that regardless.
+.selectionOutline {
+  position: absolute;
+  // Flush with widgetInner's own edge, on top of its 2px border, instead of
+  // inset inside it — otherwise the line reads as sitting behind/under the
+  // widget's real border rather than marking the widget's edge. Thin and
+  // solid: it states the widget's bounds and nothing more. Everything the
+  // user can actually pull is drawn thick on top of it.
+  inset: 0;
+  box-sizing: border-box;
+  border: 1px solid color-mix(in srgb, $widget-text-accent 55%, transparent);
+  pointer-events: none;
+  z-index: 50;
+}
+
+// ── Resize handles (overlay-space px; visually scaled with the world) ──
+$handle-corner: 18px;
+$handle-edge: 8px;
+
+.resizeHandle {
+  position: absolute;
+  z-index: 10;
+}
+
+$corner-hook-size: 16px;
+// One stroke weight for every grab mark: a corner and an edge bar are the same
+// thickness, so an edge bar expanding into its corners shows no step.
+$mark-thickness: 5px;
+$corner-hook-width: $mark-thickness;
+$edge-bar-thickness: $mark-thickness;
+
+// The marks straddle the thin outline instead of sitting inside it: each is
+// pulled out by half its own thickness so the outline runs through its middle.
+$mark-offset: -2px;
+$corner-hook-offset: $mark-offset;
+$edge-bar-offset: $mark-offset;
+
+// A resting corner mark: a short, thick L. Thick means "grab me" — the plain
+// thin outline elsewhere means the side is fixed.
+@mixin corner-hook($vertical, $horizontal) {
+  &::after {
+    content: '';
+    position: absolute;
+    #{$vertical}: $corner-hook-offset;
+    #{$horizontal}: $corner-hook-offset;
+    width: $corner-hook-size;
+    height: $corner-hook-size;
+    border-#{$vertical}: $corner-hook-width solid $widget-text-accent;
+    border-#{$horizontal}: $corner-hook-width solid $widget-text-accent;
+    border-radius: 1px;
+    transition:
+      width 0.1s ease,
+      height 0.1s ease;
+  }
+
+  &:hover::after {
+    width: 20px;
+    height: 20px;
+  }
+}
+
+// Edge handles carry a short, thick bar at the centre of the side, visible at
+// rest — the side is pullable. On hover the bar runs the whole edge, corner to
+// corner, so the gesture's reach is unambiguous.
+@mixin edge-bar($side) {
+  &::before {
+    content: '';
+    position: absolute;
+    #{$side}: $edge-bar-offset;
+    background: $widget-text-accent;
+    border-radius: 1px;
+    transition:
+      inset 0.12s ease,
+      width 0.12s ease,
+      height 0.12s ease;
+  }
+}
+
+.resizeHandleSE {
+  bottom: 0;
+  right: 0;
+  width: $handle-corner;
+  height: $handle-corner;
+  cursor: se-resize;
+
+  @include corner-hook(bottom, right);
+}
+
+.resizeHandleSW {
+  bottom: 0;
+  left: 0;
+  width: $handle-corner;
+  height: $handle-corner;
+  cursor: sw-resize;
+
+  @include corner-hook(bottom, left);
+}
+
+.resizeHandleNE {
+  top: 0;
+  right: 0;
+  width: $handle-corner;
+  height: $handle-corner;
+  cursor: ne-resize;
+
+  @include corner-hook(top, right);
+}
+
+.resizeHandleNW {
+  top: 0;
+  left: 0;
+  width: $handle-corner;
+  height: $handle-corner;
+  cursor: nw-resize;
+
+  @include corner-hook(top, left);
+}
+
+.resizeHandleN {
+  top: 0;
+  left: $handle-corner;
+  right: $handle-corner;
+  height: $handle-edge;
+  cursor: n-resize;
+
+  @include edge-bar(top);
+
+  &::before {
+    left: 32%;
+    right: 32%;
+    top: $edge-bar-offset;
+    height: $edge-bar-thickness;
+  }
+
+  &:hover::before {
+    left: -$handle-corner;
+    right: -$handle-corner;
+  }
+}
+
+.resizeHandleS {
+  bottom: 0;
+  left: $handle-corner;
+  right: $handle-corner;
+  height: $handle-edge;
+  cursor: s-resize;
+
+  @include edge-bar(bottom);
+
+  &::before {
+    left: 32%;
+    right: 32%;
+    bottom: $edge-bar-offset;
+    height: $edge-bar-thickness;
+  }
+
+  &:hover::before {
+    left: -$handle-corner;
+    right: -$handle-corner;
+  }
+}
+
+.resizeHandleE {
+  top: $handle-corner;
+  bottom: $handle-corner;
+  right: 0;
+  width: $handle-edge;
+  cursor: e-resize;
+
+  @include edge-bar(right);
+
+  &::before {
+    top: 32%;
+    bottom: 32%;
+    right: $edge-bar-offset;
+    width: $edge-bar-thickness;
+  }
+
+  &:hover::before {
+    top: -$handle-corner;
+    bottom: -$handle-corner;
+  }
+}
+
+.resizeHandleW {
+  top: $handle-corner;
+  bottom: $handle-corner;
+  left: 0;
+  width: $handle-edge;
+  cursor: w-resize;
+
+  @include edge-bar(left);
+
+  &::before {
+    top: 32%;
+    bottom: 32%;
+    left: $edge-bar-offset;
+    width: $edge-bar-thickness;
+  }
+
+  &:hover::before {
+    top: -$handle-corner;
+    bottom: -$handle-corner;
+  }
+}
