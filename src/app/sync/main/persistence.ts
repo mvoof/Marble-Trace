@@ -6,7 +6,6 @@ import {
   loadSettingsFile,
   logSettingsSnapshot as logSettingsSnapshotCommand,
   saveSettingsFile,
-  type LoadedSettingsFile,
 } from '@shared/api/settings.service';
 import type { UnitSystem } from '@shared/contracts/domain';
 import type { SessionContext } from '@shared/contracts/widget-settings';
@@ -14,7 +13,10 @@ import type { AppSettings } from '@entities/app-settings/app-settings.store';
 import type { MainRoot } from '@app/roots/main-root';
 import type { BindingMap } from '@shared/contracts/input-bindings';
 import { CURRENT_SCHEMA_VERSION } from '@shared/settings-schema/migrate';
-import type { InputDevice } from '@shared/contracts/generated/bindings';
+import type {
+  InputDevice,
+  LoadedSettings,
+} from '@shared/contracts/generated/bindings';
 import {
   decodeLayout,
   decodeTemplates,
@@ -120,7 +122,7 @@ export const saveSettings = async (root: MainRoot) => {
  * fresh install by mistake is recoverable in one click, seeding defaults over
  * a file we could not read is not.
  */
-export const loadSettings = async (): Promise<LoadedSettingsFile> => {
+export const loadSettings = async (): Promise<LoadedSettings> => {
   try {
     return await loadSettingsFile();
   } catch (error) {

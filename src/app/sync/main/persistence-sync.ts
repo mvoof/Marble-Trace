@@ -6,7 +6,7 @@ import {
   saveSettings,
   type Settings,
 } from './persistence';
-import type { LoadedSettingsFile } from '@shared/api/settings.service';
+import type { LoadedSettings } from '@shared/contracts/generated/bindings';
 import { runMigrations } from '@shared/settings-schema/migrate';
 import type { MigrationResult } from '@shared/settings-schema/types';
 import type { MainRoot } from '@app/roots/main-root';
@@ -31,7 +31,7 @@ import type { MainRoot } from '@app/roots/main-root';
  */
 export const hydrateFromDisk = async (
   root: MainRoot,
-  loaded: LoadedSettingsFile
+  loaded: LoadedSettings
 ) => {
   // No file is a first start: the stores keep their defaults and the first
   // save writes them. A file that is there but unreadable is the opposite —
@@ -111,17 +111,30 @@ export const offerLastGoodSettings = async (root: MainRoot) => {
  *
  * Saves run one after another, each building the settings when its turn comes:
  * the reaction, the monitor watch and the close handler may all ask at once,
- * and an older snapshot must not land after a newer one.
+ * and an older snapshot must not land after a newer one. At most one save
+ * waits behind the running one — it writes whatever is current when it
+ * starts, so every request made meanwhile shares it.
  */
 export const createSaveHandle = (root: MainRoot) => {
   let queue: Promise<void> = Promise.resolve();
+  let waitingSave: Promise<void> | null = null;
 
-  const saveUnlessLocked = (): Promise<void> =>
-    root.appSettings.settingsLocked ? Promise.resolve() : saveSettings(root);
+  const saveUnlessLocked = (): Promise<void> => {
+    waitingSave = null;
+
+    return root.appSettings.settingsLocked
+      ? Promise.resolve()
+      : saveSettings(root);
+  };
 
   return (): Promise<void> => {
+    if (waitingSave) {
+      return waitingSave;
+    }
+
     const save = queue.then(saveUnlessLocked);
 
+    waitingSave = save;
     queue = save.catch(() => undefined);
 
     return save;

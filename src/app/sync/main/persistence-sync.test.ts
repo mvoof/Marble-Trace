@@ -2,6 +2,10 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { MainRoot } from '@app/roots/main-root';
 import { CURRENT_SCHEMA_VERSION } from '@shared/settings-schema/migrate';
+import type {
+  JsonValue,
+  LoadedSettings,
+} from '@shared/contracts/generated/bindings';
 
 const LAST_GOOD_SAVED_AT = 1_700_000_000_000;
 
@@ -40,8 +44,10 @@ vi.mock('@shared/api/updater.service', async (importOriginal) => ({
 const { createSaveHandle, hydrateFromDisk, offerLastGoodSettings } =
   await import('./persistence-sync');
 
-const loadedFile = (settings: unknown) =>
-  ({ status: 'loaded', settings }) as const;
+const loadedFile = (settings: JsonValue): LoadedSettings => ({
+  status: 'loaded',
+  settings,
+});
 
 const UNREADABLE_FILE = { status: 'unreadable' } as const;
 const MISSING_FILE = { status: 'missing' } as const;
@@ -181,7 +187,7 @@ describe('saving the settings file', () => {
     expect(settingsService.saveSettingsFile).not.toHaveBeenCalled();
   });
 
-  it('runs saves one after another', async () => {
+  it('runs saves one after another, sharing the one that waits', async () => {
     let finishFirstSave = () => {};
     settingsService.saveSettingsFile.mockReturnValueOnce(
       new Promise<void>((resolve) => {
@@ -191,15 +197,25 @@ describe('saving the settings file', () => {
     const save = createSaveHandle(root);
 
     const firstSave = save();
-    const secondSave = save();
     await Promise.resolve();
+    const secondSave = save();
+    const thirdSave = save();
 
+    expect(thirdSave).toBe(secondSave);
     expect(settingsService.saveSettingsFile).toHaveBeenCalledTimes(1);
 
     finishFirstSave();
-    await Promise.all([firstSave, secondSave]);
+    await Promise.all([firstSave, secondSave, thirdSave]);
 
     expect(settingsService.saveSettingsFile).toHaveBeenCalledTimes(2);
+  });
+
+  it('shares a save asked for before it starts', async () => {
+    const save = createSaveHandle(root);
+
+    await Promise.all([save(), save()]);
+
+    expect(settingsService.saveSettingsFile).toHaveBeenCalledTimes(1);
   });
 
   it('keeps saving after one save fails', async () => {

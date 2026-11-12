@@ -16,15 +16,27 @@ Two backend commands read and write it whole (`src-tauri/src/commands/settings.r
   the one after a reset — defaults are seeded and saved); `unreadable` for an
   empty or truncated file, bad JSON, no `settings` object, or any other read
   error, permission denied included (the settings lock as `corrupt`); and
-  `loaded` with the raw settings, which go to the migration chain.
+  `loaded` with the raw settings, which go to the migration chain. A read that
+  fails for any reason but a missing file is tried three times, 150 ms apart,
+  so a file an antivirus or sync client holds for a moment does not lock. A
+  UTF-8 byte order mark, which Notepad writes, is skipped. The answer is the
+  generated `LoadedSettings` type.
 - `save_settings` writes through a temporary file that is synced and renamed
   into place, so a save cut short leaves the previous file whole. Saves run one
   at a time, in the order asked (`createSaveHandle`), after the save reaction's
-  debounce (`SAVE_DEBOUNCE_MS`).
+  debounce (`SAVE_DEBOUNCE_MS`); at most one waits behind the running one, and
+  every request made meanwhile shares it.
 
-Nothing writes the file on exit: a locked file is left exactly as it was found.
+Every write to the settings files — save, reset, restore, the last-good copy,
+the track rotations — holds one lock in the backend. A reset closes saves for
+the rest of the process, so a save still pending when the file is deleted
+cannot write it back before the relaunch. Nothing writes the file on exit: a
+locked file is left exactly as it was found.
+
 `track-settings.json` (track map rotations) goes through `read_track_rotations`
-and `write_track_rotations` the same way.
+and `write_track_rotations` the same way. An unreadable one is an error, not an
+empty map, so the track map never writes its own few angles over the ones it
+could not read.
 
 The file carries a `schemaVersion` at its top level. It is an **integer** and is
 deliberately unrelated to the app's semver:
