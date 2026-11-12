@@ -1,10 +1,6 @@
 name: Setup Dependencies
 description: Sets up Node.js, Rust, and platform-specific dependencies for Tauri applications
 inputs:
-  node-version:
-    description: 'Node.js version to use'
-    required: true
-    default: '20'
   platform:
     description: 'Runner platform (e.g., ubuntu-latest, windows-latest, macos-latest)'
     required: true
@@ -24,12 +20,12 @@ runs:
   using: composite
   steps:
     - name: Setup Node.js
-      uses: actions/setup-node@v6
+      uses: actions/setup-node@v7
       with:
-        node-version: ${{ inputs.node-version }}
+        node-version-file: '.nvmrc'
 
     - name: Cache Node.js modules
-      uses: actions/cache@v4
+      uses: actions/cache@v6
       with:
         path: ~/.npm
         key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}

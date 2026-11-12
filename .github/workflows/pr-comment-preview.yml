@@ -18,7 +18,7 @@ jobs:
       actions: read
     steps:
       - name: Find PR and build comment
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         id: prepare
         with:
           script: |
@@ -83,7 +83,7 @@ jobs:
 
       - name: Comment on PR
         if: steps.prepare.outputs.skip != 'true'
-        uses: marocchino/sticky-pull-request-comment@v2
+        uses: marocchino/sticky-pull-request-comment@v3
         with:
           number: ${{ steps.prepare.outputs.pr_number }}
           message: ${{ steps.prepare.outputs.body }}

@@ -21,7 +21,7 @@ Before creating an issue, check that the problem is not
 | Tool                                                                | Version / note                                                                     |
 | ------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
 | Windows                                                             | the iRacing SDK is Windows-only                                                    |
-| [Node.js](https://nodejs.org/)                                      | 20.19+ or 22.12+ (what Vite 7 requires)                                            |
+| [Node.js](https://nodejs.org/)                                      | 26 (the active LTS; `.nvmrc` holds it, CI reads it from there)                     |
 | [Rust](https://rustup.rs/)                                          | stable, with `rustfmt` and `clippy` (the commit hooks run both)                    |
 | [Tauri v2 prerequisites](https://v2.tauri.app/start/prerequisites/) | WebView2 and the MSVC build tools                                                  |
 | [uv](https://docs.astral.sh/uv/)                                    | optional — only to trace a steering wheel ([guide](docs/steering-wheel-assets.md)) |

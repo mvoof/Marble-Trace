@@ -19,11 +19,11 @@ jobs:
       ci-rust: ${{ steps.filter.outputs.ci-rust }}
       app: ${{ steps.filter.outputs.js == 'true' || steps.filter.outputs.rust == 'true' }}
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
 
       - name: Check for file changes
         id: filter
-        uses: dorny/paths-filter@v3
+        uses: dorny/paths-filter@v4
         with:
           filters: .github/filters.yml
 
@@ -33,12 +33,11 @@ jobs:
     runs-on: ubuntu-latest
     if: ${{ inputs.force_all || needs.check-changes.outputs.js == 'true' || needs.check-changes.outputs.ci-js == 'true' }}
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
 
       - name: Setup Dependencies
         uses: ./.github/actions/setup-dependencies
         with:
-          node-version: '20'
           platform: ubuntu-latest
           cache-rust: 'false'
           install-rust: 'false'
@@ -62,12 +61,11 @@ jobs:
     runs-on: windows-latest
     if: ${{ inputs.force_all || needs.check-changes.outputs.rust == 'true' || needs.check-changes.outputs.ci-rust == 'true' }}
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
 
       - name: Setup Dependencies
         uses: ./.github/actions/setup-dependencies
         with:
-          node-version: '20'
           platform: windows-latest
           cache-rust: 'true'
 

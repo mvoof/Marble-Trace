@@ -31,12 +31,12 @@ jobs:
       # A run asked for by hand builds whatever the branch holds.
       app: ${{ github.event_name == 'workflow_dispatch' || steps.filter.outputs.rust == 'true' || steps.filter.outputs.js == 'true' }}
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
 
       - name: Check for file changes
         id: filter
         if: github.event_name == 'pull_request'
-        uses: dorny/paths-filter@v3
+        uses: dorny/paths-filter@v4
         with:
           filters: .github/filters.yml
 
@@ -50,12 +50,11 @@ jobs:
         platform: [windows-latest]
     runs-on: ${{ matrix.platform }}
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
 
       - name: Setup Dependencies
         uses: ./.github/actions/setup-dependencies
         with:
-          node-version: '20'
           platform: ${{ matrix.platform }}
           cache-rust: 'true'
 
@@ -63,7 +62,7 @@ jobs:
         run: npm run tauri:build:dev
 
       - name: Upload Build Artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: ${{ runner.os }}-build
           path: src-tauri/target/release/bundle/
