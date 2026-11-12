@@ -72,10 +72,16 @@ export const G_METER_MANIFEST: WidgetManifest = {
 };
 ```
 
-`SimStore` (`updateOwnActiveEvents`) unions the declarations of every **enabled** widget
-in the active layout and sends the mask to the backend
-(`set_active_events`); `bundle/mod.rs` (`apply_event_mask`) leaves an unrequested field out of the
-bundle. The names and their bit values are declared once, in
+**The mask is per window.** Each overlay's `SimStore` (`updateOwnActiveEvents`)
+unions the declarations of the **enabled** widgets on its own monitor and
+registers them under its label (`set_active_events`); a window showing nothing
+leaves the registry (`clear_active_events`) and receives no bundle at all. Main
+registers the remote screens' mask under a reserved label
+(`set_remote_active_events`). `mt-telemetry/src/delivery/dispatch.rs` groups the
+registry by mask value: one bundle is built and serialized per distinct mask,
+`bundle/mod.rs` (`apply_event_mask`) leaving an unrequested field out, and
+delivered with `emit_to` to every window in the group — so a monitor showing
+fuel never pays for the per-car frames a radar on another monitor asked for. The names and their bit values are declared once, in
 `src-tauri/crates/mt-model/src/contract/telemetry_events.rs` (`ts_values!`), and generated into
 `src/shared/contracts/generated/telemetry-event-bits.ts`; `src/shared/contracts/telemetry-events.ts` derives
 `TelemetryEventName` from it. A new gated field is one line there.
