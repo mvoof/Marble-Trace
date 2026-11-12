@@ -6,8 +6,37 @@ to write one.
 ## Where settings live
 
 User settings are persisted to `settings.json` in the app config directory
-(`%APPDATA%/com.voof.marble-trace` on Windows) through `tauri-plugin-store`. The
-shape is `Settings` in `src/app/sync/main/persistence.ts`.
+(`%APPDATA%/com.voof.marble-trace` on Windows) as `{"settings": …}`,
+pretty-printed — users read this file and send it to us. The shape is `Settings`
+in `src/app/sync/main/persistence.ts`.
+
+Two backend commands read and write it whole (`src-tauri/src/commands/settings.rs`):
+
+- `load_settings` answers `missing` only when there is no file (first start, or
+  the one after a reset — defaults are seeded and saved); `unreadable` for an
+  empty or truncated file, bad JSON, no `settings` object, or any other read
+  error, permission denied included (the settings lock as `corrupt`); and
+  `loaded` with the raw settings, which go to the migration chain. A read that
+  fails for any reason but a missing file is tried three times, 150 ms apart,
+  so a file an antivirus or sync client holds for a moment does not lock. A
+  UTF-8 byte order mark, which Notepad writes, is skipped. The answer is the
+  generated `LoadedSettings` type.
+- `save_settings` writes through a temporary file that is synced and renamed
+  into place, so a save cut short leaves the previous file whole. Saves run one
+  at a time, in the order asked (`createSaveHandle`), after the save reaction's
+  debounce (`SAVE_DEBOUNCE_MS`); at most one waits behind the running one, and
+  every request made meanwhile shares it.
+
+Every write to the settings files — save, reset, restore, the last-good copy,
+the track rotations — holds one lock in the backend. A reset closes saves for
+the rest of the process, so a save still pending when the file is deleted
+cannot write it back before the relaunch. Nothing writes the file on exit: a
+locked file is left exactly as it was found.
+
+`track-settings.json` (track map rotations) goes through `read_track_rotations`
+and `write_track_rotations` the same way. An unreadable one is an error, not an
+empty map, so the track map never writes its own few angles over the ones it
+could not read.
 
 The file carries a `schemaVersion` at its top level. It is an **integer** and is
 deliberately unrelated to the app's semver:
@@ -120,20 +149,18 @@ config. The main window shows `SettingsLockBanner`.
 
 The only write left is `resetSettings()`, which goes straight to the file and
 bypasses the gate on purpose: it is the only way out. It **deletes** the file
-through the `delete_settings_file` backend command rather than clearing the
-store — `tauri-plugin-store`'s `clear()` + `save()` leaves a valid but empty
-`{}` behind, which the next start reads as a file that is present and holds no
-settings: the exact signature of a corrupt one, so the reset would lock the app
-again instead of freeing it.
+through the `delete_settings_file` backend command rather than emptying it —
+an empty or `{}` file is present and holds no settings: the exact signature of
+a corrupt one, so the reset would lock the app again instead of freeing it.
 
 Before the first save at a new version, the old file is copied to
-`settings.v{n}.bak` by the `backup_settings_file` backend command —
-`tauri-plugin-store` can only touch the live file.
+`settings.v{n}.bak` by the `backup_settings_file` backend command.
 
 ### The last-good copy
 
-`tauri-plugin-store` saves with a plain `fs::write`, so a killed process or a
-power loss mid-save can leave `settings.json` truncated. Against that, every
+Saves replace the file atomically, but a file can still be damaged outside the
+app — a disk error, a hand edit, an older build that wrote it in place. Against
+that, every
 start whose file loads as `current` and hydrates copies it to
 `settings.last-good.json` (`keep_last_good_settings`, best effort and not
 awaited — startup never waits on it). The copy is written to a temporary file
@@ -144,12 +171,11 @@ file is not copied: it is still the old format on disk until the first save,
 and is `current` from the next start. A locked file — `corrupt`, `too-old`,
 `from-the-future` — never replaces the copy.
 
-A zero-byte `settings.json` counts as present (`settings_file_exists`), so it
-locks as `corrupt` rather than being seeded with defaults: the plugin's write
-truncates first, which makes an empty file the most common half-written save,
-and defaults saved over it would replace the last-good copy one start later.
+A zero-byte `settings.json` loads as `unreadable`, so it locks as `corrupt`
+rather than being seeded with defaults: defaults saved over it would replace the
+last-good copy one start later.
 
-When the lock is `corrupt` and a copy exists that parses as a store file with a
+When the lock is `corrupt` and a copy exists that parses as a file with a
 `settings` object, `SettingsLockBanner` offers it back with the time it was
 written (`last_good_settings_saved_at`). `restore_last_good_settings` renames
 the unreadable file aside as `settings.corrupt-<unix seconds>.json`, so it can
@@ -164,11 +190,9 @@ must not be saved over the restored file — and the banner drops both actions
 successful one relaunches the app, and the restored file goes
 through the whole load pipeline, migrations included.
 
-**A locked main window closes its store handle** (`holdLockedSettings`). The
-plugin saves every store it holds open when the app exits, a relaunch included,
-so an open handle would write its cache over the file: an empty `{}` over a
-corrupt one, over the file a reset just deleted, or over the one a restore just
-put back.
+A locked main window registers no save reaction, and the backend writes
+nothing on exit, so neither a relaunch nor a quit writes over a corrupt file,
+over the file a reset just deleted, or over the one a restore just put back.
 
 ## When you do NOT need a migration
 

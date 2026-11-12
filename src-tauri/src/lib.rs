@@ -36,7 +36,6 @@ use tauri::{
     generate_context, App, AppHandle, Builder, Listener, Manager, Runtime, Window, WindowEvent,
 };
 use tauri_plugin_aptabase::EventTracker;
-use tauri_plugin_store::StoreExt;
 use tauri_plugin_window_state::StateFlags;
 
 /// A monitor's DPI at a scale factor of 1.
@@ -76,7 +75,6 @@ fn with_plugins<R: Runtime>(builder: Builder<R>) -> Builder<R> {
                 .with_state_flags(StateFlags::SIZE | StateFlags::POSITION | StateFlags::MAXIMIZED)
                 .build(),
         )
-        .plugin(tauri_plugin_store::Builder::new().build())
         .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_global_shortcut::Builder::new().build())
         .plugin(tauri_plugin_updater::Builder::new().build())
@@ -137,7 +135,9 @@ fn setup(app: &mut App) -> Result<(), Box<dyn Error>> {
 
     track_app_started(app);
 
-    if start_minimized(app) {
+    // Read straight from the file: it has to act before the main window has
+    // loaded the settings.
+    if commands::settings::start_minimized(app.handle()) {
         if let Some(main_window) = app.get_webview_window(MAIN_WINDOW_LABEL) {
             let _ = main_window.minimize();
         }
@@ -174,16 +174,6 @@ fn track_app_started(app: &App) {
     });
 
     let _ = app.track_event("app_started", Some(props));
-}
-
-/// Read straight from the store: it has to act before the main window has
-/// loaded the settings.
-fn start_minimized(app: &App) -> bool {
-    app.store("settings.json")
-        .ok()
-        .and_then(|store| store.get("settings"))
-        .and_then(|settings| settings.get("app")?.get("startMinimized")?.as_bool())
-        .unwrap_or(false)
 }
 
 fn on_window_event(window: &Window, event: &WindowEvent) {

@@ -363,10 +363,9 @@ export class AppSettingsStore {
    * the only way out of a locked settings file, so the write gate must not
    * apply to it.
    *
-   * The file is deleted rather than emptied. `tauri-plugin-store`'s `clear()`
-   * leaves a valid but empty `{}` on disk, which the next start reads as a file
-   * that is present and yet holds no settings — the exact signature of a
-   * corrupt file, so the reset would lock the app instead of freeing it.
+   * The file is deleted rather than emptied: an empty or `{}` file is present
+   * and yet holds no settings — the exact signature of a corrupt file, so the
+   * reset would lock the app instead of freeing it.
    */
   async resetSettings() {
     await deleteSettingsFile();

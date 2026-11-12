@@ -32,6 +32,7 @@ pub fn collect_types() -> TypeCollection {
     mt_source::register_types(&mut types);
     mt_telemetry::register_types(&mut types);
     crate::perf_run::register_types(&mut types);
+    crate::commands::settings::register_types(&mut types);
 
     types
 }

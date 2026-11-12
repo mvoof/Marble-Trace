@@ -1,3 +1,5 @@
+import { invoke } from '@tauri-apps/api/core';
+
 /**
  * `track-settings.json`: the angle each recorded track's map is turned to.
  *
@@ -13,20 +15,9 @@ type StoredTracks = Record<string, StoredTrackData>;
 
 export type TrackRotations = Record<string, number>;
 
-const TRACKS_STORE_KEY = 'recorded-tracks';
-const TRACK_SETTINGS_STORE = 'track-settings.json';
-
-// Imported lazily so windows that never touch the track map do not load the
-// store plugin.
-const openTrackSettings = async () => {
-  const { load } = await import('@tauri-apps/plugin-store');
-
-  return load(TRACK_SETTINGS_STORE);
-};
-
 export const readTrackRotations = async (): Promise<TrackRotations> => {
-  const store = await openTrackSettings();
-  const tracks = (await store.get<StoredTracks>(TRACKS_STORE_KEY)) ?? {};
+  const tracks =
+    (await invoke<StoredTracks | null>('read_track_rotations')) ?? {};
   const rotations: TrackRotations = {};
 
   for (const [trackId, data] of Object.entries(tracks)) {
@@ -42,13 +33,11 @@ export const readTrackRotations = async (): Promise<TrackRotations> => {
 export const writeTrackRotations = async (
   rotations: TrackRotations
 ): Promise<void> => {
-  const store = await openTrackSettings();
   const tracks: StoredTracks = {};
 
   for (const [trackId, rotation] of Object.entries(rotations)) {
     tracks[trackId] = { rotation };
   }
 
-  await store.set(TRACKS_STORE_KEY, tracks);
-  await store.save();
+  await invoke('write_track_rotations', { tracks });
 };

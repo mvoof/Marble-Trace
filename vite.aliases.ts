@@ -35,7 +35,6 @@ const MOCKED_TAURI_MODULES: Record<string, string> = {
   '@tauri-apps/api/path': 'tauri-path',
   '@tauri-apps/api/app': 'tauri-app',
   '@tauri-apps/plugin-process': 'tauri-process',
-  '@tauri-apps/plugin-store': 'tauri-store',
   '@tauri-apps/plugin-global-shortcut': 'tauri-shortcut',
   '@tauri-apps/plugin-updater': 'tauri-updater',
 };

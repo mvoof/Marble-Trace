@@ -1621,6 +1621,23 @@ export type LateralSide =
    */
   | 'otherColumn';
 
+/**
+ * What `load_settings` found on disk. Serialized as `{ "status": … }`, with
+ * `settings` beside it when loaded.
+ */
+export type LoadedSettings =
+  /**
+   * No file: a first start, or the one after a reset. Defaults are seeded.
+   */
+  | { status: 'missing' }
+  /**
+   * A file that is there but holds no settings document — empty,
+   * truncated, not JSON — or that could not be read at all. The frontend
+   * locks it and never writes over it.
+   */
+  | { status: 'unreadable' }
+  | { status: 'loaded'; settings: JsonValue };
+
 export type NearbyCar = {
   carIdx: number;
   /**

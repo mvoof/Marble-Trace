@@ -1,9 +1,21 @@
 import { invoke } from '@tauri-apps/api/core';
 
-import type { TelemetrySettings } from '@shared/contracts/generated/bindings';
+import type {
+  LoadedSettings,
+  TelemetrySettings,
+} from '@shared/contracts/generated/bindings';
 
-export const settingsFileExists = async (): Promise<boolean> =>
-  invoke('settings_file_exists');
+/**
+ * What `settings.json` held. `missing` only when there is no file; anything
+ * there but not a settings document — empty, truncated, not readable — is
+ * `unreadable`. The settings are raw JSON: the migration chain reads them.
+ */
+export const loadSettingsFile = async (): Promise<LoadedSettings> =>
+  invoke('load_settings');
+
+/** Writes the whole file, through a temporary file renamed into place. */
+export const saveSettingsFile = async (settings: unknown): Promise<void> =>
+  invoke('save_settings', { settings });
 
 export const backupSettingsFile = async (suffix: string): Promise<void> =>
   invoke('backup_settings_file', { suffix });
