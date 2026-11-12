@@ -41,18 +41,13 @@ describe('getFuelStatLabel', () => {
 
 describe('getVisibleFuelStatKeys', () => {
   it('drops AVG ALL when the summary already averages every lap', () => {
-    const settings = {
-      ...FUEL_SETTINGS.defaults,
-      fuelAvgWindow: FUEL_AVG_WINDOW_ALL_LAPS,
-    };
-
-    expect(getVisibleFuelStatKeys(settings)).toEqual(['last', 'min', 'max']);
+    expect(
+      getVisibleFuelStatKeys(FUEL_SETTINGS.defaults, FUEL_AVG_WINDOW_ALL_LAPS)
+    ).toEqual(['last', 'min', 'max']);
   });
 
   it('keeps AVG ALL beside a shorter window', () => {
-    const settings = { ...FUEL_SETTINGS.defaults, fuelAvgWindow: 5 };
-
-    expect(getVisibleFuelStatKeys(settings)).toEqual([
+    expect(getVisibleFuelStatKeys(FUEL_SETTINGS.defaults, 5)).toEqual([
       'last',
       'avg',
       'min',

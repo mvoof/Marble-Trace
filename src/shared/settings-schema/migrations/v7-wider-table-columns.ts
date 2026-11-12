@@ -1,6 +1,8 @@
 import type { Migration, SettingsBlob } from '../types';
 import {
+  asArray,
   asObject,
+  dropStoredWidgetSettings,
   mapEveryStoredWidget,
   patchStoredWidgetSettings,
   type StoredBlobWidget,
@@ -41,6 +43,13 @@ import {
  * became `predictedLap`, shown always, once it has a time, or never. On is
  * `always`, off is `never`; a value that is no boolean is dropped, so the
  * default takes it.
+ *
+ * The fuel strategy (pit warning laps, the averaging window, laps under a
+ * local yellow) leaves the Fuel widget for `app`: the backend computes fuel
+ * once for the car, so only one copy of it ever counted. The values are taken
+ * from the copy that counted until now — see `liftFuelStrategy` — and dropped
+ * from every copy and the template. An absent key stays absent: it is on the
+ * shipped default.
  */
 
 type TableSettings = Record<string, unknown>;
@@ -422,16 +431,103 @@ const predictedLapVisibility = (
   return { ...rest, predictedLap: showPredicted ? 'always' : 'never' };
 };
 
+const FUEL_TYPE = 'fuel';
+
+interface LiftedSetting {
+  appKey: string;
+  /** What the app setting may hold; anything else is left to the default. */
+  accepts: (value: unknown) => boolean;
+}
+
+const isNonNegativeNumber = (value: unknown): boolean =>
+  typeof value === 'number' && Number.isFinite(value) && value >= 0;
+
+/** Widget setting → app setting, frozen. The window is a whole lap count. */
+const FUEL_STRATEGY_KEYS: Readonly<Record<string, LiftedSetting>> = {
+  pitWarningLaps: {
+    appKey: 'fuelPitWarningLaps',
+    accepts: isNonNegativeNumber,
+  },
+  fuelAvgWindow: {
+    appKey: 'fuelAvgWindow',
+    accepts: (value) => isNonNegativeNumber(value) && Number.isInteger(value),
+  },
+  countYellowFlagLaps: {
+    appKey: 'fuelCountYellowFlagLaps',
+    accepts: (value) => typeof value === 'boolean',
+  },
+};
+
+/**
+ * The Fuel copy whose settings the backend ran with: in the active layout
+ * (else the first), a physical display ahead of a remote screen, a switched-on
+ * copy ahead of one that is off. Falls back to the template.
+ */
+const fuelStrategySource = (
+  blob: SettingsBlob
+): Record<string, unknown> | undefined => {
+  const layouts = asArray<unknown>(blob['layouts'])
+    .map(asObject)
+    .filter((layout): layout is Record<string, unknown> => !!layout);
+  const layout =
+    layouts.find((entry) => entry['id'] === blob['activeLayoutId']) ??
+    layouts[0];
+  const monitors = asArray<unknown>(layout?.['monitors'])
+    .map(asObject)
+    .filter((monitor): monitor is Record<string, unknown> => !!monitor);
+  const instancesOn = (isRemote: boolean) =>
+    monitors
+      .filter((monitor) => (monitor['kind'] === 'remote') === isRemote)
+      .flatMap((monitor) => asArray<StoredBlobWidget>(monitor['widgets']))
+      .filter((widget) => asObject(widget)?.type === FUEL_TYPE);
+  const instances = [...instancesOn(false), ...instancesOn(true)];
+  const picked =
+    instances.find((widget) => widget['enabled'] === true) ?? instances[0];
+
+  if (picked) {
+    return asObject(picked.settings);
+  }
+
+  const template = asObject(asObject(blob['widgetTemplates'])?.[FUEL_TYPE]);
+
+  return asObject(template?.['settings']);
+};
+
+const liftFuelStrategy = (blob: SettingsBlob): SettingsBlob => {
+  const source = fuelStrategySource(blob) ?? {};
+  const app = { ...(asObject(blob['app']) ?? {}) };
+
+  for (const [widgetKey, { appKey, accepts }] of Object.entries(
+    FUEL_STRATEGY_KEYS
+  )) {
+    if (accepts(source[widgetKey]) && !(appKey in app)) {
+      app[appKey] = source[widgetKey];
+    }
+  }
+
+  const lifted = dropStoredWidgetSettings(
+    blob,
+    FUEL_TYPE,
+    Object.keys(FUEL_STRATEGY_KEYS)
+  );
+
+  return Object.keys(app).length > 0 || 'app' in blob
+    ? { ...lifted, app }
+    : lifted;
+};
+
 export const v7WiderTableColumns: Migration = {
   to: 7,
   describe:
-    'Standings and Relative frames widened with their columns; Fuel, Lap Log and Sector Matrix widened to their new design widths; Sector Matrix predicted lap became a visibility choice',
+    'Standings and Relative frames widened with their columns; Fuel, Lap Log and Sector Matrix widened to their new design widths; Sector Matrix predicted lap became a visibility choice; fuel strategy moved to app',
   migrate: (blob: SettingsBlob): SettingsBlob =>
-    patchStoredWidgetSettings(
-      widenTemplates(
-        mapEveryStoredWidget(blob, (widgets) => widgets.map(widenInstance))
-      ),
-      'sector-matrix',
-      predictedLapVisibility
+    liftFuelStrategy(
+      patchStoredWidgetSettings(
+        widenTemplates(
+          mapEveryStoredWidget(blob, (widgets) => widgets.map(widenInstance))
+        ),
+        'sector-matrix',
+        predictedLapVisibility
+      )
     ),
 };

@@ -1,7 +1,6 @@
-import { useWidgetSettings } from '@entities/layout/useWidgetSettings';
+import { useAppSettingsStore } from '@entities/app-settings/app-settings-context';
 import { useBackendComputedStore } from '@entities/cars/computed-context';
 import { type FuelLapsStatus, resolveLapsStatus } from './fuel-utils';
-import type { FuelWidgetSettings } from './settings-schema';
 
 /**
  * How urgent the tank is — read by every block that colors by it, so the
@@ -9,10 +8,10 @@ import type { FuelWidgetSettings } from './settings-schema';
  */
 export const useFuelLapsStatus = (): FuelLapsStatus | null => {
   const { fuel } = useBackendComputedStore();
-  const settings = useWidgetSettings<FuelWidgetSettings>('fuel');
+  const { appSettings } = useAppSettingsStore();
 
   return resolveLapsStatus(
     fuel?.lapsRemaining ?? null,
-    settings.pitWarningLaps
+    appSettings.fuelPitWarningLaps
   );
 };

@@ -1,9 +1,4 @@
 import {
-  DEFAULT_PIT_WARNING_LAPS,
-  FUEL_AVG_WINDOW_ALL_LAPS,
-  FUEL_AVG_WINDOW_MAX,
-} from '@shared/contracts/generated/backend-constants';
-import {
   bool,
   choice,
   defineSettings,
@@ -13,15 +8,6 @@ import {
 
 export const FUEL_SETTINGS = defineSettings('fuel', {
   showChart: bool(false),
-  pitWarningLaps: num(DEFAULT_PIT_WARNING_LAPS, { min: 1, max: 20 }),
-  /** Laps averaged for consumption; 0 = every lap of the session. */
-  fuelAvgWindow: num(FUEL_AVG_WINDOW_ALL_LAPS, {
-    min: FUEL_AVG_WINDOW_ALL_LAPS,
-    max: FUEL_AVG_WINDOW_MAX,
-    step: 1,
-  }),
-  /** Count laps under a local yellow; full-course cautions are always dropped. */
-  countYellowFlagLaps: bool(false),
   showNextStopForecast: bool(true),
   chartType: choice(['line', 'bar'], 'bar'),
   /** Width of one lap on the chart, in px. */

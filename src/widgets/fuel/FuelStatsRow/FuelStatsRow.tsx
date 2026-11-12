@@ -4,6 +4,7 @@ import { observer } from 'mobx-react-lite';
 import { formatFuel, EMPTY_VALUE } from '@shared/lib/telemetry-format';
 import { useBackendComputedStore } from '@entities/cars/computed-context';
 import { usePlayerStore } from '@entities/player/player-context';
+import { useAppSettingsStore } from '@entities/app-settings/app-settings-context';
 import { useUnitsStore } from '@entities/app-settings/units-context';
 import {
   computeLapsToEmpty,
@@ -43,9 +44,13 @@ export const FuelStatsRow = observer(() => {
   const { fuel } = useBackendComputedStore();
   const { carStatus } = usePlayerStore();
   const { unitSystem } = useUnitsStore();
+  const { appSettings } = useAppSettingsStore();
 
   const settings = useWidgetSettings<FuelWidgetSettings>('fuel');
-  const visibleKeys = getVisibleFuelStatKeys(settings);
+  const visibleKeys = getVisibleFuelStatKeys(
+    settings,
+    appSettings.fuelAvgWindow
+  );
 
   if (visibleKeys.length === 0) {
     return null;

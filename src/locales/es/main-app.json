@@ -316,6 +316,16 @@
       "pressureAdjustStep": "Paso de presión de neumáticos",
       "pressureAdjustStepDesc": "Cuánto cambia la presión de un neumático cada pulsación de los botones y teclas de presión. Fijar una presión también pide el cambio de ese neumático: el simulador no tiene presión sin cambio."
     },
+    "fuelStrategy": {
+      "title": "Estrategia de combustible",
+      "desc": "Se aplica a las cifras de combustible de todos los widgets de combustible, en todas las pantallas: la app las calcula una sola vez para el coche.",
+      "pitWarningLaps": "Umbral de aviso de poco combustible (vueltas)",
+      "pitWarningLapsDesc": "El widget de combustible avisa cuando queda combustible para estas vueltas.",
+      "fuelAvgWindow": "Ventana de promediado del consumo, vueltas (0 = todas)",
+      "fuelAvgWindowDesc": "Casi todo el widget sale de esta media: la celda AVG del resumen, LAPS LEFT, el combustible restante en meta, la cantidad a repostar y los límites de la ventana de boxes. Una ventana corta sigue el ritmo actual pero salta mucho; una larga se lee estable pero tarda en reaccionar a un cambio de ritmo o de tiempo. La columna AVG ALL siempre abarca todas las vueltas, así que se pueden comparar una al lado de la otra. Con 0 la columna AVG ALL se oculta: repetiría la celda del resumen.",
+      "countYellowFlagLaps": "Contar vueltas con bandera amarilla",
+      "countYellowFlagLapsDesc": "Incluye en la media de consumo las vueltas con bandera amarilla local. En un circuito una amarilla rara vez frena la vuelta lo bastante como para cambiar el consumo. Las vueltas bajo safety car (full-course caution) y bandera roja siempre se excluyen."
+    },
     "carLength": {
       "title": "Coche",
       "valueTitle": "Longitud del coche",

@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { InputNumber } from 'antd';
 import { useAppSettingsStore } from '@entities/app-settings/app-settings-context';
 import { SettingsCard } from '@shared/ui/SettingsCard/SettingsCard';
+import { FuelStrategyCard } from './FuelStrategyCard';
 import { PitStrategyCard } from './PitStrategyCard';
 import styles from '../SettingsPage.module.scss';
 
@@ -53,6 +54,8 @@ export const SharedValuesSection = observer(() => {
       </SettingsCard>
 
       <PitStrategyCard />
+
+      <FuelStrategyCard />
     </>
   );
 });

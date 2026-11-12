@@ -3,33 +3,20 @@ import { compareStructural, reaction, type IReactionDisposer } from 'mobx';
 import type { MainRoot } from '@app/roots/main-root';
 import { setTelemetrySettingsSilent } from '@shared/api/settings.service';
 import type { TelemetrySettings } from '@shared/contracts/generated/bindings';
-import {
-  FUEL_SETTINGS,
-  type FuelWidgetSettings,
-} from '@widgets/fuel/settings-schema';
 
 /**
- * What the telemetry runtime runs with: the app's car length and overlay rate,
- * and the fuel strategy of a fuel widget on screen — the backend keeps one
- * copy, so one instance speaks for them however many the layout holds: a
- * switched-on one first. With none, the shipped values stand.
+ * What the telemetry runtime runs with: the app's car length, overlay rate and
+ * fuel strategy — app settings all, since the backend keeps one copy of each.
  */
 export const telemetrySettingsOf = (root: MainRoot): TelemetrySettings => {
-  const fuelWidgets = root.liveWidgets.liveWidgets.filter(
-    (widget) => widget.type === 'fuel'
-  );
-  const fuel =
-    fuelWidgets.find((widget) => widget.userSettings.enabled) ?? fuelWidgets[0];
-  const fuelSettings = fuel
-    ? (fuel.userSettings as unknown as FuelWidgetSettings)
-    : FUEL_SETTINGS.defaults;
+  const settings = root.appSettings.appSettings;
 
   return {
-    carLengthM: root.appSettings.appSettings.carLength,
-    overlayUpdateHz: root.appSettings.appSettings.overlayUpdateHz,
-    pitWarningLaps: fuelSettings.pitWarningLaps,
-    fuelAvgWindow: fuelSettings.fuelAvgWindow,
-    fuelCountYellowLaps: fuelSettings.countYellowFlagLaps,
+    carLengthM: settings.carLength,
+    overlayUpdateHz: settings.overlayUpdateHz,
+    pitWarningLaps: settings.fuelPitWarningLaps,
+    fuelAvgWindow: settings.fuelAvgWindow,
+    fuelCountYellowLaps: settings.fuelCountYellowFlagLaps,
   };
 };
 
