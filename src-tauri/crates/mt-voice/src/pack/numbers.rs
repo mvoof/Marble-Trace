@@ -7,7 +7,7 @@
 
 use crate::pack::template::{SlotPhrase, SlotValue};
 
-pub const MAX_SPOKEN_NUMBER: u32 = 200;
+pub use mt_model::contract::defaults::MAX_SPOKEN_NUMBER;
 /// "zero seven", "zero zero seven": iRacing numbers carry up to two.
 const MAX_LEADING_ZEROS: usize = 2;
 /// iRacing's longest car number.

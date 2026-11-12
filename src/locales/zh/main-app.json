@@ -948,7 +948,13 @@
         "noPackExport": "该语言还没有你自己的语言包——请先保存一次修改。",
         "noPackImport": "压缩文件中没有语音包：里面没有 phrases.json 或 commands.json。",
         "brokenFile": "{{file}}：{{mistake}}"
-      }
+      },
+      "sheet": "速查表",
+      "sheetDesc": "你可以说的指令（含你的修改），做成一页可打印或放在手边。在浏览器中打开；Ctrl+P 可打印或另存为 PDF。",
+      "sheetButton": "导出速查表",
+      "sheetSaveFirst": "请先保存更改：速查表根据已保存的语言包生成。",
+      "sheetExported": "速查表已保存：{{path}}",
+      "sheetFailed": "速查表未保存"
     },
     "questions": {
       "title": "我的问题",
@@ -1352,6 +1358,21 @@
       "makeRequired": "必须说出",
       "makeChoice": "改为“其中之一”",
       "makeWords": "改为普通词语"
+    },
+    "cheatSheet": {
+      "title": "语音指令",
+      "meta": "语言包：{{language}} · 导出于 {{date}}",
+      "legend": "a / b — 说其中一个；[ ] — 可以不说；‹ › — 你要说出的值。",
+      "command": "指令",
+      "sections": {
+        "fuel": "燃油",
+        "tires": "轮胎",
+        "pit": "维修及其他进站指令",
+        "race": "比赛相关问题"
+      },
+      "values": "可以说出的值",
+      "number": "数字",
+      "numberNote": "0 到 {{max}} 之间的数字，用文字说出：“四十”、“一百二十”。"
     }
   }
 }

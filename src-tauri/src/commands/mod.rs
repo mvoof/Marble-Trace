@@ -45,6 +45,7 @@ pub fn invoke_handler() -> impl Fn(Invoke<Wry>) -> bool + Send + Sync + 'static 
         voice::preview::voice_test_ptt,
         voice::pack::export_voice_pack,
         voice::pack::import_voice_pack,
+        voice::pack::export_voice_sheet,
         remote::start_remote_server,
         remote::stop_remote_server,
         remote::get_remote_server_info,

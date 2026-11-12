@@ -22,6 +22,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Relative — Distance:** A setting adds the distance to each car, in white after the gap, in meters or feet by the unit system setting. It is measured bumper to bumper along the track, like the radar, so a car alongside reads the same in both.
 - **Input Trace — Your Own Wheel:** A new wheel style takes a picture of your own wheel: PNG, JPG, WebP, SVG, GIF or BMP, up to 20 MB. It is shrunk to 384 px and kept next to the settings file, is fitted inside the wheel's place without moving the rest of the widget, and turns with the steering. The settings panel shows it under the button, which spins until the picture is in. Remote screens draw the default wheel instead.
 - **Settings — Last Good Copy:** Every start that reads the settings file cleanly keeps a copy of it, `settings.last-good.json`. If the file is later found unreadable — after a crash or a power loss mid-save — the warning banner offers to restore that copy and shows when it was made; the unreadable file is kept beside it.
+- **Voice Crew — Cheat Sheet:** A new button on the Crew page saves the voice commands of your pack, with your edits, as a page in the pack's language and opens it in the browser: fuel, tyres, repairs and other pit orders, questions about the race and your own questions, each with what it does, the phrases that call it and a reply the engineer may give, and the words for each value. Ctrl+P prints it or saves a PDF. Save the changes before exporting.
 
 ### Changed
 
