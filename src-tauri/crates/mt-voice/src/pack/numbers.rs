@@ -1,10 +1,11 @@
 //! How the built-in languages say a number, for the `{number}` slot, and a
 //! car number as it is heard.
 //!
-//! Only whole numbers up to `MAX_NUMBER_SLOT_VALUE`: every one of them is a
-//! branch of each command that takes a number, and nothing a driver orders by
-//! voice — liters of fuel — goes past it. Car numbers have their own limit:
-//! iRacing's 999.
+//! The `{number}` slot hears whole numbers up to `MAX_NUMBER_SLOT_VALUE`:
+//! every one of them is a branch of each command that takes a number, and
+//! nothing a driver orders by voice — liters of fuel — goes past it. A car
+//! number is heard only as one of the session's cars wears it; with no session
+//! known, as any number the slot hears, leading zeros and all.
 
 use crate::pack::template::{SlotPhrase, SlotValue};
 
@@ -13,8 +14,15 @@ pub use mt_model::contract::defaults::MAX_NUMBER_SLOT_VALUE;
 const MAX_LEADING_ZEROS: usize = 2;
 /// iRacing's longest car number.
 const MAX_CAR_NUMBER_DIGITS: usize = 3;
-const MAX_CAR_NUMBER: u32 = 999;
+/// The hundreds tables end at nine hundred.
+const MAX_SPELLED: u32 = 999;
 const ZERO_DIGIT: char = '0';
+/// Chinese numbers are spoken without spaces; the recogniser's dictionary
+/// holds them a character a word.
+const UNSPACED_LANGUAGES: [&str; 1] = ["zh"];
+
+const _: () = assert!(MAX_NUMBER_SLOT_VALUE <= MAX_SPELLED);
+const _: () = assert!(10u32.pow(MAX_CAR_NUMBER_DIGITS as u32) - 1 <= MAX_SPELLED);
 
 const RU_UNITS: [&str; 20] = [
     "ноль",
@@ -161,6 +169,8 @@ const ES_TENS: [&str; 10] = [
 ];
 
 const ZH_DIGITS: [&str; 10] = ["零", "一", "二", "三", "四", "五", "六", "七", "八", "九"];
+/// Two hundred is "两百", not "二百".
+const ZH_TWO_HUNDREDS: &str = "两";
 const ZH_TEN: &str = "十";
 const ZH_HUNDRED: &str = "百";
 
@@ -190,9 +200,9 @@ pub fn spoken(language: &str, number: u32) -> Option<String> {
     spelled(language, number)
 }
 
-/// Any number below a thousand: car numbers go past `MAX_NUMBER_SLOT_VALUE`.
+/// Any number the tables spell: car numbers go past `MAX_NUMBER_SLOT_VALUE`.
 fn spelled(language: &str, number: u32) -> Option<String> {
-    if number > MAX_CAR_NUMBER {
+    if number > MAX_SPELLED {
         return None;
     }
 
@@ -213,7 +223,9 @@ fn spell_chinese(number: u32) -> String {
     let units = (number % 10) as usize;
     let mut parts: Vec<&str> = Vec::new();
 
-    if hundreds > 0 {
+    if hundreds == 2 {
+        parts.extend([ZH_TWO_HUNDREDS, ZH_HUNDRED]);
+    } else if hundreds > 0 {
         parts.extend([ZH_DIGITS[hundreds], ZH_HUNDRED]);
     }
 
@@ -294,55 +306,84 @@ pub fn number_phrases(language: &str) -> Option<Vec<SlotPhrase>> {
         .collect()
 }
 
-/// Every car number the language can say: a number as it is ("nine" is
-/// `9`), or after its leading zeros ("zero nine" is `09`).
+/// Every car number the slot hears with no session known: any number it
+/// hears, as it is ("nine" is `9`) or after its leading zeros ("zero nine" is
+/// `09`).
 pub fn car_number_phrases(language: &str) -> Option<Vec<SlotPhrase>> {
-    let zero = spelled(language, 0)?;
-    let mut phrases = Vec::new();
+    let mut digits = Vec::new();
 
     for zeros in 0..=MAX_LEADING_ZEROS {
-        for number in 0..=MAX_CAR_NUMBER {
-            let digits = format!("{}{number}", ZERO_DIGIT.to_string().repeat(zeros));
+        for number in 0..=MAX_NUMBER_SLOT_VALUE {
+            let padded = format!("{}{number}", ZERO_DIGIT.to_string().repeat(zeros));
 
-            if digits.len() > MAX_CAR_NUMBER_DIGITS {
-                continue;
+            if padded.len() <= MAX_CAR_NUMBER_DIGITS {
+                digits.push(padded);
             }
-
-            let mut words = vec![zero.clone(); zeros];
-
-            words.extend(spelled(language, number)?.split(' ').map(str::to_string));
-            phrases.push(SlotPhrase {
-                words,
-                value: SlotValue::Digits(digits),
-            });
         }
     }
 
-    Some(phrases)
+    session_car_number_phrases(language, &digits)
 }
 
-/// A car number the way it is heard: each leading zero said, then the rest
-/// as one number — "33" is "thirty three", "033" is "zero thirty three",
-/// "512" is "five hundred twelve". What the language has no words for is left
-/// to the synthesiser as it is.
-pub fn spoken_car_number(language: &str, digits: &str) -> String {
-    let rest = digits.trim_start_matches(ZERO_DIGIT);
-    let (zeros, rest) = if rest.is_empty() && !digits.is_empty() {
-        (digits.len() - 1, &digits[digits.len() - 1..])
-    } else {
-        (digits.len() - rest.len(), rest)
-    };
-    let zero = spelled(language, 0).unwrap_or_else(|| ZERO_DIGIT.to_string());
-    let number = rest
-        .parse::<u32>()
-        .ok()
-        .and_then(|number| spelled(language, number))
-        .unwrap_or_else(|| rest.to_string());
+/// The numbers the session's cars wear, as the slot's phrases. A number that
+/// is not a car number — letters, too long — is left out.
+pub fn session_car_number_phrases(language: &str, numbers: &[String]) -> Option<Vec<SlotPhrase>> {
+    spelled(language, 0)?;
 
-    std::iter::repeat_n(zero, zeros)
-        .chain(std::iter::once(number))
-        .collect::<Vec<_>>()
-        .join(" ")
+    Some(
+        numbers
+            .iter()
+            .filter_map(|digits| {
+                car_number_words(language, digits).map(|words| SlotPhrase {
+                    words,
+                    value: SlotValue::Digits(digits.clone()),
+                })
+            })
+            .collect(),
+    )
+}
+
+/// A car number's words as the recogniser hears them: each leading zero said,
+/// then the rest as one number — "33" is "thirty three", "033" is "zero
+/// thirty three", "512" is "five hundred twelve".
+fn car_number_words(language: &str, digits: &str) -> Option<Vec<String>> {
+    let is_car_number = !digits.is_empty()
+        && digits.len() <= MAX_CAR_NUMBER_DIGITS
+        && digits.chars().all(|digit| digit.is_ascii_digit());
+
+    if !is_car_number {
+        return None;
+    }
+
+    let rest = digits.trim_start_matches(ZERO_DIGIT);
+    let rest = if rest.is_empty() {
+        &digits[digits.len() - 1..]
+    } else {
+        rest
+    };
+    let zeros = digits.len() - rest.len();
+    let zero = spelled(language, 0)?;
+    let number = spelled(language, rest.parse().ok()?)?;
+    let mut words = vec![zero; zeros];
+
+    words.extend(number.split(' ').map(str::to_string));
+
+    Some(words)
+}
+
+/// A car number as the reply says it, the way it is heard. What the language
+/// has no words for is left to the synthesiser as it is.
+pub fn spoken_car_number(language: &str, digits: &str) -> String {
+    let Some(words) = car_number_words(language, digits) else {
+        return digits.to_string();
+    };
+    let separator = if UNSPACED_LANGUAGES.contains(&language) {
+        ""
+    } else {
+        " "
+    };
+
+    words.join(separator)
 }
 
 #[cfg(test)]
@@ -366,12 +407,29 @@ mod tests {
             Some(SlotValue::Digits("007".into()))
         );
         assert_eq!(heard("ноль"), Some(SlotValue::Digits("0".into())));
-        assert_eq!(
-            heard("пятьсот двенадцать"),
-            Some(SlotValue::Digits("512".into()))
-        );
         assert_eq!(heard("ноль сто"), None);
+        assert_eq!(heard("пятьсот двенадцать"), None);
         assert_eq!(car_number_phrases("xx"), None);
+    }
+
+    #[test]
+    fn hears_only_the_numbers_the_session_cars_wear() {
+        let numbers = ["512", "07", "33", "12A", "1234", ""].map(String::from);
+        let phrases = session_car_number_phrases("ru", &numbers).unwrap();
+        let said: Vec<(String, SlotValue)> = phrases
+            .into_iter()
+            .map(|phrase| (phrase.words.join(" "), phrase.value))
+            .collect();
+
+        assert_eq!(
+            said,
+            [
+                ("пятьсот двенадцать".into(), SlotValue::Digits("512".into())),
+                ("ноль семь".into(), SlotValue::Digits("07".into())),
+                ("тридцать три".into(), SlotValue::Digits("33".into())),
+            ]
+        );
+        assert_eq!(session_car_number_phrases("xx", &numbers), None);
     }
 
     #[test]
@@ -387,8 +445,10 @@ mod tests {
         assert_eq!(spoken_car_number("ru", "999"), "девятьсот девяносто девять");
         assert_eq!(spoken_car_number("es", "500"), "quinientos");
         assert_eq!(spoken_car_number("es", "701"), "setecientos uno");
-        assert_eq!(spoken_car_number("zh", "305"), "三 百 零 五");
-        assert_eq!(spoken_car_number("xx", "07"), "0 7");
+        assert_eq!(spoken_car_number("zh", "305"), "三百零五");
+        assert_eq!(spoken_car_number("zh", "250"), "两百五十");
+        assert_eq!(spoken_car_number("zh", "07"), "零七");
+        assert_eq!(spoken_car_number("xx", "07"), "07");
     }
 
     #[test]
@@ -438,7 +498,7 @@ mod tests {
         assert_eq!(spoken("zh", 45).as_deref(), Some("四 十 五"));
         assert_eq!(spoken("zh", 105).as_deref(), Some("一 百 零 五"));
         assert_eq!(spoken("zh", 110).as_deref(), Some("一 百 一 十"));
-        assert_eq!(spoken("zh", 200).as_deref(), Some("二 百"));
+        assert_eq!(spoken("zh", 200).as_deref(), Some("两 百"));
     }
 
     #[test]

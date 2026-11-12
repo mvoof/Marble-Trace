@@ -34,7 +34,7 @@ use crate::pack::catalog::{
     intent_named, phrase_key, slot_kind, SlotKind, ASK_WHEN_UNSAID, INTENTS, NUMBER_SLOT,
     PHRASE_KEYS,
 };
-use crate::pack::grammar::{compile, CommandGrammar, Recognised};
+use crate::pack::grammar::{compile, compile_for_cars, CommandGrammar, Recognised};
 use crate::pack::message::{format, parse as parse_message, values_used, Args, Part};
 use crate::pack::questions::{answer_mistake, AnswerList};
 use crate::pack::sayings::sayings;
@@ -310,6 +310,12 @@ impl LanguagePack {
 
     pub fn text(&self, saying: &Saying, args: &Args<'_>) -> Option<String> {
         format(&saying.message, &self.language, args).ok()
+    }
+
+    /// Hears a car number only as one of `cars` wears it; `None`, with no
+    /// session known, as any number. The pack's issues stay those of `load`.
+    pub fn hear_cars(&mut self, cars: Option<&[String]>) {
+        self.grammar = compile_for_cars(&self.language, &self.commands_file, cars).0;
     }
 }
 

@@ -1376,7 +1376,8 @@
       },
       "values": "Values you can name",
       "number": "number",
-      "numberNote": "A number from 0 to {{max}}, said in words: “forty”, “one hundred twenty”."
+      "numberNote": "A number from 0 to {{max}}, said in words: “forty”, “one hundred twenty”.",
+      "carNumberNote": "A car number is said the way it is painted: “thirty three”, “zero seven”, “five hundred twelve”. Only the cars in the session are heard."
     }
   }
 }

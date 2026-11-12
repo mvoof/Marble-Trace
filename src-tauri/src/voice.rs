@@ -89,6 +89,10 @@ impl CrewSink for VoiceCrewState {
     fn reply(&self, reply: CrewReply) {
         self.crew().on_reply(&reply);
     }
+
+    fn cars(&self, numbers: Vec<String>) {
+        self.crew().set_cars(numbers);
+    }
 }
 
 struct AppCrewHost {

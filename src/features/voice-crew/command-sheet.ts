@@ -282,7 +282,7 @@ const valuesHtml = (pack: VoicePackView, text: SheetText): string => {
       return `<div class="slot"><h3>${placeholder(slot.slot, text)}</h3><ul>${values}</ul></div>`;
     })
     .join('');
-  const number = `<div class="slot"><h3>${placeholder(NUMBER_SLOT, text)}</h3><p>${escapeHtml(t('crewPage.cheatSheet.numberNote', { max: VOICE_MAX_NUMBER_SLOT_VALUE }))}</p></div>`;
+  const number = `<div class="slot"><h3>${placeholder(NUMBER_SLOT, text)}</h3><p>${escapeHtml(t('crewPage.cheatSheet.numberNote', { max: VOICE_MAX_NUMBER_SLOT_VALUE }))}</p><p>${escapeHtml(t('crewPage.cheatSheet.carNumberNote'))}</p></div>`;
 
   return `<section><h2>${escapeHtml(t('crewPage.cheatSheet.values'))}</h2><div class="slots">${number}${slots}</div></section>`;
 };

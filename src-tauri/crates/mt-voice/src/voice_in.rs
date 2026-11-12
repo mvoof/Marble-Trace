@@ -229,8 +229,33 @@ impl<E: VoiceInEvents> Ear<E> {
             return;
         }
 
-        if let Err(message) = self.model() {
-            tracing::warn!(%message, "speech recognition did not start");
+        let model = match self.model() {
+            Ok(model) => model,
+            Err(message) => {
+                tracing::warn!(%message, "speech recognition did not start");
+                return;
+            }
+        };
+
+        // A new grammar between presses — the session's cars changed — is
+        // built now, so the next press does not wait for it.
+        let Some(ready) = self.recognizer.as_mut() else {
+            return;
+        };
+
+        if self.capture.is_some() || ready.grammar == self.config.grammar {
+            return;
+        }
+
+        match Recognizer::new(&model, ready.sample_rate, &self.config.grammar) {
+            Ok(recognizer) => {
+                ready.recognizer = recognizer;
+                ready.grammar = self.config.grammar.clone();
+            }
+            Err(message) => {
+                tracing::warn!(%message, "speech recognition grammar not rebuilt");
+                self.recognizer = None;
+            }
         }
     }
 
