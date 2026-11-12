@@ -3,7 +3,8 @@
 //!
 //! Only whole numbers up to `MAX_SPOKEN_NUMBER`: every one of them is a branch
 //! of each command that takes a number, and nothing a driver orders by voice —
-//! liters of fuel — goes past it.
+//! liters of fuel — goes past it. Car numbers have their own limit: iRacing's
+//! 999.
 
 use crate::pack::template::{SlotPhrase, SlotValue};
 
@@ -12,6 +13,7 @@ pub use mt_model::contract::defaults::MAX_SPOKEN_NUMBER;
 const MAX_LEADING_ZEROS: usize = 2;
 /// iRacing's longest car number.
 const MAX_CAR_NUMBER_DIGITS: usize = 3;
+const MAX_CAR_NUMBER: u32 = 999;
 const ZERO_DIGIT: char = '0';
 
 const RU_UNITS: [&str; 20] = [
@@ -48,7 +50,18 @@ const RU_TENS: [&str; 10] = [
     "восемьдесят",
     "девяносто",
 ];
-const RU_HUNDREDS: [&str; 3] = ["", "сто", "двести"];
+const RU_HUNDREDS: [&str; 10] = [
+    "",
+    "сто",
+    "двести",
+    "триста",
+    "четыреста",
+    "пятьсот",
+    "шестьсот",
+    "семьсот",
+    "восемьсот",
+    "девятьсот",
+];
 
 const EN_UNITS: [&str; 20] = [
     "zero",
@@ -75,7 +88,18 @@ const EN_UNITS: [&str; 20] = [
 const EN_TENS: [&str; 10] = [
     "", "", "twenty", "thirty", "forty", "fifty", "sixty", "seventy", "eighty", "ninety",
 ];
-const EN_HUNDREDS: [&str; 3] = ["", "one hundred", "two hundred"];
+const EN_HUNDREDS: [&str; 10] = [
+    "",
+    "one hundred",
+    "two hundred",
+    "three hundred",
+    "four hundred",
+    "five hundred",
+    "six hundred",
+    "seven hundred",
+    "eight hundred",
+    "nine hundred",
+];
 
 /// Spanish says every number below thirty as one word.
 const ES_UNITS: [&str; 30] = [
@@ -110,6 +134,19 @@ const ES_UNITS: [&str; 30] = [
     "veintiocho",
     "veintinueve",
 ];
+/// "cien" alone, "ciento" before more.
+const ES_HUNDREDS: [&str; 10] = [
+    "",
+    "ciento",
+    "doscientos",
+    "trescientos",
+    "cuatrocientos",
+    "quinientos",
+    "seiscientos",
+    "setecientos",
+    "ochocientos",
+    "novecientos",
+];
 const ES_TENS: [&str; 10] = [
     "",
     "",
@@ -130,7 +167,7 @@ const ZH_HUNDRED: &str = "百";
 struct NumberWords {
     units: [&'static str; 20],
     tens: [&'static str; 10],
-    hundreds: [&'static str; 3],
+    hundreds: [&'static str; 10],
 }
 
 const RU: NumberWords = NumberWords {
@@ -147,6 +184,15 @@ const EN: NumberWords = NumberWords {
 /// The number's words, or `None` for a language with no built-in dictionary.
 pub fn spoken(language: &str, number: u32) -> Option<String> {
     if number > MAX_SPOKEN_NUMBER {
+        return None;
+    }
+
+    spelled(language, number)
+}
+
+/// Any number below a thousand: car numbers go past `MAX_SPOKEN_NUMBER`.
+fn spelled(language: &str, number: u32) -> Option<String> {
+    if number > MAX_CAR_NUMBER {
         return None;
     }
 
@@ -195,10 +241,9 @@ fn spell_spanish(number: u32) -> String {
     let mut parts: Vec<&str> = Vec::new();
 
     match (hundreds, rest) {
+        (0, _) => {}
         (1, 0) => parts.push("cien"),
-        (1, _) => parts.push("ciento"),
-        (2, _) => parts.push("doscientos"),
-        _ => {}
+        _ => parts.push(ES_HUNDREDS[hundreds as usize]),
     }
 
     if rest >= ES_UNITS.len() {
@@ -252,11 +297,11 @@ pub fn number_phrases(language: &str) -> Option<Vec<SlotPhrase>> {
 /// Every car number the language can say: a number as it is ("nine" is
 /// `9`), or after its leading zeros ("zero nine" is `09`).
 pub fn car_number_phrases(language: &str) -> Option<Vec<SlotPhrase>> {
-    let zero = spoken(language, 0)?;
+    let zero = spelled(language, 0)?;
     let mut phrases = Vec::new();
 
     for zeros in 0..=MAX_LEADING_ZEROS {
-        for number in 0..=MAX_SPOKEN_NUMBER {
+        for number in 0..=MAX_CAR_NUMBER {
             let digits = format!("{}{number}", ZERO_DIGIT.to_string().repeat(zeros));
 
             if digits.len() > MAX_CAR_NUMBER_DIGITS {
@@ -265,7 +310,7 @@ pub fn car_number_phrases(language: &str) -> Option<Vec<SlotPhrase>> {
 
             let mut words = vec![zero.clone(); zeros];
 
-            words.extend(spoken(language, number)?.split(' ').map(str::to_string));
+            words.extend(spelled(language, number)?.split(' ').map(str::to_string));
             phrases.push(SlotPhrase {
                 words,
                 value: SlotValue::Digits(digits),
@@ -277,9 +322,9 @@ pub fn car_number_phrases(language: &str) -> Option<Vec<SlotPhrase>> {
 }
 
 /// A car number the way it is heard: each leading zero said, then the rest
-/// as one number — "33" is "thirty three", "033" is "zero thirty three". A
-/// number past `MAX_SPOKEN_NUMBER` is said digit by digit; what the language
-/// has no words for is left to the synthesiser as it is.
+/// as one number — "33" is "thirty three", "033" is "zero thirty three",
+/// "512" is "five hundred twelve". What the language has no words for is left
+/// to the synthesiser as it is.
 pub fn spoken_car_number(language: &str, digits: &str) -> String {
     let rest = digits.trim_start_matches(ZERO_DIGIT);
     let (zeros, rest) = if rest.is_empty() && !digits.is_empty() {
@@ -287,28 +332,15 @@ pub fn spoken_car_number(language: &str, digits: &str) -> String {
     } else {
         (digits.len() - rest.len(), rest)
     };
-    let zero = spoken(language, 0).unwrap_or_else(|| ZERO_DIGIT.to_string());
+    let zero = spelled(language, 0).unwrap_or_else(|| ZERO_DIGIT.to_string());
     let number = rest
         .parse::<u32>()
         .ok()
-        .and_then(|number| spoken(language, number))
-        .unwrap_or_else(|| spoken_digit_by_digit(language, rest));
+        .and_then(|number| spelled(language, number))
+        .unwrap_or_else(|| rest.to_string());
 
     std::iter::repeat_n(zero, zeros)
         .chain(std::iter::once(number))
-        .collect::<Vec<_>>()
-        .join(" ")
-}
-
-fn spoken_digit_by_digit(language: &str, digits: &str) -> String {
-    digits
-        .chars()
-        .map(|digit| {
-            digit
-                .to_digit(10)
-                .and_then(|value| spoken(language, value))
-                .unwrap_or_else(|| digit.to_string())
-        })
         .collect::<Vec<_>>()
         .join(" ")
 }
@@ -334,6 +366,10 @@ mod tests {
             Some(SlotValue::Digits("007".into()))
         );
         assert_eq!(heard("ноль"), Some(SlotValue::Digits("0".into())));
+        assert_eq!(
+            heard("пятьсот двенадцать"),
+            Some(SlotValue::Digits("512".into()))
+        );
         assert_eq!(heard("ноль сто"), None);
         assert_eq!(car_number_phrases("xx"), None);
     }
@@ -346,8 +382,12 @@ mod tests {
         assert_eq!(spoken_car_number("ru", "0"), "ноль");
         assert_eq!(spoken_car_number("ru", "00"), "ноль ноль");
         assert_eq!(spoken_car_number("en", "12"), "twelve");
-        assert_eq!(spoken_car_number("en", "512"), "five one two");
-        assert_eq!(spoken_car_number("ru", "0512"), "ноль пять один два");
+        assert_eq!(spoken_car_number("en", "512"), "five hundred twelve");
+        assert_eq!(spoken_car_number("ru", "512"), "пятьсот двенадцать");
+        assert_eq!(spoken_car_number("ru", "999"), "девятьсот девяносто девять");
+        assert_eq!(spoken_car_number("es", "500"), "quinientos");
+        assert_eq!(spoken_car_number("es", "701"), "setecientos uno");
+        assert_eq!(spoken_car_number("zh", "305"), "三 百 零 五");
         assert_eq!(spoken_car_number("xx", "07"), "0 7");
     }
 
