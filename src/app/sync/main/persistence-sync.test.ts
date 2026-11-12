@@ -119,7 +119,7 @@ describe('the last-good settings copy', () => {
     await root.appSettings.restoreLastGoodSettings();
 
     expect(updaterService.relaunchApp).toHaveBeenCalledTimes(1);
-    expect(root.appSettings.lastGoodRestoreFailed).toBe(false);
+    expect(root.appSettings.lastGoodRestoreStatus).toBe('idle');
   });
 
   it('stays and says so when a restore fails', async () => {
@@ -131,6 +131,17 @@ describe('the last-good settings copy', () => {
     await root.appSettings.restoreLastGoodSettings();
 
     expect(updaterService.relaunchApp).not.toHaveBeenCalled();
-    expect(root.appSettings.lastGoodRestoreFailed).toBe(true);
+    expect(root.appSettings.lastGoodRestoreStatus).toBe('failed');
+  });
+
+  it('drops the restore and asks for a restart when only the relaunch fails', async () => {
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    updaterService.relaunchApp.mockRejectedValueOnce('relaunch failed');
+    root.appSettings.setLastGoodSettingsSavedAt(LAST_GOOD_SAVED_AT);
+
+    await root.appSettings.restoreLastGoodSettings();
+
+    expect(root.appSettings.lastGoodRestoreStatus).toBe('restored');
+    expect(root.appSettings.lastGoodSettingsSavedAt).toBeNull();
   });
 });

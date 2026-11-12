@@ -250,12 +250,29 @@ mod tests {
     const TRUNCATED_CONTENT: &str = r#"{"settings":{"sche"#;
     const NOW_SECS: u64 = 1_700_000_000;
 
-    fn scratch_dir(name: &str) -> PathBuf {
+    /// A temporary directory removed when the test ends, a failing one included.
+    struct ScratchDir(PathBuf);
+
+    impl std::ops::Deref for ScratchDir {
+        type Target = Path;
+
+        fn deref(&self) -> &Path {
+            &self.0
+        }
+    }
+
+    impl Drop for ScratchDir {
+        fn drop(&mut self) {
+            let _ = std::fs::remove_dir_all(&self.0);
+        }
+    }
+
+    fn scratch_dir(name: &str) -> ScratchDir {
         let dir = std::env::temp_dir().join(format!("mt-settings-{name}-{}", std::process::id()));
         let _ = std::fs::remove_dir_all(&dir);
         std::fs::create_dir_all(&dir).expect("scratch dir");
 
-        dir
+        ScratchDir(dir)
     }
 
     fn read(dir: &Path, file: &str) -> String {

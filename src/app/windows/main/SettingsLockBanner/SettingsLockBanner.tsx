@@ -15,7 +15,7 @@ export const SettingsLockBanner = observer(() => {
   const appSettings = useAppSettingsStore();
   const { t, i18n } = useTranslation('main-app');
 
-  const { settingsLockReason, lastGoodSettingsSavedAt, lastGoodRestoreFailed } =
+  const { settingsLockReason, lastGoodSettingsSavedAt, lastGoodRestoreStatus } =
     appSettings;
 
   if (!settingsLockReason) return null;
@@ -27,6 +27,19 @@ export const SettingsLockBanner = observer(() => {
   const handleRestore = () => {
     void appSettings.restoreLastGoodSettings();
   };
+
+  // The file is back on disk and only the relaunch failed: a reset now would
+  // delete what was just restored, so no action is left but a manual restart.
+  if (lastGoodRestoreStatus === 'restored') {
+    return (
+      <Alert
+        title={t(`settingsLock.${settingsLockReason}.title`)}
+        description={t('settingsLock.restoredRestartRequired')}
+        type="warning"
+        showIcon
+      />
+    );
+  }
 
   const canRestore =
     settingsLockReason === 'corrupt' && lastGoodSettingsSavedAt !== null;
@@ -45,7 +58,9 @@ export const SettingsLockBanner = observer(() => {
                 i18n.language
               ),
             })}
-            {lastGoodRestoreFailed && <> {t('settingsLock.restoreFailed')}</>}
+            {lastGoodRestoreStatus === 'failed' && (
+              <> {t('settingsLock.restoreFailed')}</>
+            )}
           </>
         ) : (
           description

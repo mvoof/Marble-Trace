@@ -158,7 +158,10 @@ the first rename if the second fails, so a failed restore never leaves the
 directory without `settings.json`. The copy is moved, not copied: a start that
 loads it cleanly keeps it again, and one that locks on it has no copy to offer
 instead of the same one in a loop. A failed restore stays on the banner with a
-message; a successful one relaunches the app, and the restored file goes
+message. A restore whose relaunch fails keeps the session locked — its defaults
+must not be saved over the restored file — and the banner drops both actions
+(a reset would delete what was just restored) and asks for a manual restart. A
+successful one relaunches the app, and the restored file goes
 through the whole load pipeline, migrations included.
 
 **A locked main window closes its store handle** (`holdLockedSettings`). The

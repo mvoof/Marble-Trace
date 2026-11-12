@@ -36,6 +36,8 @@ export const resolveAppLanguage = (language: AppLanguage) =>
 /** The language the crew speaks; `app` follows the interface. */
 export type VoiceLanguage = 'app' | 'ru' | 'en' | 'es' | 'zh';
 
+export type LastGoodRestoreStatus = 'idle' | 'failed' | 'restored';
+
 export const DEFAULT_APP_SETTINGS = {
   // Interact mode: mouse events reach the overlay without unlocking widget
   // dragging. Whether its binding toggles or is held is a property of the
@@ -227,8 +229,12 @@ export class AppSettingsStore {
    */
   lastGoodSettingsSavedAt: number | null = null;
 
-  /** Whether the last attempt to restore the last-good copy failed. */
-  lastGoodRestoreFailed = false;
+  /**
+   * How the last restore of the last-good copy went. `restored` means the file
+   * is back on disk but the relaunch failed: the session stays locked — its
+   * defaults must not be saved over the restored file — and the user restarts.
+   */
+  lastGoodRestoreStatus: LastGoodRestoreStatus = 'idle';
 
   /**
    * The overlay's mouse modes. Owned by the hotkey dispatcher in the backend —
@@ -259,8 +265,8 @@ export class AppSettingsStore {
     this.lastGoodSettingsSavedAt = savedAt;
   }
 
-  setLastGoodRestoreFailed(failed: boolean) {
-    this.lastGoodRestoreFailed = failed;
+  setLastGoodRestoreStatus(status: LastGoodRestoreStatus) {
+    this.lastGoodRestoreStatus = status;
   }
 
   applySettings(saved: Partial<AppSettings>) {
@@ -373,20 +379,28 @@ export class AppSettingsStore {
    * unreadable file is kept aside rather than deleted.
    *
    * A failed restore leaves the files as they were and stays on this window,
-   * flagged for the banner, instead of relaunching into the same lock.
+   * flagged for the banner, instead of relaunching into the same lock. A
+   * restore whose relaunch fails has already moved the copy, so the banner
+   * drops its actions and asks for a manual restart.
    */
   async restoreLastGoodSettings() {
-    this.setLastGoodRestoreFailed(false);
+    this.setLastGoodRestoreStatus('idle');
 
     try {
       await restoreLastGoodSettings();
     } catch (error) {
       console.error('Failed to restore the last good settings:', error);
-      this.setLastGoodRestoreFailed(true);
+      this.setLastGoodRestoreStatus('failed');
 
       return;
     }
 
-    await relaunchApp();
+    try {
+      await relaunchApp();
+    } catch (error) {
+      console.error('Settings restored, but the relaunch failed:', error);
+      this.setLastGoodSettingsSavedAt(null);
+      this.setLastGoodRestoreStatus('restored');
+    }
   }
 }
