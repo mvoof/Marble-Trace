@@ -18,6 +18,8 @@ struct Sent {
 #[derive(Default)]
 struct RecordingSink {
     sent: Vec<Sent>,
+    /// The encoded strings the windows were handed, by label.
+    payloads: Vec<(String, String)>,
 }
 
 /// The remote hub, named so a test reads as what it asserts.
@@ -41,12 +43,13 @@ impl RecordingSink {
 }
 
 impl BundleSink for RecordingSink {
-    fn to_window(&mut self, label: &str, bundle: &EncodedBundle<'_>) {
-        self.record(label, bundle.bundle);
+    fn to_window(&mut self, label: &str, bundle: &TelemetryBundle, json: String) {
+        self.record(label, bundle);
+        self.payloads.push((label.to_owned(), json));
     }
 
-    fn broadcast(&mut self, bundle: &EncodedBundle<'_>) {
-        self.record(BROADCAST_LABEL, bundle.bundle);
+    fn broadcast(&mut self, bundle: &TelemetryBundle, _json: String) {
+        self.record(BROADCAST_LABEL, bundle);
     }
 
     fn to_remote(&mut self, bundle: &EncodedBundle<'_>) {
@@ -176,6 +179,15 @@ fn identical_masks_are_serialized_once_and_sent_to_both() {
     // the windows rather than every row the sink holds.
     assert_eq!(harness.sink.to("overlay-left").len(), 1);
     assert_eq!(harness.sink.to("overlay-right").len(), 1);
+
+    // The last window is handed the encoded string itself, the others a copy:
+    // all of them the same whole bundle.
+    let [(_, left), (_, right)] = harness.sink.payloads.as_slice() else {
+        panic!("expected one payload per window");
+    };
+
+    assert!(!left.is_empty());
+    assert_eq!(left, right);
     assert_eq!(
         harness.sink.to(REMOTE_TARGET).len(),
         1,

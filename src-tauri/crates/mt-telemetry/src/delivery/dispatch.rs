@@ -14,6 +14,7 @@
 
 use std::collections::HashMap;
 
+use crate::bundle::TelemetryBundle;
 use crate::delivery::counters::BROADCAST_LABEL;
 use crate::delivery::encoded::EncodedBundle;
 use crate::delivery::masks::{BOOTSTRAP_LABEL, REMOTE_LABEL};
@@ -124,9 +125,12 @@ pub fn feeds_remote(groups: &[DeliveryGroup], group: &DeliveryGroup) -> bool {
 /// Where a delivered bundle actually goes. A seam rather than calls in place,
 /// so the grouping can be driven in a unit test and every recipient — the
 /// remote screens above all — asserted on.
+///
+/// The windows take the encoded string by value — the transport consumes it —
+/// so a group with one window hands over the string it encoded, uncopied.
 pub trait BundleSink {
-    fn to_window(&mut self, label: &str, bundle: &EncodedBundle<'_>);
-    fn broadcast(&mut self, bundle: &EncodedBundle<'_>);
+    fn to_window(&mut self, label: &str, bundle: &TelemetryBundle, json: String);
+    fn broadcast(&mut self, bundle: &TelemetryBundle, json: String);
     /// The remote screens' group — see [`feeds_remote`].
     fn to_remote(&mut self, bundle: &EncodedBundle<'_>);
 }

@@ -21,20 +21,14 @@ pub(crate) struct EventBundleSink<'a> {
 }
 
 impl BundleSink for EventBundleSink<'_> {
-    fn to_window(&mut self, label: &str, bundle: &EncodedBundle<'_>) {
-        if let Err(e) = self
-            .sink
-            .emit_json_to(label, EVENT_TELEMETRY_BUNDLE, bundle.json.clone())
-        {
+    fn to_window(&mut self, label: &str, _bundle: &TelemetryBundle, json: String) {
+        if let Err(e) = self.sink.emit_json_to(label, EVENT_TELEMETRY_BUNDLE, json) {
             warn!("Failed to emit telemetry bundle to {}: {}", label, e);
         }
     }
 
-    fn broadcast(&mut self, bundle: &EncodedBundle<'_>) {
-        if let Err(e) = self
-            .sink
-            .emit_json(EVENT_TELEMETRY_BUNDLE, bundle.json.clone())
-        {
+    fn broadcast(&mut self, _bundle: &TelemetryBundle, json: String) {
+        if let Err(e) = self.sink.emit_json(EVENT_TELEMETRY_BUNDLE, json) {
             warn!("Failed to emit telemetry bundle: {}", e);
         }
     }
@@ -65,7 +59,6 @@ pub(crate) fn deliver(
     let mut assembled = Some(assembled);
     let last = groups.len().saturating_sub(1);
     let live: Vec<u32> = groups.iter().map(|group| group.mask).collect();
-    let mut delivery = lock_or_recover(counters);
 
     publications.retain(&live);
 
@@ -108,23 +101,54 @@ pub(crate) fn deliver(
         };
         let size = Some(encoded.json.len());
 
-        for recipient in &group.recipients {
-            // Counted here rather than at assembly: what the counters answer is
-            // what went on the wire, after the mask and after the repeat
-            // suppression have both had their say.
-            delivery.record(recipient.label(), &bundle, size);
+        // Counted here rather than at assembly: what the counters answer is
+        // what went on the wire, after the mask and after the repeat
+        // suppression have both had their say. Counted before the emits, and
+        // under a lock held for the counting alone: a slow emit must not keep
+        // the diagnostics waiting.
+        {
+            let mut delivery = lock_or_recover(counters);
 
-            match recipient {
-                Recipient::Window(label) => sink.to_window(label, &encoded),
-                Recipient::Broadcast => sink.broadcast(&encoded),
-                // Fed below, whichever group stands in for the remote screens.
-                Recipient::Remote => {}
+            for recipient in &group.recipients {
+                delivery.record(recipient.label(), &bundle, size);
             }
         }
 
         if feeds_remote(&groups, group) {
             sink.to_remote(&encoded);
         }
+
+        let mut windows_left = group
+            .recipients
+            .iter()
+            .filter(|recipient| !matches!(recipient, Recipient::Remote))
+            .count();
+        let mut json = Some(encoded.json);
+
+        for recipient in &group.recipients {
+            match recipient {
+                Recipient::Window(label) => {
+                    sink.to_window(label, &bundle, hand_out(&mut json, &mut windows_left));
+                }
+                Recipient::Broadcast => {
+                    sink.broadcast(&bundle, hand_out(&mut json, &mut windows_left));
+                }
+                // Fed above, whichever group stands in for the remote screens.
+                Recipient::Remote => {}
+            }
+        }
+    }
+}
+
+/// The encoded string for the next window: a copy while others still wait for
+/// it, the string itself to the last.
+fn hand_out(json: &mut Option<String>, windows_left: &mut usize) -> String {
+    *windows_left = windows_left.saturating_sub(1);
+
+    if *windows_left == 0 {
+        json.take().unwrap_or_default()
+    } else {
+        json.clone().unwrap_or_default()
     }
 }
 
