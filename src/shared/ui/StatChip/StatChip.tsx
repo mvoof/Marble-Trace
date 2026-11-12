@@ -91,7 +91,6 @@ const SIZE_CLASS: Record<StatChipSize, string> = {
 
 interface WrittenChip {
   textElement: HTMLSpanElement;
-  className: string;
   toneColor: string | undefined;
   text: string;
 }
@@ -131,7 +130,7 @@ export const writeStatChip = (
     textElement.className = styles.leadText;
     element.replaceChildren(textElement);
 
-    written = { textElement, className: '', toneColor: undefined, text: '' };
+    written = { textElement, toneColor: undefined, text: '' };
     writtenChips.set(element, written);
     element.style.removeProperty('--chip-data');
   }
@@ -146,8 +145,9 @@ export const writeStatChip = (
     }
   }
 
-  if (written.className !== className) {
-    written.className = className;
+  // Compared with the node, not the record: a chip React rendered over has
+  // lost its class while the record still holds it.
+  if (element.className !== className) {
     element.className = className;
   }
 
@@ -155,6 +155,20 @@ export const writeStatChip = (
     written.text = text;
     written.textElement.textContent = text;
   }
+};
+
+/**
+ * Empties an element `writeStatChip` wrote, back to a bare span; a no-op on
+ * one that holds no chip, so a frame with nothing to show writes nothing.
+ */
+export const clearStatChip = (element: HTMLElement): void => {
+  if (!writtenChips.delete(element)) {
+    return;
+  }
+
+  element.className = '';
+  element.style.removeProperty('--chip-data');
+  element.replaceChildren();
 };
 
 const ICON_SIZE_PX = 12;

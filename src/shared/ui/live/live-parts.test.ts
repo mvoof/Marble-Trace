@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { createLiveParts, writeState } from './live-parts';
+import { createLiveParts, writeState, writeStyle } from './live-parts';
 
 // Only what the parts touch; there is no DOM in the test environment.
 const fakeElement = () => {
@@ -112,6 +112,19 @@ describe('createLiveParts', () => {
     parts.style('gear', 'color', null);
 
     expect(gear.writes).toEqual(['color=red', 'blink:true', '-color']);
+  });
+
+  it('shares one record with the write helpers for the same node', () => {
+    const parts = createLiveParts<'rail'>();
+    const rail = fakeElement();
+    parts.ref('rail')(rail.element);
+
+    parts.style('rail', 'color', 'red');
+    writeStyle(rail.element, 'color', 'red');
+    writeStyle(rail.element, 'color', 'blue');
+    parts.style('rail', 'color', 'blue');
+
+    expect(rail.writes).toEqual(['color=red', 'color=blue']);
   });
 });
 

@@ -387,6 +387,10 @@
           {
             "property": "closest",
             "message": "A hot write goes through the kit in shared/ui/live (useLiveParts, LiveText, writeText, writeStyle, writeState): named parts, state as a data-attribute, no DOM lookup inside a frame (docs/rendering.md)."
+          },
+          {
+            "property": "dataset",
+            "message": "A hot write goes through the kit in shared/ui/live (useLiveParts, LiveText, writeText, writeStyle, writeState): named parts, state as a data-attribute, no DOM lookup inside a frame (docs/rendering.md)."
           }
         ]
       }

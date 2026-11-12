@@ -67,13 +67,6 @@ export const CornerSpeeds = observer(() => {
             row.look !== 'mark' ? 'true' : null
           );
 
-          const signature = `${row.text}|${row.look}|${row.color}`;
-
-          // The class is checked too: a chip React rebuilt has lost it.
-          if (chip.dataset.shown === signature && chip.className !== '') {
-            return;
-          }
-
           writeStatChip(
             chip,
             'neutral',
@@ -82,7 +75,6 @@ export const CornerSpeeds = observer(() => {
             row.look,
             row.color
           );
-          chip.dataset.shown = signature;
         });
       });
     },

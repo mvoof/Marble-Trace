@@ -1,8 +1,12 @@
 import { observer } from 'mobx-react-lite';
 
 import { useReactiveDomWrite } from '@shared/hooks/useReactiveDomWrite';
-import { writeStatChip } from '@shared/ui/StatChip/StatChip';
-import { useLiveParts, type LiveParts } from '@shared/ui/live/live-parts';
+import { clearStatChip, writeStatChip } from '@shared/ui/StatChip/StatChip';
+import {
+  useLiveParts,
+  writeState,
+  type LiveParts,
+} from '@shared/ui/live/live-parts';
 import { usePlayerStore } from '@entities/player/player-context';
 import { useBackendComputedStore } from '@entities/cars/computed-context';
 
@@ -35,20 +39,16 @@ const colsForCount = (count: number): number => {
   return Math.min(count, MAX_COLUMNS);
 };
 
+/**
+ * A cell's delta: a stat chip, or nothing. `writeStatChip` and `writeState`
+ * each write only what changed, so an unchanged frame touches nothing.
+ */
 const writeDelta = (slot: HTMLElement, state: SectorChipState): void => {
   const { delta } = state;
-  const key = delta === null ? '' : `${delta.tone}|${delta.text}`;
-
-  if (slot.dataset['key'] === key) {
-    return;
-  }
-
-  slot.dataset['key'] = key;
 
   if (delta === null) {
-    slot.className = '';
-    delete slot.dataset['delta'];
-    slot.replaceChildren();
+    writeState(slot, 'delta', null);
+    clearStatChip(slot);
 
     return;
   }
@@ -60,7 +60,7 @@ const writeDelta = (slot: HTMLElement, state: SectorChipState): void => {
     delta.text,
     'reading'
   );
-  slot.dataset['delta'] = delta.isLive ? 'live' : 'chip';
+  writeState(slot, 'delta', delta.isLive ? 'live' : 'chip');
 };
 
 /**

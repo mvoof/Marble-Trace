@@ -14,7 +14,11 @@ import { useReactiveDomWrite } from '@shared/hooks/useReactiveDomWrite';
 import { cx } from '@shared/lib/class-names';
 import { computeRelativeGap } from '@shared/lib/driver';
 import { CountryFlag } from '@shared/ui/CountryFlag/CountryFlag';
-import { useLiveParts, writeText } from '@shared/ui/live/live-parts';
+import {
+  useLiveParts,
+  writeState,
+  writeText,
+} from '@shared/ui/live/live-parts';
 import {
   buildRelativeGridTemplate,
   resolveRowPosition,
@@ -96,9 +100,7 @@ export const DriverRow = observer(({ carIdx, index }: DriverRowProps) => {
 
         writeText(element, gapText);
 
-        if (element.dataset.sign !== gapSign) {
-          element.dataset.sign = gapSign;
-        }
+        writeState(element, 'sign', gapSign);
 
         parts.state('name', 'lap', lapState);
       });

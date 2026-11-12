@@ -5,18 +5,10 @@ export type LiveElement = HTMLElement | SVGElement;
 
 /** What a part was last written, per kind of write, so a frame allocates no key. */
 interface WrittenValues {
-  text: string | null;
   state: Map<string, string>;
   style: Map<string, string>;
   attribute: Map<string, string>;
   classes: Map<string, boolean>;
-}
-
-type KeyedWrite = 'state' | 'style' | 'attribute';
-
-interface LivePart {
-  element: LiveElement | null;
-  written: WrittenValues;
 }
 
 /**
@@ -45,56 +37,139 @@ export interface LiveParts<PartName extends string> {
 const ABSENT = '\u0000';
 
 const emptyWritten = (): WrittenValues => ({
-  text: null,
   state: new Map(),
   style: new Map(),
   attribute: new Map(),
   classes: new Map(),
 });
 
-const forgetWritten = (written: WrittenValues): void => {
-  written.text = null;
-  written.state.clear();
-  written.style.clear();
-  written.attribute.clear();
-  written.classes.clear();
+/**
+ * What each node was last written, whichever API wrote it — a part or a
+ * `write*` helper — so a node written through both is checked against one
+ * record. Keyed by the node: one that is replaced starts with nothing written.
+ */
+const writtenByElement = new WeakMap<LiveElement, WrittenValues>();
+
+const writtenOf = (element: LiveElement): WrittenValues => {
+  let written = writtenByElement.get(element);
+
+  if (!written) {
+    written = emptyWritten();
+    writtenByElement.set(element, written);
+  }
+
+  return written;
+};
+
+/** Whether `value` is new for `key`; records it if so. */
+const changedValue = (
+  written: Map<string, string>,
+  key: string,
+  value: string | null
+): boolean => {
+  const next = value ?? ABSENT;
+
+  if (written.get(key) === next) {
+    return false;
+  }
+
+  written.set(key, next);
+
+  return true;
+};
+
+/**
+ * The text of the element a reactive write targets, written only when it
+ * changed. Compared with the node itself, not a record: reading the text
+ * allocates nothing, and a re-render that replaced it is seen.
+ */
+export const writeText = (element: LiveElement, text: string): void => {
+  if (element.textContent !== text) {
+    element.textContent = text;
+  }
+};
+
+/**
+ * A style property of the element a reactive write targets, written only when
+ * it changed; `null` removes it.
+ */
+export const writeStyle = (
+  element: LiveElement,
+  property: string,
+  value: string | null
+): void => {
+  if (!changedValue(writtenOf(element).style, property, value)) {
+    return;
+  }
+
+  if (value === null) {
+    element.style.removeProperty(property);
+  } else {
+    element.style.setProperty(property, value);
+  }
+};
+
+/**
+ * A `data-*` state of the element a reactive write targets, written only when
+ * it changed; `null` removes it.
+ */
+export const writeState = (
+  element: LiveElement,
+  key: string,
+  value: string | null
+): void => {
+  if (!changedValue(writtenOf(element).state, key, value)) {
+    return;
+  }
+
+  if (value === null) {
+    delete element.dataset[key];
+  } else {
+    element.dataset[key] = value;
+  }
+};
+
+/** An attribute of the element, written only when it changed; `null` removes it. */
+const writeAttribute = (
+  element: LiveElement,
+  attribute: string,
+  value: string | null
+): void => {
+  if (!changedValue(writtenOf(element).attribute, attribute, value)) {
+    return;
+  }
+
+  if (value === null) {
+    element.removeAttribute(attribute);
+  } else {
+    element.setAttribute(attribute, value);
+  }
+};
+
+/** One class of the element, toggled only when it changed. */
+const toggleClassOf = (
+  element: LiveElement,
+  className: string,
+  isOn: boolean
+): void => {
+  const { classes } = writtenOf(element);
+
+  if (classes.get(className) === isOn) {
+    return;
+  }
+
+  classes.set(className, isOn);
+  element.classList.toggle(className, isOn);
 };
 
 export const createLiveParts = <
   PartName extends string,
 >(): LiveParts<PartName> => {
-  const partsByName = new Map<PartName, LivePart>();
+  const elementsByName = new Map<PartName, LiveElement | null>();
   const refsByName = new Map<PartName, (element: LiveElement | null) => void>();
 
-  const partOf = (name: PartName): LivePart => {
-    let part = partsByName.get(name);
-
-    if (!part) {
-      part = { element: null, written: emptyWritten() };
-      partsByName.set(name, part);
-    }
-
-    return part;
-  };
-
-  /** The node to write, or null when it is gone or already holds the value. */
-  const changedElement = (
-    name: PartName,
-    kind: KeyedWrite,
-    key: string,
-    value: string
-  ): LiveElement | null => {
-    const part = partOf(name);
-    const written = part.written[kind];
-
-    if (!part.element || written.get(key) === value) {
-      return null;
-    }
-
-    written.set(key, value);
-
-    return part.element;
-  };
+  const elementOf = (name: PartName): LiveElement | null =>
+    elementsByName.get(name) ?? null;
 
   return {
     ref: (name) => {
@@ -102,84 +177,58 @@ export const createLiveParts = <
 
       if (!ref) {
         ref = (element) => {
-          const part = partOf(name);
-
-          if (part.element === element) {
+          if (elementsByName.get(name) === element) {
             return;
           }
 
-          part.element = element;
-          forgetWritten(part.written);
+          elementsByName.set(name, element);
+
+          // A node handed in afresh may have been rendered over since it was
+          // last written.
+          if (element) {
+            writtenByElement.delete(element);
+          }
         };
         refsByName.set(name, ref);
       }
 
       return ref;
     },
-    elementOf: (name) => partsByName.get(name)?.element ?? null,
+    elementOf,
     text: (name, text) => {
-      const part = partOf(name);
+      const element = elementOf(name);
 
-      if (!part.element || part.written.text === text) {
-        return;
+      if (element) {
+        writeText(element, text);
       }
-
-      part.written.text = text;
-      part.element.textContent = text;
     },
     state: (name, key, value) => {
-      const element = changedElement(name, 'state', key, value ?? ABSENT);
+      const element = elementOf(name);
 
-      if (!element) {
-        return;
-      }
-
-      if (value === null) {
-        delete element.dataset[key];
-      } else {
-        element.dataset[key] = value;
+      if (element) {
+        writeState(element, key, value);
       }
     },
     style: (name, property, value) => {
-      const element = changedElement(name, 'style', property, value ?? ABSENT);
+      const element = elementOf(name);
 
-      if (!element) {
-        return;
-      }
-
-      if (value === null) {
-        element.style.removeProperty(property);
-      } else {
-        element.style.setProperty(property, value);
+      if (element) {
+        writeStyle(element, property, value);
       }
     },
     attribute: (name, attribute, value) => {
-      const element = changedElement(
-        name,
-        'attribute',
-        attribute,
-        value ?? ABSENT
-      );
+      const element = elementOf(name);
 
-      if (!element) {
-        return;
-      }
-
-      if (value === null) {
-        element.removeAttribute(attribute);
-      } else {
-        element.setAttribute(attribute, value);
+      if (element) {
+        writeAttribute(element, attribute, value);
       }
     },
     toggleClass: (name, className, isOn) => {
-      const part = partOf(name);
+      const element = elementOf(name);
 
-      if (!part.element || part.written.classes.get(className) === isOn) {
-        return;
+      if (element) {
+        toggleClassOf(element, className, isOn);
       }
-
-      part.written.classes.set(className, isOn);
-      part.element.classList.toggle(className, isOn);
     },
   };
 };
@@ -191,77 +240,4 @@ export const useLiveParts = <
   const [parts] = useState(() => createLiveParts<PartName>());
 
   return parts;
-};
-
-/** The text of the element a reactive write targets, written only when it changed. */
-export const writeText = (element: LiveElement, text: string): void => {
-  if (element.textContent !== text) {
-    element.textContent = text;
-  }
-};
-
-const writtenStyles = new WeakMap<LiveElement, Map<string, string>>();
-
-/**
- * A style property of the element a reactive write targets, written only when
- * it changed; `null` removes it.
- */
-export const writeStyle = (
-  element: LiveElement,
-  property: string,
-  value: string | null
-): void => {
-  let written = writtenStyles.get(element);
-
-  if (!written) {
-    written = new Map();
-    writtenStyles.set(element, written);
-  }
-
-  const next = value ?? ABSENT;
-
-  if (written.get(property) === next) {
-    return;
-  }
-
-  written.set(property, next);
-
-  if (value === null) {
-    element.style.removeProperty(property);
-  } else {
-    element.style.setProperty(property, value);
-  }
-};
-
-const writtenStates = new WeakMap<LiveElement, Map<string, string>>();
-
-/**
- * A `data-*` state of the element a reactive write targets, written only when
- * it changed; `null` removes it.
- */
-export const writeState = (
-  element: LiveElement,
-  key: string,
-  value: string | null
-): void => {
-  let written = writtenStates.get(element);
-
-  if (!written) {
-    written = new Map();
-    writtenStates.set(element, written);
-  }
-
-  const next = value ?? ABSENT;
-
-  if (written.get(key) === next) {
-    return;
-  }
-
-  written.set(key, next);
-
-  if (value === null) {
-    delete element.dataset[key];
-  } else {
-    element.dataset[key] = value;
-  }
 };
