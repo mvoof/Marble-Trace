@@ -1,6 +1,8 @@
 import { runInAction } from 'mobx';
 import {
   backupSettingsFile as backupSettingsFileCommand,
+  keepLastGoodSettings as keepLastGoodSettingsCommand,
+  lastGoodSettingsSavedAt as lastGoodSettingsSavedAtCommand,
   logSettingsSnapshot as logSettingsSnapshotCommand,
   settingsFileExists as settingsFileExistsCommand,
 } from '@shared/api/settings.service';
@@ -150,6 +152,36 @@ export const backupSettingsFile = async (fromVersion: number) => {
     await backupSettingsFileCommand(`v${fromVersion}`);
   } catch (error) {
     console.error('Failed to back up settings before migrating:', error);
+  }
+};
+
+/**
+ * Copies a file that loaded and hydrated as it is to `settings.last-good.json`,
+ * the copy the lock banner offers back. Best effort: startup must not wait on a
+ * second file in the config directory.
+ */
+export const keepLastGoodSettings = async () => {
+  try {
+    await keepLastGoodSettingsCommand();
+  } catch (error) {
+    console.error('Failed to keep a last good copy of the settings:', error);
+  }
+};
+
+/**
+ * When the last-good copy was written, or `null` when there is none — or when
+ * the check fails, which leaves the banner as it is without a copy.
+ */
+export const findLastGoodSettings = async (): Promise<number | null> => {
+  try {
+    return await lastGoodSettingsSavedAtCommand();
+  } catch (error) {
+    console.error(
+      'Failed to look for a last good copy of the settings:',
+      error
+    );
+
+    return null;
   }
 };
 

@@ -6,6 +6,7 @@ import { getCurrentWindow } from '@tauri-apps/api/window';
 import { logSettingsSnapshot } from './persistence';
 import {
   createSaveHandle,
+  holdLockedSettings,
   hydrateFromDisk,
   readSettingsFile,
 } from './persistence-sync';
@@ -140,6 +141,8 @@ export const initMainSync = async (root: MainRoot) => {
       // would otherwise overwrite it with defaults within a second, which is
       // the exact loss the check exists to prevent.
       if (root.appSettings.settingsLocked) {
+        await holdLockedSettings(root, store);
+
         return () => {
           mainSyncInitPromise = null;
         };
