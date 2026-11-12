@@ -11,7 +11,7 @@ import type {
   VoicePackView,
 } from '@shared/contracts/generated/bindings';
 import {
-  VOICE_MAX_SPOKEN_NUMBER,
+  VOICE_MAX_NUMBER_SLOT_VALUE,
   VOICE_QUESTION_PREFIX,
 } from '@shared/contracts/generated/backend-constants';
 import { parseReplyBlocks, type ReplyBlock } from './reply-blocks';
@@ -282,7 +282,7 @@ const valuesHtml = (pack: VoicePackView, text: SheetText): string => {
       return `<div class="slot"><h3>${placeholder(slot.slot, text)}</h3><ul>${values}</ul></div>`;
     })
     .join('');
-  const number = `<div class="slot"><h3>${placeholder(NUMBER_SLOT, text)}</h3><p>${escapeHtml(t('crewPage.cheatSheet.numberNote', { max: VOICE_MAX_SPOKEN_NUMBER }))}</p></div>`;
+  const number = `<div class="slot"><h3>${placeholder(NUMBER_SLOT, text)}</h3><p>${escapeHtml(t('crewPage.cheatSheet.numberNote', { max: VOICE_MAX_NUMBER_SLOT_VALUE }))}</p></div>`;
 
   return `<section><h2>${escapeHtml(t('crewPage.cheatSheet.values'))}</h2><div class="slots">${number}${slots}</div></section>`;
 };

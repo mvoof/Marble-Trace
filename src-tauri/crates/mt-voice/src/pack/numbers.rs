@@ -1,14 +1,14 @@
 //! How the built-in languages say a number, for the `{number}` slot, and a
 //! car number as it is heard.
 //!
-//! Only whole numbers up to `MAX_SPOKEN_NUMBER`: every one of them is a branch
-//! of each command that takes a number, and nothing a driver orders by voice —
-//! liters of fuel — goes past it. Car numbers have their own limit: iRacing's
-//! 999.
+//! Only whole numbers up to `MAX_NUMBER_SLOT_VALUE`: every one of them is a
+//! branch of each command that takes a number, and nothing a driver orders by
+//! voice — liters of fuel — goes past it. Car numbers have their own limit:
+//! iRacing's 999.
 
 use crate::pack::template::{SlotPhrase, SlotValue};
 
-pub use mt_model::contract::defaults::MAX_SPOKEN_NUMBER;
+pub use mt_model::contract::defaults::MAX_NUMBER_SLOT_VALUE;
 /// "zero seven", "zero zero seven": iRacing numbers carry up to two.
 const MAX_LEADING_ZEROS: usize = 2;
 /// iRacing's longest car number.
@@ -183,14 +183,14 @@ const EN: NumberWords = NumberWords {
 
 /// The number's words, or `None` for a language with no built-in dictionary.
 pub fn spoken(language: &str, number: u32) -> Option<String> {
-    if number > MAX_SPOKEN_NUMBER {
+    if number > MAX_NUMBER_SLOT_VALUE {
         return None;
     }
 
     spelled(language, number)
 }
 
-/// Any number below a thousand: car numbers go past `MAX_SPOKEN_NUMBER`.
+/// Any number below a thousand: car numbers go past `MAX_NUMBER_SLOT_VALUE`.
 fn spelled(language: &str, number: u32) -> Option<String> {
     if number > MAX_CAR_NUMBER {
         return None;
@@ -284,7 +284,7 @@ fn spell(words: &NumberWords, number: u32) -> String {
 
 /// Every number the language can say, as the slot's phrases.
 pub fn number_phrases(language: &str) -> Option<Vec<SlotPhrase>> {
-    (0..=MAX_SPOKEN_NUMBER)
+    (0..=MAX_NUMBER_SLOT_VALUE)
         .map(|number| {
             spoken(language, number).map(|text| SlotPhrase {
                 words: text.split(' ').map(str::to_string).collect(),
@@ -443,7 +443,7 @@ mod tests {
 
     #[test]
     fn says_nothing_past_the_limit_or_in_an_unknown_language() {
-        assert_eq!(spoken("ru", MAX_SPOKEN_NUMBER + 1), None);
+        assert_eq!(spoken("ru", MAX_NUMBER_SLOT_VALUE + 1), None);
         assert_eq!(spoken("de", 1), None);
     }
 
@@ -451,7 +451,7 @@ mod tests {
     fn gives_one_phrase_per_number() {
         let phrases = number_phrases("en").unwrap();
 
-        assert_eq!(phrases.len(), MAX_SPOKEN_NUMBER as usize + 1);
+        assert_eq!(phrases.len(), MAX_NUMBER_SLOT_VALUE as usize + 1);
         assert_eq!(phrases[45].words, vec!["forty", "five"]);
     }
 }
