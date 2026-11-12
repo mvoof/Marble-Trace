@@ -71,7 +71,6 @@ pub enum TrackRelation {
 #[derive(Debug, Clone, PartialEq)]
 pub struct TrackNeighbour {
     pub number: String,
-    pub name: String,
     /// `None` in a session of one class.
     pub class_name: Option<String>,
     pub gap_s: f32,
@@ -424,8 +423,7 @@ fn tenths(seconds: f32) -> f64 {
     (f64::from(seconds) * 10.0).round() / 10.0
 }
 
-/// Who the nearest car on track is — number, name, class in a session of
-/// several — then how it stands to the player when that matters.
+/// Who the nearest car on track is — number, class in a session of several — then how it stands to the player when that matters.
 fn who_reply(car: Option<&TrackNeighbour>, side: &str) -> EngineerStep {
     let Some(car) = car else {
         return EngineerStep::Reply(CrewReply::plain(&format!(
@@ -441,7 +439,6 @@ fn who_reply(car: Option<&TrackNeighbour>, side: &str) -> EngineerStep {
         None => CrewReply::plain(&format!("engineer.answer.car{side}OnTrack")),
     }
     .arg("car", text(&car.number))
-    .arg("name", text(&car.name))
     .number("gap", tenths(car.gap_s));
     let relation = match car.relation {
         TrackRelation::Rival => Some(CrewReply::plain("engineer.answer.trackRival")),
@@ -629,7 +626,6 @@ pub fn track_neighbours(
             })
             .map(|(entry, car)| TrackNeighbour {
                 number: car.car_number.trim().to_string(),
-                name: car.user_name.trim().to_string(),
                 class_name: multiclass.then(|| car.car_class_short_name.trim().to_string()),
                 gap_s: relative_gap(entry, player).abs(),
                 relation: track_relation(entry, player),
@@ -1167,7 +1163,6 @@ mod tests {
         let view = EngineerView {
             car_ahead_on_track: Some(TrackNeighbour {
                 number: "09".into(),
-                name: "Driver 4".into(),
                 class_name: None,
                 gap_s: 1.26,
                 relation: TrackRelation::Lapped(1),

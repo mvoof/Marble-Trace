@@ -66,6 +66,8 @@ pub struct LoopState {
     pub pending_pit_actions: Vec<PitAction>,
     /// Voice requests waiting for this tick's frame.
     pub pending_crew: Vec<CrewIntent>,
+    /// The car numbers the crew was last told.
+    pub crew_cars: Vec<String>,
     /// Questions the Crew tab previews, each with where its answers go.
     pub pending_previews: Vec<(CrewIntent, SyncSender<Vec<CrewReply>>)>,
     /// Chat commands, each with where its reply goes.
@@ -113,6 +115,7 @@ impl LoopState {
             pressure_dial: PressureDial::default(),
             pending_pit_actions: Vec::new(),
             pending_crew: Vec::new(),
+            crew_cars: Vec::new(),
             pending_previews: Vec::new(),
             pending_chat: Vec::new(),
             last_race: None,

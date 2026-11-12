@@ -9,7 +9,7 @@ use mt_computations::crew::engineer::{
 use mt_computations::crew::questions::QuestionView;
 use mt_computations::field::driver_entries::DriverEntry;
 use mt_model::app::crew::{CrewIntent, CrewReply, CrewSink};
-use mt_model::sim::session::SessionSnapshot;
+use mt_model::sim::session::{CarEntry, SessionSnapshot};
 use mt_source::{PitCommander, SourceFrame};
 
 use crate::bundle::TelemetryBundle;
@@ -41,8 +41,11 @@ pub fn run_crew(
 
     let Some(crew) = crew else {
         state.pending_crew.clear();
+        state.crew_cars.clear();
         return;
     };
+
+    tell_cars(crew, session, &mut state.crew_cars);
 
     if state.pending_crew.is_empty() {
         return;
@@ -105,6 +108,34 @@ pub fn run_crew(
         };
 
         crew.reply(reply);
+    }
+}
+
+/// Tells the crew the numbers the session's cars wear when they change; the
+/// same cars cost a comparison, nothing allocated.
+fn tell_cars(crew: &dyn CrewSink, session: Option<&SessionSnapshot>, told: &mut Vec<String>) {
+    let racing =
+        |car: &&CarEntry| !car.is_pace_car && !car.is_spectator && !car.user_name.is_empty();
+    let numbers = || {
+        session
+            .into_iter()
+            .flat_map(|session| session.cars.iter().filter(racing))
+            .map(|car| car.car_number.trim())
+    };
+
+    if numbers().eq(told.iter().map(String::as_str)) {
+        return;
+    }
+
+    *told = numbers().map(str::to_string).collect();
+    crew.cars(told.clone());
+}
+
+/// The connection dropped: with no session the crew hears no car numbers.
+pub fn forget_cars(crew: Option<&dyn CrewSink>, told: &mut Vec<String>) {
+    match crew {
+        Some(crew) => tell_cars(crew, None, told),
+        None => told.clear(),
     }
 }
 
@@ -243,4 +274,81 @@ fn car_views(entries: &[DriverEntry], session: Option<&SessionSnapshot>) -> Vec<
             })
         })
         .collect()
+}
+
+#[cfg(test)]
+mod tests {
+    use std::sync::Mutex;
+
+    use super::*;
+
+    #[derive(Default)]
+    struct ToldCars(Mutex<Vec<Vec<String>>>);
+
+    impl CrewSink for ToldCars {
+        fn reply(&self, _reply: CrewReply) {}
+
+        fn cars(&self, numbers: Vec<String>) {
+            self.0.lock().unwrap().push(numbers);
+        }
+    }
+
+    fn session(numbers: &[&str]) -> SessionSnapshot {
+        let car = |number: &&str| CarEntry {
+            car_number: format!(" {number} "),
+            user_name: format!("Driver {number}"),
+            ..CarEntry::default()
+        };
+        let pace_car = CarEntry {
+            car_number: "0".into(),
+            user_name: "Pace Car".into(),
+            is_pace_car: true,
+            ..CarEntry::default()
+        };
+
+        SessionSnapshot {
+            cars: numbers.iter().map(car).chain([pace_car]).collect(),
+            ..SessionSnapshot::default()
+        }
+    }
+
+    #[test]
+    fn tells_the_crew_the_cars_numbers_only_when_they_change() {
+        let crew = ToldCars::default();
+        let mut told = Vec::new();
+        let field = session(&["7", "512"]);
+        let joined = session(&["7", "512", "033"]);
+
+        tell_cars(&crew, Some(&field), &mut told);
+        tell_cars(&crew, Some(&field), &mut told);
+        tell_cars(&crew, Some(&joined), &mut told);
+        tell_cars(&crew, None, &mut told);
+        tell_cars(&crew, None, &mut told);
+
+        assert_eq!(
+            *crew.0.lock().unwrap(),
+            [
+                vec!["7".to_string(), "512".to_string()],
+                vec!["7".to_string(), "512".to_string(), "033".to_string()],
+                Vec::new(),
+            ]
+        );
+    }
+
+    #[test]
+    fn a_dropped_connection_takes_the_cars_numbers_away() {
+        let crew = ToldCars::default();
+        let mut told = Vec::new();
+
+        tell_cars(&crew, Some(&session(&["7"])), &mut told);
+        forget_cars(Some(&crew), &mut told);
+        forget_cars(Some(&crew), &mut told);
+
+        assert_eq!(*crew.0.lock().unwrap(), [vec!["7".to_string()], Vec::new()]);
+
+        told.push("7".into());
+        forget_cars(None, &mut told);
+
+        assert!(told.is_empty());
+    }
 }

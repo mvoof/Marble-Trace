@@ -126,7 +126,7 @@
     "compound": {
       "dry": ["dry", "slick", "slicks"],
       "wet": ["wet", "wets", "rain"],
-      "soft": ["soft"],
+      "soft": ["soft", "softs"],
       "medium": ["medium", "mediums"],
       "hard": ["hard", "hards"]
     }

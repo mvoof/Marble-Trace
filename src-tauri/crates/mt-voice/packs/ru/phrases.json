@@ -73,22 +73,22 @@
     ],
     "engineer.answer.carAheadOnTrack": [
       {
-        "text": "Впереди номер {car}, {name}, {gap, plural, one {# секунда} few {# секунды} many {# секунд} other {# секунды}}"
+        "text": "Впереди номер {car}, {gap, plural, one {# секунда} few {# секунды} many {# секунд} other {# секунды}}"
       }
     ],
     "engineer.answer.carBehindOnTrack": [
       {
-        "text": "Сзади номер {car}, {name}, {gap, plural, one {# секунда} few {# секунды} many {# секунд} other {# секунды}}"
+        "text": "Сзади номер {car}, {gap, plural, one {# секунда} few {# секунды} many {# секунд} other {# секунды}}"
       }
     ],
     "engineer.answer.carAheadOnTrackClass": [
       {
-        "text": "Впереди номер {car}, {name}, {className}, {gap, plural, one {# секунда} few {# секунды} many {# секунд} other {# секунды}}"
+        "text": "Впереди номер {car}, {className}, {gap, plural, one {# секунда} few {# секунды} many {# секунд} other {# секунды}}"
       }
     ],
     "engineer.answer.carBehindOnTrackClass": [
       {
-        "text": "Сзади номер {car}, {name}, {className}, {gap, plural, one {# секунда} few {# секунды} many {# секунд} other {# секунды}}"
+        "text": "Сзади номер {car}, {className}, {gap, plural, one {# секунда} few {# секунды} many {# секунд} other {# секунды}}"
       }
     ],
     "engineer.answer.noCarAheadOnTrack": [
@@ -146,7 +146,7 @@
     ],
     "engineer.answer.carPosition": [
       { "text": "Номер {car} — {position} в классе" },
-      { "text": "{car}-й идёт {position}" }
+      { "text": "Номер {car} идёт {position}" }
     ],
     "engineer.answer.carLastLap": [
       { "text": "У номера {car} последний круг {minutes} {seconds}" }

@@ -33,17 +33,15 @@
     "engineer.answer.noCarBehind": [{ "text": "后面没有车" }],
     "engineer.answer.lapsAhead": [{ "text": "前车领先{laps}圈" }],
     "engineer.answer.lapsBehind": [{ "text": "后车落后{laps}圈" }],
-    "engineer.answer.carAheadOnTrack": [
-      { "text": "前面是{car}号，{name}，差{gap}秒" }
-    ],
+    "engineer.answer.carAheadOnTrack": [{ "text": "前面是{car}号，差{gap}秒" }],
     "engineer.answer.carBehindOnTrack": [
-      { "text": "后面是{car}号，{name}，差{gap}秒" }
+      { "text": "后面是{car}号，差{gap}秒" }
     ],
     "engineer.answer.carAheadOnTrackClass": [
-      { "text": "前面是{car}号，{name}，{className}，差{gap}秒" }
+      { "text": "前面是{car}号，{className}，差{gap}秒" }
     ],
     "engineer.answer.carBehindOnTrackClass": [
-      { "text": "后面是{car}号，{name}，{className}，差{gap}秒" }
+      { "text": "后面是{car}号，{className}，差{gap}秒" }
     ],
     "engineer.answer.noCarAheadOnTrack": [{ "text": "赛道上前面没有车" }],
     "engineer.answer.noCarBehindOnTrack": [{ "text": "赛道上后面没有车" }],

@@ -1026,7 +1026,7 @@
         "carNeedsTarget": "Elige el coche por el que pregunta para ver sus campos.",
         "names": {
           "name": "Nombre del piloto",
-          "number": "Número del coche, cifra a cifra",
+          "number": "Número del coche",
           "carName": "Modelo del coche",
           "className": "Clase",
           "position": "Posición general",
@@ -1376,7 +1376,8 @@
       },
       "values": "Valores que puedes nombrar",
       "number": "número",
-      "numberNote": "Un número del 0 al {{max}}, dicho con palabras: «cuarenta», «ciento veinte»."
+      "numberNote": "Un número del 0 al {{max}}, dicho con palabras: «cuarenta», «ciento veinte».",
+      "carNumberNote": "El número de un coche se dice tal como está pintado: «treinta y tres», «cero siete», «quinientos doce». Solo se oyen los coches de la sesión."
     }
   }
 }

@@ -76,9 +76,10 @@ export const VOICE_CHAT_MACRO_ACTION = 'chat.macro';
 export const VOICE_CHAT_MACRO_COUNT = 15;
 
 /**
- * The largest number the `{number}` slot hears, said in words.
+ * The largest number the `{number}` slot hears, said in words: liters,
+ * positions. A car number has its own limit, iRacing's 999.
  */
-export const VOICE_MAX_SPOKEN_NUMBER = 200;
+export const VOICE_MAX_NUMBER_SLOT_VALUE = 200;
 
 /**
  * Distance buckets a reference lap is recorded into: index `i` covers
