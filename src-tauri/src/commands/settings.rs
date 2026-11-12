@@ -24,22 +24,20 @@ pub async fn log_settings_snapshot(settings: Value) -> Result<(), String> {
     Ok(())
 }
 
-/// Whether `settings.json` exists on disk with content in it.
+/// Whether `settings.json` exists on disk, empty or not.
 ///
 /// `tauri-plugin-store` hands the frontend an empty store both for a fresh
 /// install and for a file it could not parse — a stray BOM, a truncated write.
 /// Those two need opposite responses, and only the filesystem can tell them
 /// apart: the first should be seeded with defaults, the second must never be
-/// written over.
+/// written over. A zero-byte file is the second: the plugin's `fs::write`
+/// truncates before it writes, so a save cut short most often leaves exactly
+/// that — and seeding defaults over it would, one start later, replace the
+/// last-good copy with them.
 #[tauri::command]
 pub async fn settings_file_exists(app: AppHandle) -> Result<bool, String> {
-    let dir = app
-        .path()
-        .app_config_dir()
-        .map_err(|e| format!("no config dir: {e}"))?;
-
-    Ok(std::fs::metadata(dir.join("settings.json"))
-        .map(|meta| meta.is_file() && meta.len() > 0)
+    Ok(std::fs::metadata(config_dir(&app)?.join(SETTINGS_FILE))
+        .map(|meta| meta.is_file())
         .unwrap_or(false))
 }
 
@@ -55,12 +53,8 @@ pub async fn backup_settings_file(app: AppHandle, suffix: String) -> Result<(), 
         return Err(format!("refusing suffix {suffix:?}"));
     }
 
-    let dir = app
-        .path()
-        .app_config_dir()
-        .map_err(|e| format!("no config dir: {e}"))?;
-
-    let source = dir.join("settings.json");
+    let dir = config_dir(&app)?;
+    let source = dir.join(SETTINGS_FILE);
 
     if !source.exists() {
         return Ok(());
@@ -87,7 +81,7 @@ pub async fn keep_last_good_settings(app: AppHandle) -> Result<(), String> {
 }
 
 /// When the last-good copy was written, in milliseconds since the Unix epoch,
-/// or `None` when there is none.
+/// or `None` when there is none or it holds no settings document.
 #[tauri::command]
 pub async fn last_good_settings_saved_at(app: AppHandle) -> Result<Option<u64>, String> {
     Ok(last_good_saved_at(&config_dir(&app)?))
@@ -95,6 +89,10 @@ pub async fn last_good_settings_saved_at(app: AppHandle) -> Result<Option<u64>, 
 
 /// Puts the last-good copy back as `settings.json`, keeping the unreadable file
 /// aside as `settings.corrupt-<unix seconds>.json` so it can still be sent to us.
+///
+/// The copy is moved, not copied: a start that loads it cleanly keeps it again,
+/// and one that locks on it finds no copy to offer, instead of offering the
+/// same one in a restore-and-relaunch loop.
 ///
 /// The caller relaunches the app afterwards, so the restored file goes through
 /// the whole load pipeline, migrations included. The store plugin must not hold
@@ -116,10 +114,45 @@ fn config_dir(app: &AppHandle) -> Result<PathBuf, String> {
         .map_err(|e| format!("no config dir: {e}"))
 }
 
+/// Whether the bytes are a store file holding a `settings` object — the shape
+/// `tauri-plugin-store` writes, and the least a copy needs to be worth offering.
+fn is_settings_document(bytes: &[u8]) -> bool {
+    serde_json::from_slice::<Value>(bytes)
+        .is_ok_and(|document| document.get("settings").is_some_and(Value::is_object))
+}
+
+/// Writes through a temporary file renamed into place, so an interrupted write
+/// leaves the old target whole instead of a truncated one.
+fn write_replacing(target: &Path, bytes: &[u8]) -> Result<(), String> {
+    let mut temporary_name = target.as_os_str().to_owned();
+    temporary_name.push(".tmp");
+    let temporary = PathBuf::from(temporary_name);
+
+    let written = std::fs::write(&temporary, bytes)
+        .and_then(|()| std::fs::rename(&temporary, target))
+        .map_err(|e| format!("write failed: {e}"));
+
+    if written.is_err() {
+        let _ = std::fs::remove_file(&temporary);
+    }
+
+    written
+}
+
+/// Writes the contents rather than `fs::copy`ing the file: a copy keeps the
+/// source's modification time on Windows, and the banner shows that time as
+/// when the copy was made.
 fn keep_last_good(dir: &Path) -> Result<(), String> {
+    let contents =
+        std::fs::read(dir.join(SETTINGS_FILE)).map_err(|e| format!("read failed: {e}"))?;
+
+    if !is_settings_document(&contents) {
+        return Err("live settings hold no settings document".to_owned());
+    }
+
     let target = dir.join(LAST_GOOD_FILE);
 
-    std::fs::copy(dir.join(SETTINGS_FILE), &target).map_err(|e| format!("copy failed: {e}"))?;
+    write_replacing(&target, &contents)?;
 
     info!("last good settings kept at {}", target.display());
 
@@ -127,35 +160,49 @@ fn keep_last_good(dir: &Path) -> Result<(), String> {
 }
 
 fn last_good_saved_at(dir: &Path) -> Option<u64> {
-    let modified = std::fs::metadata(dir.join(LAST_GOOD_FILE))
-        .ok()
-        .filter(|meta| meta.is_file() && meta.len() > 0)?
-        .modified()
-        .ok()?;
+    let last_good = dir.join(LAST_GOOD_FILE);
+    let contents = std::fs::read(&last_good).ok()?;
 
+    if !is_settings_document(&contents) {
+        return None;
+    }
+
+    let modified = std::fs::metadata(&last_good).ok()?.modified().ok()?;
     let since_epoch = modified.duration_since(UNIX_EPOCH).ok()?;
 
     u64::try_from(since_epoch.as_millis()).ok()
 }
 
+/// Two renames, each atomic: the live file aside, then the copy into its
+/// place. When the second fails the first is undone, so a failed restore never
+/// leaves the directory without `settings.json` — which the next start would
+/// read as a fresh install and seed with defaults.
 fn restore_last_good(dir: &Path, now_secs: u64) -> Result<(), String> {
     let last_good = dir.join(LAST_GOOD_FILE);
+    let contents =
+        std::fs::read(&last_good).map_err(|e| format!("no last good settings to restore: {e}"))?;
 
-    if !last_good.is_file() {
-        return Err("no last good settings to restore".to_owned());
+    if !is_settings_document(&contents) {
+        return Err("the last good copy holds no settings document".to_owned());
     }
 
     let live = dir.join(SETTINGS_FILE);
+    let aside = dir.join(format!("settings.corrupt-{now_secs}.json"));
+    let moved_aside = live.exists();
 
-    if live.exists() {
-        let aside = dir.join(format!("settings.corrupt-{now_secs}.json"));
-
+    if moved_aside {
         std::fs::rename(&live, &aside).map_err(|e| format!("move aside failed: {e}"))?;
 
         info!("unreadable settings moved to {}", aside.display());
     }
 
-    std::fs::copy(&last_good, &live).map_err(|e| format!("restore failed: {e}"))?;
+    if let Err(error) = std::fs::rename(&last_good, &live) {
+        if moved_aside {
+            let _ = std::fs::rename(&aside, &live);
+        }
+
+        return Err(format!("restore failed: {error}"));
+    }
 
     info!("settings restored from {}", last_good.display());
 
@@ -172,12 +219,7 @@ fn restore_last_good(dir: &Path, now_secs: u64) -> Result<(), String> {
 /// A missing file is a fresh install, which is exactly what a reset means.
 #[tauri::command]
 pub async fn delete_settings_file(app: AppHandle) -> Result<(), String> {
-    let dir = app
-        .path()
-        .app_config_dir()
-        .map_err(|e| format!("no config dir: {e}"))?;
-
-    let target = dir.join("settings.json");
+    let target = config_dir(&app)?.join(SETTINGS_FILE);
 
     match std::fs::remove_file(&target) {
         Ok(()) => {
@@ -221,10 +263,30 @@ mod tests {
 
         assert_eq!(read(&dir, LAST_GOOD_FILE), LAST_GOOD_CONTENT);
         assert!(last_good_saved_at(&dir).is_some());
+        assert!(!dir.join(format!("{LAST_GOOD_FILE}.tmp")).exists());
     }
 
     #[test]
-    fn restoring_puts_the_copy_back_and_keeps_the_broken_file_aside() {
+    fn keeping_refuses_a_live_file_without_settings() {
+        let dir = scratch_dir("keep-broken");
+        std::fs::write(dir.join(LAST_GOOD_FILE), LAST_GOOD_CONTENT).expect("write");
+        std::fs::write(dir.join(SETTINGS_FILE), TRUNCATED_CONTENT).expect("write");
+
+        assert!(keep_last_good(&dir).is_err());
+        assert_eq!(read(&dir, LAST_GOOD_FILE), LAST_GOOD_CONTENT);
+    }
+
+    #[test]
+    fn a_copy_without_settings_is_not_offered() {
+        let dir = scratch_dir("broken-copy");
+        std::fs::write(dir.join(LAST_GOOD_FILE), TRUNCATED_CONTENT).expect("write");
+
+        assert_eq!(last_good_saved_at(&dir), None);
+        assert!(restore_last_good(&dir, NOW_SECS).is_err());
+    }
+
+    #[test]
+    fn restoring_moves_the_copy_back_and_keeps_the_broken_file_aside() {
         let dir = scratch_dir("restore");
         std::fs::write(dir.join(LAST_GOOD_FILE), LAST_GOOD_CONTENT).expect("write");
         std::fs::write(dir.join(SETTINGS_FILE), TRUNCATED_CONTENT).expect("write");
@@ -232,7 +294,7 @@ mod tests {
         restore_last_good(&dir, NOW_SECS).expect("restored");
 
         assert_eq!(read(&dir, SETTINGS_FILE), LAST_GOOD_CONTENT);
-        assert_eq!(read(&dir, LAST_GOOD_FILE), LAST_GOOD_CONTENT);
+        assert!(!dir.join(LAST_GOOD_FILE).exists());
         assert_eq!(
             read(&dir, &format!("settings.corrupt-{NOW_SECS}.json")),
             TRUNCATED_CONTENT

@@ -15,7 +15,8 @@ export const SettingsLockBanner = observer(() => {
   const appSettings = useAppSettingsStore();
   const { t, i18n } = useTranslation('main-app');
 
-  const { settingsLockReason, lastGoodSettingsSavedAt } = appSettings;
+  const { settingsLockReason, lastGoodSettingsSavedAt, lastGoodRestoreFailed } =
+    appSettings;
 
   if (!settingsLockReason) return null;
 
@@ -44,6 +45,7 @@ export const SettingsLockBanner = observer(() => {
                 i18n.language
               ),
             })}
+            {lastGoodRestoreFailed && <> {t('settingsLock.restoreFailed')}</>}
           </>
         ) : (
           description

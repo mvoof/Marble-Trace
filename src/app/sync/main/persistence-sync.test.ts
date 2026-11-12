@@ -29,6 +29,15 @@ vi.mock('@shared/api/events.service', () => ({
 
 vi.mock('@tauri-apps/plugin-store', () => ({ load: vi.fn() }));
 
+const updaterService = vi.hoisted(() => ({
+  relaunchApp: vi.fn(() => Promise.resolve()),
+}));
+
+vi.mock('@shared/api/updater.service', async (importOriginal) => ({
+  ...(await importOriginal<object>()),
+  ...updaterService,
+}));
+
 const { hydrateFromDisk, holdLockedSettings } =
   await import('./persistence-sync');
 
@@ -104,5 +113,24 @@ describe('the last-good settings copy', () => {
     expect(fileHandle.close).toHaveBeenCalledTimes(1);
     expect(settingsService.lastGoodSettingsSavedAt).not.toHaveBeenCalled();
     expect(root.appSettings.lastGoodSettingsSavedAt).toBeNull();
+  });
+
+  it('relaunches after a restore', async () => {
+    await root.appSettings.restoreLastGoodSettings();
+
+    expect(updaterService.relaunchApp).toHaveBeenCalledTimes(1);
+    expect(root.appSettings.lastGoodRestoreFailed).toBe(false);
+  });
+
+  it('stays and says so when a restore fails', async () => {
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    settingsService.restoreLastGoodSettings.mockRejectedValueOnce(
+      'restore failed'
+    );
+
+    await root.appSettings.restoreLastGoodSettings();
+
+    expect(updaterService.relaunchApp).not.toHaveBeenCalled();
+    expect(root.appSettings.lastGoodRestoreFailed).toBe(true);
   });
 });

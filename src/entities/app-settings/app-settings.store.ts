@@ -227,6 +227,9 @@ export class AppSettingsStore {
    */
   lastGoodSettingsSavedAt: number | null = null;
 
+  /** Whether the last attempt to restore the last-good copy failed. */
+  lastGoodRestoreFailed = false;
+
   /**
    * The overlay's mouse modes. Owned by the hotkey dispatcher in the backend —
    * their keys fire there — and mirrored here from `app://overlay-modes`
@@ -254,6 +257,10 @@ export class AppSettingsStore {
 
   setLastGoodSettingsSavedAt(savedAt: number | null) {
     this.lastGoodSettingsSavedAt = savedAt;
+  }
+
+  setLastGoodRestoreFailed(failed: boolean) {
+    this.lastGoodRestoreFailed = failed;
   }
 
   applySettings(saved: Partial<AppSettings>) {
@@ -364,9 +371,22 @@ export class AppSettingsStore {
    * The other way out of a corrupt lock: put the last-good copy back and start
    * again, so it is read like any other file — migrations included. The
    * unreadable file is kept aside rather than deleted.
+   *
+   * A failed restore leaves the files as they were and stays on this window,
+   * flagged for the banner, instead of relaunching into the same lock.
    */
   async restoreLastGoodSettings() {
-    await restoreLastGoodSettings();
+    this.setLastGoodRestoreFailed(false);
+
+    try {
+      await restoreLastGoodSettings();
+    } catch (error) {
+      console.error('Failed to restore the last good settings:', error);
+      this.setLastGoodRestoreFailed(true);
+
+      return;
+    }
+
     await relaunchApp();
   }
 }

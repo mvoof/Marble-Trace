@@ -43,6 +43,7 @@
     "restore": "Restore last good copy",
     "restoreConfirm": "Replace the unreadable file with the copy saved before it broke? The unreadable file is kept beside it.",
     "restoreOk": "Restore and restart",
+    "restoreFailed": "The restore failed and nothing was changed. The log has the reason.",
     "reset": "Reset settings",
     "resetConfirm": "Replace the settings file with defaults? Layouts, widgets and bindings in it will be lost.",
     "resetOk": "Reset and restart",

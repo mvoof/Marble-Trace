@@ -105,9 +105,10 @@ export const hydrateFromDisk = async (
   }
 
   // Only a file read as it is: a migrated one is still the old format on disk
-  // until the first save, and is `current` from the next start.
+  // until the first save, and is `current` from the next start. Not awaited:
+  // the copy is best effort and startup has no reason to wait on it.
   if (result.status === 'current') {
-    await keepLastGoodSettings();
+    void keepLastGoodSettings();
   }
 };
 
