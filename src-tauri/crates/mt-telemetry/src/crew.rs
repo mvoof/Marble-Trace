@@ -131,6 +131,14 @@ fn tell_cars(crew: &dyn CrewSink, session: Option<&SessionSnapshot>, told: &mut 
     crew.cars(told.clone());
 }
 
+/// The connection dropped: with no session the crew hears no car numbers.
+pub fn forget_cars(crew: Option<&dyn CrewSink>, told: &mut Vec<String>) {
+    match crew {
+        Some(crew) => tell_cars(crew, None, told),
+        None => told.clear(),
+    }
+}
+
 /// A preview's steps never reach it: it is only answered.
 fn answer_previews(state: &mut LoopState, session: Option<&SessionSnapshot>) {
     for (intent, answer) in std::mem::take(&mut state.pending_previews) {
@@ -325,5 +333,22 @@ mod tests {
                 Vec::new(),
             ]
         );
+    }
+
+    #[test]
+    fn a_dropped_connection_takes_the_cars_numbers_away() {
+        let crew = ToldCars::default();
+        let mut told = Vec::new();
+
+        tell_cars(&crew, Some(&session(&["7"])), &mut told);
+        forget_cars(Some(&crew), &mut told);
+        forget_cars(Some(&crew), &mut told);
+
+        assert_eq!(*crew.0.lock().unwrap(), [vec!["7".to_string()], Vec::new()]);
+
+        told.push("7".into());
+        forget_cars(None, &mut told);
+
+        assert!(told.is_empty());
     }
 }
