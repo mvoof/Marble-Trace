@@ -130,6 +130,29 @@ Before the first save at a new version, the old file is copied to
 `settings.v{n}.bak` by the `backup_settings_file` backend command —
 `tauri-plugin-store` can only touch the live file.
 
+### The last-good copy
+
+`tauri-plugin-store` saves with a plain `fs::write`, so a killed process or a
+power loss mid-save can leave `settings.json` truncated. Against that, every
+start whose file loads as `current` and hydrates copies it to
+`settings.last-good.json` (`keep_last_good_settings`, best effort — a failed
+copy never blocks startup). A `migrated` file is not copied: it is still the old
+format on disk until the first save, and is `current` from the next start. A
+locked file — `corrupt`, `too-old`, `from-the-future` — never replaces the copy.
+
+When the lock is `corrupt` and a copy exists, `SettingsLockBanner` offers it
+back with the time it was written (`last_good_settings_saved_at`).
+`restore_last_good_settings` moves the unreadable file aside as
+`settings.corrupt-<unix seconds>.json`, so it can still be sent to us, copies
+the last-good one over `settings.json`, and the app relaunches — the restored
+file goes through the whole load pipeline, migrations included.
+
+**A locked main window closes its store handle** (`holdLockedSettings`). The
+plugin saves every store it holds open when the app exits, a relaunch included,
+so an open handle would write its cache over the file: an empty `{}` over a
+corrupt one, over the file a reset just deleted, or over the one a restore just
+put back.
+
 ## When you do NOT need a migration
 
 - **Adding a field with a default.** A widget stores only its overrides, so the

@@ -8,6 +8,16 @@ export const settingsFileExists = async (): Promise<boolean> =>
 export const backupSettingsFile = async (suffix: string): Promise<void> =>
   invoke('backup_settings_file', { suffix });
 
+export const keepLastGoodSettings = async (): Promise<void> =>
+  invoke('keep_last_good_settings');
+
+/** Milliseconds since the epoch, or `null` when there is no copy. */
+export const lastGoodSettingsSavedAt = async (): Promise<number | null> =>
+  invoke('last_good_settings_saved_at');
+
+export const restoreLastGoodSettings = async (): Promise<void> =>
+  invoke('restore_last_good_settings');
+
 // The snapshot is a diagnostic blob the backend only logs; typing it here
 // would couple the transport layer to the store-side `Settings` shape.
 export const logSettingsSnapshot = async (settings: unknown): Promise<void> =>

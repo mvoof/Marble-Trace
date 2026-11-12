@@ -3,7 +3,10 @@ import {
   requestDragMode,
   requestInteractMode,
 } from '@shared/api/hotkeys.service';
-import { deleteSettingsFile } from '@shared/api/settings.service';
+import {
+  deleteSettingsFile,
+  restoreLastGoodSettings,
+} from '@shared/api/settings.service';
 import { relaunchApp } from '@shared/api/updater.service';
 import { DEFAULT_OVERLAY_UPDATE_HZ } from '@shared/contracts/generated/backend-constants';
 import { mergeWithDefaults } from '@shared/lib/deep-merge';
@@ -218,6 +221,13 @@ export class AppSettingsStore {
   settingsLockReason: SettingsLockReason | null = null;
 
   /**
+   * When `settings.last-good.json` was written, in epoch milliseconds — the
+   * copy a corrupt lock can restore. `null` when there is none, or when the
+   * settings are not locked as corrupt.
+   */
+  lastGoodSettingsSavedAt: number | null = null;
+
+  /**
    * The overlay's mouse modes. Owned by the hotkey dispatcher in the backend —
    * their keys fire there — and mirrored here from `app://overlay-modes`
    * (`applyOverlayModes`). A setter asks the dispatcher; it never writes these.
@@ -240,6 +250,10 @@ export class AppSettingsStore {
   lockSettings(reason: SettingsLockReason) {
     this.settingsLocked = true;
     this.settingsLockReason = reason;
+  }
+
+  setLastGoodSettingsSavedAt(savedAt: number | null) {
+    this.lastGoodSettingsSavedAt = savedAt;
   }
 
   applySettings(saved: Partial<AppSettings>) {
@@ -343,6 +357,16 @@ export class AppSettingsStore {
    */
   async resetSettings() {
     await deleteSettingsFile();
+    await relaunchApp();
+  }
+
+  /**
+   * The other way out of a corrupt lock: put the last-good copy back and start
+   * again, so it is read like any other file — migrations included. The
+   * unreadable file is kept aside rather than deleted.
+   */
+  async restoreLastGoodSettings() {
+    await restoreLastGoodSettings();
     await relaunchApp();
   }
 }

@@ -21,6 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Sector Matrix — Settings:** PRED, LAST and BEST can each show always, once there is a time, or never; with LAST and BEST both hidden the footer goes. The lap progress bar can be switched off. A predicted lap you had switched off stays off.
 - **Relative — Distance:** A setting adds the distance to each car, in white after the gap, in meters or feet by the unit system setting. It is measured bumper to bumper along the track, like the radar, so a car alongside reads the same in both.
 - **Input Trace — Your Own Wheel:** A new wheel style takes a picture of your own wheel: PNG, JPG, WebP, SVG, GIF or BMP, up to 20 MB. It is shrunk to 384 px and kept next to the settings file, is fitted inside the wheel's place without moving the rest of the widget, and turns with the steering. The settings panel shows it under the button, which spins until the picture is in. Remote screens draw the default wheel instead.
+- **Settings — Last Good Copy:** Every start that reads the settings file cleanly keeps a copy of it, `settings.last-good.json`. If the file is later found unreadable — after a crash or a power loss mid-save — the warning banner offers to restore that copy and shows when it was made; the unreadable file is kept beside it.
 
 ### Changed
 
@@ -47,6 +48,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Locked Settings File:** With the settings file unreadable, closing Marble Trace wrote an empty file over it, losing what was left of it, and Reset settings came back to the same warning after the restart. The file is now left as it is, and a reset starts on defaults.
 - **Twitch Chat:** The chat could fail to connect right after startup, so no messages arrived and chat commands went unanswered. It now connects.
 - **Settings Saved Right Away:** The voice crew settings, the car length and the interact mode settings were written to disk only when the main window closed, so a crash or a forced close lost them. Every setting is now saved within half a second of the change.
 - **Update Checks:** Only the main window checks for updates now, on your schedule once the settings have loaded. Every overlay window used to check as well, on the default schedule.

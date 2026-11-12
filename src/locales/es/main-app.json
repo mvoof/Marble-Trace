@@ -39,6 +39,10 @@
       "title": "No se pudo leer tu archivo de ajustes",
       "description": "Se ha dejado intacto para que puedas recuperarlo a mano. Marble Trace funciona con los valores por defecto y no lo sobrescribirá."
     },
+    "lastGoodAvailable": "Se puede restaurar una copia guardada el {{date}}, antes de que el archivo se dañara.",
+    "restore": "Restaurar la última copia válida",
+    "restoreConfirm": "¿Reemplazar el archivo ilegible por la copia guardada antes de que se dañara? El archivo ilegible se conserva al lado.",
+    "restoreOk": "Restaurar y reiniciar",
     "reset": "Restablecer ajustes",
     "resetConfirm": "¿Reemplazar el archivo de ajustes por los valores por defecto? Se perderán los diseños, widgets y asignaciones que contiene.",
     "resetOk": "Restablecer y reiniciar",

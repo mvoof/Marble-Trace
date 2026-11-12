@@ -2,6 +2,8 @@ import { load } from '@tauri-apps/plugin-store';
 
 import {
   backupSettingsFile,
+  findLastGoodSettings,
+  keepLastGoodSettings,
   settingsFileExists,
   hydrateStores,
   saveSettings,
@@ -25,6 +27,7 @@ import type { MainRoot } from '@app/roots/main-root';
 export interface SettingsFileHandle {
   set(key: string, value: unknown): Promise<void>;
   save(): Promise<void>;
+  close(): Promise<void>;
 }
 
 export const readSettingsFile = async (): Promise<{
@@ -97,6 +100,38 @@ export const hydrateFromDisk = async (
   } catch (error) {
     console.error('Failed to hydrate settings:', error);
     root.appSettings.lockSettings('corrupt');
+
+    return;
+  }
+
+  // Only a file read as it is: a migrated one is still the old format on disk
+  // until the first save, and is `current` from the next start.
+  if (result.status === 'current') {
+    await keepLastGoodSettings();
+  }
+};
+
+/**
+ * Holds a locked file still for the rest of the session, and offers the way
+ * back when there is one.
+ *
+ * The store plugin saves every store it holds open when the app exits — a
+ * relaunch included — so an open handle would write its cache over the file:
+ * an empty `{}` over a corrupt one, over the file a reset just deleted, or over
+ * one the banner just restored. Closing it leaves the file to the commands.
+ */
+export const holdLockedSettings = async (
+  root: MainRoot,
+  store: SettingsFileHandle
+) => {
+  try {
+    await store.close();
+  } catch (error) {
+    console.error('Failed to close the locked settings file:', error);
+  }
+
+  if (root.appSettings.settingsLockReason === 'corrupt') {
+    root.appSettings.setLastGoodSettingsSavedAt(await findLastGoodSettings());
   }
 };
 
