@@ -63,22 +63,22 @@
     ],
     "engineer.answer.carAheadOnTrack": [
       {
-        "text": "Delante el número {car}, {name}, a {gap, plural, one {# segundo} other {# segundos}}"
+        "text": "Delante el número {car}, a {gap, plural, one {# segundo} other {# segundos}}"
       }
     ],
     "engineer.answer.carBehindOnTrack": [
       {
-        "text": "Detrás el número {car}, {name}, a {gap, plural, one {# segundo} other {# segundos}}"
+        "text": "Detrás el número {car}, a {gap, plural, one {# segundo} other {# segundos}}"
       }
     ],
     "engineer.answer.carAheadOnTrackClass": [
       {
-        "text": "Delante el número {car}, {name}, {className}, a {gap, plural, one {# segundo} other {# segundos}}"
+        "text": "Delante el número {car}, {className}, a {gap, plural, one {# segundo} other {# segundos}}"
       }
     ],
     "engineer.answer.carBehindOnTrackClass": [
       {
-        "text": "Detrás el número {car}, {name}, {className}, a {gap, plural, one {# segundo} other {# segundos}}"
+        "text": "Detrás el número {car}, {className}, a {gap, plural, one {# segundo} other {# segundos}}"
       }
     ],
     "engineer.answer.noCarAheadOnTrack": [

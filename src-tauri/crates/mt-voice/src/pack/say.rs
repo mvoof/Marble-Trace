@@ -11,7 +11,7 @@ use crate::pack::catalog::{
     unit_key, FASTER_KEY, MINUS_KEY, NO_KEY, PLUS_KEY, SAID_VALUE, SLOWER_KEY, YES_KEY,
 };
 use crate::pack::message::{format, Arg, Args};
-use crate::pack::numbers::spoken_digits;
+use crate::pack::numbers::spoken_car_number;
 use crate::pack::LanguagePack;
 
 const SECONDS_PER_MINUTE: f64 = 60.0;
@@ -26,7 +26,7 @@ pub fn said(pack: &LanguagePack, units: Units, say: SayFormat, value: &CrewArg) 
     let number = match value {
         CrewArg::Number { value } => *value,
         CrewArg::Text { value } if say == SayFormat::Digits => {
-            return Some(Arg::Text(spoken_digits(&pack.language, value.trim())));
+            return Some(Arg::Text(spoken_car_number(&pack.language, value.trim())));
         }
         CrewArg::Text { value } => return Some(Arg::Text(speakable(value))),
         CrewArg::Flag { value } => {
@@ -57,7 +57,7 @@ pub fn said(pack: &LanguagePack, units: Units, say: SayFormat, value: &CrewArg) 
             words(pack, if number != 0.0 { YES_KEY } else { NO_KEY }, None).map(Arg::Text)?
         }
         SayFormat::Text => Arg::Number(number),
-        SayFormat::Digits => Arg::Text(spoken_digits(&pack.language, &number.to_string())),
+        SayFormat::Digits => Arg::Text(spoken_car_number(&pack.language, &number.to_string())),
     })
 }
 

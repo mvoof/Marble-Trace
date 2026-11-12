@@ -1,5 +1,5 @@
 //! How the built-in languages say a number, for the `{number}` slot, and a
-//! car number digit by digit.
+//! car number as it is heard.
 //!
 //! Only whole numbers up to `MAX_SPOKEN_NUMBER`: every one of them is a branch
 //! of each command that takes a number, and nothing a driver orders by voice —
@@ -276,18 +276,26 @@ pub fn car_number_phrases(language: &str) -> Option<Vec<SlotPhrase>> {
     Some(phrases)
 }
 
-/// A car number said digit by digit, its zeros too: "zero seven"; a
-/// character that is not a digit, or a language without number words, is
-/// said as it is.
-pub fn spoken_digits(language: &str, digits: &str) -> String {
-    digits
-        .chars()
-        .map(|character| {
-            character
-                .to_digit(10)
-                .and_then(|digit| spoken(language, digit))
-                .unwrap_or_else(|| character.to_string())
-        })
+/// A car number the way it is heard: each leading zero said, then the rest
+/// as one number — "33" is "thirty three", "033" is "zero thirty three". What
+/// the language has no words for, or is not a number, is left to the
+/// synthesiser as it is.
+pub fn spoken_car_number(language: &str, digits: &str) -> String {
+    let rest = digits.trim_start_matches(ZERO_DIGIT);
+    let (zeros, rest) = if rest.is_empty() && !digits.is_empty() {
+        (digits.len() - 1, &digits[digits.len() - 1..])
+    } else {
+        (digits.len() - rest.len(), rest)
+    };
+    let zero = spoken(language, 0).unwrap_or_else(|| ZERO_DIGIT.to_string());
+    let number = rest
+        .parse::<u32>()
+        .ok()
+        .and_then(|number| spoken(language, number))
+        .unwrap_or_else(|| rest.to_string());
+
+    std::iter::repeat_n(zero, zeros)
+        .chain(std::iter::once(number))
         .collect::<Vec<_>>()
         .join(" ")
 }
@@ -318,10 +326,26 @@ mod tests {
     }
 
     #[test]
-    fn says_a_car_number_digit_by_digit() {
-        assert_eq!(spoken_digits("ru", "07"), "ноль семь");
-        assert_eq!(spoken_digits("en", "12"), "one two");
-        assert_eq!(spoken_digits("xx", "07"), "0 7");
+    fn says_a_car_number_as_it_is_heard() {
+        assert_eq!(spoken_car_number("ru", "33"), "тридцать три");
+        assert_eq!(spoken_car_number("ru", "033"), "ноль тридцать три");
+        assert_eq!(spoken_car_number("ru", "007"), "ноль ноль семь");
+        assert_eq!(spoken_car_number("ru", "0"), "ноль");
+        assert_eq!(spoken_car_number("ru", "00"), "ноль ноль");
+        assert_eq!(spoken_car_number("en", "12"), "twelve");
+        assert_eq!(spoken_car_number("en", "512"), "512");
+        assert_eq!(spoken_car_number("xx", "07"), "0 7");
+    }
+
+    #[test]
+    fn says_back_every_car_number_it_hears() {
+        for phrase in car_number_phrases("ru").unwrap() {
+            let SlotValue::Digits(digits) = &phrase.value else {
+                panic!("a car number");
+            };
+
+            assert_eq!(spoken_car_number("ru", digits), phrase.words.join(" "));
+        }
     }
 
     #[test]

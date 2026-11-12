@@ -1181,7 +1181,7 @@ mod tests {
                 .arg("number", CrewArg::Text { value: "99".into() }),
         );
 
-        assert_eq!(last_said(&shared).as_deref(), Some("No car nine nine"));
+        assert_eq!(last_said(&shared).as_deref(), Some("No car ninety nine"));
     }
 
     #[test]

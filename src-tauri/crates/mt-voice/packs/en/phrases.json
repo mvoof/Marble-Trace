@@ -63,22 +63,22 @@
     ],
     "engineer.answer.carAheadOnTrack": [
       {
-        "text": "Ahead is number {car}, {name}, {gap, plural, one {# second} other {# seconds}}"
+        "text": "Ahead is number {car}, {gap, plural, one {# second} other {# seconds}}"
       }
     ],
     "engineer.answer.carBehindOnTrack": [
       {
-        "text": "Behind is number {car}, {name}, {gap, plural, one {# second} other {# seconds}}"
+        "text": "Behind is number {car}, {gap, plural, one {# second} other {# seconds}}"
       }
     ],
     "engineer.answer.carAheadOnTrackClass": [
       {
-        "text": "Ahead is number {car}, {name}, {className}, {gap, plural, one {# second} other {# seconds}}"
+        "text": "Ahead is number {car}, {className}, {gap, plural, one {# second} other {# seconds}}"
       }
     ],
     "engineer.answer.carBehindOnTrackClass": [
       {
-        "text": "Behind is number {car}, {name}, {className}, {gap, plural, one {# second} other {# seconds}}"
+        "text": "Behind is number {car}, {className}, {gap, plural, one {# second} other {# seconds}}"
       }
     ],
     "engineer.answer.noCarAheadOnTrack": [{ "text": "Nobody ahead on track" }],
