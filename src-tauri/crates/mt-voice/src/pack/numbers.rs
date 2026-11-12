@@ -277,9 +277,9 @@ pub fn car_number_phrases(language: &str) -> Option<Vec<SlotPhrase>> {
 }
 
 /// A car number the way it is heard: each leading zero said, then the rest
-/// as one number — "33" is "thirty three", "033" is "zero thirty three". What
-/// the language has no words for, or is not a number, is left to the
-/// synthesiser as it is.
+/// as one number — "33" is "thirty three", "033" is "zero thirty three". A
+/// number past `MAX_SPOKEN_NUMBER` is said digit by digit; what the language
+/// has no words for is left to the synthesiser as it is.
 pub fn spoken_car_number(language: &str, digits: &str) -> String {
     let rest = digits.trim_start_matches(ZERO_DIGIT);
     let (zeros, rest) = if rest.is_empty() && !digits.is_empty() {
@@ -292,10 +292,23 @@ pub fn spoken_car_number(language: &str, digits: &str) -> String {
         .parse::<u32>()
         .ok()
         .and_then(|number| spoken(language, number))
-        .unwrap_or_else(|| rest.to_string());
+        .unwrap_or_else(|| spoken_digit_by_digit(language, rest));
 
     std::iter::repeat_n(zero, zeros)
         .chain(std::iter::once(number))
+        .collect::<Vec<_>>()
+        .join(" ")
+}
+
+fn spoken_digit_by_digit(language: &str, digits: &str) -> String {
+    digits
+        .chars()
+        .map(|digit| {
+            digit
+                .to_digit(10)
+                .and_then(|value| spoken(language, value))
+                .unwrap_or_else(|| digit.to_string())
+        })
         .collect::<Vec<_>>()
         .join(" ")
 }
@@ -333,7 +346,8 @@ mod tests {
         assert_eq!(spoken_car_number("ru", "0"), "ноль");
         assert_eq!(spoken_car_number("ru", "00"), "ноль ноль");
         assert_eq!(spoken_car_number("en", "12"), "twelve");
-        assert_eq!(spoken_car_number("en", "512"), "512");
+        assert_eq!(spoken_car_number("en", "512"), "five one two");
+        assert_eq!(spoken_car_number("ru", "0512"), "ноль пять один два");
         assert_eq!(spoken_car_number("xx", "07"), "0 7");
     }
 

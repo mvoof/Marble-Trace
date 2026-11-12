@@ -1026,7 +1026,7 @@
         "carNeedsTarget": "Elige el coche por el que pregunta para ver sus campos.",
         "names": {
           "name": "Nombre del piloto",
-          "number": "Número del coche, cifra a cifra",
+          "number": "Número del coche",
           "carName": "Modelo del coche",
           "className": "Clase",
           "position": "Posición general",

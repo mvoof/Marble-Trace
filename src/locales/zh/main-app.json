@@ -1022,7 +1022,7 @@
         "carNeedsTarget": "选择问题针对的车辆后即可使用其字段。",
         "names": {
           "name": "车手姓名",
-          "number": "车号（逐位读出）",
+          "number": "车号",
           "carName": "车型",
           "className": "组别",
           "position": "总排名",

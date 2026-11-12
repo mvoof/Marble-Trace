@@ -1026,7 +1026,7 @@
         "carNeedsTarget": "Pick the car the question asks about to name its fields.",
         "names": {
           "name": "Driver's name",
-          "number": "Car number, digit by digit",
+          "number": "Car number",
           "carName": "Car model",
           "className": "Class",
           "position": "Overall place",

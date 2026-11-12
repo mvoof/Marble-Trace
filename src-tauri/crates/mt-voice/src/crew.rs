@@ -42,7 +42,8 @@ use crate::vosk::Heard;
 const ANSWER_TTL: Duration = Duration::from_secs(8);
 const PACKS_DIR: &str = "packs";
 const CUSTOM_VOICE_PREFIX: &str = "custom:";
-/// A built-in reply's car number, read out digit by digit as a question's is.
+/// A built-in reply's car number, read out as a question's is: "33" is
+/// "thirty three".
 const CAR_NUMBER_ARG: &str = "car";
 
 /// What the app takes from the crew: requests for the telemetry thread and
