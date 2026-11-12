@@ -133,7 +133,7 @@ export const RadarBar = observer(({ side }: RadarBarProps) => {
         parts.text('text', label);
       });
     },
-    [computed, appSettings, units, side, parts]
+    [computed, appSettings, units, side, parts, radarSettings.showDistance]
   );
 
   if (!visible || !sideVisible || !computed.hasProximity) {
