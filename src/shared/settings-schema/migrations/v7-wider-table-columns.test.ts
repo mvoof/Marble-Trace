@@ -316,3 +316,114 @@ describe('v7 — table frames widened with their columns', () => {
     expect(() => v7WiderTableColumns.migrate(fileWith([broken]))).not.toThrow();
   });
 });
+
+describe('v7 — the fuel strategy moves to the app settings', () => {
+  const fuelCopy = (
+    id: string,
+    enabled: boolean,
+    settings: Record<string, unknown>
+  ) => ({ ...instance('fuel', 240), id, enabled, settings });
+
+  const layoutOf = (id: string, monitors: unknown[]) => ({
+    id,
+    name: id,
+    createdAt: 1,
+    monitors,
+  });
+
+  const fuelSettingsIn = (blob: Record<string, unknown>) =>
+    (
+      blob['layouts'] as Array<{
+        monitors: Array<{ widgets: Array<Record<string, unknown>> }>;
+      }>
+    ).flatMap((layout) =>
+      layout.monitors.flatMap((monitor) =>
+        monitor.widgets.map((widget) => widget['settings'])
+      )
+    );
+
+  it('lifts the switched-on copy and drops the keys from every copy and the template', () => {
+    const migrated = v7WiderTableColumns.migrate({
+      ...fileWith([
+        fuelCopy('fuel', false, { pitWarningLaps: 9, showChart: true }),
+        fuelCopy('fuel-2', true, {
+          pitWarningLaps: 4,
+          fuelAvgWindow: 5,
+          countYellowFlagLaps: true,
+        }),
+      ]),
+      widgetTemplates: {
+        fuel: { size: { width: 240 }, settings: { fuelAvgWindow: 8 } },
+      },
+      app: { language: 'en' },
+    });
+
+    expect(migrated['app']).toStrictEqual({
+      language: 'en',
+      fuelPitWarningLaps: 4,
+      fuelAvgWindow: 5,
+      fuelCountYellowFlagLaps: true,
+    });
+    expect(fuelSettingsIn(migrated)).toStrictEqual([{ showChart: true }, {}]);
+    expect(
+      (migrated['widgetTemplates'] as Record<string, { settings: unknown }>)
+        .fuel.settings
+    ).toStrictEqual({});
+  });
+
+  it('prefers the active layout, and a display over a remote screen', () => {
+    const migrated = v7WiderTableColumns.migrate({
+      schemaVersion: 6,
+      activeLayoutId: 'race',
+      layouts: [
+        layoutOf('practice', [
+          {
+            name: 'MAIN',
+            widgets: [fuelCopy('fuel', true, { fuelAvgWindow: 1 })],
+          },
+        ]),
+        layoutOf('race', [
+          {
+            name: 'tablet',
+            kind: 'remote',
+            widgets: [fuelCopy('fuel', true, { fuelAvgWindow: 2 })],
+          },
+          {
+            name: 'MAIN',
+            widgets: [fuelCopy('fuel-2', true, { fuelAvgWindow: 3 })],
+          },
+        ]),
+      ],
+    });
+
+    expect(migrated['app']).toStrictEqual({ fuelAvgWindow: 3 });
+    expect(fuelSettingsIn(migrated)).toStrictEqual([{}, {}, {}]);
+  });
+
+  it('falls back to the template when no layout holds a fuel copy', () => {
+    const migrated = v7WiderTableColumns.migrate(
+      fileWith([], {
+        fuel: { size: { width: 240 }, settings: { pitWarningLaps: 6 } },
+      })
+    );
+
+    expect(migrated['app']).toStrictEqual({ fuelPitWarningLaps: 6 });
+  });
+
+  it('leaves an absent key absent and adds no app section of its own', () => {
+    const migrated = v7WiderTableColumns.migrate(
+      fileWith([fuelCopy('fuel', true, { showChart: true })])
+    );
+
+    expect('app' in migrated).toBe(false);
+  });
+
+  it('keeps a value the app section already holds', () => {
+    const migrated = v7WiderTableColumns.migrate({
+      ...fileWith([fuelCopy('fuel', true, { fuelAvgWindow: 5 })]),
+      app: { fuelAvgWindow: 7 },
+    });
+
+    expect(migrated['app']).toStrictEqual({ fuelAvgWindow: 7 });
+  });
+});

@@ -28,6 +28,10 @@ import {
   type FuelAdjustStep,
   type PitStrategy,
 } from '@shared/contracts/pit-strategy';
+import {
+  DEFAULT_FUEL_STRATEGY,
+  type FuelStrategy,
+} from '@shared/contracts/fuel-strategy';
 import type { SettingsLockReason } from '@shared/settings-schema/types';
 
 export const resolveAppLanguage = (language: AppLanguage) =>
@@ -80,6 +84,9 @@ export const DEFAULT_APP_SETTINGS = {
   pitAutoTireWearThreshold: 60,
   pitFuelAdjustStep: 1 as FuelAdjustStep,
   pitPressureAdjustStep: DEFAULT_PRESSURE_ADJUST_STEP_KPA,
+  // Fuel strategy (`FuelStrategy`). The backend computes fuel once for the
+  // car, so these used to be Fuel widget settings of which only one copy counted.
+  ...DEFAULT_FUEL_STRATEGY,
   // Stream chat source. A channel is a property of the account, not of a
   // layout — the same reasoning as steeringLock above. Keeping it here also
   // means one connection serves every layout instead of reconnecting on each
@@ -162,6 +169,12 @@ export const pitStrategyOf = (settings: AppSettings): PitStrategy => ({
   pitAutoTireWearThreshold: settings.pitAutoTireWearThreshold,
   pitFuelAdjustStep: settings.pitFuelAdjustStep,
   pitPressureAdjustStep: settings.pitPressureAdjustStep,
+});
+
+export const fuelStrategyOf = (settings: AppSettings): FuelStrategy => ({
+  fuelPitWarningLaps: settings.fuelPitWarningLaps,
+  fuelAvgWindow: settings.fuelAvgWindow,
+  fuelCountYellowFlagLaps: settings.fuelCountYellowFlagLaps,
 });
 
 /** What the backend's chat commands run with (`set_chat_commands`). */

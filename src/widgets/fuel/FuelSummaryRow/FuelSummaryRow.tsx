@@ -1,9 +1,9 @@
-import { useWidgetSettings } from '@entities/layout/useWidgetSettings';
 import { observer } from 'mobx-react-lite';
 
 import { FixedDigits } from '@shared/ui/FixedDigits/FixedDigits';
 import { formatFuel, EMPTY_VALUE } from '@shared/lib/telemetry-format';
 import { useBackendComputedStore } from '@entities/cars/computed-context';
+import { useAppSettingsStore } from '@entities/app-settings/app-settings-context';
 import { useUnitsStore } from '@entities/app-settings/units-context';
 import {
   type FuelLapsStatus,
@@ -12,7 +12,6 @@ import {
 } from '../fuel-utils';
 import { useFuelLapsStatus } from '../use-fuel-status';
 import styles from './FuelSummaryRow.module.scss';
-import type { FuelWidgetSettings } from '../settings-schema';
 
 const LAPS_STATUS_CLASSES: Record<FuelLapsStatus, string> = {
   safe: styles.lapsSafe,
@@ -47,8 +46,7 @@ export const FuelSummaryRow = observer(() => {
   const { fuel } = useBackendComputedStore();
   const { unitSystem } = useUnitsStore();
   const lapsStatus = useFuelLapsStatus();
-
-  const settings = useWidgetSettings<FuelWidgetSettings>('fuel');
+  const { appSettings } = useAppSettingsStore();
 
   const lapsRemaining = fuel?.lapsRemaining ?? null;
   const shortage = fuel?.shortage ?? null;
@@ -70,7 +68,7 @@ export const FuelSummaryRow = observer(() => {
     <div className={`${styles.grid} ${lapsClass}`}>
       <div className={styles.side}>
         <span className={styles.sideLabel}>
-          {getSummaryAvgLabel(settings.fuelAvgWindow)}
+          {getSummaryAvgLabel(appSettings.fuelAvgWindow)}
         </span>
 
         <FixedDigits

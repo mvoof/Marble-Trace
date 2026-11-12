@@ -1,13 +1,12 @@
-import { useWidgetSettings } from '@entities/layout/useWidgetSettings';
 import { observer } from 'mobx-react-lite';
 
 import { PitWarningHeader } from './PitWarningHeader/PitWarningHeader';
 import { PitWarningFill } from './PitWarningFill/PitWarningFill';
 
+import { useAppSettingsStore } from '@entities/app-settings/app-settings-context';
 import { ReservedSlot } from '@entities/app-settings/ReservedSlot/ReservedSlot';
 import styles from './FuelPitWarning.module.scss';
 import { useBackendComputedStore } from '@entities/cars/computed-context';
-import type { FuelWidgetSettings } from '../settings-schema';
 
 /**
  * The header row of chips and its rule, then the fill with a multi-stop
@@ -19,12 +18,12 @@ const PIT_WARNING_HEIGHT_PX = 103;
 export const FuelPitWarning = observer(() => {
   const { fuel } = useBackendComputedStore();
 
-  const settings = useWidgetSettings<FuelWidgetSettings>('fuel');
+  const { appSettings } = useAppSettingsStore();
 
   const lapsRemaining = fuel?.lapsRemaining ?? null;
 
   const isVisible =
-    lapsRemaining !== null && lapsRemaining <= settings.pitWarningLaps;
+    lapsRemaining !== null && lapsRemaining <= appSettings.fuelPitWarningLaps;
 
   // The warning is the block the widget grows by at the worst possible moment:
   // it arrives near the end of a stint, and everything under it would shift as

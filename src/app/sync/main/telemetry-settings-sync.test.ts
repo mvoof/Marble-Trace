@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { runInAction, type IReactionDisposer } from 'mobx';
 
 import { MainRoot } from '@app/roots/main-root';
-import { FUEL_SETTINGS } from '@widgets/fuel/settings-schema';
+import { DEFAULT_FUEL_STRATEGY } from '@shared/contracts/fuel-strategy';
 
 vi.mock('@shared/api/events.service', () => ({
   emitLayoutActivated: vi.fn(),
@@ -39,15 +39,33 @@ describe('the telemetry settings reaction', () => {
     root.dispose();
   });
 
-  it('sends the settings whole on start, the shipped fuel values with no fuel widget', () => {
+  it('sends the settings whole on start, the shipped fuel strategy by default', () => {
     expect(setTelemetrySettingsSilent).toHaveBeenCalledTimes(1);
     expect(setTelemetrySettingsSilent).toHaveBeenCalledWith({
       carLengthM: root.appSettings.appSettings.carLength,
       overlayUpdateHz: root.appSettings.appSettings.overlayUpdateHz,
-      pitWarningLaps: FUEL_SETTINGS.defaults.pitWarningLaps,
-      fuelAvgWindow: FUEL_SETTINGS.defaults.fuelAvgWindow,
-      fuelCountYellowLaps: FUEL_SETTINGS.defaults.countYellowFlagLaps,
+      pitWarningLaps: DEFAULT_FUEL_STRATEGY.fuelPitWarningLaps,
+      fuelAvgWindow: DEFAULT_FUEL_STRATEGY.fuelAvgWindow,
+      fuelCountYellowLaps: DEFAULT_FUEL_STRATEGY.fuelCountYellowFlagLaps,
     });
+  });
+
+  it('sends the fuel strategy from the app settings', () => {
+    runInAction(() =>
+      root.appSettings.update({
+        fuelPitWarningLaps: 5,
+        fuelAvgWindow: 4,
+        fuelCountYellowFlagLaps: true,
+      })
+    );
+
+    expect(setTelemetrySettingsSilent).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        pitWarningLaps: 5,
+        fuelAvgWindow: 4,
+        fuelCountYellowLaps: true,
+      })
+    );
   });
 
   it('sends them again when one changes, and not when nothing did', () => {

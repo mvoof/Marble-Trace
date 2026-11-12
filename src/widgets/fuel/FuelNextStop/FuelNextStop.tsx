@@ -7,6 +7,7 @@ import { EMPTY_VALUE } from '@shared/lib/telemetry-format';
 import { computeNextStopForecast, formatCountdown } from '../fuel-utils';
 import styles from './FuelNextStop.module.scss';
 import { useBackendComputedStore } from '@entities/cars/computed-context';
+import { useAppSettingsStore } from '@entities/app-settings/app-settings-context';
 import { usePlayerStore } from '@entities/player/player-context';
 import type { FuelWidgetSettings } from '../settings-schema';
 
@@ -14,6 +15,7 @@ import type { FuelWidgetSettings } from '../settings-schema';
 export const FuelNextStop = observer(() => {
   const { fuel } = useBackendComputedStore();
   const { lapTiming } = usePlayerStore();
+  const { appSettings } = useAppSettingsStore();
 
   const settings = useWidgetSettings<FuelWidgetSettings>('fuel');
 
@@ -29,7 +31,7 @@ export const FuelNextStop = observer(() => {
     lapsRemaining: fuel?.lapsRemaining ?? null,
     pitWindowStart: fuel?.pitWindowStart ?? null,
     pitWindowEnd: fuel?.pitWindowEnd ?? null,
-    pitWarningLaps: settings.pitWarningLaps,
+    pitWarningLaps: appSettings.fuelPitWarningLaps,
     lapTimeSec,
   });
 

@@ -60,19 +60,17 @@ const FUEL_STAT_SETTING_KEYS: Record<FuelStatKey, keyof FuelWidgetSettings> = {
  * With the averaging window on every lap, the summary's average is the very
  * figure the AVG ALL column holds — the column steps aside rather than repeat it.
  */
-const repeatsSummaryAverage = (
-  key: FuelStatKey,
-  settings: FuelWidgetSettings
-): boolean =>
-  key === 'avg' && settings.fuelAvgWindow === FUEL_AVG_WINDOW_ALL_LAPS;
+const repeatsSummaryAverage = (key: FuelStatKey, avgWindow: number): boolean =>
+  key === 'avg' && avgWindow === FUEL_AVG_WINDOW_ALL_LAPS;
 
 export const getVisibleFuelStatKeys = (
-  settings: FuelWidgetSettings
+  settings: FuelWidgetSettings,
+  avgWindow: number
 ): FuelStatKey[] =>
   FUEL_STAT_ORDER.filter(
     (key) =>
       settings[FUEL_STAT_SETTING_KEYS[key]] &&
-      !repeatsSummaryAverage(key, settings)
+      !repeatsSummaryAverage(key, avgWindow)
   );
 
 /** The fuel unit as the widget writes it after a figure. */

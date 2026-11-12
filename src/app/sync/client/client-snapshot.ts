@@ -1,4 +1,7 @@
-import { pitStrategyOf } from '@entities/app-settings/app-settings.store';
+import {
+  fuelStrategyOf,
+  pitStrategyOf,
+} from '@entities/app-settings/app-settings.store';
 import { widgetsOnMonitor } from '@entities/layout/virtual-desktop';
 import { cloneMonitor } from '@shared/lib/remote-screen';
 import type { MainRoot } from '@app/roots/main-root';
@@ -35,6 +38,7 @@ export const clientSnapshotFor = (
     steeringLock: settings.steeringLock,
     carLength: settings.carLength,
     pitStrategy: pitStrategyOf(settings),
+    fuelStrategy: fuelStrategyOf(settings),
     interactHotkeyMode: settings.interactHotkeyMode,
     // Overrides, not the effective map: the overlay layers the same registry
     // defaults underneath.
@@ -82,6 +86,7 @@ export const snapshotAppInputs = (root: MainRoot): unknown[] => {
     settings.steeringLock,
     settings.carLength,
     pitStrategyOf(settings),
+    fuelStrategyOf(settings),
     settings.interactHotkeyMode,
     root.bindings.mutationId,
     settings.streamChatHideCommands,

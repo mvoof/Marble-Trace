@@ -134,9 +134,10 @@ const meta: Meta<StoryArgs> = {
         showChart: args.showChart,
         chartType: args.chartType,
         barWidth: args.barWidth,
-        pitWarningLaps: args.pitWarningLaps,
         showNextStopForecast: args.showNextStopForecast,
       });
+
+      store.appSettings.update({ fuelPitWarningLaps: args.pitWarningLaps });
     },
     args: {
       fuelLevel: 28.5,

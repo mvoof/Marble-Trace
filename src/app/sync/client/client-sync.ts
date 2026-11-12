@@ -43,6 +43,7 @@ export const applyClientSnapshot = (
       streamChatHideCommands: snapshot.streamChatHideCommands,
       streamChatIgnoredBots: snapshot.streamChatIgnoredBots,
       ...snapshot.pitStrategy,
+      ...snapshot.fuelStrategy,
     });
 
     core.appSettings.hidesOffTrack = snapshot.hidesOffTrack;

@@ -5,6 +5,7 @@ import type {
   RemoteControlKind,
 } from '@shared/contracts/generated/bindings';
 import type { BindingMap } from '@shared/contracts/input-bindings';
+import type { FuelStrategy } from '@shared/contracts/fuel-strategy';
 import type { PitStrategy } from '@shared/contracts/pit-strategy';
 import type {
   LayoutMonitor,
@@ -49,6 +50,7 @@ export interface ClientSnapshot {
   steeringLock: number;
   carLength: number;
   pitStrategy: PitStrategy;
+  fuelStrategy: FuelStrategy;
   /** The overlay prints the key that leaves interact mode, and how it acts. */
   interactHotkeyMode: InteractHotkeyMode;
   bindings: BindingMap;
