@@ -67,6 +67,15 @@ export class SessionStore {
     return isSessionEnded(this.session?.session_state ?? null);
   }
 
+  /**
+   * Whether this is a team event. A computed boolean for the same reason as
+   * `isSessionEnded`: the session info is replaced on every YAML update, and a
+   * row reading it in place redraws with it for a flag fixed for the event.
+   */
+  get isTeamRacing(): boolean {
+    return this.sessionInfo?.teamRacing === true;
+  }
+
   get currentSessionType(): SessionType | null {
     return this.currentSession?.sessionType ?? null;
   }

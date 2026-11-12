@@ -55,6 +55,22 @@ describe('LiveWidgetsStore settings subscription', () => {
     counter.dispose();
   });
 
+  it("is not woken by another widget's move when read by type", () => {
+    const { root, readerId, otherId } = twoWidgets();
+    const readerType = root.liveWidgets.getWidget(readerId)!.type;
+    const counter = countRuns(
+      () => root.liveWidgets.settingsOfType(readerType).enabled
+    );
+
+    runInAction(() => {
+      root.liveWidgets.updatePosition(otherId, 40, 40);
+      root.liveWidgets.updateUserSettings(otherId, { opacity: 50 });
+    });
+
+    expect(counter.runs()).toBe(1);
+    counter.dispose();
+  });
+
   it('is woken by its own widget', () => {
     const { root, readerId } = twoWidgets();
     const counter = countRuns(

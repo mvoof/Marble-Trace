@@ -232,8 +232,6 @@ export class LiveWidgetsStore implements WidgetMap {
    * editor is working on.
    */
   get liveWidgets(): WidgetDefaultConfig[] {
-    void this.mutations.changeToken;
-
     const layout = this.layoutRecords.liveLayout;
 
     if (!layout || layout.monitors.length === 0) {
@@ -450,8 +448,6 @@ export class LiveWidgetsStore implements WidgetMap {
    * screen" — a hotkey, the telemetry mask, the layout gate.
    */
   widgetsOfType(type: string): WidgetDefaultConfig[] {
-    void this.mutations.changeToken;
-
     return this.allWidgets.filter((widget) => widget.type === type);
   }
 

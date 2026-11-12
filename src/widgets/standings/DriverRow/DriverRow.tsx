@@ -192,8 +192,7 @@ export const DriverRow = observer(
 
     // Every row of a team event takes the second line, an unnamed team too, so
     // the table keeps one row height while teams come and go.
-    const showsTeamNames =
-      settings.showTeamName && session.sessionInfo?.teamRacing === true;
+    const showsTeamNames = settings.showTeamName && session.isTeamRacing;
 
     const rowClass = cx(
       showsTeamNames && styles.driverRowWithTeam,
