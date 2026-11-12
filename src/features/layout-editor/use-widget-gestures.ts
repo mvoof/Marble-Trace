@@ -66,6 +66,24 @@ const storedBoxOf = (widget: GestureWidget | undefined): WidgetBox => ({
 });
 
 /**
+ * The box the widget drew at the press, in layout px (`offsetWidth` ignores
+ * the canvas zoom). For a content-sized widget the stored width is only its
+ * scale, not its size; zero when the box is not in the document.
+ */
+const drawnSizeAt = (
+  event: React.MouseEvent
+): Pick<WidgetBox, 'width' | 'height'> => {
+  const drawnBox = (event.currentTarget as HTMLElement).closest<HTMLElement>(
+    '[data-widget-id]'
+  );
+
+  return {
+    width: drawnBox?.offsetWidth ?? 0,
+    height: drawnBox?.offsetHeight ?? 0,
+  };
+};
+
+/**
  * Drag and resize of a widget box, the same in the overlay's drag mode and on
  * the layout editor's canvas: pointer travel is divided by `viewScale` into
  * layout px, `resize-geometry` makes the box, the writer takes it. The writer
@@ -128,16 +146,20 @@ export const useWidgetGestures = (
 
       const pressX = event.clientX;
       const pressY = event.clientY;
+      const drawn = drawnSizeAt(event);
 
       beginGesture(event, gesture, gestureWriter, (widget) => {
         const stored = storedBoxOf(widget);
+        // Centred by what is on screen; the stored size stands in only when
+        // nothing was drawn.
+        const size = drawn.width > 0 && drawn.height > 0 ? drawn : stored;
 
         return (moveEvent) => {
           const position = dragPosition({
             dx: (moveEvent.clientX - pressX) / gesture.viewScale,
             dy: (moveEvent.clientY - pressY) / gesture.viewScale,
             start: stored,
-            size: stored,
+            size,
             snap: gesture.snap,
           });
 
@@ -158,17 +180,7 @@ export const useWidgetGestures = (
 
       const pressX = event.clientX;
       const pressY = event.clientY;
-
-      // The box a content-sized widget drew at the press, in layout px
-      // (`offsetWidth` ignores the canvas zoom); its stored width is only
-      // the scale, not its size.
-      const drawnBox = (
-        event.currentTarget as HTMLElement
-      ).closest<HTMLElement>('[data-widget-id]');
-      const drawn = {
-        width: drawnBox?.offsetWidth ?? 0,
-        height: drawnBox?.offsetHeight ?? 0,
-      };
+      const drawn = drawnSizeAt(event);
 
       beginGesture(event, gesture, gestureWriter, (widget) => {
         const start = storedBoxOf(widget);
