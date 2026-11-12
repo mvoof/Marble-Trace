@@ -12,7 +12,7 @@ use mt_model::app::crew_questions::{
 };
 use mt_model::app::voice::VoiceMistake;
 
-use crate::pack::numbers::{car_number_phrases, number_phrases};
+use crate::pack::numbers::{car_number_phrases, number_phrases, session_car_number_phrases};
 use crate::pack::questions::phrase_mistake;
 use crate::pack::template::{expand, parse, SlotPhrase, SlotValue};
 use crate::pack::{question_location, to_strings, usable_questions, CommandsFile, PackIssue};
@@ -224,9 +224,20 @@ fn unsaid_values(
     values
 }
 
+/// With no session known: a car number is any number the slot hears.
 pub fn compile(language: &str, commands: &CommandsFile) -> (CommandGrammar, Vec<PackIssue>) {
+    compile_for_cars(language, commands, None)
+}
+
+/// `cars`: the numbers the session's cars wear, the only car numbers heard;
+/// `None` when no session is known.
+pub fn compile_for_cars(
+    language: &str,
+    commands: &CommandsFile,
+    cars: Option<&[String]>,
+) -> (CommandGrammar, Vec<PackIssue>) {
     let mut issues = Vec::new();
-    let slot_phrases = slot_phrases(language, commands, &mut issues);
+    let slot_phrases = slot_phrases(language, commands, cars, &mut issues);
     let mut grammar = CommandGrammar {
         connectives: connectives(language),
         ..CommandGrammar::default()
@@ -420,11 +431,16 @@ struct Said<'a> {
 fn slot_phrases(
     language: &str,
     commands: &CommandsFile,
+    cars: Option<&[String]>,
     issues: &mut Vec<PackIssue>,
 ) -> HashMap<String, Vec<SlotPhrase>> {
     let mut phrases = HashMap::new();
+    let car_numbers = match cars {
+        Some(numbers) => session_car_number_phrases(language, numbers),
+        None => car_number_phrases(language),
+    };
 
-    match number_phrases(language).zip(car_number_phrases(language)) {
+    match number_phrases(language).zip(car_numbers) {
         Some((numbers, car_numbers)) => {
             phrases.insert(NUMBER_FIELD.to_string(), numbers);
             phrases.insert(CAR_NUMBER_PHRASES.to_string(), car_numbers);
@@ -663,5 +679,36 @@ mod tests {
         );
 
         assert!(grammar.recognise("  How much   fuel ").is_some());
+    }
+
+    #[test]
+    fn hears_only_the_session_cars_by_number_and_any_without_a_session() {
+        let mut pack = crate::pack::load("en", None);
+        let car = |pack: &crate::pack::LanguagePack, said: &str| {
+            pack.grammar
+                .recognise(said)
+                .and_then(|recognised| recognised.slot(NUMBER_FIELD).cloned())
+        };
+
+        pack.hear_cars(Some(&["512".to_string(), "07".to_string()]));
+
+        assert_eq!(
+            car(&pack, "where is car five hundred twelve"),
+            Some(SlotValue::Digits("512".into()))
+        );
+        assert_eq!(
+            car(&pack, "where is car zero seven"),
+            Some(SlotValue::Digits("07".into()))
+        );
+        assert_eq!(car(&pack, "where is car twelve"), None);
+        assert!(pack.grammar.recognise("fuel forty").is_some());
+
+        pack.hear_cars(None);
+
+        assert_eq!(
+            car(&pack, "where is car twelve"),
+            Some(SlotValue::Digits("12".into()))
+        );
+        assert_eq!(car(&pack, "where is car five hundred twelve"), None);
     }
 }

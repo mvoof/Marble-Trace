@@ -318,6 +318,9 @@ impl CrewReply {
 /// the app over the voice runtime; the telemetry crate knows only this.
 pub trait CrewSink: Send + Sync {
     fn reply(&self, reply: CrewReply);
+    /// The numbers the session's cars wear, sent when they change: the only
+    /// car numbers the crew then hears. Empty with no session.
+    fn cars(&self, numbers: Vec<String>);
 }
 
 /// The crew's settings as the main window pushes them. The voice folder is

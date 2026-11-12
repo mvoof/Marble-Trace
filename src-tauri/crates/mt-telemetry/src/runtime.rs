@@ -14,6 +14,7 @@ use mt_model::utils::lock_or_recover;
 use tracing::{debug, info, warn};
 
 use crate::control::{TelemetryCommand, TelemetryRun};
+use crate::crew::forget_cars;
 use crate::delivery::scheduler::EmitScheduler;
 use crate::io_worker::{IoWorker, SessionUpdate};
 use crate::loop_state::LoopState;
@@ -131,7 +132,7 @@ pub fn spawn_telemetry_thread(
                 }
 
                 info!("Telemetry loop ended, will retry connection...");
-                reset_telemetry_state(sink.as_ref(), &service, &mut state);
+                reset_telemetry_state(sink.as_ref(), crew.as_deref(), &service, &mut state);
 
                 if !service.is_current(run) {
                     break;
@@ -442,10 +443,12 @@ fn apply_session_update(
 
 fn reset_telemetry_state(
     sink: &dyn EventSink,
+    crew: Option<&dyn CrewSink>,
     service: &TelemetryServiceState,
     state: &mut LoopState,
 ) {
     service.is_connected.store(false, Ordering::Relaxed);
+    forget_cars(crew, &mut state.crew_cars);
     service.publish_session(None);
     service.publish_active_reference(None);
     service.publish_raw_var_meta(Vec::new());

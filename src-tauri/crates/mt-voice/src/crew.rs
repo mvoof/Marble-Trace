@@ -42,7 +42,8 @@ use crate::vosk::Heard;
 const ANSWER_TTL: Duration = Duration::from_secs(8);
 const PACKS_DIR: &str = "packs";
 const CUSTOM_VOICE_PREFIX: &str = "custom:";
-/// A built-in reply's car number, read out digit by digit as a question's is.
+/// A built-in reply's car number, read out as a question's is: "33" is
+/// "thirty three".
 const CAR_NUMBER_ARG: &str = "car";
 
 /// What the app takes from the crew: requests for the telemetry thread and
@@ -95,6 +96,8 @@ pub struct Crew {
     /// A test press is listening with a draft's grammar.
     draft_heard: bool,
     config: Option<CrewConfig>,
+    /// The numbers the session's cars wear; `None` with no session known.
+    cars: Option<Vec<String>>,
 }
 
 impl Crew {
@@ -116,6 +119,7 @@ impl Crew {
             input: None,
             draft_heard: false,
             config: None,
+            cars: None,
         }
     }
 
@@ -133,7 +137,10 @@ impl Crew {
 
         let assets = VoiceAssets::new(&config.voice_root);
         let pack_folder = pack_folder(&config.voice_root, &config.language);
-        let pack = load(&config.language, Some(&pack_folder));
+        let mut pack = load(&config.language, Some(&pack_folder));
+
+        pack.hear_cars(self.cars.as_deref());
+
         let input = InputConfig {
             library: assets.vosk_library(),
             model: assets.vosk_model(&config.language),
@@ -176,6 +183,34 @@ impl Crew {
         }
 
         self.config = Some(config);
+    }
+
+    /// The session's cars changed: the ear hears their numbers alone. Empty
+    /// when no session is known — then any number is heard.
+    pub fn set_cars(&mut self, cars: Vec<String>) {
+        let cars = (!cars.is_empty()).then_some(cars);
+
+        if cars == self.cars {
+            return;
+        }
+
+        self.cars = cars;
+
+        let Some(input) = self.input.as_mut() else {
+            return;
+        };
+
+        {
+            let mut mouth = lock_or_recover(&self.shared.mouth);
+
+            mouth.pack.hear_cars(self.cars.as_deref());
+            input.grammar = mouth.pack.grammar.vosk_grammar();
+        }
+
+        // A test press with a draft puts the saved grammar back on release.
+        if let (Some(ear), false) = (&self.ear, self.draft_heard) {
+            ear.configure(input.clone());
+        }
     }
 
     pub fn set_ptt(&self, held: bool) {
@@ -1181,7 +1216,7 @@ mod tests {
                 .arg("number", CrewArg::Text { value: "99".into() }),
         );
 
-        assert_eq!(last_said(&shared).as_deref(), Some("No car nine nine"));
+        assert_eq!(last_said(&shared).as_deref(), Some("No car ninety nine"));
     }
 
     #[test]

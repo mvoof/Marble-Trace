@@ -186,7 +186,8 @@ pub enum SayFormat {
     YesNo,
     /// Text as it is.
     Text,
-    /// Digit by digit, leading zeros said: a car number, "zero seven".
+    /// A car number as it is heard: leading zeros said, then the number —
+    /// "zero seven", "thirty three".
     Digits,
 }
 
