@@ -3,8 +3,10 @@ import {
   backupSettingsFile as backupSettingsFileCommand,
   keepLastGoodSettings as keepLastGoodSettingsCommand,
   lastGoodSettingsSavedAt as lastGoodSettingsSavedAtCommand,
+  loadSettingsFile,
   logSettingsSnapshot as logSettingsSnapshotCommand,
-  settingsFileExists as settingsFileExistsCommand,
+  saveSettingsFile,
+  type LoadedSettingsFile,
 } from '@shared/api/settings.service';
 import type { UnitSystem } from '@shared/contracts/domain';
 import type { SessionContext } from '@shared/contracts/widget-settings';
@@ -21,8 +23,6 @@ import {
   type StoredLayout,
   type StoredTemplate,
 } from '@app/sync/main/settings-file';
-
-export const SETTINGS_FILE = 'settings.json';
 
 export interface Settings {
   /**
@@ -97,11 +97,6 @@ export const hydrateStores = (
   });
 };
 
-interface Store {
-  set(key: string, value: unknown): Promise<void>;
-  save(): Promise<void>;
-}
-
 export const buildSettings = (root: MainRoot): Settings => ({
   schemaVersion: CURRENT_SCHEMA_VERSION,
   app: { ...root.appSettings.appSettings },
@@ -116,29 +111,22 @@ export const buildSettings = (root: MainRoot): Settings => ({
   inputDevices: root.deviceInput.knownDevices,
 });
 
-export const saveSettings = async (store: Store, root: MainRoot) => {
-  const settings = buildSettings(root);
-
-  await store.set('settings', settings);
-  await store.save();
+export const saveSettings = async (root: MainRoot) => {
+  await saveSettingsFile(buildSettings(root));
 };
 
 /**
- * Whether a settings file is actually there. The store plugin reports an empty
- * store both for a fresh install and for a file it failed to parse, and those
- * two must not be treated alike.
- *
- * Errs towards "present" when the check itself fails: locking a fresh install
- * by mistake is recoverable in one click, seeding defaults over a file we could
- * not read is not.
+ * Reads the settings file. A failed read errs towards `unreadable`: locking a
+ * fresh install by mistake is recoverable in one click, seeding defaults over
+ * a file we could not read is not.
  */
-export const settingsFileExists = async (): Promise<boolean> => {
+export const loadSettings = async (): Promise<LoadedSettingsFile> => {
   try {
-    return await settingsFileExistsCommand();
+    return await loadSettingsFile();
   } catch (error) {
-    console.error('Failed to check for a settings file:', error);
+    console.error('Failed to read the settings file:', error);
 
-    return true;
+    return { status: 'unreadable' };
   }
 };
 

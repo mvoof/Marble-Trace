@@ -14,7 +14,6 @@
     "core:webview:default",
     "core:webview:allow-create-webview-window",
     "core:event:default",
-    "store:default",
     "fs:allow-appdata-read-recursive",
     "fs:allow-appdata-write-recursive",
     "window-state:default",

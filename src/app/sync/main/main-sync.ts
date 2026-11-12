@@ -3,12 +3,11 @@ import { layoutGestureStores } from '@features/layout-editor/layout-gestures';
 import { reaction, type IReactionDisposer, compareStructural } from 'mobx';
 import { getCurrentWindow } from '@tauri-apps/api/window';
 
-import { logSettingsSnapshot } from './persistence';
+import { loadSettings, logSettingsSnapshot } from './persistence';
 import {
   createSaveHandle,
-  holdLockedSettings,
+  offerLastGoodSettings,
   hydrateFromDisk,
-  readSettingsFile,
 } from './persistence-sync';
 import { setupDeviceBindings } from '@features/hotkey-bindings/bindings-sync';
 import { listenSettingsActions, registerHotkeyReactions } from './hotkey-sync';
@@ -132,7 +131,7 @@ export const initMainSync = async (root: MainRoot) => {
 
   if (!mainSyncInitPromise) {
     mainSyncInitPromise = (async () => {
-      const { store, loaded } = await readSettingsFile();
+      const loaded = await loadSettings();
 
       await hydrateFromDisk(root, loaded);
 
@@ -141,7 +140,7 @@ export const initMainSync = async (root: MainRoot) => {
       // would otherwise overwrite it with defaults within a second, which is
       // the exact loss the check exists to prevent.
       if (root.appSettings.settingsLocked) {
-        await holdLockedSettings(root, store);
+        await offerLastGoodSettings(root);
 
         return () => {
           mainSyncInitPromise = null;
@@ -176,7 +175,7 @@ export const initMainSync = async (root: MainRoot) => {
         await listMonitorBounds()
       );
 
-      const onSave = createSaveHandle(root, store);
+      const onSave = createSaveHandle(root);
 
       await onSave();
 

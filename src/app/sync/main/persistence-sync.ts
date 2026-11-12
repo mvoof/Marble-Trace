@@ -1,15 +1,12 @@
-import { load } from '@tauri-apps/plugin-store';
-
 import {
   backupSettingsFile,
   findLastGoodSettings,
   keepLastGoodSettings,
-  settingsFileExists,
   hydrateStores,
   saveSettings,
-  SETTINGS_FILE,
   type Settings,
 } from './persistence';
+import type { LoadedSettingsFile } from '@shared/api/settings.service';
 import { runMigrations } from '@shared/settings-schema/migrate';
 import type { MigrationResult } from '@shared/settings-schema/types';
 import type { MainRoot } from '@app/roots/main-root';
@@ -19,26 +16,10 @@ import type { MainRoot } from '@app/roots/main-root';
  * file — every other one is sent a snapshot (ADR-0007).
  *
  * Ordering contract: everything here runs *before* any reaction is registered.
- * `readSettingsFile` → `hydrateFromDisk` → (caller checks `settingsLocked`) →
+ * `loadSettings` → `hydrateFromDisk` → (caller checks `settingsLocked`) →
  * `createSaveHandle`. Registering a save reaction before hydration would write
  * defaults over the user's file within a second of start.
  */
-
-export interface SettingsFileHandle {
-  set(key: string, value: unknown): Promise<void>;
-  save(): Promise<void>;
-  close(): Promise<void>;
-}
-
-export const readSettingsFile = async (): Promise<{
-  store: SettingsFileHandle;
-  loaded: Settings | null | undefined;
-}> => {
-  const store = await load(SETTINGS_FILE);
-  const loaded = await store.get<Settings>('settings');
-
-  return { store, loaded };
-};
 
 /**
  * Brings the settings file to the current schema and fills the stores from it.
@@ -50,17 +31,18 @@ export const readSettingsFile = async (): Promise<{
  */
 export const hydrateFromDisk = async (
   root: MainRoot,
-  loaded: Settings | null | undefined
+  loaded: LoadedSettingsFile
 ) => {
-  // The plugin hands back nothing both for a fresh install and for a file it
-  // could not parse — a stray BOM, a half-written save. Only the filesystem
-  // separates them, and seeding defaults over the second overwrites exactly the
-  // file this whole path exists to protect.
-  if (!loaded) {
-    if (await settingsFileExists()) {
-      console.error('Settings locked: present on disk but could not be read');
-      root.appSettings.lockSettings('corrupt');
-    }
+  // No file is a first start: the stores keep their defaults and the first
+  // save writes them. A file that is there but unreadable is the opposite —
+  // seeding defaults over it overwrites exactly the file this path protects.
+  if (loaded.status === 'missing') {
+    return;
+  }
+
+  if (loaded.status === 'unreadable') {
+    console.error('Settings locked: present on disk but could not be read');
+    root.appSettings.lockSettings('corrupt');
 
     return;
   }
@@ -72,7 +54,7 @@ export const hydrateFromDisk = async (
   let result: MigrationResult;
 
   try {
-    result = runMigrations(loaded);
+    result = runMigrations(loaded.settings);
   } catch (error) {
     console.error('Settings locked: the migration chain threw:', error);
     root.appSettings.lockSettings('corrupt');
@@ -113,24 +95,11 @@ export const hydrateFromDisk = async (
 };
 
 /**
- * Holds a locked file still for the rest of the session, and offers the way
- * back when there is one.
- *
- * The store plugin saves every store it holds open when the app exits — a
- * relaunch included — so an open handle would write its cache over the file:
- * an empty `{}` over a corrupt one, over the file a reset just deleted, or over
- * one the banner just restored. Closing it leaves the file to the commands.
+ * Offers the way back from a locked file when there is one: a corrupt file
+ * whose last good copy is still on disk. Nothing writes a locked file — no save
+ * reaction is registered, and the backend writes nothing on exit.
  */
-export const holdLockedSettings = async (
-  root: MainRoot,
-  store: SettingsFileHandle
-) => {
-  try {
-    await store.close();
-  } catch (error) {
-    console.error('Failed to close the locked settings file:', error);
-  }
-
+export const offerLastGoodSettings = async (root: MainRoot) => {
   if (root.appSettings.settingsLockReason === 'corrupt') {
     root.appSettings.setLastGoodSettingsSavedAt(await findLastGoodSettings());
   }
@@ -139,9 +108,22 @@ export const holdLockedSettings = async (
 /**
  * The one way settings reach disk. Locked settings never write — a file this
  * build could not migrate must survive the session untouched.
+ *
+ * Saves run one after another, each building the settings when its turn comes:
+ * the reaction, the monitor watch and the close handler may all ask at once,
+ * and an older snapshot must not land after a newer one.
  */
-export const createSaveHandle =
-  (root: MainRoot, store: SettingsFileHandle) => (): Promise<void> =>
-    root.appSettings.settingsLocked
-      ? Promise.resolve()
-      : saveSettings(store, root);
+export const createSaveHandle = (root: MainRoot) => {
+  let queue: Promise<void> = Promise.resolve();
+
+  const saveUnlessLocked = (): Promise<void> =>
+    root.appSettings.settingsLocked ? Promise.resolve() : saveSettings(root);
+
+  return (): Promise<void> => {
+    const save = queue.then(saveUnlessLocked);
+
+    queue = save.catch(() => undefined);
+
+    return save;
+  };
+};

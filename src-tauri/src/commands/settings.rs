@@ -1,22 +1,107 @@
-//! Commands that touch `settings.json` itself.
+//! Commands that read and write the settings files in the config directory.
 //!
-//! The frontend owns the contents — these exist because `tauri-plugin-store`
-//! can only read and write the live file, and the migration chain needs to know
-//! whether a file is absent or merely unreadable, and to move one aside before
-//! it rewrites it.
+//! The frontend owns the contents and the migration chain; the files are read
+//! and written here, whole. Every write goes through a temporary file renamed
+//! into place, and nothing is written on exit: a file this build locked is left
+//! exactly as it was found.
 
 use std::io::Write;
 use std::path::{Path, PathBuf};
+use std::sync::Mutex;
 use std::time::{SystemTime, UNIX_EPOCH};
 
-use serde_json::Value;
+use mt_model::utils::lock_or_recover;
+use serde::Serialize;
+use serde_json::{Map, Value};
 use tauri::{AppHandle, Manager};
-use tracing::info;
+use tracing::{info, warn};
 
 use crate::settings_snapshot;
 
 const SETTINGS_FILE: &str = "settings.json";
+const SETTINGS_KEY: &str = "settings";
 const LAST_GOOD_FILE: &str = "settings.last-good.json";
+const TRACK_SETTINGS_FILE: &str = "track-settings.json";
+const TRACK_ROTATIONS_KEY: &str = "recorded-tracks";
+
+/// One write at a time: `write_replacing` uses a fixed temporary name, and two
+/// saves racing on it could rename a half-written file into place.
+static WRITE_LOCK: Mutex<()> = Mutex::new(());
+
+/// What `load_settings` found on disk. Serialized as `{ "status": … }`, with
+/// `settings` beside it when loaded.
+#[derive(Debug, Serialize)]
+#[serde(tag = "status", rename_all = "camelCase")]
+pub enum LoadedSettings {
+    /// No file: a first start, or the one after a reset. Defaults are seeded.
+    Missing,
+    /// A file that is there but holds no settings document — empty,
+    /// truncated, not JSON — or that could not be read at all. The frontend
+    /// locks it and never writes over it.
+    Unreadable,
+    Loaded {
+        settings: Value,
+    },
+}
+
+/// Reads `settings.json`. Only a file that does not exist is `Missing`: any
+/// other failure, permission denied included, is `Unreadable`, since seeding
+/// defaults over a file we merely could not read would destroy it.
+#[tauri::command]
+pub async fn load_settings(app: AppHandle) -> Result<LoadedSettings, String> {
+    Ok(load_settings_from(&config_dir(&app)?))
+}
+
+/// Writes `{"settings": …}` to `settings.json`, pretty-printed — users read
+/// this file and send it to us.
+#[tauri::command]
+pub async fn save_settings(app: AppHandle, settings: Value) -> Result<(), String> {
+    write_document(&config_dir(&app)?, SETTINGS_FILE, SETTINGS_KEY, settings)
+}
+
+/// The `recorded-tracks` object of `track-settings.json`, or `None` when the
+/// file is missing or unreadable — the angles are cheap to set again.
+#[tauri::command]
+pub async fn read_track_rotations(app: AppHandle) -> Result<Option<Value>, String> {
+    let path = config_dir(&app)?.join(TRACK_SETTINGS_FILE);
+
+    match read_document(&path, TRACK_ROTATIONS_KEY) {
+        Ok(tracks) => Ok(tracks),
+        Err(error) => {
+            warn!("{} unreadable, read as empty: {error}", path.display());
+
+            Ok(None)
+        }
+    }
+}
+
+/// Replaces `track-settings.json` with the given `recorded-tracks` object.
+#[tauri::command]
+pub async fn write_track_rotations(app: AppHandle, tracks: Value) -> Result<(), String> {
+    write_document(
+        &config_dir(&app)?,
+        TRACK_SETTINGS_FILE,
+        TRACK_ROTATIONS_KEY,
+        tracks,
+    )
+}
+
+/// `startMinimized` from the settings file, read before the main window has
+/// loaded them. Anything short of a loaded file with the flag set is `false`.
+pub fn start_minimized(app: &AppHandle) -> bool {
+    let Ok(dir) = config_dir(app) else {
+        return false;
+    };
+
+    match load_settings_from(&dir) {
+        LoadedSettings::Loaded { settings } => settings
+            .get("app")
+            .and_then(|app_settings| app_settings.get("startMinimized"))
+            .and_then(Value::as_bool)
+            .unwrap_or(false),
+        LoadedSettings::Missing | LoadedSettings::Unreadable => false,
+    }
+}
 
 #[tauri::command]
 pub async fn log_settings_snapshot(settings: Value) -> Result<(), String> {
@@ -25,26 +110,8 @@ pub async fn log_settings_snapshot(settings: Value) -> Result<(), String> {
     Ok(())
 }
 
-/// Whether `settings.json` exists on disk, empty or not.
-///
-/// `tauri-plugin-store` hands the frontend an empty store both for a fresh
-/// install and for a file it could not parse — a stray BOM, a truncated write.
-/// Those two need opposite responses, and only the filesystem can tell them
-/// apart: the first should be seeded with defaults, the second must never be
-/// written over. A zero-byte file is the second: the plugin's `fs::write`
-/// truncates before it writes, so a save cut short most often leaves exactly
-/// that — and seeding defaults over it would, one start later, replace the
-/// last-good copy with them.
-#[tauri::command]
-pub async fn settings_file_exists(app: AppHandle) -> Result<bool, String> {
-    Ok(std::fs::metadata(config_dir(&app)?.join(SETTINGS_FILE))
-        .map(|meta| meta.is_file())
-        .unwrap_or(false))
-}
-
 /// Copies `settings.json` aside before the frontend writes a newly migrated
-/// version over it. `tauri-plugin-store` can only read and write the live file,
-/// so the copy has to happen here.
+/// version over it.
 ///
 /// Best effort by design: a failed backup must not stop the migration, or a
 /// user with a read-only config directory could never upgrade.
@@ -96,9 +163,7 @@ pub async fn last_good_settings_saved_at(app: AppHandle) -> Result<Option<u64>, 
 /// same one in a restore-and-relaunch loop.
 ///
 /// The caller relaunches the app afterwards, so the restored file goes through
-/// the whole load pipeline, migrations included. The store plugin must not hold
-/// `settings.json` open by then — it saves every open store on exit, and would
-/// write its empty cache over the restored file. A locked main window closes it.
+/// the whole load pipeline, migrations included.
 #[tauri::command]
 pub async fn restore_last_good_settings(app: AppHandle) -> Result<(), String> {
     let now = SystemTime::now()
@@ -115,11 +180,64 @@ fn config_dir(app: &AppHandle) -> Result<PathBuf, String> {
         .map_err(|e| format!("no config dir: {e}"))
 }
 
-/// Whether the bytes are a store file holding a `settings` object — the shape
-/// `tauri-plugin-store` writes, and the least a copy needs to be worth offering.
+/// Whether the bytes are a file holding a `settings` object — the shape
+/// `save_settings` writes, and the least a copy needs to be worth offering.
 fn is_settings_document(bytes: &[u8]) -> bool {
     serde_json::from_slice::<Value>(bytes)
-        .is_ok_and(|document| document.get("settings").is_some_and(Value::is_object))
+        .is_ok_and(|document| document.get(SETTINGS_KEY).is_some_and(Value::is_object))
+}
+
+fn load_settings_from(dir: &Path) -> LoadedSettings {
+    let path = dir.join(SETTINGS_FILE);
+
+    match read_document(&path, SETTINGS_KEY) {
+        Ok(None) => LoadedSettings::Missing,
+        Ok(Some(settings)) if settings.is_object() => LoadedSettings::Loaded { settings },
+        Ok(Some(_)) => {
+            warn!("{}: `settings` is not an object", path.display());
+
+            LoadedSettings::Unreadable
+        }
+        Err(error) => {
+            warn!("{} is unreadable: {error}", path.display());
+
+            LoadedSettings::Unreadable
+        }
+    }
+}
+
+/// The value under `key` in a JSON file. `Ok(None)` only when the file does
+/// not exist; one that cannot be read or parsed, or lacks the key, is an error.
+fn read_document(path: &Path, key: &str) -> Result<Option<Value>, String> {
+    let bytes = match std::fs::read(path) {
+        Ok(bytes) => bytes,
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => return Ok(None),
+        Err(error) => return Err(format!("read failed: {error}")),
+    };
+
+    let mut document =
+        serde_json::from_slice::<Value>(&bytes).map_err(|e| format!("not JSON: {e}"))?;
+
+    document
+        .get_mut(key)
+        .map(|value| Some(value.take()))
+        .ok_or_else(|| format!("no {key:?} in the file"))
+}
+
+/// Writes `{ key: value }`, pretty-printed, through `write_replacing`. Creates
+/// the config directory on a first start.
+fn write_document(dir: &Path, file: &str, key: &str, value: Value) -> Result<(), String> {
+    let mut document = Map::new();
+    document.insert(key.to_owned(), value);
+
+    let bytes = serde_json::to_vec_pretty(&Value::Object(document))
+        .map_err(|e| format!("serialize failed: {e}"))?;
+
+    std::fs::create_dir_all(dir).map_err(|e| format!("create config dir failed: {e}"))?;
+
+    let _write_guard = lock_or_recover(&WRITE_LOCK);
+
+    write_replacing(&dir.join(file), &bytes)
 }
 
 /// Writes through a temporary file renamed into place, so an interrupted write
@@ -222,11 +340,9 @@ fn restore_last_good(dir: &Path, now_secs: u64) -> Result<(), String> {
 /// Removes `settings.json` from disk.
 ///
 /// The reset button is the only way out of a locked settings file, so it has to
-/// leave nothing behind: `tauri-plugin-store`'s own `clear()` + `save()` writes
-/// an empty `{}` over the file, which `settings_file_exists` then reports as a
-/// file present but unreadable — locking the app again on the next start.
-///
-/// A missing file is a fresh install, which is exactly what a reset means.
+/// leave nothing behind: an emptied file would load as unreadable and lock the
+/// app again on the next start. A missing file is a fresh install, which is
+/// exactly what a reset means.
 #[tauri::command]
 pub async fn delete_settings_file(app: AppHandle) -> Result<(), String> {
     let target = config_dir(&app)?.join(SETTINGS_FILE);
@@ -326,6 +442,58 @@ mod tests {
             read(&dir, &format!("settings.corrupt-{NOW_SECS}.json")),
             TRUNCATED_CONTENT
         );
+    }
+
+    #[test]
+    fn no_file_loads_as_missing() {
+        let dir = scratch_dir("load-missing");
+
+        assert!(matches!(load_settings_from(&dir), LoadedSettings::Missing));
+    }
+
+    #[test]
+    fn an_empty_truncated_or_shapeless_file_loads_as_unreadable() {
+        let dir = scratch_dir("load-unreadable");
+
+        for contents in ["", TRUNCATED_CONTENT, "{}", r#"{"settings":1}"#, "[]"] {
+            std::fs::write(dir.join(SETTINGS_FILE), contents).expect("write");
+
+            assert!(
+                matches!(load_settings_from(&dir), LoadedSettings::Unreadable),
+                "{contents:?} should load as unreadable"
+            );
+        }
+    }
+
+    #[test]
+    fn a_file_that_cannot_be_read_loads_as_unreadable() {
+        let dir = scratch_dir("load-not-a-file");
+        std::fs::create_dir(dir.join(SETTINGS_FILE)).expect("a directory in its place");
+
+        assert!(matches!(
+            load_settings_from(&dir),
+            LoadedSettings::Unreadable
+        ));
+    }
+
+    #[test]
+    fn saved_settings_load_back_and_stay_pretty_printed() {
+        let dir = scratch_dir("save-load");
+        let config_dir = dir.join("first-start");
+        let settings = serde_json::json!({ "schemaVersion": 1, "app": { "startMinimized": true } });
+
+        write_document(&config_dir, SETTINGS_FILE, SETTINGS_KEY, settings.clone()).expect("saved");
+
+        let LoadedSettings::Loaded {
+            settings: read_back,
+        } = load_settings_from(&config_dir)
+        else {
+            panic!("saved settings should load");
+        };
+
+        assert_eq!(read_back, settings);
+        assert!(read(&config_dir, SETTINGS_FILE).starts_with("{\n  \"settings\": {"));
+        assert!(!config_dir.join(format!("{SETTINGS_FILE}.tmp")).exists());
     }
 
     #[test]

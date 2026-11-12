@@ -17,10 +17,6 @@
           {
             "group": ["@tauri-apps/api/event"],
             "message": "Tauri events are wrapped by src/shared/api/events.service.ts — use listenTo/emitToApp/emitToOverlays."
-          },
-          {
-            "group": ["@tauri-apps/plugin-store"],
-            "message": "Settings-file persistence lives in src/app/sync and track-map.store.ts."
           }
         ]
       }
@@ -100,11 +96,7 @@
           {
             "patterns": [
               {
-                "group": [
-                  "@tauri-apps/api/core",
-                  "@tauri-apps/api/event",
-                  "@tauri-apps/plugin-store"
-                ],
+                "group": ["@tauri-apps/api/core", "@tauri-apps/api/event"],
                 "message": "Tauri access lives in src/shared/api/."
               },
               {
@@ -130,10 +122,6 @@
               {
                 "group": ["@tauri-apps/api/event"],
                 "message": "Tauri events are wrapped by src/shared/api/events.service.ts — use listenTo/emitToApp/emitToOverlays."
-              },
-              {
-                "group": ["@tauri-apps/plugin-store"],
-                "message": "Settings-file persistence lives in src/app/sync and track-map.store.ts."
               }
             ]
           }
