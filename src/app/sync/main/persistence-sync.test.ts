@@ -52,11 +52,16 @@ describe('the last-good settings copy', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    // Hydration resolves the `system` language from `navigator`, which Node
+    // only has as a global from 21 — CI runs 20.
+    vi.stubGlobal('navigator', { language: 'en-US' });
     root = new MainRoot({ skipInit: true });
   });
 
   afterEach(() => {
     root.dispose();
+    vi.unstubAllGlobals();
+    vi.restoreAllMocks();
   });
 
   it('is kept after a current file loads', async () => {
