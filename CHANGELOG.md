@@ -48,6 +48,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Settings File — Safe Saves:** A save cut short by a crash or a power loss could leave the settings file empty or half-written; the old file now stays whole until the new one is complete. A settings file saved from Notepad no longer locks the settings, a file another program holds for a moment at start is read again instead of being taken as broken, and Reset settings can no longer be undone by a save still on its way.
+- **Track Map — Rotations Kept:** An unreadable track settings file no longer has the angles of every other track replaced by the one you turn next.
 - **Locked Settings File:** With the settings file unreadable, closing Marble Trace wrote an empty file over it, losing what was left of it, and Reset settings came back to the same warning after the restart. The file is now left as it is, and a reset starts on defaults.
 - **Twitch Chat:** The chat could fail to connect right after startup, so no messages arrived and chat commands went unanswered. It now connects.
 - **Settings Saved Right Away:** The voice crew settings, the car length and the interact mode settings were written to disk only when the main window closed, so a crash or a forced close lost them. Every setting is now saved within half a second of the change.
