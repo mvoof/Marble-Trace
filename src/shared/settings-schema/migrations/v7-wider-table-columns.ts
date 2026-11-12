@@ -433,11 +433,29 @@ const predictedLapVisibility = (
 
 const FUEL_TYPE = 'fuel';
 
-/** Widget setting → app setting, frozen. */
-const FUEL_STRATEGY_KEYS: Readonly<Record<string, string>> = {
-  pitWarningLaps: 'fuelPitWarningLaps',
-  fuelAvgWindow: 'fuelAvgWindow',
-  countYellowFlagLaps: 'fuelCountYellowFlagLaps',
+interface LiftedSetting {
+  appKey: string;
+  /** What the app setting may hold; anything else is left to the default. */
+  accepts: (value: unknown) => boolean;
+}
+
+const isNonNegativeNumber = (value: unknown): boolean =>
+  typeof value === 'number' && Number.isFinite(value) && value >= 0;
+
+/** Widget setting → app setting, frozen. The window is a whole lap count. */
+const FUEL_STRATEGY_KEYS: Readonly<Record<string, LiftedSetting>> = {
+  pitWarningLaps: {
+    appKey: 'fuelPitWarningLaps',
+    accepts: isNonNegativeNumber,
+  },
+  fuelAvgWindow: {
+    appKey: 'fuelAvgWindow',
+    accepts: (value) => isNonNegativeNumber(value) && Number.isInteger(value),
+  },
+  countYellowFlagLaps: {
+    appKey: 'fuelCountYellowFlagLaps',
+    accepts: (value) => typeof value === 'boolean',
+  },
 };
 
 /**
@@ -479,8 +497,10 @@ const liftFuelStrategy = (blob: SettingsBlob): SettingsBlob => {
   const source = fuelStrategySource(blob) ?? {};
   const app = { ...(asObject(blob['app']) ?? {}) };
 
-  for (const [widgetKey, appKey] of Object.entries(FUEL_STRATEGY_KEYS)) {
-    if (widgetKey in source && !(appKey in app)) {
+  for (const [widgetKey, { appKey, accepts }] of Object.entries(
+    FUEL_STRATEGY_KEYS
+  )) {
+    if (accepts(source[widgetKey]) && !(appKey in app)) {
       app[appKey] = source[widgetKey];
     }
   }

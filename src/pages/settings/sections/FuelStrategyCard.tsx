@@ -46,12 +46,10 @@ export const FuelStrategyCard = observer(() => {
           <InputNumber
             min={FUEL_PIT_WARNING_LAPS_MIN}
             max={FUEL_PIT_WARNING_LAPS_MAX}
-            step={1}
-            precision={0}
             value={settings.fuelPitWarningLaps}
             onChange={(value) => {
               if (value !== null) {
-                appSettings.update({ fuelPitWarningLaps: Math.round(value) });
+                appSettings.update({ fuelPitWarningLaps: value });
               }
             }}
           />

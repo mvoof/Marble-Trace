@@ -427,3 +427,23 @@ describe('v7 — the fuel strategy moves to the app settings', () => {
     expect(migrated['app']).toStrictEqual({ fuelAvgWindow: 7 });
   });
 });
+
+describe('v7 — a fuel strategy value the app cannot hold', () => {
+  it('is dropped, so the default takes it', () => {
+    const migrated = v7WiderTableColumns.migrate(
+      fileWith([
+        {
+          ...instance('fuel', 240),
+          settings: {
+            pitWarningLaps: 2.5,
+            fuelAvgWindow: 3.5,
+            countYellowFlagLaps: 'yes',
+          },
+        },
+      ])
+    );
+
+    expect(migrated['app']).toStrictEqual({ fuelPitWarningLaps: 2.5 });
+    expect(widgetsOf(migrated)[0]['settings']).toStrictEqual({});
+  });
+});
