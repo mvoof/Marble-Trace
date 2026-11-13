@@ -26,9 +26,6 @@ export const MainWindow = observer(() => {
   const navigation = useMainNavigationStore();
   const { t } = useTranslation('main-app');
 
-  const activeSection = navigation.section;
-  const activeWidgetId = navigation.activeWidgetId;
-
   useEffect(() => {
     void simStore.startStream();
 
@@ -128,7 +125,7 @@ export const MainWindow = observer(() => {
           <UpdateBanner />
 
           <Content className={styles.content}>
-            {activeSection === 'settings' && (
+            {navigation.section === 'settings' && (
               <div className={styles.scrollContainer} key="settings">
                 <div
                   className={`${styles.contentInner} ${styles.animateFadeIn}`}
@@ -138,7 +135,7 @@ export const MainWindow = observer(() => {
               </div>
             )}
 
-            {activeSection === 'crew' && (
+            {navigation.section === 'crew' && (
               <div
                 className={`${styles.sectionContainer} ${styles.animateFadeIn}`}
                 key="crew"
@@ -147,7 +144,7 @@ export const MainWindow = observer(() => {
               </div>
             )}
 
-            {activeSection === 'layouts' && (
+            {navigation.section === 'layouts' && (
               <div
                 className={`${styles.sectionContainer} ${styles.animateFadeIn}`}
                 key="layouts"
@@ -159,7 +156,7 @@ export const MainWindow = observer(() => {
               </div>
             )}
 
-            {activeSection === 'widgets' && (
+            {navigation.section === 'widgets' && (
               <div
                 className={`${styles.sectionContainer} ${styles.animateFadeIn}`}
                 key="widgets"
@@ -170,13 +167,13 @@ export const MainWindow = observer(() => {
                       {t('mainWindow.widgetModules')}
                     </div>
                     <WidgetList
-                      selectedId={activeWidgetId}
+                      selectedId={navigation.activeWidgetId}
                       onSelect={(widgetId) => navigation.openWidget(widgetId)}
                     />
                   </div>
 
                   <div className={styles.widgetWorkbench}>
-                    <WidgetWorkbench widgetId={activeWidgetId} />
+                    <WidgetWorkbench widgetId={navigation.activeWidgetId} />
                   </div>
                 </div>
               </div>

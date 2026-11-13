@@ -7,7 +7,7 @@ export type LayoutsMode = 'list' | 'editor';
 /** A page, and what to open inside it. */
 type Destination = { section: MainSection; widgetId?: string };
 
-export type MainNavigationDeps = {
+type MainNavigationDeps = {
   voiceCrew: { dirty: boolean };
   widgetDefaults: { catalogWidgets: readonly { id: string }[] };
 };
