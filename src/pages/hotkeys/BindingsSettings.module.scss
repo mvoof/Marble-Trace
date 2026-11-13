@@ -209,3 +209,13 @@
   color: $sys-text-muted;
   font-family: $font-mono;
 }
+
+// Opened from one widget: says whose bindings these are, and how to see all.
+.filterRow {
+  display: flex;
+  align-items: center;
+  gap: rem(8);
+  margin-bottom: rem(16);
+  font-size: rem(12);
+  color: $sys-text-primary;
+}

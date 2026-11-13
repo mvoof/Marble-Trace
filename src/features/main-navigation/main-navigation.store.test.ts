@@ -78,6 +78,35 @@ describe('MainNavigationStore', () => {
     expect(navigation.activeWidgetId).toBe('relative');
   });
 
+  it('opens the hotkeys page filtered to one widget', () => {
+    const { navigation } = buildNavigation();
+
+    navigation.openHotkeys('relative');
+
+    expect(navigation.section).toBe('hotkeys');
+    expect(navigation.hotkeysWidget).toBe('relative');
+  });
+
+  it('opens the hotkeys page unfiltered from the header', () => {
+    const { navigation } = buildNavigation();
+
+    navigation.openHotkeys('relative');
+    navigation.open('settings');
+    navigation.open('hotkeys');
+
+    expect(navigation.hotkeysWidget).toBeNull();
+  });
+
+  it('drops the hotkeys filter when asked to show every widget', () => {
+    const { navigation } = buildNavigation();
+
+    navigation.openHotkeys('relative');
+    navigation.showAllHotkeys();
+
+    expect(navigation.section).toBe('hotkeys');
+    expect(navigation.hotkeysWidget).toBeNull();
+  });
+
   describe('leaving the crew page with unsaved edits', () => {
     const buildOnDirtyCrew = () => {
       const built = buildNavigation();
@@ -128,6 +157,16 @@ describe('MainNavigationStore', () => {
 
       expect(navigation.section).toBe('widgets');
       expect(navigation.activeWidgetId).toBe('relative');
+    });
+
+    it('opens the filtered hotkeys page once told to leave', () => {
+      const { navigation } = buildOnDirtyCrew();
+
+      navigation.openHotkeys('relative');
+      navigation.leave();
+
+      expect(navigation.section).toBe('hotkeys');
+      expect(navigation.hotkeysWidget).toBe('relative');
     });
 
     it('drops the asked-for widget when told to stay', () => {

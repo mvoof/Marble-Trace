@@ -12,8 +12,6 @@ export type SettingsSectionId =
   | 'companionApps'
   | 'overlay'
   | 'interaction'
-  | 'bindings'
-  | 'devices'
   | 'trackMap'
   | 'sharedValues'
   | 'streamChat'
@@ -51,7 +49,7 @@ export const SETTINGS_MENU = settingsMenu(hasDevTools);
 
 export const DEFAULT_SETTINGS_SECTION: SettingsMenuSectionId = 'general';
 
-export type FeaturePage = 'connections' | 'data' | 'hotkeys';
+export type FeaturePage = 'connections' | 'data';
 
 /**
  * The sections each feature page shows, one under another, until the page is
@@ -60,7 +58,6 @@ export type FeaturePage = 'connections' | 'data' | 'hotkeys';
 export const FEATURE_PAGE_SECTIONS: Record<FeaturePage, SettingsSectionId[]> = {
   connections: ['remoteScreens', 'streamChat', 'companionApps'],
   data: ['trackMap', 'sharedValues'],
-  hotkeys: ['bindings', 'devices'],
 };
 
 export const isFeaturePage = (page: string): page is FeaturePage =>

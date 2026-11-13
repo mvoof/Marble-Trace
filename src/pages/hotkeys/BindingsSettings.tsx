@@ -11,13 +11,16 @@ import { BindingCaptureModal } from '@features/hotkey-bindings/BindingCaptureMod
 import {
   actionLabel,
   bindingLabel,
+  ownerLabel,
 } from '@features/hotkey-bindings/binding-labels';
+import { useMainNavigationStore } from '@features/main-navigation/main-navigation-context';
 import styles from './BindingsSettings.module.scss';
 
 export const BindingsSettings = observer(() => {
   const bindings = useBindingsStore();
   const bindingsUi = useBindingsUiStore();
   const deviceInput = useDeviceInputStore();
+  const navigation = useMainNavigationStore();
   const { t } = useTranslation('main-app');
 
   // Every group starts open: the whole list is short enough to scan, and
@@ -59,7 +62,14 @@ export const BindingsSettings = observer(() => {
     );
   };
 
-  const groups = bindings.registry.owners
+  const filteredWidget = navigation.hotkeysWidget;
+
+  const shownOwners =
+    filteredWidget === null
+      ? bindings.registry.owners
+      : bindings.registry.owners.filter((owner) => owner === filteredWidget);
+
+  const groups = shownOwners
     .map((owner) => ({
       owner,
       actionIds: bindings.registry.actions
@@ -73,6 +83,24 @@ export const BindingsSettings = observer(() => {
       <div className={styles.card}>
         <div className={styles.cardContent}>
           <div className={styles.intro}>{t('bindings.intro')}</div>
+
+          {filteredWidget !== null && (
+            <div className={styles.filterRow}>
+              <span>
+                {t('bindings.filteredTo', {
+                  widget: ownerLabel(filteredWidget, bindings.registry, t),
+                })}
+              </span>
+
+              <Button
+                size="small"
+                type="link"
+                onClick={() => navigation.showAllHotkeys()}
+              >
+                {t('bindings.showAll')}
+              </Button>
+            </div>
+          )}
 
           <div className={styles.toolbar}>
             <BindingSearch />

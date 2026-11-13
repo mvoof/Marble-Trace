@@ -1,6 +1,4 @@
 import type { SettingsSectionId } from './settings-sections';
-import { BindingsSettings } from '@pages/settings/bindings/BindingsSettings';
-import { DevicesSettings } from '@pages/settings/bindings/DevicesSettings';
 import { GeneralSection } from './sections/GeneralSection';
 import { CompanionAppsSection } from '@features/companion-apps/CompanionAppsSection';
 import { UpdatesSection } from './sections/UpdatesSection';
@@ -25,8 +23,6 @@ export const SECTION_COMPONENTS: Record<
   about: AboutSection,
   overlay: OverlaySection,
   interaction: InteractionSection,
-  bindings: BindingsSettings,
-  devices: DevicesSettings,
   trackMap: TrackMapSection,
   sharedValues: SharedValuesSection,
   streamChat: StreamChatSection,

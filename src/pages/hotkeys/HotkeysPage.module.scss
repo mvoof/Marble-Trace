@@ -1,0 +1,29 @@
+.header {
+  margin-bottom: rem(40);
+}
+
+.title {
+  font-size: rem(24);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: $sys-text-primary;
+  margin: 0 !important;
+}
+
+// Bindings, then devices, one under another: the page has no inner menu.
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: rem(40);
+}
+
+.pane {
+  min-width: 0;
+}
+
+.paneTitle {
+  font-size: rem(16);
+  font-weight: 600;
+  color: $sys-text-primary;
+  margin: 0 0 rem(20);
+}

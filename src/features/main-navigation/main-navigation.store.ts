@@ -16,7 +16,12 @@ export type MainSection = (typeof POCKET_SECTIONS)[number] | 'settings';
 export type LayoutsMode = 'list' | 'editor';
 
 /** A page, and what to open inside it. */
-type Destination = { section: MainSection; widgetId?: string };
+type Destination = {
+  section: MainSection;
+  widgetId?: string;
+  /** On the Hotkeys page: the one widget type to show bindings for. */
+  hotkeysWidget?: string;
+};
 
 type MainNavigationDeps = {
   voiceCrew: { dirty: boolean };
@@ -33,6 +38,9 @@ export class MainNavigationStore {
 
   /** The Layouts page's list or editor, kept while other pages are open. */
   layoutsMode: LayoutsMode = 'list';
+
+  /** The widget type the Hotkeys page is filtered to; null shows them all. */
+  hotkeysWidget: string | null = null;
 
   private chosenWidgetId: string | null = null;
 
@@ -64,6 +72,16 @@ export class MainNavigationStore {
   /** The widgets page, on this widget. */
   openWidget(widgetId: string) {
     this.goTo({ section: 'widgets', widgetId });
+  }
+
+  /** The Hotkeys page, showing only this widget type's bindings. */
+  openHotkeys(widgetType: string) {
+    this.goTo({ section: 'hotkeys', hotkeysWidget: widgetType });
+  }
+
+  /** The Hotkeys page drops its widget filter. */
+  showAllHotkeys() {
+    this.hotkeysWidget = null;
   }
 
   setLayoutsMode(mode: LayoutsMode) {
@@ -104,6 +122,10 @@ export class MainNavigationStore {
   private arrive(destination: Destination) {
     if (destination.widgetId !== undefined) {
       this.chosenWidgetId = destination.widgetId;
+    }
+
+    if (destination.section === 'hotkeys') {
+      this.hotkeysWidget = destination.hotkeysWidget ?? null;
     }
 
     this.section = destination.section;
