@@ -121,10 +121,10 @@
     "addRemoteScreenTooltip": "Add a virtual screen — not a monitor of this PC, but a page a browser opens by link: a tablet, a phone, or a browser source in OBS",
     "addRemoteScreenConfirm": "Add browser screen",
     "remoteScreenNamePlaceholder": "Screen name, e.g. Wheel tablet",
-    "remoteScreenDefaultName": "Remote screen",
-    "remoteScreenTag": "remote",
-    "arrangeRemoteScreens": "Tidy remote screens",
-    "arrangeRemoteScreensTooltip": "Lay the remote screens out in rows under the desktop, widgets included",
+    "remoteScreenDefaultName": "Browser screen",
+    "remoteScreenTag": "browser",
+    "arrangeRemoteScreens": "Tidy browser screens",
+    "arrangeRemoteScreensTooltip": "Lay the browser screens out in rows under the desktop, widgets included",
     "addRemoteScreenHint": "Anything that opens the link renders this screen: a tablet on your network, or a Browser Source in OBS. Make the ground transparent for OBS, and size the source to match — the first one that connects reports its own size, and fitting to it moves every widget on the screen.",
     "remoteScreenTransparent": "Transparent background (for OBS)",
     "remoteScreenTransparentSuffix": "transparent",
@@ -554,21 +554,18 @@
     "nav": {
       "sections": {
         "general": "General",
-        "companionApps": "Companion apps",
         "updates": "Updates",
         "about": "About",
         "overlay": "Widget display",
         "interaction": "Interaction modes",
         "trackMap": "Track data",
         "sharedValues": "Shared values",
-        "streamChat": "Stream chat",
         "maintenance": "Reset & diagnostics",
-        "telemetryInspector": "Telemetry inspector",
-        "remoteScreens": "Remote screens"
+        "telemetryInspector": "Telemetry inspector"
       }
     },
     "remote": {
-      "title": "Remote screens",
+      "title": "Browser screens",
       "enableTitle": "Serve layouts to other devices",
       "enableDesc": "Runs a small web server so a phone or tablet on the same network can open a screen of the active layout in its browser. Devices only watch — they cannot change anything.",
       "running": "Running on {{ip}}:{{port}}",
@@ -583,9 +580,9 @@
       "tokenDesc": "Devices need this token to open a screen. It is already part of the links and QR codes below.",
       "lanLabel": "Reachable from the local network",
       "regenerateToken": "New token",
-      "screensTitle": "Remote screens",
+      "screensTitle": "Browser screens",
       "screensDesc": "Open the address on the device. Adding it to the home screen hides the browser bar, so the layout gets the whole display.",
-      "screensEmpty": "No remote screens yet. Add one in the layout editor, next to the monitors.",
+      "screensEmpty": "No browser screens yet. Add one in the layout editor, next to the monitors.",
       "usedInLayouts": "Layouts",
       "activeNow": "Active now",
       "inactive": "Inactive in current session",
@@ -630,6 +627,13 @@
       "running": "Running",
       "stopped": "Not running",
       "title": "Companion apps"
+    }
+  },
+  "connectionsPage": {
+    "sections": {
+      "browserScreens": "Browser screens",
+      "streamChat": "Stream chat",
+      "companionApps": "Companion apps"
     }
   },
   "bindings": {

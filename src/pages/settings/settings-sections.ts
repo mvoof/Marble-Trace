@@ -9,13 +9,10 @@ export type SettingsSectionId =
   | 'general'
   | 'updates'
   | 'about'
-  | 'companionApps'
   | 'overlay'
   | 'interaction'
   | 'trackMap'
   | 'sharedValues'
-  | 'streamChat'
-  | 'remoteScreens'
   | 'maintenance'
   | 'telemetryInspector';
 
@@ -49,14 +46,13 @@ export const SETTINGS_MENU = settingsMenu(hasDevTools);
 
 export const DEFAULT_SETTINGS_SECTION: SettingsMenuSectionId = 'general';
 
-export type FeaturePage = 'connections' | 'data';
+export type FeaturePage = 'data';
 
 /**
  * The sections each feature page shows, one under another, until the page is
  * given an inner menu of its own.
  */
 export const FEATURE_PAGE_SECTIONS: Record<FeaturePage, SettingsSectionId[]> = {
-  connections: ['remoteScreens', 'streamChat', 'companionApps'],
   data: ['trackMap', 'sharedValues'],
 };
 

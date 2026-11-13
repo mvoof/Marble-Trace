@@ -121,10 +121,10 @@
     "addRemoteScreenTooltip": "添加一个虚拟屏幕——不是这台电脑的显示器，而是浏览器通过链接打开的页面：平板、手机或 OBS 中的浏览器源",
     "addRemoteScreenConfirm": "添加浏览器屏幕",
     "remoteScreenNamePlaceholder": "屏幕名称，例如“方向盘平板”",
-    "remoteScreenDefaultName": "远程屏幕",
-    "remoteScreenTag": "远程",
-    "arrangeRemoteScreens": "整理远程屏幕",
-    "arrangeRemoteScreensTooltip": "将远程屏幕连同其挂件排列在桌面下方的多行中",
+    "remoteScreenDefaultName": "浏览器屏幕",
+    "remoteScreenTag": "浏览器",
+    "arrangeRemoteScreens": "整理浏览器屏幕",
+    "arrangeRemoteScreensTooltip": "将浏览器屏幕连同其挂件排列在桌面下方的多行中",
     "addRemoteScreenHint": "任何打开该链接的设备都会渲染此屏幕：网络中的平板，或 OBS 的浏览器源。用于 OBS 时请将背景设为透明，并把源设成相同尺寸——第一个连接的会上报自己的尺寸，按它调整会移动该屏幕上的所有挂件。",
     "remoteScreenTransparent": "透明背景（用于 OBS）",
     "remoteScreenTransparentSuffix": "透明",
@@ -552,21 +552,18 @@
     "nav": {
       "sections": {
         "general": "常规",
-        "companionApps": "配套程序",
         "updates": "更新",
         "about": "关于",
         "overlay": "组件显示",
         "interaction": "交互模式",
         "trackMap": "赛道数据",
         "sharedValues": "通用数值",
-        "streamChat": "直播聊天",
         "maintenance": "重置与诊断",
-        "telemetryInspector": "遥测检查器",
-        "remoteScreens": "远程屏幕"
+        "telemetryInspector": "遥测检查器"
       }
     },
     "remote": {
-      "title": "远程屏幕",
+      "title": "浏览器屏幕",
       "enableTitle": "将布局提供给其他设备",
       "enableDesc": "启动一个小型网页服务器，让同一网络中的手机或平板在浏览器中打开当前布局的一个屏幕。设备只能观看，无法更改任何内容。",
       "running": "运行于 {{ip}}:{{port}}",
@@ -581,9 +578,9 @@
       "tokenDesc": "设备需要此令牌才能打开屏幕。下方的链接和二维码中已包含该令牌。",
       "lanLabel": "可从局域网访问",
       "regenerateToken": "新令牌",
-      "screensTitle": "远程屏幕",
+      "screensTitle": "浏览器屏幕",
       "screensDesc": "在设备上打开该地址。将其添加到主屏幕会隐藏浏览器地址栏，使布局占满整个显示屏。",
-      "screensEmpty": "尚无远程屏幕。请在布局编辑器中的显示器旁添加一个。",
+      "screensEmpty": "尚无浏览器屏幕。请在布局编辑器中的显示器旁添加一个。",
       "usedInLayouts": "布局",
       "activeNow": "当前活跃",
       "inactive": "在当前会话中未激活",
@@ -628,6 +625,13 @@
       "running": "运行中",
       "stopped": "未运行",
       "title": "配套程序"
+    }
+  },
+  "connectionsPage": {
+    "sections": {
+      "browserScreens": "浏览器屏幕",
+      "streamChat": "直播聊天",
+      "companionApps": "配套程序"
     }
   },
   "bindings": {
