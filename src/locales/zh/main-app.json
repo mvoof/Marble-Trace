@@ -556,8 +556,6 @@
         "about": "关于",
         "overlay": "组件显示",
         "interaction": "交互模式",
-        "trackMap": "赛道数据",
-        "sharedValues": "通用数值",
         "maintenance": "重置与诊断",
         "telemetryInspector": "遥测检查器"
       }
@@ -632,6 +630,17 @@
       "browserScreens": "浏览器屏幕",
       "streamChat": "直播聊天",
       "companionApps": "配套程序"
+    }
+  },
+  "dataPage": {
+    "sections": {
+      "tracks": "已记录的赛道",
+      "strategy": "策略",
+      "statistics": "统计"
+    },
+    "statistics": {
+      "comingTitle": "统计将随导入功能推出",
+      "comingDesc": "你的会话、成绩、iRating 和事故将从 iRacing 写入磁盘的遥测文件中读取。此处将提供文件夹设置、重新导入、跳过的文件和 CSV 导出。"
     }
   },
   "bindings": {

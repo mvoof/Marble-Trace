@@ -4,15 +4,13 @@ import {
 } from '@shared/ui/SectionedPage/section-menu';
 import { hasDevTools } from './dev-tools';
 
-/** Every section the settings and the feature pages draw. */
+/** Every section the Settings page draws. */
 export type SettingsSectionId =
   | 'general'
   | 'updates'
   | 'about'
   | 'overlay'
   | 'interaction'
-  | 'trackMap'
-  | 'sharedValues'
   | 'maintenance'
   | 'telemetryInspector';
 
@@ -45,16 +43,3 @@ export const settingsMenu = (
 export const SETTINGS_MENU = settingsMenu(hasDevTools);
 
 export const DEFAULT_SETTINGS_SECTION: SettingsMenuSectionId = 'general';
-
-export type FeaturePage = 'data';
-
-/**
- * The sections each feature page shows, one under another, until the page is
- * given an inner menu of its own.
- */
-export const FEATURE_PAGE_SECTIONS: Record<FeaturePage, SettingsSectionId[]> = {
-  data: ['trackMap', 'sharedValues'],
-};
-
-export const isFeaturePage = (page: string): page is FeaturePage =>
-  Object.hasOwn(FEATURE_PAGE_SECTIONS, page);

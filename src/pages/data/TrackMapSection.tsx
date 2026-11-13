@@ -7,7 +7,7 @@ import { useSessionStore } from '@entities/session/session-context';
 import { useTrackMapWidgetStore } from '@entities/track/track-map-context';
 import { useTrackRotationStore } from '@entities/track/track-rotation-context';
 import { SettingsCard } from '@shared/ui/SettingsCard/SettingsCard';
-import styles from '../SettingsPage.module.scss';
+import styles from './DataPage.module.scss';
 
 export const TrackMapSection = observer(() => {
   const sim = useSimStore();

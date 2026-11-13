@@ -11,7 +11,7 @@ import {
   FUEL_AVG_WINDOW_MAX,
 } from '@shared/contracts/generated/backend-constants';
 import { SettingsCard } from '@shared/ui/SettingsCard/SettingsCard';
-import styles from '../SettingsPage.module.scss';
+import styles from './DataPage.module.scss';
 
 /**
  * How the fuel figures are worked out. The car's, not a screen's: the backend

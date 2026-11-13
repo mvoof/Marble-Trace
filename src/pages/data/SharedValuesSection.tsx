@@ -5,7 +5,7 @@ import { useAppSettingsStore } from '@entities/app-settings/app-settings-context
 import { SettingsCard } from '@shared/ui/SettingsCard/SettingsCard';
 import { FuelStrategyCard } from './FuelStrategyCard';
 import { PitStrategyCard } from './PitStrategyCard';
-import styles from '../SettingsPage.module.scss';
+import styles from './DataPage.module.scss';
 
 /**
  * Values several widgets read and none of them owns.

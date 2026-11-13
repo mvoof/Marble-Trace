@@ -11,8 +11,7 @@ import { CrewPage } from '@pages/crew/CrewPage';
 import { HomePage } from '@pages/home/HomePage';
 import { HotkeysPage } from '@pages/hotkeys/HotkeysPage';
 import { ConnectionsPage } from '@pages/connections/ConnectionsPage';
-import { FeatureSections } from '@pages/settings/FeatureSections';
-import { isFeaturePage } from '@pages/settings/settings-sections';
+import { DataPage } from '@pages/data/DataPage';
 import { CrewLeaveDialog } from '@pages/crew/CrewLeaveDialog';
 import { useMainNavigationStore } from '@features/main-navigation/main-navigation-context';
 import { AppHeader } from './AppHeader/AppHeader';
@@ -139,13 +138,12 @@ export const MainWindow = observer(() => {
               </div>
             )}
 
-            {isFeaturePage(navigation.section) && (
-              <div className={styles.scrollContainer} key={navigation.section}>
-                <div
-                  className={`${styles.contentInner} ${styles.animateFadeIn}`}
-                >
-                  <FeatureSections page={navigation.section} />
-                </div>
+            {navigation.section === 'data' && (
+              <div
+                className={`${styles.pageContainer} ${styles.animateFadeIn}`}
+                key="data"
+              >
+                <DataPage />
               </div>
             )}
 

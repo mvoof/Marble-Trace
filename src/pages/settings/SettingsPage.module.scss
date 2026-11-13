@@ -1,39 +1,5 @@
-.header {
-  margin-bottom: rem(40);
-}
-
-.title {
-  font-size: rem(24);
-  font-weight: 600;
-  letter-spacing: -0.01em;
-  color: #ffffff;
-  margin: 0 !important;
-}
-
-.pane {
-  min-width: 0;
-}
-
-// A feature page's sections, one under another.
-.stack {
-  display: flex;
-  flex-direction: column;
-  gap: rem(40);
-}
-
-.paneTitle {
-  font-size: rem(16);
-  font-weight: 600;
-  color: #ffffff;
-  margin: 0 0 rem(20);
-}
-
 .sliderWidth {
   width: rem(160);
-}
-
-.buttonFlex {
-  flex: 1;
 }
 
 .fieldHint {

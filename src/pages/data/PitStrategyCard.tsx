@@ -11,7 +11,7 @@ import {
 } from '@shared/contracts/pit-strategy';
 import { useUnitsStore } from '@entities/app-settings/units-context';
 import { SettingsCard } from '@shared/ui/SettingsCard/SettingsCard';
-import styles from '../SettingsPage.module.scss';
+import styles from './DataPage.module.scss';
 
 // Remaining tread, in percent. Above 90 every fresh set would be ordered and
 // below 10 the tires are already gone, so neither end is worth offering.

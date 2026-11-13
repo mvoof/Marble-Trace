@@ -558,8 +558,6 @@
         "about": "Acerca de",
         "overlay": "Visibilidad de widgets",
         "interaction": "Modos de interacción",
-        "trackMap": "Datos del circuito",
-        "sharedValues": "Valores compartidos",
         "maintenance": "Restablecer y diagnóstico",
         "telemetryInspector": "Inspector de telemetría"
       }
@@ -634,6 +632,17 @@
       "browserScreens": "Pantallas para navegador",
       "streamChat": "Chat del directo",
       "companionApps": "Aplicaciones complementarias"
+    }
+  },
+  "dataPage": {
+    "sections": {
+      "tracks": "Circuitos grabados",
+      "strategy": "Estrategia",
+      "statistics": "Estadísticas"
+    },
+    "statistics": {
+      "comingTitle": "Las estadísticas llegan con la importación",
+      "comingDesc": "Tus sesiones, resultados, iRating e incidentes se leerán de los archivos de telemetría que iRacing guarda en el disco. Esta sección tendrá su carpeta, la reimportación, los archivos omitidos y la exportación a CSV."
     }
   },
   "bindings": {
