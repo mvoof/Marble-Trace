@@ -1,5 +1,4 @@
 import { observer } from 'mobx-react-lite';
-import { useTranslation } from 'react-i18next';
 import styles from '@features/widget-settings/WidgetSettings.module.scss';
 import { Card } from '@features/widget-settings/Card';
 import { schemaRows } from '@features/widget-settings/schema-rows';
@@ -11,25 +10,27 @@ export const PANEL_WIDGET_IDS = ['radio'];
 const { Row } = schemaRows(RADIO_SETTINGS);
 
 export const RadioSettingsPanel = observer(() => {
-  const { t } = useTranslation('widgets');
-
   return (
-    <Card title={t('settingsPanels.radio.moduleParameters')}>
-      <div className={styles.fieldGroup}>
-        <Row setting="nameFormat" />
-      </div>
+    <>
+      <Card group="content">
+        <div className={styles.fieldGroup}>
+          <Row setting="nameFormat" />
+        </div>
 
-      <div className={styles.fieldGroup}>
-        <Row setting="showChannel" />
-      </div>
+        <div className={styles.fieldGroup}>
+          <Row setting="showChannel" />
+        </div>
+      </Card>
 
-      <div className={styles.fieldGroup}>
-        <Row setting="showOnRetune" />
-      </div>
+      <Card group="behaviour">
+        <div className={styles.fieldGroup}>
+          <Row setting="showOnRetune" />
+        </div>
 
-      <div className={styles.fieldGroup}>
-        <Row setting="idleShowsChannel" />
-      </div>
-    </Card>
+        <div className={styles.fieldGroup}>
+          <Row setting="idleShowsChannel" />
+        </div>
+      </Card>
+    </>
   );
 });

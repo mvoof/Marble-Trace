@@ -119,7 +119,6 @@
       "rpmColorHigh": "Alta",
       "rpmColorShift": "Cambio",
       "rpmColorLimit": "Parpadeo",
-      "qualifying": "Clasificación",
       "qualifyingVisibility": "Mostrar en clasificación",
       "qualifyingVisibilityDesc": "Automático: se oculta durante la clasificación en solitario (un solo coche en pista)",
       "qualifyingVisibility_always": "Siempre",
@@ -181,7 +180,6 @@
         "sessionOptimal": "Mejor vuelta teórica: el mejor sector de cualquier piloto de la sesión, sumados.",
         "sessionLast": "La última vuelta completa de cualquier piloto de la sesión."
       },
-      "visibility": "Visibilidad",
       "hideWhenNoReference": "Ocultar si no hay vuelta de referencia",
       "showGauge": "Mostrar el indicador de delta",
       "lapCompletedCard": "Tarjeta de vuelta completada",
@@ -205,7 +203,6 @@
       "showNextStopForecastDesc": "Vuelta y tiempo estimados hasta que se abra la ventana de boxes."
     },
     "enginePanel": {
-      "moduleParameters": "Parámetros del módulo",
       "showOilTemp": "Temperatura del aceite",
       "showOilTempDesc": "Muestra la temperatura del aceite del motor.",
       "showWaterTemp": "Temperatura del agua",
@@ -259,7 +256,6 @@
       "animateDesc": "Activa los patrones dinámicos de desplazamiento y ondulación de las banderas."
     },
     "gMeter": {
-      "moduleParameters": "Parámetros del módulo",
       "displayMode": "Modo de visualización",
       "displayMode_trail": "Estela",
       "displayMode_fading": "Desvanecido",
@@ -349,7 +345,6 @@
       "showBarsDesc": "Mostrar las barras de acelerador, freno y embrague junto al gráfico."
     },
     "linearMap": {
-      "moduleLayout": "Disposición del módulo",
       "orientation": "Orientación",
       "orientation_horizontal": "Horizontal",
       "orientation_vertical": "Vertical",
@@ -406,7 +401,6 @@
       }
     },
     "closeBattle": {
-      "appearsWhen": "Cuando aparece",
       "trigger": "Disparador",
       "triggerDesc": "Qué cuenta como \"cerca\": una diferencia en segundos o una distancia real en metros.",
       "trigger_gap": "Diferencia",
@@ -464,12 +458,10 @@
       "scaleByDistanceDesc": "Las placas lejanas se reducen, nunca más de un tercio."
     },
     "wheelToWheel": {
-      "display": "Visualización",
       "layout": "Disposición",
       "layoutDesc": "«Columnas» pone al rival a tu lado; «Filas» apila a los pilotos en orden de pista: delante, tú, detrás.",
       "layout_columns": "Columnas",
       "layout_rows": "Filas",
-      "appearsWhen": "Cuándo aparece",
       "gapThreshold": "Umbral de diferencia (s)",
       "gapThresholdDesc": "El coche más cercano de tu clase en tu vuelta dentro de esta diferencia es tu rival; sale del panel a 1,3 × este valor.",
       "hideDelay": "Retardo de ocultación (s)",
@@ -543,7 +535,6 @@
       "ledShape_parallelogram": "Inclinado"
     },
     "sectorMatrix": {
-      "options": "Opciones",
       "showSectors": "Mostrar los tiempos por sector",
       "showSectorsDesc": "Muestra la cuadrícula de tiempos por sector. Desactívalo para una vista compacta con solo la barra de progreso y los tiempos por vuelta.",
       "showProgress": "Progreso de vuelta",
@@ -656,7 +647,6 @@
       "useLivePositionsDesc": "Ordena por la posición en pista, recalculada en cada tick: define el número de posición, el orden de las filas, la animación de adelantamiento y el cambio de iR previsto. Desactivado: el número oficial del simulador, que solo se actualiza cuando un coche cruza la meta. Se aplica a cualquier tipo de sesión."
     },
     "timer": {
-      "visibleElements": "Elementos visibles",
       "showSessionType": "Mostrar el tipo de sesión",
       "showSessionTypeDesc": "Muestra el tipo de sesión actual (Carrera, Clasificación, Entrenamiento).",
       "showLaps": "Mostrar el contador de vueltas",
@@ -673,7 +663,6 @@
       "showSimDateDesc": "Muestra la fecha dentro del simulador (puede diferir de la real)."
     },
     "trackMap": {
-      "visualElements": "Elementos visuales",
       "showSectorsOnMap": "Sectores en el mapa",
       "showStartFinish": "Línea de meta",
       "qualifyingVisibility": "Mostrar a los demás pilotos en clasificación",
@@ -697,7 +686,6 @@
       "zoomCircleBackgroundDesc": "Rellena el círculo de seguimiento con un fondo sólido para que el mapa no se confunda con lo que hay detrás del overlay.",
       "zoomCircleColor": "Color de fondo",
       "zoomCircleOpacity": "Opacidad del fondo",
-      "trackStyling": "Estilo del trazado",
       "trackStrokePx": "Grosor del trazado (px)",
       "trackBorderPx": "Borde del trazado (px)",
       "sectorStrokePx": "Grosor de los sectores (px)",
@@ -716,7 +704,6 @@
     "weather": {
       "horizontal": "Diseño horizontal",
       "horizontalDesc": "Diseño ancho: brújula y condiciones en una fila, estadísticas y pronóstico debajo.",
-      "moduleParameters": "Parámetros del módulo",
       "showCompass": "Brújula de viento",
       "showCompassDesc": "Brújula animada con la dirección actual del viento.",
       "showCompassRing": "Anillo de la brújula",
@@ -738,7 +725,6 @@
     },
     "streamChat": {
       "feed": "Hilo",
-      "visibleElements": "Elementos visibles",
       "maxMessages": "Profundidad del histórico",
       "maxMessagesDesc": "Cuántos mensajes se pueden seguir desplazando. El hilo muestra tantos como quepan en el widget.",
       "messageLifetimeSeconds": "Vida del mensaje",
@@ -765,8 +751,6 @@
       "badgeImagesDesc": "Dibuja los distintivos reales en lugar de placas de texto. Twitch requiere iniciar sesión; los distintivos de miembro de YouTube funcionan sin ella."
     },
     "pitService": {
-      "sections": "Secciones",
-      "visibility": "Visibilidad",
       "showFuel": "Pedido de combustible",
       "showFuelDesc": "Combustible pedido, la recomendación calculada y cuánto se desvía el pedido de ella.",
       "showTires": "Neumáticos",
@@ -788,8 +772,6 @@
       "revealOnApproachMDesc": "El simulador no informa de la intención de entrar, así que es pura distancia a la línea de entrada al pit lane — lo justo para cambiar el pedido de camino. Cero lo desactiva y el panel aparece en el pit lane como antes."
     },
     "pitLine": {
-      "sections": "Secciones",
-      "visibility": "Visibilidad",
       "alwaysVisible": "Siempre visible",
       "alwaysVisibleDesc": "Mantiene el widget en pantalla en lugar de mostrarlo solo en el pit lane y durante el remolque.",
       "showPitSpeed": "Velocidad en el pit lane",
@@ -889,7 +871,6 @@
       "curvatureDesc": "Cuánto se envuelve la lectura sobre el cristal: los dos lados se alejan de ti y suben hacia los pilares."
     },
     "battery": {
-      "moduleParameters": "Parámetros del módulo",
       "compactMode": "Modo compacto",
       "compactModeDesc": "Mostrar solo la barra de carga y su porcentaje, ocultando el modo de despliegue, la potencia y el despliegue por vuelta.",
       "showDeployMode": "Modo de despliegue",
@@ -900,21 +881,18 @@
       "showLapDeployDesc": "Mostrar la energía enviada de la batería al MGU-K en esta vuelta, en megajulios."
     },
     "abs": {
-      "moduleParameters": "Parámetros del módulo",
       "showLevel": "Mostrar nivel de ABS",
       "showLevelDesc": "Muestra el ajuste de ABS de la cabina junto a la placa. Desactivado, solo queda la placa.",
       "hideWhenCarHasNoAbs": "Ocultar en coches sin ajuste de ABS",
       "hideWhenCarHasNoAbsDesc": "Quita el widget de la pantalla en un coche sin ajuste de ABS en la cabina. Desactivado, la placa se queda y muestra --."
     },
     "drs": {
-      "moduleParameters": "Parámetros del módulo",
       "hideWhenCarHasNoDrs": "Ocultar en coches sin DRS",
       "hideWhenCarHasNoDrsDesc": "Quita el widget de la pantalla en un coche que no tiene DRS. Desactivado, la placa permanece y muestra N/A.",
       "hideWhenUnavailable": "Ocultar cuando no esté disponible",
       "hideWhenUnavailableDesc": "No dibujar nada mientras el DRS no esté disponible, en lugar de una placa apagada."
     },
     "incidentTracker": {
-      "moduleParameters": "Parámetros del módulo",
       "showProjectedSr": "Estimación de Safety Rating",
       "showProjectedSrDesc": "El Safety Rating estimado y su cambio desde el inicio de la sesión. Es una estimación de un modelo de la comunidad: iRacing no publica la fórmula. Muestra OFF en una sesión que no lo cambia.",
       "srChipMode": "El chip muestra",
@@ -927,7 +905,6 @@
       "showCleanCornersDesc": "Curvas sin incidentes necesarias para que la sesión deje de restar Safety Rating. Cero significa que ya estás igual o mejor."
     },
     "lapLog": {
-      "moduleParameters": "Parámetros del módulo",
       "showDelta": "Columna de delta",
       "showDeltaDesc": "La columna con lo que cada vuelta perdió frente a tu mejor. Oculta, el widget se estrecha a las columnas de vuelta y tiempo.",
       "paceLossBars": "Barras de pérdida de ritmo",
@@ -949,7 +926,6 @@
       "averageFooter_never": "Nunca"
     },
     "radio": {
-      "moduleParameters": "Parámetros del módulo",
       "nameFormat": "Nombre",
       "nameFormat_full": "Completo",
       "nameFormat_short": "Nombre e inicial",
@@ -961,7 +937,6 @@
       "idleShowsChannelDesc": "Mantener el widget en pantalla cuando nadie habla, con el canal en el que está tu radio."
     },
     "crewRadio": {
-      "moduleParameters": "Parámetros del módulo",
       "history": "Líneas mostradas",
       "history_current": "Solo la actual",
       "history_recent": "Recientes",

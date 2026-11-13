@@ -119,7 +119,6 @@
       "rpmColorHigh": "高",
       "rpmColorShift": "换挡",
       "rpmColorLimit": "闪烁",
-      "qualifying": "排位赛",
       "qualifyingVisibility": "在排位赛中显示",
       "qualifyingVisibilityDesc": "自动：单独排位赛期间隐藏（赛道上仅一辆车）",
       "qualifyingVisibility_always": "始终",
@@ -181,7 +180,6 @@
         "sessionOptimal": "理论最佳——由会话中任意车手的最快分段组合而成。",
         "sessionLast": "会话中任意车手最近完成的一圈。"
       },
-      "visibility": "可见性",
       "hideWhenNoReference": "无参考圈速时隐藏",
       "showGauge": "显示差值刻度条",
       "lapCompletedCard": "圈速完成卡片",
@@ -205,7 +203,6 @@
       "showNextStopForecastDesc": "预计进站窗口开启的圈数与时间。"
     },
     "enginePanel": {
-      "moduleParameters": "模块参数",
       "showOilTemp": "机油温度",
       "showOilTempDesc": "显示发动机机油温度。",
       "showWaterTemp": "水温",
@@ -259,7 +256,6 @@
       "animateDesc": "启用旗帜的动态滚动和波浪效果。"
     },
     "gMeter": {
-      "moduleParameters": "模块参数",
       "displayMode": "显示模式",
       "displayMode_trail": "轨迹",
       "displayMode_fading": "渐隐",
@@ -349,7 +345,6 @@
       "showBarsDesc": "在图表旁显示油门、刹车和离合踏板条。"
     },
     "linearMap": {
-      "moduleLayout": "模块布局",
       "orientation": "方向",
       "orientation_horizontal": "水平",
       "orientation_vertical": "垂直",
@@ -406,7 +401,6 @@
       }
     },
     "closeBattle": {
-      "appearsWhen": "出现条件",
       "trigger": "触发方式",
       "triggerDesc": "以什么算“接近”：以秒计的差距，或以米计的实际距离。",
       "trigger_gap": "差距",
@@ -464,12 +458,10 @@
       "scaleByDistanceDesc": "远处的卡片更小，但最多缩小三分之一。"
     },
     "wheelToWheel": {
-      "display": "显示",
       "layout": "布局",
       "layoutDesc": "“分栏”将对手放在你旁边；“分行”按赛道顺序排列车手：前方、你、后方。",
       "layout_columns": "分栏",
       "layout_rows": "分行",
-      "appearsWhen": "显示条件",
       "gapThreshold": "差距阈值（秒）",
       "gapThresholdDesc": "在此差距内、与你同组别同圈的最近车辆即为对手；超过该值的 1.3 倍后离开面板。",
       "hideDelay": "淡出延迟（秒）",
@@ -543,7 +535,6 @@
       "ledShape_parallelogram": "斜角"
     },
     "sectorMatrix": {
-      "options": "选项",
       "showSectors": "显示分段时间",
       "showSectorsDesc": "显示逐分段计时网格。禁用后为仅含进度条和圈速的紧凑视图。",
       "showProgress": "圈进度",
@@ -656,7 +647,6 @@
       "useLivePositionsDesc": "按赛道上的位置排名，每帧重算——影响名次数字、行排序、移动动画和 iR 变化预估。关闭时使用模拟器的官方名次，仅在通过起终点线时更新。适用于所有场次类型。"
     },
     "timer": {
-      "visibleElements": "可见元素",
       "showSessionType": "显示会话类型",
       "showSessionTypeDesc": "显示当前会话类型（正赛、排位赛、练习赛）。",
       "showLaps": "显示圈数",
@@ -673,7 +663,6 @@
       "showSimDateDesc": "显示模拟器内日期（可能与实际日期不同）。"
     },
     "trackMap": {
-      "visualElements": "视觉元素",
       "showSectorsOnMap": "地图上的分段",
       "showStartFinish": "起点/终点线",
       "qualifyingVisibility": "排位赛中显示其他车手",
@@ -697,7 +686,6 @@
       "zoomCircleBackgroundDesc": "为跟随圆形填充纯色背景，使地图不会与叠加层后方的画面混在一起。",
       "zoomCircleColor": "背景颜色",
       "zoomCircleOpacity": "背景不透明度",
-      "trackStyling": "赛道样式",
       "trackStrokePx": "赛道线宽（像素）",
       "trackBorderPx": "赛道边框（像素）",
       "sectorStrokePx": "分段线宽（像素）",
@@ -716,7 +704,6 @@
     "weather": {
       "horizontal": "横向布局",
       "horizontalDesc": "宽版布局：罗盘与天气状况同行显示，数据与预报置于下方。",
-      "moduleParameters": "模块参数",
       "showCompass": "风向罗盘",
       "showCompassDesc": "显示当前风向的动画罗盘。",
       "showCompassRing": "罗盘圈",
@@ -738,7 +725,6 @@
     },
     "streamChat": {
       "feed": "信息流",
-      "visibleElements": "显示内容",
       "maxMessages": "历史深度",
       "maxMessagesDesc": "可回滚的消息数量。屏幕上显示的条数取决于小部件能容纳多少。",
       "messageLifetimeSeconds": "消息存留时间",
@@ -765,8 +751,6 @@
       "badgeImagesDesc": "显示真实徽章而非文字标记。Twitch 需要登录；YouTube 会员徽章无需登录。"
     },
     "pitService": {
-      "sections": "区块",
-      "visibility": "显示",
       "showFuel": "加油量",
       "showFuelDesc": "已下单油量、计算推荐值以及两者差值。",
       "showTires": "轮胎",
@@ -788,8 +772,6 @@
       "revealOnApproachMDesc": "模拟器不会告知你打算进站，所以这只是到维修道入口线的距离——足够在进站途中修改指令。设为零则关闭，面板仍像以前那样在维修道上出现。"
     },
     "pitLine": {
-      "sections": "区块",
-      "visibility": "显示",
       "alwaysVisible": "始终显示",
       "alwaysVisibleDesc": "保持显示，而不是仅在维修道和拖车时出现。",
       "showPitSpeed": "维修道速度",
@@ -889,7 +871,6 @@
       "curvatureDesc": "读数贴合玻璃的程度：两侧向外偏转并朝 A 柱抬起。"
     },
     "battery": {
-      "moduleParameters": "模块参数",
       "compactMode": "精简模式",
       "compactModeDesc": "仅显示电量条及百分比，隐藏释放模式、功率与本圈释放行。",
       "showDeployMode": "释放模式",
@@ -900,21 +881,18 @@
       "showLapDeployDesc": "以兆焦显示本圈从电池送往 MGU-K 的能量。"
     },
     "abs": {
-      "moduleParameters": "模块参数",
       "showLevel": "显示 ABS 档位",
       "showLevelDesc": "在标牌旁显示座舱 ABS 设置。关闭时只保留标牌。",
       "hideWhenCarHasNoAbs": "在无 ABS 调节的车上隐藏",
       "hideWhenCarHasNoAbsDesc": "在座舱内没有 ABS 设置的车上将小部件移出屏幕。关闭时，面板保留并显示 --。"
     },
     "drs": {
-      "moduleParameters": "模块参数",
       "hideWhenCarHasNoDrs": "在无 DRS 的赛车上隐藏",
       "hideWhenCarHasNoDrsDesc": "在完全没有 DRS 的赛车上移除该组件。关闭时，面板保留并显示 N/A。",
       "hideWhenUnavailable": "不可用时隐藏",
       "hideWhenUnavailableDesc": "DRS 不可用时完全不显示，而不是显示一块暗色面板。"
     },
     "incidentTracker": {
-      "moduleParameters": "模块参数",
       "showProjectedSr": "安全评级估算",
       "showProjectedSrDesc": "估算的安全评级及其自本节开始以来的变化。这是社区模型的估算——iRacing 不公开公式。在不影响评级的赛事中显示 OFF。",
       "srChipMode": "标签显示",
@@ -927,7 +905,6 @@
       "showCleanCornersDesc": "本节不再降低安全评级之前需要无事故跑完的弯道数。为零表示已持平或上升。"
     },
     "lapLog": {
-      "moduleParameters": "模块参数",
       "showDelta": "差值列",
       "showDeltaDesc": "显示每圈比最佳圈慢多少的列。隐藏后，组件收窄为圈号和时间两列。",
       "paceLossBars": "节奏损失条",
@@ -949,7 +926,6 @@
       "averageFooter_never": "从不"
     },
     "radio": {
-      "moduleParameters": "模块参数",
       "nameFormat": "姓名",
       "nameFormat_full": "全名",
       "nameFormat_short": "名字和姓氏首字母",
@@ -961,7 +937,6 @@
       "idleShowsChannelDesc": "无人讲话时也保留小部件，显示你的无线电所调到的频道。"
     },
     "crewRadio": {
-      "moduleParameters": "模块参数",
       "history": "显示的消息",
       "history_current": "仅当前",
       "history_recent": "最近",

@@ -119,7 +119,6 @@
       "rpmColorHigh": "High",
       "rpmColorShift": "Shift",
       "rpmColorLimit": "Blink",
-      "qualifying": "Qualifying",
       "qualifyingVisibility": "Show in qualifying",
       "qualifyingVisibilityDesc": "Auto: hidden during lone qualifying (single car on track)",
       "qualifyingVisibility_always": "Always",
@@ -181,7 +180,6 @@
         "sessionOptimal": "Theoretical best — fastest sector from any driver in the session combined.",
         "sessionLast": "Last fully completed lap by any driver in the session."
       },
-      "visibility": "Visibility",
       "hideWhenNoReference": "Hide when no reference lap",
       "showGauge": "Show delta gauge",
       "lapCompletedCard": "Lap Completed Card",
@@ -205,7 +203,6 @@
       "showNextStopForecastDesc": "Estimated lap and time until the pit window opens."
     },
     "enginePanel": {
-      "moduleParameters": "Module Parameters",
       "showOilTemp": "Oil Temperature",
       "showOilTempDesc": "Show engine oil temperature.",
       "showWaterTemp": "Water Temperature",
@@ -259,7 +256,6 @@
       "animateDesc": "Enable dynamic scrolling and waving patterns for flags."
     },
     "gMeter": {
-      "moduleParameters": "Module Parameters",
       "displayMode": "Display Mode",
       "displayMode_trail": "Trail",
       "displayMode_fading": "Fading",
@@ -349,7 +345,6 @@
       "showBarsDesc": "Show the throttle, brake and clutch bars beside the graph."
     },
     "linearMap": {
-      "moduleLayout": "Module Layout",
       "orientation": "Orientation",
       "orientation_horizontal": "Horizontal",
       "orientation_vertical": "Vertical",
@@ -406,7 +401,6 @@
       }
     },
     "closeBattle": {
-      "appearsWhen": "Appears When",
       "trigger": "Trigger",
       "triggerDesc": "What counts as \"close\": a gap in seconds, or a real distance in meters.",
       "trigger_gap": "Gap",
@@ -464,12 +458,10 @@
       "scaleByDistanceDesc": "Distant plates get smaller, never past a third."
     },
     "wheelToWheel": {
-      "display": "Display",
       "layout": "Layout",
       "layoutDesc": "Columns puts your rival beside you; rows stacks every driver in track order — ahead, you, behind.",
       "layout_columns": "Columns",
       "layout_rows": "Rows",
-      "appearsWhen": "Appears When",
       "gapThreshold": "Gap Threshold (s)",
       "gapThresholdDesc": "The nearest car of your class on your lap inside this gap is your rival; it leaves the plate at 1.3 x this value.",
       "hideDelay": "Fade Out Delay (s)",
@@ -543,7 +535,6 @@
       "ledShape_parallelogram": "Slant"
     },
     "sectorMatrix": {
-      "options": "Options",
       "showSectors": "Show Sector Times",
       "showSectorsDesc": "Display per-sector timing grid. Disable for a compact view with just the progress bar and lap times.",
       "showProgress": "Lap progress",
@@ -656,7 +647,6 @@
       "useLivePositionsDesc": "Rank by position on track, recomputed every tick — drives the position number, row order, move animation and the projected iR change. Off: the sim's official number, which only updates when a car crosses start/finish. Applies to every session type."
     },
     "timer": {
-      "visibleElements": "Visible Elements",
       "showSessionType": "Show Session Type",
       "showSessionTypeDesc": "Display the current session type (Race, Qualify, Practice).",
       "showLaps": "Show Lap Count",
@@ -673,7 +663,6 @@
       "showSimDateDesc": "Display in-simulator date (may differ from real date)."
     },
     "trackMap": {
-      "visualElements": "Visual Elements",
       "showSectorsOnMap": "Sectors on Map",
       "showStartFinish": "Start/Finish Line",
       "qualifyingVisibility": "Show other drivers in qualifying",
@@ -697,7 +686,6 @@
       "zoomCircleBackgroundDesc": "Fill the follow circle with a solid ground so the map does not blend into what is behind the overlay.",
       "zoomCircleColor": "Background Color",
       "zoomCircleOpacity": "Background Opacity",
-      "trackStyling": "Track Styling",
       "trackStrokePx": "Track Stroke (px)",
       "trackBorderPx": "Track Border (px)",
       "sectorStrokePx": "Sector Stroke (px)",
@@ -716,7 +704,6 @@
     "weather": {
       "horizontal": "Horizontal Layout",
       "horizontalDesc": "Wide layout: compass and conditions on one row, stats and forecast underneath.",
-      "moduleParameters": "Module Parameters",
       "showCompass": "Wind Compass",
       "showCompassDesc": "Animated compass showing current wind direction.",
       "showCompassRing": "Compass Ring",
@@ -738,7 +725,6 @@
     },
     "streamChat": {
       "feed": "Feed",
-      "visibleElements": "Visible elements",
       "maxMessages": "History depth",
       "maxMessagesDesc": "How many messages stay scrollable. The feed shows as many as the widget can fit.",
       "messageLifetimeSeconds": "Message lifetime",
@@ -765,8 +751,6 @@
       "badgeImagesDesc": "Draw the real badges instead of text plates. Twitch needs sign-in; YouTube member badges work without it."
     },
     "pitService": {
-      "sections": "Sections",
-      "visibility": "Visibility",
       "showFuel": "Fuel Order",
       "showFuelDesc": "Ordered fuel, the calculated recommendation and how far the order differs from it.",
       "showTires": "Tires",
@@ -788,8 +772,6 @@
       "revealOnApproachMDesc": "The sim reports nothing about heading for the pits, so this is pure distance to the pit entry line — enough to change the order on the way in. Zero switches it off and the box appears on pit road as before."
     },
     "pitLine": {
-      "sections": "Sections",
-      "visibility": "Visibility",
       "alwaysVisible": "Always visible",
       "alwaysVisibleDesc": "Keep the widget on screen instead of showing it only on pit road and while being towed.",
       "showPitSpeed": "Pit Lane Speed",
@@ -889,7 +871,6 @@
       "curvatureDesc": "How hard the readout wraps around the glass: the two sides turn away from you and ride up toward the pillars."
     },
     "battery": {
-      "moduleParameters": "Module parameters",
       "compactMode": "Compact mode",
       "compactModeDesc": "Show only the charge bar and its percentage, hiding the deploy mode, power and lap deploy rows.",
       "showDeployMode": "Deploy mode",
@@ -900,21 +881,18 @@
       "showLapDeployDesc": "Show the energy sent from the battery to the MGU-K on this lap, in megajoules."
     },
     "abs": {
-      "moduleParameters": "Module parameters",
       "showLevel": "Show ABS level",
       "showLevelDesc": "Draw the in-car ABS setting beside the badge. Off, only the badge is left.",
       "hideWhenCarHasNoAbs": "Hide on cars without ABS adjustment",
       "hideWhenCarHasNoAbsDesc": "Take the widget off the screen on a car with no ABS setting in the cockpit. Off, the plate stays and reads --."
     },
     "drs": {
-      "moduleParameters": "Module parameters",
       "hideWhenCarHasNoDrs": "Hide on cars without DRS",
       "hideWhenCarHasNoDrsDesc": "Take the widget off the screen on a car that has no DRS at all. Off, the plate stays and reads N/A.",
       "hideWhenUnavailable": "Hide when unavailable",
       "hideWhenUnavailableDesc": "Draw nothing while DRS is unavailable, instead of a quiet plate."
     },
     "incidentTracker": {
-      "moduleParameters": "Module parameters",
       "showProjectedSr": "Safety Rating estimate",
       "showProjectedSrDesc": "The estimated Safety Rating and its change since the session started. An estimate from a community model — iRacing does not publish the formula. Shows OFF in a session that does not change it.",
       "srChipMode": "Chip shows",
@@ -927,7 +905,6 @@
       "showCleanCornersDesc": "Corners to drive without an incident before this session stops costing Safety Rating. Zero means it is level or better already."
     },
     "lapLog": {
-      "moduleParameters": "Module parameters",
       "showDelta": "Delta column",
       "showDeltaDesc": "The column with each lap's loss to your best. Hidden, the widget narrows to the lap and time columns.",
       "paceLossBars": "Pace loss bars",
@@ -949,7 +926,6 @@
       "averageFooter_never": "Never"
     },
     "radio": {
-      "moduleParameters": "Module parameters",
       "nameFormat": "Name",
       "nameFormat_full": "Full",
       "nameFormat_short": "First name, initial",
@@ -961,7 +937,6 @@
       "idleShowsChannelDesc": "Keep the widget on screen while nobody talks, showing the channel your radio is tuned to."
     },
     "crewRadio": {
-      "moduleParameters": "Module parameters",
       "history": "Lines shown",
       "history_current": "Current only",
       "history_recent": "Recent",

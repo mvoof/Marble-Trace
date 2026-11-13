@@ -1,5 +1,4 @@
 import { observer } from 'mobx-react-lite';
-import { useTranslation } from 'react-i18next';
 import styles from '@features/widget-settings/WidgetSettings.module.scss';
 import { Card } from '@features/widget-settings/Card';
 import { schemaRows } from '@features/widget-settings/schema-rows';
@@ -19,10 +18,8 @@ const isFullView = (settings: BatteryWidgetSettings): boolean =>
   !settings.compactMode;
 
 export const BatterySettingsPanel = observer(() => {
-  const { t } = useTranslation('widgets');
-
   return (
-    <Card title={t('settingsPanels.battery.moduleParameters')}>
+    <Card group="content">
       <div className={styles.fieldGroup}>
         <Row setting="compactMode" />
       </div>

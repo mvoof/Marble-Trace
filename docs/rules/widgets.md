@@ -97,8 +97,7 @@ group names itself and takes its place through `settingsGroupOrder`
 after the Size and Background cards `WidgetSettings` adds. Size and Background
 are those common cards; a panel does not draw its own. A block of the widget's
 own never takes a group's name or a synonym of one (View, Appearance, Module
-parameters, Visibility …) — `settings-groups.test.ts` holds it, with a list of
-panels not yet regrouped that shrinks as they are.
+parameters, Visibility …) — `settings-groups.test.ts` holds it for every panel.
 
 Settings panels are collected the same way: each `*SettingsPanel.tsx` exports
 `PANEL_WIDGET_IDS` (usually one id, two for the radar and flag pairs), and

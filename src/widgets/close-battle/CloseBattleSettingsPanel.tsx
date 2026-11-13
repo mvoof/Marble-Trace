@@ -57,7 +57,7 @@ export const CloseBattleSettingsPanel = observer(() => {
 
   return (
     <>
-      <Card title={t('settingsPanels.closeBattle.appearsWhen')}>
+      <Card group="behaviour">
         <div className={styles.fieldGroup}>
           <Row setting="trigger" />
         </div>
@@ -109,6 +109,20 @@ export const CloseBattleSettingsPanel = observer(() => {
         </div>
 
         <div className={styles.fieldGroup}>
+          <Row setting="hideInPits" />
+        </div>
+
+        <div className={styles.fieldGroup}>
+          <Row setting="raceOnly" />
+        </div>
+
+        <div className={styles.fieldGroup}>
+          <Row setting="qualifyingVisibility" />
+        </div>
+      </Card>
+
+      <Card group="content">
+        <div className={styles.fieldGroup}>
           <Row setting="sides" />
         </div>
 
@@ -127,20 +141,6 @@ export const CloseBattleSettingsPanel = observer(() => {
 
         <div className={styles.fieldGroup}>
           <Row setting="otherClass" />
-        </div>
-
-        <div className={styles.fieldGroup}>
-          <Row setting="hideInPits" />
-        </div>
-
-        <div className={styles.fieldGroup}>
-          <Row setting="raceOnly" />
-        </div>
-      </Card>
-
-      <Card title={t('settingsPanels.common.qualifying')}>
-        <div className={styles.fieldGroup}>
-          <Row setting="qualifyingVisibility" />
         </div>
       </Card>
 

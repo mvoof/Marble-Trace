@@ -9,31 +9,6 @@ import {
   settingsGroupOrder,
 } from './settings-groups';
 
-// Panels not regrouped yet (ticket 14 empties this). A panel leaves the list
-// the moment it passes: the test fails while a passing panel is still on it.
-const NOT_YET_MIGRATED = new Set([
-  'AbsSettingsPanel.tsx',
-  'BatterySettingsPanel.tsx',
-  'CloseBattleSettingsPanel.tsx',
-  'CrewRadioSettingsPanel.tsx',
-  'DeltaSettingsPanel.tsx',
-  'DrsSettingsPanel.tsx',
-  'EnginePanelSettingsPanel.tsx',
-  'GMeterSettingsPanel.tsx',
-  'IncidentTrackerSettingsPanel.tsx',
-  'LapLogSettingsPanel.tsx',
-  'LinearMapSettingsPanel.tsx',
-  'PitLineSettingsPanel.tsx',
-  'PitServiceSettingsPanel.tsx',
-  'RadioSettingsPanel.tsx',
-  'SectorMatrixSettingsPanel.tsx',
-  'StreamChatSettingsPanel.tsx',
-  'TimerSettingsPanel.tsx',
-  'TrackMapSettingsPanel.tsx',
-  'WeatherSettingsPanel.tsx',
-  'WheelToWheelSettingsPanel.tsx',
-]);
-
 const SRC_DIR = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
 
 const panelSources = (): Record<string, string> =>
@@ -143,22 +118,10 @@ describe('widget settings panels', () => {
   });
 
   it('title no card with a synonym of a group', () => {
-    const problems = Object.entries(sources)
-      .filter(([file]) => !NOT_YET_MIGRATED.has(file))
-      .flatMap(([file, source]) =>
-        titleProblems(source).map((problem) => `${file} — ${problem}`)
-      );
+    const problems = Object.entries(sources).flatMap(([file, source]) =>
+      titleProblems(source).map((problem) => `${file} — ${problem}`)
+    );
 
     expect(problems).toEqual([]);
-  });
-
-  it('keeps no panel on the not-yet-migrated list once it passes', () => {
-    const stale = [...NOT_YET_MIGRATED].filter(
-      (file) => file in sources && titleProblems(sources[file]).length === 0
-    );
-    const missing = [...NOT_YET_MIGRATED].filter((file) => !(file in sources));
-
-    expect(stale).toEqual([]);
-    expect(missing).toEqual([]);
   });
 });

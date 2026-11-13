@@ -1,5 +1,4 @@
 import { observer } from 'mobx-react-lite';
-import { useTranslation } from 'react-i18next';
 import { Segmented } from 'antd';
 import styles from '@features/widget-settings/WidgetSettings.module.scss';
 import { Card } from '@features/widget-settings/Card';
@@ -34,15 +33,18 @@ const ScaleRow = observer(() => {
 });
 
 export const GMeterSettingsPanel = observer(() => {
-  const { t } = useTranslation('widgets');
-
   return (
-    <Card title={t('settingsPanels.gMeter.moduleParameters')}>
-      <Row setting="displayMode" stacked />
-      <ScaleRow />
-      <Row setting="colorMode" stacked />
-      <Row setting="showRings" />
-      <Row setting="showAxes" />
-    </Card>
+    <>
+      <Card group="content">
+        <Row setting="displayMode" stacked />
+        <ScaleRow />
+        <Row setting="showRings" />
+        <Row setting="showAxes" />
+      </Card>
+
+      <Card group="display">
+        <Row setting="colorMode" stacked />
+      </Card>
+    </>
   );
 });

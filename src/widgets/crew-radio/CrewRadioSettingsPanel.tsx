@@ -1,5 +1,4 @@
 import { observer } from 'mobx-react-lite';
-import { useTranslation } from 'react-i18next';
 import styles from '@features/widget-settings/WidgetSettings.module.scss';
 import { Card } from '@features/widget-settings/Card';
 import { schemaRows } from '@features/widget-settings/schema-rows';
@@ -17,10 +16,8 @@ const isRecentHistory = (settings: CrewRadioWidgetSettings): boolean =>
   settings.history === 'recent';
 
 export const CrewRadioSettingsPanel = observer(() => {
-  const { t } = useTranslation('widgets');
-
   return (
-    <Card title={t('settingsPanels.crewRadio.moduleParameters')}>
+    <Card group="content">
       <div className={styles.fieldGroup}>
         <Row setting="history" />
       </div>
