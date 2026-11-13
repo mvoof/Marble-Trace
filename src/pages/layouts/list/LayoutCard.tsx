@@ -9,7 +9,7 @@ import { useLayoutsStore } from '@entities/layout/layouts-context';
 import { useMainLiveWidgetsStore } from '@entities/layout/main-live-widgets-context';
 import { useLayoutGestureStores } from '@features/layout-editor/layout-editor-context';
 import { deleteLayoutAndBackgrounds } from '@features/layout-editor/layout-gestures';
-import { useLayoutExportStore } from '@features/layout-export/layout-export-context';
+import { useLayoutFilesStore } from '@features/layout-files/layout-files-context';
 import type { SavedLayout } from '@shared/contracts/widget-settings';
 import { cx } from '@shared/lib/class-names';
 
@@ -32,7 +32,7 @@ export const LayoutCard = observer(
     const layouts = useLayoutsStore();
     const liveWidgets = useMainLiveWidgetsStore();
     const gestureStores = useLayoutGestureStores();
-    const layoutExport = useLayoutExportStore();
+    const layoutFiles = useLayoutFilesStore();
     const appSettings = useAppSettingsStore();
     const { t } = useTranslation('main-app');
     const { message } = App.useApp();
@@ -78,7 +78,7 @@ export const LayoutCard = observer(
 
     const handleExport = async () => {
       try {
-        const path = await layoutExport.exportLayout(layout.id);
+        const path = await layoutFiles.exportLayout(layout.id);
 
         if (path) {
           void message.success(t('layoutList.exported', { path }));
@@ -186,7 +186,7 @@ export const LayoutCard = observer(
             icon={<Download size={14} />}
             title={t('layoutList.export')}
             aria-label={t('layoutList.export')}
-            loading={layoutExport.exportingId === layout.id}
+            loading={layoutFiles.exportingId === layout.id}
             onClick={() => void handleExport()}
           />
 

@@ -182,11 +182,6 @@ $band-height: rem(60);
   }
 }
 
-.discordMark {
-  width: rem(16);
-  height: rem(16);
-}
-
 @media (max-width: $narrow-window) {
   .item {
     padding: rem(8) rem(11);

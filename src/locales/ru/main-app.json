@@ -37,11 +37,11 @@
     }
   },
   "appStatus": {
-    "connectedTo": "ПОДКЛЮЧЕНО К {{sim}}",
-    "replaying": "ЗАПИСЬ: {{tape}}",
-    "waitingForTelemetry": "ОЖИДАНИЕ ТЕЛЕМЕТРИИ",
-    "systemError": "СИСТЕМНАЯ ОШИБКА",
-    "waitingForGame": "ОЖИДАНИЕ ЗАПУСКА ИГРЫ"
+    "connectedTo": "{{sim}} · подключено",
+    "replaying": "Запись · {{tape}}",
+    "waitingForTelemetry": "{{sim}} · ждём телеметрию",
+    "systemError": "Системная ошибка",
+    "waitingForGame": "{{sim}} не запущен"
   },
   "releaseNotes": {
     "whatsNew": "Что нового",
@@ -206,7 +206,10 @@
       "noLayout": "Оставить текущую"
     },
     "exported": "Раскладка сохранена в {{path}}",
-    "exportFailed": "Не удалось сохранить файл раскладки"
+    "exportFailed": "Не удалось сохранить файл раскладки",
+    "import": "Импорт",
+    "imported": "Раскладка «{{name}}» добавлена",
+    "importFailed": "В этом файле нет раскладки Marble Trace"
   },
   "layoutWidgetPanel": {
     "onMonitor": "на {{monitor}}",
@@ -746,6 +749,7 @@
   "crewPage": {
     "sections": {
       "overview": "Обзор",
+      "downloads": "Загрузки",
       "commands": "Команды",
       "phrases": "Фразы и ответы",
       "packs": "Пакеты"

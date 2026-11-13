@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
 import { Button, Popconfirm } from 'antd';
@@ -22,18 +21,6 @@ export const BindingsSettings = observer(() => {
   const deviceInput = useDeviceInputStore();
   const navigation = useMainNavigationStore();
   const { t } = useTranslation('main-app');
-
-  // Every group starts open: the whole list is short enough to scan, and
-  // hunting for which accordion hides a key is worse than scrolling past it.
-  const [collapsedOwners, setCollapsedOwners] = useState<string[]>([]);
-
-  const toggleOwner = (owner: string) => {
-    setCollapsedOwners((collapsed) =>
-      collapsed.includes(owner)
-        ? collapsed.filter((candidate) => candidate !== owner)
-        : [...collapsed, owner]
-    );
-  };
 
   const query = bindingsUi.search.trim().toLowerCase();
 
@@ -125,10 +112,6 @@ export const BindingsSettings = observer(() => {
               key={group.owner}
               owner={group.owner}
               actionIds={group.actionIds}
-              // A search is a request to see the matches, so it wins over a
-              // group the user collapsed earlier.
-              isOpen={query !== '' || !collapsedOwners.includes(group.owner)}
-              onToggle={() => toggleOwner(group.owner)}
             />
           ))
         )}

@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { Alert, Button } from 'antd';
 import {
   BookOpen,
+  Download,
   MessageCircle,
   Package,
   Radio,
@@ -14,6 +15,7 @@ import { SectionedPage } from '@shared/ui/SectionedPage/SectionedPage';
 import { CrewOverview } from './CrewOverview';
 import { CrewCheatSheet } from './CrewCheatSheet';
 import { CrewCommands } from './CrewCommands';
+import { CrewDownloads } from './CrewDownloads';
 import { CrewPackFiles } from './CrewPackFiles';
 import { CrewSaveBar } from './CrewSaveBar';
 import {
@@ -25,6 +27,7 @@ import styles from './CrewPage.module.scss';
 
 const SECTION_ICONS: Record<CrewSectionId, LucideIcon> = {
   overview: Radio,
+  downloads: Download,
   commands: BookOpen,
   phrases: MessageCircle,
   packs: Package,
@@ -32,10 +35,17 @@ const SECTION_ICONS: Record<CrewSectionId, LucideIcon> = {
 
 const SECTION_COMPONENTS: Record<CrewSectionId, ComponentType> = {
   overview: CrewOverview,
+  downloads: CrewDownloads,
   commands: CrewCheatSheet,
   phrases: CrewCommands,
   packs: CrewPackFiles,
 };
+
+/** Where the engineer is set up; a not-ready engineer is not flagged there. */
+const SETUP_SECTIONS: ReadonlySet<CrewSectionId> = new Set([
+  'overview',
+  'downloads',
+]);
 
 /** The editor fills the pane with its own list and bar; the rest scroll. */
 const FILLING_SECTION: CrewSectionId = 'phrases';
@@ -73,7 +83,7 @@ export const CrewPage = observer(() => {
       onSelect={setActiveSection}
       fillsHeight={fillsPane}
     >
-      {!crew.ready && activeSection !== 'overview' && (
+      {!crew.ready && !SETUP_SECTIONS.has(activeSection) && (
         <Alert
           className={styles.alert}
           type="info"

@@ -4,11 +4,16 @@ import styles from './AppStatus.module.scss';
 import { useSimStore } from '@entities/sim/sim-context';
 import { getSimDisplayName } from '@app/windows/main/sim-name';
 
+const IRACING_NAME = getSimDisplayName('IRacing');
+
 export const AppStatus = observer(() => {
   const simStore = useSimStore();
   const { t } = useTranslation('main-app');
 
   const { status, error, currentSim, replayTape } = simStore;
+  // The app runs on iRacing; before a sim is found its name is still the one
+  // the driver is waiting for.
+  const simName = currentSim ? getSimDisplayName(currentSim) : IRACING_NAME;
 
   const getStatusConfig = () => {
     switch (status) {
@@ -23,7 +28,7 @@ export const AppStatus = observer(() => {
 
         return {
           label: t('appStatus.connectedTo', {
-            sim: getSimDisplayName(currentSim).toUpperCase(),
+            sim: simName,
           }),
           dotClass: styles.connected,
           textClass: styles.connectedText,
@@ -31,7 +36,7 @@ export const AppStatus = observer(() => {
       case 'waiting':
         if (currentSim) {
           return {
-            label: t('appStatus.waitingForTelemetry'),
+            label: t('appStatus.waitingForTelemetry', { sim: simName }),
             dotClass: styles.waiting,
             textClass: styles.waitingText,
           };
@@ -47,8 +52,8 @@ export const AppStatus = observer(() => {
     }
 
     return {
-      label: t('appStatus.waitingForGame'),
-      dotClass: styles.waiting,
+      label: t('appStatus.waitingForGame', { sim: simName }),
+      dotClass: styles.idle,
       textClass: styles.waitingText,
     };
   };

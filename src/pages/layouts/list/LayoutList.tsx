@@ -9,6 +9,7 @@ import { PageTitle } from '@shared/ui/PageTitle/PageTitle';
 
 import { AutoSwitchBlock } from './AutoSwitchBlock';
 import { CreateLayoutButton } from './CreateLayoutButton';
+import { ImportLayoutButton } from './ImportLayoutButton';
 import { LayoutCard } from './LayoutCard';
 import styles from './LayoutList.module.scss';
 
@@ -36,7 +37,13 @@ export const LayoutList = observer(({ onOpenEditor }: LayoutListProps) => {
         subtitle={t('layoutList.layoutsCount', {
           count: layouts.layouts.length,
         })}
-        actions={<CreateLayoutButton />}
+        actions={
+          <>
+            <ImportLayoutButton />
+
+            <CreateLayoutButton />
+          </>
+        }
       />
 
       <AutoSwitchBlock />

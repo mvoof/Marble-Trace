@@ -35,11 +35,11 @@
     }
   },
   "appStatus": {
-    "connectedTo": "CONNECTED TO {{sim}}",
-    "replaying": "REPLAY: {{tape}}",
-    "waitingForTelemetry": "WAITING FOR TELEMETRY",
-    "systemError": "SYSTEM ERROR",
-    "waitingForGame": "WAITING FOR GAME TO START"
+    "connectedTo": "{{sim}} · connected",
+    "replaying": "Replay · {{tape}}",
+    "waitingForTelemetry": "{{sim}} · waiting for telemetry",
+    "systemError": "System error",
+    "waitingForGame": "{{sim}} · not running"
   },
   "releaseNotes": {
     "whatsNew": "What's new",
@@ -198,7 +198,10 @@
       "noLayout": "Keep the current layout"
     },
     "exported": "Layout saved to {{path}}",
-    "exportFailed": "Could not save the layout file"
+    "exportFailed": "Could not save the layout file",
+    "import": "Import",
+    "imported": "Layout \"{{name}}\" added",
+    "importFailed": "This file holds no Marble Trace layout"
   },
   "layoutWidgetPanel": {
     "onMonitor": "on {{monitor}}",
@@ -738,6 +741,7 @@
   "crewPage": {
     "sections": {
       "overview": "Overview",
+      "downloads": "Downloads",
       "commands": "Commands",
       "phrases": "Phrases and replies",
       "packs": "Packs"

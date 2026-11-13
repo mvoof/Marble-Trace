@@ -18,6 +18,7 @@ import { SettingsLockBanner } from './SettingsLockBanner/SettingsLockBanner';
 import styles from './MainWindow.module.scss';
 import { useSimStore } from '@entities/sim/sim-context';
 import { useMainRoot } from '@app/roots/main-root-context';
+import { useAutoHideScrollbars } from './use-auto-hide-scrollbars';
 
 const { Content } = Layout;
 
@@ -25,6 +26,8 @@ export const MainWindow = observer(() => {
   const simStore = useSimStore();
   const root = useMainRoot();
   const navigation = useMainNavigationStore();
+
+  useAutoHideScrollbars();
 
   useEffect(() => {
     void simStore.startStream();
@@ -87,12 +90,17 @@ export const MainWindow = observer(() => {
             colorTextQuaternary: '#15161a',
             handleBg: '#5e626d',
           },
+          // The mockup's switch: a sunken box, the chosen item raised in it.
           Segmented: {
-            itemSelectedBg: '#2a2c32',
-            itemSelectedColor: '#ffffff',
+            itemSelectedBg: '#1c1d22',
+            itemSelectedColor: '#e0e0e0',
             itemColor: '#8b8e98',
             itemHoverColor: '#e0e0e0',
-            trackBg: '#0d0e12',
+            itemHoverBg: 'transparent',
+            trackBg: '#0a0b0e',
+            trackPadding: 3,
+            borderRadius: 8,
+            borderRadiusSM: 6,
           },
           Input: {
             colorBgContainer: '#0d0e12',

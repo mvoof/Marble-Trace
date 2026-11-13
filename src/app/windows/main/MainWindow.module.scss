@@ -9,10 +9,15 @@
     background: transparent;
   }
 
+  // Hidden until the element scrolls (use-auto-hide-scrollbars.ts marks it)
+  // or the pointer finds the thumb, as in the mockup.
   *::-webkit-scrollbar-thumb {
-    background: #2a2c32;
+    background: transparent;
     border-radius: 4px;
-    transition: background 0.2s;
+  }
+
+  .mt-scrolling::-webkit-scrollbar-thumb {
+    background: #2a2c32;
   }
 
   *::-webkit-scrollbar-thumb:hover {

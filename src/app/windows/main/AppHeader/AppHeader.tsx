@@ -11,7 +11,7 @@ import {
   LayoutGrid,
   Settings,
 } from 'lucide-react';
-import type { LucideIcon } from 'lucide-react';
+import { MessagesSquare, type LucideIcon } from 'lucide-react';
 import { useMainNavigationStore } from '@features/main-navigation/main-navigation-context';
 import {
   POCKET_SECTIONS,
@@ -25,7 +25,6 @@ import { HeaderWave } from './HeaderWave';
 import { HeaderPocket } from './HeaderPocket';
 import { WindowControls } from './WindowControls';
 import Logo from '@assets/brand-mark.svg?react';
-import DiscordMark from '@assets/discord-mark.svg?react';
 import styles from './AppHeader.module.scss';
 
 const ITEM_ICON_SIZE = 16;
@@ -136,7 +135,7 @@ export const AppHeader = observer(() => {
           aria-label={t('appHeader.discordTitle')}
           onClick={() => appLinks.openDiscord()}
         >
-          <DiscordMark className={styles.discordMark} aria-hidden="true" />
+          <MessagesSquare size={16} aria-hidden="true" />
         </button>
 
         <button

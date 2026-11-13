@@ -86,6 +86,27 @@ describe('LayoutsStore', () => {
  * marks the whole widget map — the records are what the widgets stand on, and
  * once one of them moves no patch describes where they are.
  */
+describe('an imported layout', () => {
+  it('joins the list under an id of its own, without the backgrounds of the PC it came from', () => {
+    const { store } = freshStore();
+    const imported: SavedLayout = {
+      ...layoutNamed('layout-race', [DISPLAY]),
+      name: 'From a friend',
+      createdAt: 1,
+      backgroundImages: { DISPLAY1: 'C:/Users/friend/race.png' },
+    };
+
+    const id = store.addImportedLayout(imported);
+    const added = store.byId(id)!;
+
+    expect(id).not.toBe('layout-race');
+    expect(store.layouts).toHaveLength(2);
+    expect(added.name).toBe('From a friend');
+    expect(added.backgroundImages).toEqual({});
+    expect(added.createdAt).toBeGreaterThan(1);
+  });
+});
+
 describe('a removed layout', () => {
   it('is no longer what any session switches to', () => {
     const { store } = freshStore();
@@ -148,6 +169,11 @@ describe('every layout record write leaves its mark', () => {
     {
       name: 'removeLayout',
       run: (store) => store.removeLayout('layout-race'),
+    },
+    {
+      name: 'addImportedLayout',
+      run: (store) =>
+        store.addImportedLayout(layoutNamed('layout-quali', [DISPLAY])),
     },
     {
       name: 'setLayoutWidgets',

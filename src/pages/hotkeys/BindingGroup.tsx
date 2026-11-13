@@ -1,7 +1,6 @@
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
 import { Tag, Tooltip } from 'antd';
-import { ChevronDown } from 'lucide-react';
 import { APP_OWNER } from '@shared/contracts/input-bindings';
 import { widgetVisibilityActionId } from '@features/hotkey-bindings/actions';
 import { useBindingsStore } from '@features/hotkey-bindings/bindings-context';
@@ -13,12 +12,10 @@ import styles from './BindingsSettings.module.scss';
 interface BindingGroupProps {
   owner: string;
   actionIds: string[];
-  isOpen: boolean;
-  onToggle: () => void;
 }
 
 export const BindingGroup = observer(
-  ({ owner, actionIds, isOpen, onToggle }: BindingGroupProps) => {
+  ({ owner, actionIds }: BindingGroupProps) => {
     const liveWidgets = useLiveWidgetsStore();
     const bindings = useBindingsStore();
     const { t } = useTranslation('main-app');
@@ -45,20 +42,10 @@ export const BindingGroup = observer(
 
     return (
       <div className={styles.group}>
-        <button
-          type="button"
-          className={styles.groupHeader}
-          aria-expanded={isOpen}
-          onClick={onToggle}
-        >
-          <ChevronDown
-            size={14}
-            className={isOpen ? styles.groupChevronOpen : styles.groupChevron}
-          />
-
-          <span className={styles.groupTitle}>
+        <div className={styles.groupHeader}>
+          <h4 className={styles.groupTitle}>
             {ownerLabel(owner, bindings.registry, t)}
-          </span>
+          </h4>
 
           <span className={styles.groupCount}>
             {t('bindings.boundCount', {
@@ -72,26 +59,24 @@ export const BindingGroup = observer(
               <Tag color="warning">{t('bindings.notInLayout')}</Tag>
             </Tooltip>
           )}
-        </button>
+        </div>
 
-        {isOpen && (
-          <div className={styles.groupBody}>
-            {/*
+        <div className={styles.groupBody}>
+          {/*
               Show/hide comes first and stands apart: it is the only binding
               that works when the widget is out of the layout, so it is the one
               to reach for when the rest are inert.
             */}
-            {pinnedActionId && (
-              <div className={styles.pinnedRow}>
-                <BindingRow actionId={pinnedActionId} />
-              </div>
-            )}
+          {pinnedActionId && (
+            <div className={styles.pinnedRow}>
+              <BindingRow actionId={pinnedActionId} />
+            </div>
+          )}
 
-            {otherActionIds.map((actionId) => (
-              <BindingRow key={actionId} actionId={actionId} />
-            ))}
-          </div>
-        )}
+          {otherActionIds.map((actionId) => (
+            <BindingRow key={actionId} actionId={actionId} />
+          ))}
+        </div>
       </div>
     );
   }

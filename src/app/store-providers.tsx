@@ -39,7 +39,7 @@ import { AppLinksContext } from '@features/app-links/app-links-context';
 import { DeviceInputContext } from '@features/hotkey-bindings/device-input-context';
 import { FpsDiagnosticsContext } from '@features/diagnostics/fps-diagnostics-context';
 import { DiagnosticsExportContext } from '@features/diagnostics/diagnostics-export-context';
-import { LayoutExportContext } from '@features/layout-export/layout-export-context';
+import { LayoutFilesContext } from '@features/layout-files/layout-files-context';
 import { TelemetryInspectorContext } from '@features/telemetry-inspector/telemetry-inspector-context';
 import { TwitchAuthContext } from '@features/twitch-auth/twitch-auth-context';
 import { AppUpdateContext } from '@features/app-update/app-update-context';
@@ -122,7 +122,7 @@ const mainStores = (root: MainRoot): ProvidedStore[] => [
   provide(RemoteDevicesContext, root.remoteDevices),
   provide(FpsDiagnosticsContext, root.fpsDiagnostics),
   provide(DiagnosticsExportContext, root.diagnosticsExport),
-  provide(LayoutExportContext, root.layoutExport),
+  provide(LayoutFilesContext, root.layoutFiles),
   provide(TelemetryInspectorContext, root.telemetryInspector),
   provide(TrackRotationContext, root.trackRotation),
   provide(PreviewWorldContext, createPreviewWorld),

@@ -34,11 +34,11 @@
     }
   },
   "appStatus": {
-    "connectedTo": "已连接到 {{sim}}",
-    "replaying": "回放：{{tape}}",
-    "waitingForTelemetry": "等待遥测数据",
+    "connectedTo": "{{sim}} · 已连接",
+    "replaying": "回放 · {{tape}}",
+    "waitingForTelemetry": "{{sim}} · 等待遥测数据",
     "systemError": "系统错误",
-    "waitingForGame": "等待游戏启动"
+    "waitingForGame": "{{sim}} 未运行"
   },
   "releaseNotes": {
     "whatsNew": "更新内容",
@@ -194,7 +194,10 @@
       "noLayout": "保持当前布局"
     },
     "exported": "布局已保存到 {{path}}",
-    "exportFailed": "无法保存布局文件"
+    "exportFailed": "无法保存布局文件",
+    "import": "导入",
+    "imported": "已添加布局「{{name}}」",
+    "importFailed": "此文件不包含 Marble Trace 布局"
   },
   "layoutWidgetPanel": {
     "onMonitor": "在 {{monitor}}",
@@ -734,6 +737,7 @@
   "crewPage": {
     "sections": {
       "overview": "概览",
+      "downloads": "下载",
       "commands": "命令",
       "phrases": "短语与回复",
       "packs": "语言包"

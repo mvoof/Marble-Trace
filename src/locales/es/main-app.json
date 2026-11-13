@@ -35,11 +35,11 @@
     }
   },
   "appStatus": {
-    "connectedTo": "CONECTADO A {{sim}}",
-    "replaying": "REPRODUCCIÓN: {{tape}}",
-    "waitingForTelemetry": "ESPERANDO TELEMETRÍA",
-    "systemError": "ERROR DEL SISTEMA",
-    "waitingForGame": "ESPERANDO A QUE ARRANQUE EL JUEGO"
+    "connectedTo": "{{sim}} · conectado",
+    "replaying": "Repetición · {{tape}}",
+    "waitingForTelemetry": "{{sim}} · esperando telemetría",
+    "systemError": "Error del sistema",
+    "waitingForGame": "{{sim}} · no está abierto"
   },
   "releaseNotes": {
     "whatsNew": "Novedades",
@@ -198,7 +198,10 @@
       "noLayout": "Mantener el actual"
     },
     "exported": "Diseño guardado en {{path}}",
-    "exportFailed": "No se pudo guardar el archivo del diseño"
+    "exportFailed": "No se pudo guardar el archivo del diseño",
+    "import": "Importar",
+    "imported": "Diseño «{{name}}» añadido",
+    "importFailed": "Este archivo no contiene un diseño de Marble Trace"
   },
   "layoutWidgetPanel": {
     "onMonitor": "en {{monitor}}",
@@ -738,6 +741,7 @@
   "crewPage": {
     "sections": {
       "overview": "Resumen",
+      "downloads": "Descargas",
       "commands": "Comandos",
       "phrases": "Frases y respuestas",
       "packs": "Paquetes"

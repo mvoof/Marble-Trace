@@ -10,6 +10,6 @@
 
 .grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(rem(250), 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(rem(300), 1fr));
   gap: rem(14);
 }

@@ -334,6 +334,29 @@ export class LayoutsStore {
     this.mutations.record();
   }
 
+  /**
+   * Adds a layout read from a file, under an id of its own so it can never
+   * overwrite one already here. Its background images are paths on the PC it
+   * came from, so it arrives without them. Returns the new id.
+   */
+  addImportedLayout(layout: SavedLayout): string {
+    const id = crypto.randomUUID();
+
+    this.layouts = [
+      ...this.layouts,
+      {
+        ...layout,
+        id,
+        createdAt: Date.now(),
+        backgroundImages: {},
+        monitors: layout.monitors.map(cloneMonitor),
+      },
+    ];
+    this.mutations.record();
+
+    return id;
+  }
+
   async cloneLayout(id: string): Promise<string | undefined> {
     const layout = this.byId(id);
 

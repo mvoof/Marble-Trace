@@ -14,27 +14,20 @@
   width: rem(240);
 }
 
-// A group is a caption over its rows, as in the mockup: no box of its own.
+// A group is a heading over its rows: which widget or part of the app the
+// keys belong to. No box of its own, nothing to fold.
 .group {
   & + & {
-    margin-top: rem(8);
+    margin-top: rem(18);
   }
 }
 
 .groupHeader {
   display: flex;
   align-items: center;
-  gap: rem(6);
-  width: 100%;
-  padding: rem(10) 0 rem(4);
-  border: none;
-  background: none;
-  cursor: pointer;
-  text-align: left;
-
-  &:hover .groupTitle {
-    color: -text-secondary;
-  }
+  gap: rem(8);
+  padding: rem(4) 0 rem(6);
+  border-bottom: 1px solid $sys-border-main;
 }
 
 .groupBody {
@@ -48,30 +41,19 @@
 }
 
 .groupTitle {
-  font-size: rem(11);
-  font-weight: 500;
+  margin: 0 !important;
+  font-size: rem(12);
+  font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  color: -text-muted;
-  transition: color 0.15s ease;
+  color: $sys-text-secondary;
 }
 
 .groupCount {
   margin-left: auto;
-  font-family: -mono;
+  font-family: $font-mono;
   font-size: rem(11);
-  color: -text-muted;
-}
-
-.groupChevron {
-  color: -text-muted;
-  transition: transform 0.15s ease;
-  transform: rotate(-90deg);
-}
-
-.groupChevronOpen {
-  color: -text-muted;
-  transition: transform 0.15s ease;
+  color: $sys-text-muted;
 }
 
 .row {
@@ -117,12 +99,12 @@
   display: inline-flex;
   align-items: center;
   gap: rem(6);
-  padding: rem(2) rem(8);
+  padding: rem(3) rem(10);
   border: 1px solid $sys-border-main;
-  border-radius: 4px;
-  background: $sys-bg-main;
+  border-radius: rem(6);
+  background: $sys-bg-raised;
   font-family: $font-mono;
-  font-size: rem(11);
+  font-size: rem(12);
   color: $sys-text-primary;
 }
 

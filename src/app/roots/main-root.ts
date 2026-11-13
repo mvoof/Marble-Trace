@@ -22,8 +22,8 @@ import { TelemetryInspectorStore } from '@features/telemetry-inspector/telemetry
 import { TrackRotationStore } from '@entities/track/track-rotation.store';
 import { MainNavigationStore } from '@features/main-navigation/main-navigation.store';
 import { AppLinksStore } from '@features/app-links/app-links.store';
-import { LayoutExportStore } from '@features/layout-export/layout-export.store';
-import { encodeLayout } from '@app/sync/main/settings-file';
+import { LayoutFilesStore } from '@features/layout-files/layout-files.store';
+import { decodeLayout, encodeLayout } from '@app/sync/main/settings-file';
 
 /**
  * The main window: the renderer core, the app-window stores, and everything
@@ -46,7 +46,7 @@ export class MainRoot extends RendererCore implements AppWindowStores {
   remoteDevices: RemoteDevicesStore;
   fpsDiagnostics: FpsDiagnosticsStore;
   diagnosticsExport: DiagnosticsExportStore;
-  layoutExport: LayoutExportStore;
+  layoutFiles: LayoutFilesStore;
   telemetryInspector: TelemetryInspectorStore;
   trackRotation: TrackRotationStore;
   voiceCrew: VoiceCrewStore;
@@ -74,9 +74,10 @@ export class MainRoot extends RendererCore implements AppWindowStores {
     this.fpsDiagnostics = new FpsDiagnosticsStore(this);
     this.telemetryInspector = new TelemetryInspectorStore(this);
     this.diagnosticsExport = new DiagnosticsExportStore(this);
-    this.layoutExport = new LayoutExportStore({
+    this.layoutFiles = new LayoutFilesStore({
       layouts: this.layouts,
       encodeLayout,
+      decodeLayout,
     });
     this.trackRotation = new TrackRotationStore();
     this.voiceCrew = new VoiceCrewStore(this);
