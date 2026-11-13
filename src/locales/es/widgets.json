@@ -143,7 +143,6 @@
       "showPitIndicator": "Indicador de boxes",
       "playerRowColor": "Color de tu fila",
       "playerAccentColor": "Color de tu número",
-      "dataColumns": "Columnas de datos",
       "rowPaddingDesc": "Espaciado vertical de cada fila de piloto.",
       "showPitIndicatorDesc": "Muestra un icono cuando el piloto está en boxes.",
       "playerRowColorDesc": "Color de resalte de tu propia fila.",
@@ -322,7 +321,6 @@
       "steeringMarkerColorDesc": "Color de la franja recta marcada en el aro del volante.",
       "steeringZoom": "Zoom de dirección",
       "steeringZoomDesc": "El gráfico muestra ±{{angle}}° ({{zoom}}x) del recorrido de {{lock}}° — cámbialo en Ajustes › Volante",
-      "layout": "Disposición",
       "showTrace": "Gráfico de trazas",
       "showTraceDesc": "Muestra el histórico desplazable de los mandos.",
       "showInputValues": "Valores de pedales",
@@ -331,7 +329,7 @@
       "speedBlockSideDesc": "Colocar la velocidad y las velocidades en curva a la derecha o a la izquierda del gráfico.",
       "speedBlockSide_right": "Derecha",
       "speedBlockSide_left": "Izquierda",
-      "graphSettings": "Ajustes del gráfico",
+      "graph": "Gráfico",
       "historySeconds": "Duración del histórico",
       "historySecondsDesc": "Histórico visible: {{seconds}} s",
       "smoothing": "Suavizado",
@@ -367,7 +365,6 @@
       "blinkIncidentZones": "Parpadear mientras esté activo"
     },
     "radar": {
-      "radarBehavior": "Comportamiento del radar",
       "hideDelay": "Retardo de desvanecido (s)",
       "hideDelayDesc": "Segundos que el radar permanece visible después de que el último coche lo haya abandonado.",
       "scopeActivationDesc": "El radar aparece cuando un coche entra en el alcance que dibuja — configúralo abajo, en Alcance. Ya no hay un radio de activación aparte.",
@@ -398,7 +395,6 @@
       "showOpponentCarsDesc": "Desactivado: solo los haces, las marcas del borde y las distancias muestran dónde están los demás.",
       "showCarNumber": "Números de coche",
       "showCarNumberDesc": "El número de cada rival sobre su coche, cuando el coche es lo bastante grande para mostrarlo.",
-      "texture": "Textura de fondo",
       "backgroundTexture": "Patrón",
       "backgroundTextureDesc": "Se dibuja sobre el color de fondo, o sola cuando el fondo es transparente.",
       "textures": {
@@ -513,7 +509,6 @@
     "relative": {
       "qualifyingVisibility": "Mostrar a los demás pilotos en clasificación",
       "qualifyingVisibilityDesc": "Automático: los demás pilotos se ocultan durante la clasificación en solitario (un solo coche en pista). Tu fila siempre se mantiene.",
-      "appearance": "Apariencia",
       "showLicBadge": "Distintivo de licencia",
       "showLicBadgeDesc": "Distintivo de la licencia de seguridad del piloto (A, B, C, D, R).",
       "showLicenseLetter": "Letra de la clase de licencia",
@@ -570,7 +565,6 @@
       "bestLapChip_never": "Nunca"
     },
     "standings": {
-      "appearance": "Apariencia",
       "viewMode": "Modo de vista",
       "viewMode_all": "Todos los pilotos",
       "viewMode_grouped": "Por clase",
@@ -585,7 +579,6 @@
       "groupedRowsPerClass": "Filas por clase: {{value}}",
       "groupedRowsPerClassDesc": "Filas de pilotos que recibe cada clase en la vista agrupada. Automático reparte el alto del widget entre las clases que hay en pista. «Filas alrededor de ti» reserva la parte baja de cada bloque para los coches cercanos.",
       "rowsPerClassAuto": "Automático",
-      "playerWindow": "Filas alrededor de ti",
       "driversAhead": "Pilotos por delante",
       "driversAheadDesc": "Filas mostradas delante de ti cuando ya no cabes en la parte alta de la tabla.",
       "driversBehind": "Pilotos por detrás",

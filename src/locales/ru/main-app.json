@@ -253,7 +253,14 @@
     "selectToConfigure": "Выберите виджет для настройки",
     "notFound": "Виджет не найден",
     "moduleConfig": "Настройка модуля",
-    "layoutAndDimensions": "Расположение и размеры",
+    "groups": {
+      "columns": "Колонки",
+      "content": "Содержимое",
+      "display": "Отображение",
+      "size": "Размер",
+      "background": "Фон",
+      "behaviour": "Поведение"
+    },
     "positionX": "Позиция X",
     "positionY": "Позиция Y",
     "width": "Ширина (px)",
@@ -261,7 +268,6 @@
     "layerDepth": "Глубина слоя (Z-Index)",
     "fontScale": "Размер текста",
     "fontScaleDesc": "Масштабирует только текст, независимо от ширины/высоты виджета",
-    "aesthetics": "Фон и рамка",
     "background": "Фон",
     "border": "Рамка"
   },

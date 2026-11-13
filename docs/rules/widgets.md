@@ -4,7 +4,7 @@ What a reviewer applies to widget code. To build one, follow `docs/widget-author
 
 ## The widget system
 
-_Held by: test (every manifest has a mount and a schema whose defaults pass their own check, no mount or panel claims a widget the catalog does not ship, the catalog is alphabetical, no locale block outlives its widget, no catalog description runs past 80 characters, no string in `src/entities/` names a catalog widget outside the listed exceptions — `widget-catalog.test.ts`, `registry.test.ts`, `panel-registry.test.ts`, `widget-locales.test.ts`, `entities/entities-name-no-widget.test.ts`); review (a manifest never importing its component, panel rows sitting directly after their parent)._
+_Held by: test (every manifest has a mount and a schema whose defaults pass their own check, no mount or panel claims a widget the catalog does not ship, the catalog is alphabetical, no locale block outlives its widget, no catalog description runs past 80 characters, no string in `src/entities/` names a catalog widget outside the listed exceptions — `widget-catalog.test.ts`, `registry.test.ts`, `panel-registry.test.ts`, `settings-groups.test.ts` (no settings card named with a group's synonym), `widget-locales.test.ts`, `entities/entities-name-no-widget.test.ts`); review (a manifest never importing its component, panel rows sitting directly after their parent)._
 
 Each widget is one slice, `src/widgets/<name>/` (kebab-case; components inside
 stay PascalCase), and ships three files of its own that nothing lists by hand:
@@ -87,6 +87,18 @@ Race Dash's pit assist, closes the panel. A shared setting carries one key and
 one `common.*` label in every schema (`blinkAtShift`, `showCornerSpeeds`,
 `rpmColorHigh` …), so a driver who learns it in one widget recognises it in the
 next.
+
+Every panel draws from one group vocabulary, in one order, using only the groups
+it needs: Columns / Content → the widget's own blocks (free names: "Badges",
+"Scope") → Display (font, colours, accent) → Size → Background → Behaviour (when
+the widget shows). A group card is `<Card group="display">`, never a title: the
+group names itself and takes its place through `settingsGroupOrder`
+(`features/widget-settings/settings-groups.ts`), so a panel's Behaviour lands
+after the Size and Background cards `WidgetSettings` adds. Size and Background
+are those common cards; a panel does not draw its own. A block of the widget's
+own never takes a group's name or a synonym of one (View, Appearance, Module
+parameters, Visibility …) — `settings-groups.test.ts` holds it, with a list of
+panels not yet regrouped that shrinks as they are.
 
 Settings panels are collected the same way: each `*SettingsPanel.tsx` exports
 `PANEL_WIDGET_IDS` (usually one id, two for the radar and flag pairs), and

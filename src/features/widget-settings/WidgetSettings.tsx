@@ -13,8 +13,8 @@ export const WidgetSettings = observer(
     hideHeader = false,
   }: {
     widgetId: string | null;
-    /** The layout editor's inspector names the widget in its own header, above
-     *  the actions; a second title under it would say the same thing twice. */
+    /** The layout editor's inspector and the widget page name the widget
+     *  already; a second title under theirs would say the same thing twice. */
     hideHeader?: boolean;
   }) => {
     const liveWidgets = useWidgetEditor();
@@ -56,7 +56,10 @@ export const WidgetSettings = observer(
             </header>
           )}
 
-          <Card title={t('widgetSettings.layoutAndDimensions')}>
+          {/* The panel first: only its Behaviour card is drawn after these. */}
+          {SettingsPanel && <SettingsPanel widgetId={widgetId} />}
+
+          <Card group="size">
             <Row gutter={[24, 24]}>
               <Col span={12}>
                 <span className={styles.fieldLabel}>
@@ -171,7 +174,7 @@ export const WidgetSettings = observer(
           </Card>
 
           {!['radar-bar', 'led-flags', 'flat-flags'].includes(widgetType) && (
-            <Card title={t('widgetSettings.aesthetics')}>
+            <Card group="background">
               <Row gutter={[24, 24]}>
                 <Col span={12}>
                   <span className={styles.fieldLabel}>
@@ -221,8 +224,6 @@ export const WidgetSettings = observer(
               </Row>
             </Card>
           )}
-
-          {SettingsPanel && <SettingsPanel widgetId={widgetId} />}
         </div>
       </PanelWidgetProvider>
     );

@@ -2,12 +2,18 @@
 // instead of a manually-toggled "compact" flag — the same panel renders
 // inside a 280px layout-editor drawer, a ~460px drag-mode popup, and a
 // preview pane, and each needs to stack independently.
+//
+// A column, so each card's `order` (its settings group) places it: the panel's
+// Behaviour card follows the common Size and Background cards drawn after it.
 .settingsRoot {
   container-type: inline-size;
   container-name: settingsPanel;
+  display: flex;
+  flex-direction: column;
 }
 
 .header {
+  order: -1;
   margin-bottom: rem(40);
 }
 
@@ -88,7 +94,8 @@
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
   // The collapsible header sits above and owns the gap when open.
   margin-top: rem(10);
-  margin-bottom: rem(22);
+  // Added to the card's own margin below: a flex item does not collapse them.
+  margin-bottom: rem(12);
 
   // Every block inside a group is separated from the next one, whether or not
   // the panel wrapped it in .fieldGroup — panels that stacked bare SettingRows
@@ -231,7 +238,7 @@
   .cardContent {
     padding: rem(12);
     margin-top: rem(8);
-    margin-bottom: rem(16);
+    margin-bottom: rem(8);
 
     > * + * {
       padding-top: rem(14);

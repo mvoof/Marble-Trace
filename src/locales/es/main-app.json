@@ -249,7 +249,14 @@
     "selectToConfigure": "Selecciona un widget para configurarlo",
     "notFound": "Widget no encontrado",
     "moduleConfig": "Configuración del módulo",
-    "layoutAndDimensions": "Posición y tamaño",
+    "groups": {
+      "columns": "Columnas",
+      "content": "Contenido",
+      "display": "Visualización",
+      "size": "Tamaño",
+      "background": "Fondo",
+      "behaviour": "Comportamiento"
+    },
     "positionX": "Posición X",
     "positionY": "Posición Y",
     "width": "Ancho (px)",
@@ -257,7 +264,6 @@
     "layerDepth": "Profundidad de capa (Z-Index)",
     "fontScale": "Tamaño del texto",
     "fontScaleDesc": "Escala solo el texto, independientemente del ancho y el alto del widget",
-    "aesthetics": "Fondo y borde",
     "background": "Fondo",
     "border": "Borde"
   },

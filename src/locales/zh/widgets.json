@@ -143,7 +143,6 @@
       "showPitIndicator": "维修区指示器",
       "playerRowColor": "玩家行颜色",
       "playerAccentColor": "玩家编号颜色",
-      "dataColumns": "数据列",
       "rowPaddingDesc": "每个车手行的垂直内边距。",
       "showPitIndicatorDesc": "车手在维修区时显示图标。",
       "playerRowColorDesc": "您自己所在行的高亮颜色。",
@@ -322,7 +321,6 @@
       "steeringMarkerColorDesc": "方向盘边缘直条中心标记的颜色。",
       "steeringZoom": "转向缩放",
       "steeringZoomDesc": "图表显示 {{lock}}° 转角范围中的 ±{{angle}}°（{{zoom}}x）——转角范围在「设置 › 方向盘」中修改",
-      "layout": "布局",
       "showTrace": "轨迹图",
       "showTraceDesc": "显示滚动的输入历史图表。",
       "showInputValues": "踏板数值",
@@ -331,7 +329,7 @@
       "speedBlockSideDesc": "将速度和弯道速度放在图表的右侧或左侧。",
       "speedBlockSide_right": "右侧",
       "speedBlockSide_left": "左侧",
-      "graphSettings": "图表设置",
+      "graph": "图表",
       "historySeconds": "历史长度",
       "historySecondsDesc": "可见历史：{{seconds}} 秒",
       "smoothing": "平滑",
@@ -367,7 +365,6 @@
       "blinkIncidentZones": "活动时闪烁"
     },
     "radar": {
-      "radarBehavior": "雷达行为",
       "hideDelay": "淡出延迟（秒）",
       "hideDelayDesc": "最后一辆车离开后，雷达继续显示的秒数。",
       "scopeActivationDesc": "当有车辆进入雷达绘制的范围时雷达自动显示——请在下方“范围”中设置。不再有单独的激活半径。",
@@ -398,7 +395,6 @@
       "showOpponentCarsDesc": "关闭后：仅用光束、边缘标记和距离显示其他车辆的位置。",
       "showCarNumber": "车号",
       "showCarNumberDesc": "在每辆对手车上显示其车号（车身足够大时）。",
-      "texture": "背景纹理",
       "backgroundTexture": "图案",
       "backgroundTextureDesc": "绘制在背景色之上；背景透明时单独显示。",
       "textures": {
@@ -513,7 +509,6 @@
     "relative": {
       "qualifyingVisibility": "排位赛中显示其他车手",
       "qualifyingVisibilityDesc": "自动：单独排位赛期间隐藏其他车手（赛道上仅一辆车）。您自己的行始终保留。",
-      "appearance": "外观",
       "showLicBadge": "驾照徽章",
       "showLicBadgeDesc": "车手安全等级徽章（A、B、C、D、R）。",
       "showLicenseLetter": "驾照等级字母",
@@ -570,7 +565,6 @@
       "bestLapChip_never": "从不"
     },
     "standings": {
-      "appearance": "外观",
       "viewMode": "视图模式",
       "viewMode_all": "全部车手",
       "viewMode_grouped": "按组别分组",
@@ -582,7 +576,6 @@
       "showPosChangeDesc": "显示自会话开始以来获得或失去的名次箭头。",
       "showLivePosChange": "实时超车箭头",
       "showLivePosChangeDesc": "名次变化后，在名次数字上短暂显示向上或向下的箭头。",
-      "playerWindow": "你周围的行数",
       "groupedRowsPerClass": "每个组别的行数：{{value}}",
       "groupedRowsPerClassDesc": "分组视图中每个组别显示的车手行数。「自动」会在赛道上的各组别之间平均分配控件高度。「你周围的行数」会在每个组别底部为你附近的车辆留出行。",
       "rowsPerClassAuto": "自动",

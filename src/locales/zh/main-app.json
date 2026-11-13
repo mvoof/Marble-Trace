@@ -247,7 +247,14 @@
     "selectToConfigure": "选择要配置的小组件",
     "notFound": "未找到该小组件",
     "moduleConfig": "模块配置",
-    "layoutAndDimensions": "布局与尺寸",
+    "groups": {
+      "columns": "列",
+      "content": "内容",
+      "display": "显示",
+      "size": "尺寸",
+      "background": "背景",
+      "behaviour": "行为"
+    },
     "positionX": "X 坐标",
     "positionY": "Y 坐标",
     "width": "宽度（像素）",
@@ -255,7 +262,6 @@
     "layerDepth": "层级深度（Z-Index）",
     "fontScale": "文字大小",
     "fontScaleDesc": "仅缩放文字，与组件的宽度/高度无关",
-    "aesthetics": "背景与边框",
     "background": "背景",
     "border": "边框"
   },

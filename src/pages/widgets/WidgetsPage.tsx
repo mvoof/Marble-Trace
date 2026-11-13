@@ -93,7 +93,6 @@ export const WidgetsPage = observer(() => {
       onSelect={selectSection}
       textOnly
       menuHeader={sortControl}
-      fillsHeight={activeWidgetId !== null}
     >
       {activeWidgetId === null ? (
         <AllWidgets

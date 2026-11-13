@@ -27,7 +27,47 @@ export const RelativeSettingsPanel = observer(() => {
 
   return (
     <>
-      <Card title={t('settingsPanels.relative.appearance')}>
+      <Card group="columns">
+        <Row setting="showCarNumber" />
+        <Row setting="showLicBadge" />
+        <Row setting="licBadgeStyle" dependsOn="showLicBadge" />
+        <Row setting="showLicenseLetter" dependsOn="showLicBadge" />
+        <Row
+          setting="showSafetyRatingValue"
+          dependsOn={(settings) =>
+            settings.showLicBadge && settings.showLicenseLetter
+          }
+        />
+        <Row setting="showIRating" />
+        <Row setting="abbreviateIRating" dependsOn="showIRating" />
+        <Row setting="showIRatingChip" dependsOn="showIRating" />
+        <Row setting="showPitIndicator" />
+        <Row setting="showRadioMark" />
+        <Row setting="abbreviateNames" />
+        <Row setting="showCountryFlag" />
+        <Row setting="showDriverFlags" />
+        <Row setting="showDistance" />
+      </Card>
+
+      <Card group="content">
+        <div className={styles.fieldGroup}>
+          <Row setting="qualifyingVisibility" />
+        </div>
+      </Card>
+
+      <Card title={t('settingsPanels.common.positions')}>
+        <div className={styles.fieldGroup}>
+          <Row setting="useLivePositions" />
+        </div>
+      </Card>
+
+      <Card title={t('settingsPanels.common.safetyCar')}>
+        <div className={styles.fieldGroup}>
+          <Row setting="paceCarShowInPits" />
+        </div>
+      </Card>
+
+      <Card group="display">
         <div className={styles.fieldGroup}>
           <Row setting="rowPadding" />
         </div>
@@ -55,46 +95,6 @@ export const RelativeSettingsPanel = observer(() => {
 
         <div className={styles.fieldGroup}>
           <Row setting="playerAccentColor" />
-        </div>
-      </Card>
-
-      <Card title={t('settingsPanels.common.positions')}>
-        <div className={styles.fieldGroup}>
-          <Row setting="useLivePositions" />
-        </div>
-      </Card>
-
-      <Card title={t('settingsPanels.common.dataColumns')}>
-        <Row setting="showCarNumber" />
-        <Row setting="showLicBadge" />
-        <Row setting="licBadgeStyle" dependsOn="showLicBadge" />
-        <Row setting="showLicenseLetter" dependsOn="showLicBadge" />
-        <Row
-          setting="showSafetyRatingValue"
-          dependsOn={(settings) =>
-            settings.showLicBadge && settings.showLicenseLetter
-          }
-        />
-        <Row setting="showIRating" />
-        <Row setting="abbreviateIRating" dependsOn="showIRating" />
-        <Row setting="showIRatingChip" dependsOn="showIRating" />
-        <Row setting="showPitIndicator" />
-        <Row setting="showRadioMark" />
-        <Row setting="abbreviateNames" />
-        <Row setting="showCountryFlag" />
-        <Row setting="showDriverFlags" />
-        <Row setting="showDistance" />
-      </Card>
-
-      <Card title={t('settingsPanels.common.safetyCar')}>
-        <div className={styles.fieldGroup}>
-          <Row setting="paceCarShowInPits" />
-        </div>
-      </Card>
-
-      <Card title={t('settingsPanels.common.qualifying')}>
-        <div className={styles.fieldGroup}>
-          <Row setting="qualifyingVisibility" />
         </div>
       </Card>
     </>

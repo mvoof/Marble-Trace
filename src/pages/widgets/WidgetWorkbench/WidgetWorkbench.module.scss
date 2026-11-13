@@ -1,17 +1,24 @@
+// The page scrolls as a whole: the preview stays on top while the settings
+// below it pass under.
 .root {
   display: flex;
-  flex: 1;
+  flex-direction: column;
   width: 100%;
-  min-height: 0;
   gap: sp(lg);
 }
 
 .previewColumn {
+  position: sticky;
+  // Sticks inside the page's top padding (8 px in SectionedPage) and covers it,
+  // or the settings show through that strip above the preview.
+  top: rem(-8);
+  z-index: 1;
   display: flex;
-  flex: 1 1 0;
-  min-width: 0;
   flex-direction: column;
   gap: sp(sm);
+  // Opaque, so the settings scrolling under it do not show through.
+  padding: rem(8) 0 sp(sm);
+  background: $sys-bg-main;
 }
 
 .scenarioBar {
@@ -27,8 +34,9 @@
   font-size: fs(sm);
 }
 
+// Tall enough for a table's first rows, low enough to leave the settings room.
 .previewPane {
-  flex: 1 1 0;
+  height: clamp(rem(220), 42vh, rem(460));
   min-width: 0;
   border-radius: radius(lg);
   overflow: hidden;
@@ -43,8 +51,5 @@
 }
 
 .settingsPane {
-  flex: 0 0 360px;
   min-width: 0;
-  overflow-y: auto;
-  padding-right: sp(xs);
 }

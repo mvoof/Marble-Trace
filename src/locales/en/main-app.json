@@ -249,7 +249,14 @@
     "selectToConfigure": "Select a widget to configure",
     "notFound": "Widget not found",
     "moduleConfig": "Module Config",
-    "layoutAndDimensions": "Layout & Dimensions",
+    "groups": {
+      "columns": "Columns",
+      "content": "Content",
+      "display": "Display",
+      "size": "Size",
+      "background": "Background",
+      "behaviour": "Behaviour"
+    },
     "positionX": "Position X",
     "positionY": "Position Y",
     "width": "Width (px)",
@@ -257,7 +264,6 @@
     "layerDepth": "Layer Depth (Z-Index)",
     "fontScale": "Text Size",
     "fontScaleDesc": "Scales only the text, independent of widget width/height",
-    "aesthetics": "Background & border",
     "background": "Background",
     "border": "Border"
   },

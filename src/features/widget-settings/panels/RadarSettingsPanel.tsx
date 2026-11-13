@@ -65,7 +65,7 @@ const ScopeReadout = observer(
   }
 );
 
-const ScopeCard = observer(() => {
+const ScopeCards = observer(() => {
   const [settings, update] =
     usePanelSettings<ProximityRadarSettings>('proximity-radar');
   const { t } = useTranslation('widgets');
@@ -164,7 +164,7 @@ const ScopeCard = observer(() => {
         </div>
       </Card>
 
-      <Card title={t('settingsPanels.radar.texture')}>
+      <Card group="display">
         <GridRow gutter={24} className={styles.fieldGroup}>
           <Col span={24}>
             <span className={styles.fieldLabel}>
@@ -211,7 +211,15 @@ export const RadarSettingsPanel = observer(
 
     return (
       <>
-        <Card title={t('settingsPanels.radar.radarBehavior')}>
+        <Card group="content">
+          <div className={styles.fieldGroup}>
+            <Row setting="showDistance" />
+          </div>
+        </Card>
+
+        {widgetType === 'proximity-radar' && <ScopeCards />}
+
+        <Card group="behaviour">
           <GridRow gutter={24} className={styles.fieldGroup}>
             <Col span={24}>
               <div className={styles.fieldDesc}>
@@ -249,14 +257,6 @@ export const RadarSettingsPanel = observer(
             </GridRow>
           )}
 
-          <div className={styles.fieldGroup}>
-            <Row setting="showDistance" />
-          </div>
-        </Card>
-
-        {widgetType === 'proximity-radar' && <ScopeCard />}
-
-        <Card title={t('settingsPanels.common.qualifying')}>
           <div className={styles.fieldGroup}>
             <Row setting="qualifyingVisibility" stacked />
           </div>

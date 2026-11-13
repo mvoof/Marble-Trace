@@ -62,8 +62,8 @@ const openingScenarioFor = (widgetId: string): string =>
   WIDGET_BY_ID.get(widgetId)?.previewScenarios?.[0] ??
   DEFAULT_PREVIEW_SCENARIO_ID;
 
-// Two-pane widget catalog workspace: live preview column on the left, widget
-// settings panel on the right. The parent owns which widget is active.
+// One widget's page: the live preview on top, held in view while the settings
+// below it scroll. The parent owns which widget is active.
 export const WidgetWorkbench = observer(
   ({ widgetId }: { widgetId: string }) => {
     const { t } = useTranslation('main-app');
@@ -113,7 +113,7 @@ export const WidgetWorkbench = observer(
           </div>
 
           <div className={styles.settingsPane}>
-            <WidgetSettings widgetId={widgetId} />
+            <WidgetSettings widgetId={widgetId} hideHeader />
           </div>
         </div>
       </DefaultsEditorProvider>

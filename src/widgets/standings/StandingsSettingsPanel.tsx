@@ -49,49 +49,45 @@ export const StandingsSettingsPanel = observer(() => {
 
   return (
     <>
-      <Card title={t('settingsPanels.standings.appearance')}>
-        <div className={styles.fieldGroup}>
-          <Row setting="rowPadding" />
-        </div>
-
-        <div className={styles.fieldGroup}>
-          <SettingRow
-            title={nameColumnLabels.title}
-            desc={nameColumnLabels.desc}
-          >
-            <Slider
-              style={{ width: NAME_COLUMN_SLIDER_WIDTH_PX }}
-              min={nameColumnWidth.min}
-              max={nameColumnWidth.max}
-              step={nameColumnWidth.step}
-              value={settings.nameColumnWidth}
-              tooltip={{ formatter: (value) => `${value ?? 0} px` }}
-              onChange={(value) => update({ nameColumnWidth: value })}
-            />
-          </SettingRow>
-        </div>
-
-        <div className={styles.fieldGroup}>
-          <Row setting="dimSecondaryColumns" />
-        </div>
-
-        <div className={styles.fieldGroup}>
-          <Row setting="playerRowColor" />
-        </div>
-
-        <div className={styles.fieldGroup}>
-          <Row setting="playerAccentColor" />
-        </div>
+      <Card group="columns">
+        <Row setting="showPosChange" />
+        <Row setting="showLivePosChange" />
+        <Row setting="showBrand" />
+        <Row setting="showTire" />
+        <Row setting="showLicBadge" />
+        <Row setting="licBadgeStyle" dependsOn="showLicBadge" />
+        <Row setting="showLicenseLetter" dependsOn="showLicBadge" />
+        <Row
+          setting="showSafetyRatingValue"
+          dependsOn={(settings) =>
+            settings.showLicBadge && settings.showLicenseLetter
+          }
+        />
+        <Row setting="showIRating" />
+        <Row setting="abbreviateIRating" dependsOn="showIRating" />
+        <Row setting="showIRatingChip" dependsOn="showIRating" />
+        <Row setting="showGap" />
+        <Row setting="showInterval" />
+        <Row setting="showLastLap" />
+        <Row setting="showLapDelta" />
+        <Row setting="showBestLap" />
+        <Row setting="showPitIndicator" />
+        <Row setting="showPitStopTime" />
+        <Row setting="showRadioMark" />
+        <Row setting="showIrChange" />
+        <Row setting="showLapsCompleted" />
+        <Row setting="abbreviateNames" />
+        <Row setting="showTeamName" />
+        <Row setting="showCountryFlag" />
+        <Row setting="showDriverFlags" />
       </Card>
 
-      <Card title={t('settingsPanels.common.positions')}>
+      <Card group="content">
         <div className={styles.fieldGroup}>
-          <Row setting="useLivePositions" />
-        </div>
-      </Card>
+          <span className={styles.fieldLabel}>
+            {t('settingsPanels.standings.viewMode')}
+          </span>
 
-      <Card title={t('settingsPanels.standings.viewMode')}>
-        <div className={styles.fieldGroup}>
           <Segmented<StandingsViewMode>
             block
             value={settings.viewMode}
@@ -136,9 +132,7 @@ export const StandingsSettingsPanel = observer(() => {
             {t('settingsPanels.standings.groupedRowsPerClassDesc')}
           </div>
         </div>
-      </Card>
 
-      <Card title={t('settingsPanels.standings.playerWindow')}>
         <div className={styles.fieldGroup}>
           <SettingRow title={aheadLabels.title} desc={aheadLabels.desc}>
             <Segmented<number>
@@ -158,6 +152,37 @@ export const StandingsSettingsPanel = observer(() => {
             />
           </SettingRow>
         </div>
+
+        <div className={styles.fieldGroup}>
+          <Row setting="hideRetiredDrivers" />
+        </div>
+
+        <div className={styles.fieldGroup}>
+          <Row setting="hideDriversWithoutLap" />
+        </div>
+      </Card>
+
+      <Card title={t('settingsPanels.common.positions')}>
+        <div className={styles.fieldGroup}>
+          <Row setting="useLivePositions" />
+        </div>
+      </Card>
+
+      <Card title={t('settingsPanels.standings.headerInfo')}>
+        <Row setting="showColumnHeaders" />
+        <Row setting="showSessionHeader" />
+        <Row setting="showSessionTime" dependsOn="showSessionHeader" />
+        <Row setting="showLapProgress" dependsOn="showSessionHeader" />
+        <Row setting="lapCounter" dependsOn={isLapProgressShown} />
+        <Row setting="showSOF" />
+        <Row setting="abbreviateSof" dependsOn="showSOF" />
+        <Row setting="showTotalDrivers" />
+      </Card>
+
+      <Card title={t('settingsPanels.standings.footerInfo')}>
+        <Row setting="showPitStops" />
+        <Row setting="showIncidentsBadge" />
+        <Row setting="showWeather" />
       </Card>
 
       <Card title={t('settingsPanels.standings.scrolling')}>
@@ -181,56 +206,39 @@ export const StandingsSettingsPanel = observer(() => {
         </div>
       </Card>
 
-      <Card title={t('settingsPanels.common.dataColumns')}>
-        <Row setting="showPosChange" />
-        <Row setting="showLivePosChange" />
-        <Row setting="showBrand" />
-        <Row setting="showTire" />
-        <Row setting="showLicBadge" />
-        <Row setting="licBadgeStyle" dependsOn="showLicBadge" />
-        <Row setting="showLicenseLetter" dependsOn="showLicBadge" />
-        <Row
-          setting="showSafetyRatingValue"
-          dependsOn={(settings) =>
-            settings.showLicBadge && settings.showLicenseLetter
-          }
-        />
-        <Row setting="showIRating" />
-        <Row setting="abbreviateIRating" dependsOn="showIRating" />
-        <Row setting="showIRatingChip" dependsOn="showIRating" />
-        <Row setting="showGap" />
-        <Row setting="showInterval" />
-        <Row setting="showLastLap" />
-        <Row setting="showLapDelta" />
-        <Row setting="showBestLap" />
-        <Row setting="showPitIndicator" />
-        <Row setting="showPitStopTime" />
-        <Row setting="showRadioMark" />
-        <Row setting="showIrChange" />
-        <Row setting="showLapsCompleted" />
-        <Row setting="abbreviateNames" />
-        <Row setting="showTeamName" />
-        <Row setting="showCountryFlag" />
-        <Row setting="showDriverFlags" />
-        <Row setting="hideRetiredDrivers" />
-        <Row setting="hideDriversWithoutLap" />
-      </Card>
+      <Card group="display">
+        <div className={styles.fieldGroup}>
+          <Row setting="rowPadding" />
+        </div>
 
-      <Card title={t('settingsPanels.standings.headerInfo')}>
-        <Row setting="showColumnHeaders" />
-        <Row setting="showSessionHeader" />
-        <Row setting="showSessionTime" dependsOn="showSessionHeader" />
-        <Row setting="showLapProgress" dependsOn="showSessionHeader" />
-        <Row setting="lapCounter" dependsOn={isLapProgressShown} />
-        <Row setting="showSOF" />
-        <Row setting="abbreviateSof" dependsOn="showSOF" />
-        <Row setting="showTotalDrivers" />
-      </Card>
+        <div className={styles.fieldGroup}>
+          <SettingRow
+            title={nameColumnLabels.title}
+            desc={nameColumnLabels.desc}
+          >
+            <Slider
+              style={{ width: NAME_COLUMN_SLIDER_WIDTH_PX }}
+              min={nameColumnWidth.min}
+              max={nameColumnWidth.max}
+              step={nameColumnWidth.step}
+              value={settings.nameColumnWidth}
+              tooltip={{ formatter: (value) => `${value ?? 0} px` }}
+              onChange={(value) => update({ nameColumnWidth: value })}
+            />
+          </SettingRow>
+        </div>
 
-      <Card title={t('settingsPanels.standings.footerInfo')}>
-        <Row setting="showPitStops" />
-        <Row setting="showIncidentsBadge" />
-        <Row setting="showWeather" />
+        <div className={styles.fieldGroup}>
+          <Row setting="dimSecondaryColumns" />
+        </div>
+
+        <div className={styles.fieldGroup}>
+          <Row setting="playerRowColor" />
+        </div>
+
+        <div className={styles.fieldGroup}>
+          <Row setting="playerAccentColor" />
+        </div>
       </Card>
     </>
   );

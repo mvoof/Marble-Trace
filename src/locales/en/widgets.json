@@ -143,7 +143,6 @@
       "showPitIndicator": "Pit Indicator",
       "playerRowColor": "Player Row Color",
       "playerAccentColor": "Player Number Color",
-      "dataColumns": "Data Columns",
       "rowPaddingDesc": "Vertical padding of each driver row.",
       "showPitIndicatorDesc": "Show icon when driver is in pits.",
       "playerRowColorDesc": "Highlight color for your own row.",
@@ -322,7 +321,6 @@
       "steeringMarkerColorDesc": "Color of the straight center-grip stripe painted on the rim.",
       "steeringZoom": "Steering Zoom",
       "steeringZoomDesc": "Graph shows ±{{angle}}° ({{zoom}}x) of the {{lock}}° steering lock — change the lock in Settings › Steering Wheel",
-      "layout": "Layout",
       "showTrace": "Trace Graph",
       "showTraceDesc": "Show the scrolling input history graph.",
       "showInputValues": "Pedal Values",
@@ -331,7 +329,7 @@
       "speedBlockSideDesc": "Put the speed and corner speeds on the right of the graph or on its left.",
       "speedBlockSide_right": "Right",
       "speedBlockSide_left": "Left",
-      "graphSettings": "Graph Settings",
+      "graph": "Graph",
       "historySeconds": "History Length",
       "historySecondsDesc": "Visible history: {{seconds}}s",
       "smoothing": "Smoothing",
@@ -367,7 +365,6 @@
       "blinkIncidentZones": "Blink While Active"
     },
     "radar": {
-      "radarBehavior": "Radar Behavior",
       "hideDelay": "Fade Out Delay (s)",
       "hideDelayDesc": "Seconds the scope stays up after the last car has left it.",
       "scopeActivationDesc": "The scope shows itself whenever a car is inside the range it draws — set that range under Scope below. There is no separate activation radius.",
@@ -398,7 +395,6 @@
       "showOpponentCarsDesc": "Off: only beams, edge markers and gaps show where the others are.",
       "showCarNumber": "Car numbers",
       "showCarNumberDesc": "Each opponent's number on its body, when the body is big enough to hold it.",
-      "texture": "Background texture",
       "backgroundTexture": "Pattern",
       "backgroundTextureDesc": "Drawn over the background color, or on its own when the background is transparent.",
       "textures": {
@@ -513,7 +509,6 @@
     "relative": {
       "qualifyingVisibility": "Show other drivers in qualifying",
       "qualifyingVisibilityDesc": "Auto: other drivers are hidden during lone qualifying (single car on track). Your own row always stays.",
-      "appearance": "Appearance",
       "showLicBadge": "License Badge",
       "showLicBadgeDesc": "Driver safety rating badge (A, B, C, D, R).",
       "showLicenseLetter": "License Class Letter",
@@ -570,7 +565,6 @@
       "bestLapChip_never": "Never"
     },
     "standings": {
-      "appearance": "Appearance",
       "viewMode": "View Mode",
       "viewMode_all": "All Drivers",
       "viewMode_grouped": "By Class",
@@ -585,7 +579,6 @@
       "groupedRowsPerClass": "Rows Per Class: {{value}}",
       "groupedRowsPerClassDesc": "Driver rows each class gets in grouped view. Auto splits the widget height evenly between the classes on track. Rows Around You carves the bottom of each block out for the cars near you.",
       "rowsPerClassAuto": "Auto",
-      "playerWindow": "Rows Around You",
       "driversAhead": "Drivers Ahead",
       "driversAheadDesc": "Rows shown in front of you when you no longer fit in the top of the table.",
       "driversBehind": "Drivers Behind",
