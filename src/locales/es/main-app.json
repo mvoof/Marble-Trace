@@ -262,8 +262,6 @@
     "border": "Borde"
   },
   "settingsPage": {
-    "moduleLabel": "Configuración",
-    "title": "Ajustes globales de la aplicación",
     "language": {
       "title": "Idioma",
       "fieldLabel": "Idioma de la aplicación",
@@ -554,11 +552,6 @@
       }
     },
     "nav": {
-      "groups": {
-        "application": "Aplicación",
-        "overlay": "Superposición",
-        "maintenance": "Mantenimiento"
-      },
       "sections": {
         "general": "General",
         "companionApps": "Aplicaciones complementarias",

@@ -198,6 +198,15 @@
   margin: 0 auto;
 }
 
+// A page on the sectioned template: it lays out and scrolls its own menu and
+// content.
+.pageContainer {
+  position: relative;
+  z-index: 10;
+  height: 100%;
+  overflow: hidden;
+}
+
 .workbenchContainer {
   position: relative;
   z-index: 10;

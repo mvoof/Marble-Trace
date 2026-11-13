@@ -266,8 +266,6 @@
     "border": "Рамка"
   },
   "settingsPage": {
-    "moduleLabel": "Конфигурация",
-    "title": "Глобальные настройки приложения",
     "language": {
       "title": "Язык",
       "fieldLabel": "Язык приложения",
@@ -558,11 +556,6 @@
       }
     },
     "nav": {
-      "groups": {
-        "application": "Приложение",
-        "overlay": "Оверлей",
-        "maintenance": "Обслуживание"
-      },
       "sections": {
         "general": "Общие",
         "companionApps": "Сопутствующие программы",

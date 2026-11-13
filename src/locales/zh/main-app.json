@@ -260,8 +260,6 @@
     "border": "边框"
   },
   "settingsPage": {
-    "moduleLabel": "配置",
-    "title": "全局应用设置",
     "language": {
       "title": "语言",
       "fieldLabel": "应用语言",
@@ -552,11 +550,6 @@
       }
     },
     "nav": {
-      "groups": {
-        "application": "应用程序",
-        "overlay": "覆盖层",
-        "maintenance": "维护"
-      },
       "sections": {
         "general": "常规",
         "companionApps": "配套程序",

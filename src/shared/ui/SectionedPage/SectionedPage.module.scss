@@ -1,0 +1,113 @@
+// Below this the menu keeps only its icons.
+$narrow-window: 900px;
+
+.page {
+  display: flex;
+  height: 100%;
+  min-height: 0;
+}
+
+.menu {
+  flex: none;
+  width: rem(214);
+  display: flex;
+  flex-direction: column;
+  gap: rem(2);
+  padding: rem(8) rem(10) rem(16) rem(14);
+  overflow-y: auto;
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  gap: rem(10);
+  width: 100%;
+  padding: rem(8) rem(10);
+  border: none;
+  border-radius: rem(8);
+  background: none;
+  color: $sys-text-secondary;
+  font-size: rem(13);
+  text-align: left;
+  white-space: nowrap;
+  overflow: hidden;
+  cursor: pointer;
+  transition:
+    color 0.15s ease,
+    background 0.15s ease;
+
+  &:hover {
+    color: $sys-text-primary;
+  }
+}
+
+// Modifier declared after its base class.
+.itemActive {
+  @extend .item;
+
+  color: $sys-text-primary;
+  background: $sys-bg-raised;
+  box-shadow: 0 rem(2) rem(6) rgba(0, 0, 0, 0.4);
+}
+
+.itemIcon {
+  flex: none;
+}
+
+.itemLabel {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.separator {
+  flex: none;
+  height: 1px;
+  border: none;
+  margin: rem(8) rem(10);
+  background: $sys-border-sub;
+}
+
+.content {
+  flex: 1;
+  min-width: 0;
+  overflow-y: auto;
+  // Hold the scrollbar's width whether or not it is showing, so a section
+  // growing past the viewport does not shift the pane sideways.
+  scrollbar-gutter: stable;
+  padding: rem(8) rem(24) rem(28);
+}
+
+.contentInner {
+  max-width: rem(1120);
+}
+
+.title {
+  margin: rem(6) 0 rem(16) !important;
+  font-size: rem(20);
+  font-weight: 600;
+  color: $sys-text-primary;
+}
+
+@media (max-width: $narrow-window) {
+  .menu {
+    width: rem(58);
+    padding: rem(8) rem(8) rem(16);
+  }
+
+  .item {
+    justify-content: center;
+    padding: rem(9) 0;
+  }
+
+  .itemLabel {
+    display: none;
+  }
+
+  .separator {
+    margin: rem(8) rem(4);
+  }
+
+  .content {
+    padding: rem(8) rem(18) rem(24);
+  }
+}

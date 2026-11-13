@@ -39,6 +39,18 @@ _Held by: review._
 - CSS variable names must not indicate color.
 - Fonts: `$font-widget` = `'Inter', sans-serif`. `$font-mono` = `'JetBrains Mono', monospace`. Both are self-hosted variable fonts (`public/fonts`, `_fonts.scss`); `WidgetPanel` turns on `tabular-nums`.
 
+## Main window pages
+
+_Held by: review._
+
+- A page with more than one section draws its inner menu through
+  `SectionedPage` (`shared/ui/SectionedPage/`) — never a menu of its own. It
+  passes the menu (id, label, `lucide-react` icon; `MENU_SEPARATOR` between
+  runs) and the active section's content; the template draws the section's
+  name as the page title, collapses the menu to icons below 900 px and scrolls
+  the content. The page's container in `MainWindow` does not scroll.
+- A page without sections (Home, Hotkeys) has no inner menu.
+
 ## Color tokens
 
 _Held by: review._

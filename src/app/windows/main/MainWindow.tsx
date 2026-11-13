@@ -148,12 +148,11 @@ export const MainWindow = observer(() => {
             )}
 
             {navigation.section === 'settings' && (
-              <div className={styles.scrollContainer} key="settings">
-                <div
-                  className={`${styles.contentInner} ${styles.animateFadeIn}`}
-                >
-                  <SettingsPage />
-                </div>
+              <div
+                className={`${styles.pageContainer} ${styles.animateFadeIn}`}
+                key="settings"
+              >
+                <SettingsPage />
               </div>
             )}
 

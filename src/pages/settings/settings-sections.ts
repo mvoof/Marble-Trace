@@ -1,10 +1,10 @@
+import {
+  MENU_SEPARATOR,
+  type SectionMenuEntry,
+} from '@shared/ui/SectionedPage/section-menu';
 import { hasDevTools } from './dev-tools';
 
-/**
- * The settings navigation tree. One flat page of eleven cards made everything
- * equally hard to find, so the cards are split into sections and the sections
- * grouped; the nav shows the groups, the pane shows one section.
- */
+/** Every section the settings and the feature pages draw. */
 export type SettingsSectionId =
   | 'general'
   | 'updates'
@@ -21,24 +21,35 @@ export type SettingsSectionId =
   | 'maintenance'
   | 'telemetryInspector';
 
-export interface SettingsGroup {
-  /** i18n key under `settingsPage.nav.groups`. */
-  id: string;
-  sections: SettingsSectionId[];
-}
+/** The app's own settings, in the order the inner menu lists them. */
+const SETTINGS_SECTIONS = [
+  'general',
+  'overlay',
+  'interaction',
+  'updates',
+  'maintenance',
+  'about',
+] as const satisfies readonly SettingsSectionId[];
 
-/** Only what configures the app itself; the rest lives on the feature pages. */
-export const SETTINGS_GROUPS: SettingsGroup[] = [
-  { id: 'application', sections: ['general', 'updates', 'about'] },
-  { id: 'overlay', sections: ['overlay', 'interaction'] },
-  // The inspector is a developer tool and is left out of a release build.
-  {
-    id: 'maintenance',
-    sections: hasDevTools
-      ? ['maintenance', 'telemetryInspector']
-      : ['maintenance'],
-  },
-];
+/** What the Settings page itself shows; the rest lives on the feature pages. */
+export type SettingsMenuSectionId =
+  | (typeof SETTINGS_SECTIONS)[number]
+  | 'telemetryInspector';
+
+/**
+ * The Settings page's inner menu. The telemetry inspector is a developer tool:
+ * set apart below a separator, and left out of a release build.
+ */
+export const settingsMenu = (
+  withDevTools: boolean
+): SectionMenuEntry<SettingsMenuSectionId>[] =>
+  withDevTools
+    ? [...SETTINGS_SECTIONS, MENU_SEPARATOR, 'telemetryInspector']
+    : [...SETTINGS_SECTIONS];
+
+export const SETTINGS_MENU = settingsMenu(hasDevTools);
+
+export const DEFAULT_SETTINGS_SECTION: SettingsMenuSectionId = 'general';
 
 export type FeaturePage = 'connections' | 'data' | 'hotkeys';
 
@@ -54,9 +65,3 @@ export const FEATURE_PAGE_SECTIONS: Record<FeaturePage, SettingsSectionId[]> = {
 
 export const isFeaturePage = (page: string): page is FeaturePage =>
   Object.hasOwn(FEATURE_PAGE_SECTIONS, page);
-
-export const DEFAULT_SECTION: SettingsSectionId = 'general';
-
-export const groupOfSection = (section: SettingsSectionId): string =>
-  SETTINGS_GROUPS.find((group) => group.sections.includes(section))?.id ??
-  SETTINGS_GROUPS[0].id;
