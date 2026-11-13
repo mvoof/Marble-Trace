@@ -12,6 +12,7 @@ import {
   DEFAULT_PREVIEW_SCENARIO_ID,
 } from '@features/preview/scenarios';
 import { WIDGET_BY_ID } from '@entities/widget/widget-catalog';
+import type { WidgetPreviewPosition } from '@entities/app-settings/app-settings.store';
 import styles from './WidgetWorkbench.module.scss';
 
 const scenarioOption = (scenarioId: string) => {
@@ -64,10 +65,17 @@ const openingScenarioFor = (widgetId: string): string =>
   WIDGET_BY_ID.get(widgetId)?.previewScenarios?.[0] ??
   DEFAULT_PREVIEW_SCENARIO_ID;
 
-// One widget's page: the live preview on top, held in view while the settings
-// below it scroll. The parent owns which widget is active.
+// One widget's page: the live preview on top (or to the left), held in view
+// while the settings scroll. The parent owns which widget is active and where
+// the preview goes.
 export const WidgetWorkbench = observer(
-  ({ widgetId }: { widgetId: string }) => {
+  ({
+    widgetId,
+    previewPosition,
+  }: {
+    widgetId: string;
+    previewPosition: WidgetPreviewPosition;
+  }) => {
     const { t } = useTranslation('main-app');
     const navigation = useMainNavigationStore();
     // Pinned to the widget it was picked on: a pick says "show me this state of
@@ -88,7 +96,11 @@ export const WidgetWorkbench = observer(
 
     return (
       <DefaultsEditorProvider>
-        <div className={styles.root}>
+        <div
+          className={
+            previewPosition === 'left' ? styles.rootPreviewLeft : styles.root
+          }
+        >
           <div className={styles.previewColumn}>
             {scenarioOptions.length > 0 && (
               <div className={styles.scenarioBar}>
@@ -121,6 +133,7 @@ export const WidgetWorkbench = observer(
             <WidgetSettings
               widgetId={widgetId}
               hideHeader
+              openCards
               hotkeys={
                 <WidgetBindingsSummary
                   widgetType={widgetId}

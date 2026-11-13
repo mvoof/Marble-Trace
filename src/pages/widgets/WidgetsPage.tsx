@@ -1,6 +1,7 @@
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
-import { Segmented } from 'antd';
+import { Button, Segmented } from 'antd';
+import { Check, PanelLeft, PanelTop, Plus } from 'lucide-react';
 import { SectionedPage } from '@shared/ui/SectionedPage/SectionedPage';
 import {
   MENU_SEPARATOR,
@@ -8,7 +9,11 @@ import {
   type SectionMenuEntry,
 } from '@shared/ui/SectionedPage/section-menu';
 import { useAppSettingsStore } from '@entities/app-settings/app-settings-context';
-import type { WidgetMenuSort } from '@entities/app-settings/app-settings.store';
+import type {
+  WidgetMenuSort,
+  WidgetPreviewPosition,
+} from '@entities/app-settings/app-settings.store';
+import { useMainLiveWidgetsStore } from '@entities/layout/main-live-widgets-context';
 import type { WidgetDefaultConfig } from '@shared/contracts/widget-settings';
 import { useWidgetDefaultsStore } from '@entities/widget/widget-defaults-context';
 import { getWidgetLabel } from '@entities/widget/widget-i18n';
@@ -16,6 +21,7 @@ import { useMainNavigationStore } from '@features/main-navigation/main-navigatio
 import { AllWidgets } from './AllWidgets/AllWidgets';
 import { WidgetWorkbench } from './WidgetWorkbench/WidgetWorkbench';
 import { widgetMenuRuns } from './widget-menu';
+import styles from './WidgetsPage.module.scss';
 
 // The menu's id for All widgets; no widget type is spelled like it.
 const ALL_WIDGETS = '*all';
@@ -23,6 +29,9 @@ const ALL_WIDGETS = '*all';
 // A sort the file holds that this build does not know reads as the default.
 const sortOf = (stored: string): WidgetMenuSort =>
   stored === 'az' ? 'az' : 'tier';
+
+const previewPositionOf = (stored: string): WidgetPreviewPosition =>
+  stored === 'left' ? 'left' : 'top';
 
 /**
  * The Widgets page: a text-only menu (All widgets, then every widget in the
@@ -33,6 +42,7 @@ export const WidgetsPage = observer(() => {
   const appSettings = useAppSettingsStore();
   const widgetDefaults = useWidgetDefaultsStore();
   const navigation = useMainNavigationStore();
+  const liveWidgets = useMainLiveWidgetsStore();
 
   const sort = sortOf(appSettings.appSettings.widgetMenuSort);
   const runs = widgetMenuRuns(widgetDefaults.catalogWidgets, sort);
@@ -75,8 +85,8 @@ export const WidgetsPage = observer(() => {
 
   const sortControl = (
     <Segmented<WidgetMenuSort>
+      className={styles.sortSwitch}
       block
-      size="small"
       value={sort}
       onChange={(next) => appSettings.update({ widgetMenuSort: next })}
       options={[
@@ -86,6 +96,50 @@ export const WidgetsPage = observer(() => {
     />
   );
 
+  const previewPosition = previewPositionOf(
+    appSettings.appSettings.widgetPreviewPosition
+  );
+
+  const widgetActions = activeWidgetId !== null && (
+    <>
+      <Segmented<WidgetPreviewPosition>
+        value={previewPosition}
+        onChange={(next) => appSettings.update({ widgetPreviewPosition: next })}
+        options={[
+          {
+            value: 'top',
+            icon: <PanelTop size={15} />,
+            title: t('widgetsPage.previewTop'),
+          },
+          {
+            value: 'left',
+            icon: <PanelLeft size={15} />,
+            title: t('widgetsPage.previewLeft'),
+          },
+        ]}
+      />
+
+      {liveWidgets.isWidgetOnScreen(activeWidgetId) ? (
+        <Button disabled icon={<Check size={15} />}>
+          {t('widgetsPage.onScreen')}
+        </Button>
+      ) : (
+        <Button
+          icon={<Plus size={15} />}
+          title={t('widgetsPage.addToLayoutHint')}
+          disabled={!available.has(activeWidgetId)}
+          onClick={() => liveWidgets.addTypeToScreen(activeWidgetId)}
+        >
+          {t('widgetsPage.addToLayout')}
+        </Button>
+      )}
+    </>
+  );
+
+  // All widgets keeps one order whatever the menu's sort: the sort orders the
+  // menu, not the grid.
+  const catalogOrder = widgetMenuRuns(widgetDefaults.catalogWidgets, 'tier');
+
   return (
     <SectionedPage
       menu={menu}
@@ -93,16 +147,25 @@ export const WidgetsPage = observer(() => {
       onSelect={selectSection}
       textOnly
       menuHeader={sortControl}
+      subtitle={
+        activeWidgetId === null
+          ? t('widgetsPage.widgetsCount', { count: catalogOrder.flat().length })
+          : undefined
+      }
+      titleActions={widgetActions || undefined}
     >
       {activeWidgetId === null ? (
         <AllWidgets
-          widgets={runs.flat()}
+          widgets={catalogOrder.flat()}
           isAvailable={(widgetId) => available.has(widgetId)}
           labelOf={(widget) => getWidgetLabel(t, widget)}
           onOpen={(widgetId) => navigation.openWidget(widgetId)}
         />
       ) : (
-        <WidgetWorkbench widgetId={activeWidgetId} />
+        <WidgetWorkbench
+          widgetId={activeWidgetId}
+          previewPosition={previewPosition}
+        />
       )}
     </SectionedPage>
   );

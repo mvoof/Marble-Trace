@@ -5,7 +5,14 @@
     "sort": {
       "tier": "Importancia",
       "az": "A–Z"
-    }
+    },
+    "widgetsCount_one": "{{count}} widget",
+    "widgetsCount_other": "{{count}} widgets",
+    "previewTop": "Vista previa sobre los ajustes",
+    "previewLeft": "Vista previa junto a los ajustes",
+    "addToLayout": "Añadir al diseño",
+    "onScreen": "En pantalla",
+    "addToLayoutHint": "Pone el widget en el primer monitor del diseño en pantalla"
   },
   "appHeader": {
     "sections": {
@@ -258,7 +265,8 @@
     "background": "Fondo",
     "border": "Borde",
     "columns": {
-      "move": "Arrastra para reordenar"
+      "move": "Arrastra para reordenar",
+      "alwaysShown": "Siempre visible"
     },
     "hotkeysShared": "Compartidos por todas las copias de este widget",
     "hotkeysChange": "Cambiar"

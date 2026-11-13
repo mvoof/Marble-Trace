@@ -1,14 +1,10 @@
-// Gaps come from masonry.ts, which also sizes the columns; the card's padding
-// from AllWidgets.tsx, which sizes the miniature inside it.
+// Columns, row unit and gaps come from masonry.ts via inline styles; each card
+// spans the columns its widget's width earns and the rows its height takes.
+// `dense` lets a narrow card fill a hole a wide one left.
 .grid {
-  display: flex;
-  align-items: flex-start;
-}
-
-.column {
-  display: flex;
-  flex-direction: column;
-  flex: 0 0 auto;
+  display: grid;
+  grid-auto-flow: row dense;
+  align-items: start;
 }
 
 // The border is a shadow so it takes no room from the miniature.

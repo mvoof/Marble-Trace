@@ -25,6 +25,13 @@ export const PanelWidgetProvider = ({
   </PanelWidgetContext.Provider>
 );
 
+/**
+ * Cards drawn open, each a framed card with its title in a strip across the
+ * top — the Widgets page, which has the room. Where room is short (the layout
+ * editor's drawer, the overlay's popup) groups stay foldable.
+ */
+export const OpenCardsContext = createContext(false);
+
 type CardProps = {
   /** Starts unfolded. Most groups start folded so a long panel fits. */
   defaultOpen?: boolean;
@@ -50,6 +57,7 @@ export const Card = observer(
     const panelUi = useSettingsPanelUiStore();
     const widgetId = use(PanelWidgetContext);
     const { t } = useTranslation('main-app');
+    const isAlwaysOpen = use(OpenCardsContext);
 
     const title =
       group === undefined ? ownTitle : t(`widgetSettings.groups.${group}`);
@@ -64,10 +72,28 @@ export const Card = observer(
 
     // A card with no title has no header to click, and outside a panel (previews,
     // Storybook) there is nothing to key the state on — both stay always open.
-    const isCollapsible = title !== undefined && widgetId !== null;
+    const isCollapsible =
+      !isAlwaysOpen && title !== undefined && widgetId !== null;
 
     const isOpen =
       !isCollapsible || panelUi.isExpanded(widgetId, groupId, defaultOpen);
+
+    if (isAlwaysOpen) {
+      return (
+        <section
+          className={styles.openCard}
+          style={{ order: settingsGroupOrder(group) }}
+        >
+          {title && (
+            <header className={styles.openCardHeader}>
+              <h3 className={styles.openCardTitle}>{title}</h3>
+            </header>
+          )}
+
+          <div className={styles.openCardContent}>{children}</div>
+        </section>
+      );
+    }
 
     return (
       // The panel's cards and the common ones WidgetSettings adds share one

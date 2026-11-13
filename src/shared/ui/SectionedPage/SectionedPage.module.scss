@@ -27,7 +27,10 @@ $narrow-window: 900px;
   margin-bottom: rem(8);
 }
 
+// flex: none — in a menu taller than the window the items would otherwise
+// shrink below their padding instead of the menu scrolling.
 .item {
+  flex: none;
   display: flex;
   align-items: center;
   gap: rem(10);
@@ -38,6 +41,7 @@ $narrow-window: 900px;
   background: none;
   color: $sys-text-secondary;
   font-size: rem(13);
+  line-height: 1.45;
   text-align: left;
   white-space: nowrap;
   overflow: hidden;

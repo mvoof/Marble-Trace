@@ -6,7 +6,15 @@ import { WidgetIdContext } from '@entities/widget/WidgetIdContext';
 import { widgetFrameStyle } from '@entities/widget/widget-frame';
 import type { WidgetDefaultConfig } from '@shared/contracts/widget-settings';
 import { ErrorBoundary } from '@shared/ui/ErrorBoundary';
-import { COLUMN_GAP, masonryColumns, miniatureGeometry } from './masonry';
+import {
+  catalogColumns,
+  COLUMN_GAP,
+  MAX_HEIGHT_IN_COLUMNS,
+  miniatureGeometry,
+  ROW_UNIT,
+  rowSpan,
+  tileSpan,
+} from './masonry';
 import { useCatalogPreviewWorld } from './use-catalog-preview-world';
 import styles from './AllWidgets.module.scss';
 
@@ -24,10 +32,12 @@ interface AllWidgetsProps {
 const Miniature = observer(
   ({
     widget,
-    columnWidth,
+    width: tileWidth,
+    maxHeight,
   }: {
     widget: WidgetDefaultConfig;
-    columnWidth: number;
+    width: number;
+    maxHeight: number;
   }) => {
     const Widget = componentForWidget(widget.type);
 
@@ -35,7 +45,11 @@ const Miniature = observer(
       return null;
     }
 
-    const { width, height, scale } = miniatureGeometry(widget, columnWidth);
+    const { width, height, scale } = miniatureGeometry(
+      widget,
+      tileWidth,
+      maxHeight
+    );
     const { userSettings, autoHeight, contentSized } = widget;
 
     return (
@@ -67,8 +81,80 @@ const Miniature = observer(
 );
 
 /**
- * All widgets: masonry columns of live miniatures on the preview's sample
- * data, unlabelled (the name is the tooltip); a card opens its widget.
+ * One card of the grid: as many columns as its widget is wide, as many rows
+ * as its miniature turns out tall — measured, since a widget that sizes
+ * itself has no height until it is drawn.
+ */
+const CatalogTile = observer(
+  ({
+    widget,
+    span,
+    width,
+    maxHeight,
+    label,
+    isAvailable,
+    onOpen,
+  }: {
+    widget: WidgetDefaultConfig;
+    span: number;
+    width: number;
+    maxHeight: number;
+    label: string;
+    isAvailable: boolean;
+    onOpen: () => void;
+  }) => {
+    const cardRef = useRef<HTMLDivElement>(null);
+    const [rows, setRows] = useState(1);
+
+    useLayoutEffect(() => {
+      const card = cardRef.current;
+
+      if (!card) {
+        return;
+      }
+
+      const resizeObserver = new ResizeObserver(() =>
+        setRows(rowSpan(card.offsetHeight))
+      );
+
+      resizeObserver.observe(card);
+
+      return () => resizeObserver.disconnect();
+    }, []);
+
+    return (
+      <div style={{ gridColumn: `span ${span}`, gridRowEnd: `span ${rows}` }}>
+        <div
+          ref={cardRef}
+          className={styles.card}
+          style={{ padding: CARD_PADDING }}
+        >
+          <Miniature
+            widget={widget}
+            width={width - 2 * CARD_PADDING}
+            maxHeight={maxHeight}
+          />
+          {/* Over the miniature, not around it: a widget may hold controls of
+              its own, and a button cannot. */}
+          <button
+            type="button"
+            className={styles.open}
+            title={label}
+            aria-label={label}
+            disabled={!isAvailable}
+            onClick={onOpen}
+          />
+        </div>
+      </div>
+    );
+  }
+);
+
+/**
+ * All widgets: live miniatures on the preview's sample data, unlabelled (the
+ * name is the tooltip), packed in a grid that fills the width. A wider widget
+ * spans more columns; cards pack under one another whatever their height. A
+ * card opens its widget.
  */
 export const AllWidgets = observer(
   ({ widgets, isAvailable, labelOf, onOpen }: AllWidgetsProps) => {
@@ -92,46 +178,40 @@ export const AllWidgets = observer(
       return () => resizeObserver.disconnect();
     }, []);
 
-    const { columns, width } = masonryColumns(boxWidth, widgets);
+    const columns = catalogColumns(boxWidth);
+    const maxHeight = columns.width * MAX_HEIGHT_IN_COLUMNS - 2 * CARD_PADDING;
 
     return (
       <Provide>
-        <div ref={boxRef} className={styles.grid} style={{ gap: COLUMN_GAP }}>
+        <div
+          ref={boxRef}
+          className={styles.grid}
+          style={{
+            gridTemplateColumns: `repeat(${columns.count}, minmax(0, 1fr))`,
+            gridAutoRows: ROW_UNIT,
+            columnGap: COLUMN_GAP,
+          }}
+        >
           {boxWidth > 0 &&
-            columns.map((column, columnIndex) => (
-              <div
-                key={columnIndex}
-                className={styles.column}
-                style={{ width, gap: COLUMN_GAP }}
-              >
-                {column.map((widget) => {
-                  const label = labelOf(widget);
+            widgets.map((widget) => {
+              const span = tileSpan(widget, columns.count, {
+                columnWidth: columns.width,
+                maxHeight,
+              });
 
-                  return (
-                    <div
-                      key={widget.id}
-                      className={styles.card}
-                      style={{ padding: CARD_PADDING }}
-                    >
-                      <Miniature
-                        widget={widget}
-                        columnWidth={width - 2 * CARD_PADDING}
-                      />
-                      {/* Over the miniature, not around it: a widget may
-                          hold controls of its own, and a button cannot. */}
-                      <button
-                        type="button"
-                        className={styles.open}
-                        title={label}
-                        aria-label={label}
-                        disabled={!isAvailable(widget.id)}
-                        onClick={() => onOpen(widget.id)}
-                      />
-                    </div>
-                  );
-                })}
-              </div>
-            ))}
+              return (
+                <CatalogTile
+                  key={widget.id}
+                  widget={widget}
+                  span={span}
+                  width={span * columns.width + (span - 1) * COLUMN_GAP}
+                  maxHeight={maxHeight}
+                  label={labelOf(widget)}
+                  isAvailable={isAvailable(widget.id)}
+                  onOpen={() => onOpen(widget.id)}
+                />
+              );
+            })}
         </div>
       </Provide>
     );

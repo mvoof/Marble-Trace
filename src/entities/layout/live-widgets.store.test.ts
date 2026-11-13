@@ -217,6 +217,17 @@ describe('LiveWidgetsStore overlay widget picker', () => {
     expect(rootStore.liveWidgets.populatedMonitorNames).toEqual(['DISPLAY2']);
   });
 
+  it("adds a widget to the screen on the layout's first monitor", () => {
+    const [widget] = rootStore.liveWidgets.allWidgets;
+
+    const addedId = rootStore.liveWidgets.addTypeToScreen(widget.type)!;
+    const added = rootStore.liveWidgets.getWidget(addedId)!;
+
+    expect(added.userSettings.enabled).toBe(true);
+    expect(added.monitor).toBe('DISPLAY1');
+    expect(rootStore.liveWidgets.isWidgetOnScreen(widget.type)).toBe(true);
+  });
+
   it('cascades a second widget instead of stacking it', () => {
     const [first, second] = rootStore.liveWidgets.allWidgets;
 

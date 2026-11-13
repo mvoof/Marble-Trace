@@ -107,6 +107,42 @@
   }
 }
 
+// An always-open group on the Widgets page: the mockup's card, its title in a
+// strip across the top.
+.openCard {
+  background: $sys-bg-card;
+  border: 1px solid $sys-border-sub;
+  border-radius: rem(10);
+  margin-bottom: rem(14);
+}
+
+.openCardHeader {
+  display: flex;
+  align-items: center;
+  min-height: rem(46);
+  padding: rem(12) rem(16);
+  border-bottom: 1px solid $sys-border-sub;
+}
+
+.openCardTitle {
+  margin: 0 !important;
+  font-size: rem(13);
+  font-weight: 600;
+  color: $sys-text-primary;
+}
+
+.openCardContent {
+  padding: rem(14) rem(16);
+
+  // Every block inside a group is separated from the next one, as in a
+  // foldable card.
+  > * + * {
+    padding-top: rem(16);
+    margin-top: rem(16);
+    border-top: 1px solid $sys-border-sub;
+  }
+}
+
 .fieldLabel {
   display: block;
   font-size: rem(11);
@@ -133,7 +169,8 @@
 
 // A dependant placed straight in the card (`dependsOn`) joins the block above
 // it instead of being ruled off as a block of its own.
-.cardContent > .fieldSubRow {
+.cardContent > .fieldSubRow,
+.openCardContent > .fieldSubRow {
   margin-top: rem(14);
   padding-top: 0;
   border-top: 0;

@@ -69,7 +69,17 @@ export const ColumnList = observer(
               </span>
 
               <span className={styles.switchSlot}>
-                {shown !== undefined && (
+                {shown === undefined ? (
+                  // A column the table always has: its switch says so,
+                  // on and locked, so every row reads the same.
+                  <Switch
+                    size="small"
+                    checked
+                    disabled
+                    aria-label={label}
+                    title={t('widgetSettings.columns.alwaysShown')}
+                  />
+                ) : (
                   <Switch
                     size="small"
                     checked={shown}

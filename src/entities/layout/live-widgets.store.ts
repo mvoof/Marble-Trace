@@ -61,6 +61,7 @@ import type {
 } from '@shared/contracts/widget-settings';
 import { DEFAULT_LAYOUT_RESOLUTION } from '@entities/layout/layout-resolution';
 import {
+  defaultMonitorOf,
   hotkeysActOn,
   widgetsOnMonitor,
 } from '@entities/layout/virtual-desktop';
@@ -87,6 +88,7 @@ type WidgetSettingsWrite =
   | 'updateUserSettings'
   | 'setWidgetEnabled'
   | 'setTypeEnabledOnMonitor'
+  | 'addTypeToScreen'
   | 'duplicateWidget'
   | 'removeWidgetCopy'
   | 'copySettingsFrom'
@@ -708,6 +710,23 @@ export class LiveWidgetsStore implements WidgetMap {
       monitorName,
       new Set(availableWidgetIdsOf(DEFAULT_WIDGETS, this.capabilitiesOf()))
     );
+  }
+
+  /**
+   * Puts a widget on screen from its own page: switched on on the layout's
+   * first monitor (`setTypeEnabledOnMonitor`). Returns the instance, or null
+   * when the layout has no monitor.
+   */
+  addTypeToScreen(type: string): string | null {
+    const monitor = this.widgetOwner
+      ? defaultMonitorOf(this.widgetOwner)
+      : undefined;
+
+    if (!monitor) {
+      return null;
+    }
+
+    return this.setTypeEnabledOnMonitor(type, monitor.name, true);
   }
 
   /**

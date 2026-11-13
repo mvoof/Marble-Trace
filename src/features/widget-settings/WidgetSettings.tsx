@@ -4,7 +4,11 @@ import { useTranslation } from 'react-i18next';
 import { InputNumber, Row, Col, ColorPicker, Slider } from 'antd';
 import { getWidgetLabel } from '@entities/widget/widget-i18n';
 import styles from '@features/widget-settings/WidgetSettings.module.scss';
-import { Card, PanelWidgetProvider } from '@features/widget-settings/Card';
+import {
+  Card,
+  OpenCardsContext,
+  PanelWidgetProvider,
+} from '@features/widget-settings/Card';
 import { useWidgetEditor } from '@features/widget-settings/WidgetEditorContext';
 import { settingsPanelForWidget } from './panel-registry';
 
@@ -12,12 +16,15 @@ export const WidgetSettings = observer(
   ({
     widgetId,
     hideHeader = false,
+    openCards = false,
     hotkeys,
   }: {
     widgetId: string | null;
     /** The layout editor's inspector and the widget page name the widget
      *  already; a second title under theirs would say the same thing twice. */
     hideHeader?: boolean;
+    /** Every group as an open card (the Widgets page), not a foldable one. */
+    openCards?: boolean;
     /** The Hotkeys group's content. Bindings live in the main window alone,
      *  so the page brings them; the overlay's popup draws none. */
     hotkeys?: ReactNode;
@@ -50,189 +57,192 @@ export const WidgetSettings = observer(
     const SettingsPanel = settingsPanelForWidget(widgetType);
 
     return (
-      <PanelWidgetProvider widgetId={widgetId}>
-        <div className={`${styles.animateFadeIn} ${styles.settingsRoot}`}>
-          {!hideHeader && (
-            <header className={styles.header}>
-              <span className={styles.moduleLabel}>
-                {t('widgetSettings.moduleConfig')}
-              </span>
-              <h1 className={styles.title}>{getWidgetLabel(t, widget)}</h1>
-            </header>
-          )}
-
-          {/* The panel first: only its Behaviour card is drawn after these. */}
-          {SettingsPanel && <SettingsPanel widgetId={widgetId} />}
-
-          <Card group="size">
-            <Row gutter={[24, 24]}>
-              <Col span={12}>
-                <span className={styles.fieldLabel}>
-                  {t('widgetSettings.positionX')}
+      <OpenCardsContext value={openCards}>
+        <PanelWidgetProvider widgetId={widgetId}>
+          <div className={`${styles.animateFadeIn} ${styles.settingsRoot}`}>
+            {!hideHeader && (
+              <header className={styles.header}>
+                <span className={styles.moduleLabel}>
+                  {t('widgetSettings.moduleConfig')}
                 </span>
-                <InputNumber
-                  style={{ width: '100%' }}
-                  value={userSettings.x}
-                  onChange={(v) => {
-                    if (v !== null) {
-                      liveWidgets.pushUndo?.();
-                      liveWidgets.updateUserSettings(widgetId, { x: v });
-                    }
-                  }}
-                />
-              </Col>
+                <h1 className={styles.title}>{getWidgetLabel(t, widget)}</h1>
+              </header>
+            )}
 
-              <Col span={12}>
-                <span className={styles.fieldLabel}>
-                  {t('widgetSettings.positionY')}
-                </span>
-                <InputNumber
-                  style={{ width: '100%' }}
-                  value={userSettings.y}
-                  onChange={(v) => {
-                    if (v !== null) {
-                      liveWidgets.pushUndo?.();
-                      liveWidgets.updateUserSettings(widgetId, { y: v });
-                    }
-                  }}
-                />
-              </Col>
+            {/* The panel first: only its Behaviour card is drawn after these. */}
+            {SettingsPanel && <SettingsPanel widgetId={widgetId} />}
 
-              <Col span={12}>
-                <span className={styles.fieldLabel}>
-                  {t('widgetSettings.width')}
-                </span>
-                <InputNumber
-                  style={{ width: '100%' }}
-                  value={userSettings.currentWidth}
-                  min={10}
-                  onChange={(v) => {
-                    if (v !== null) {
-                      liveWidgets.pushUndo?.();
-                      liveWidgets.updateUserSettings(widgetId, {
-                        currentWidth: v,
-                      });
-                    }
-                  }}
-                />
-              </Col>
-
-              <Col span={12}>
-                <span className={styles.fieldLabel}>
-                  {t('widgetSettings.height')}
-                </span>
-                <InputNumber
-                  style={{ width: '100%' }}
-                  value={userSettings.currentHeight}
-                  min={10}
-                  onChange={(v) => {
-                    if (v !== null) {
-                      liveWidgets.pushUndo?.();
-                      liveWidgets.updateUserSettings(widgetId, {
-                        currentHeight: v,
-                      });
-                    }
-                  }}
-                />
-              </Col>
-
-              <Col span={12}>
-                <span className={styles.fieldLabel}>
-                  {t('widgetSettings.layerDepth')}
-                </span>
-                <InputNumber
-                  style={{ width: '100%' }}
-                  value={userSettings.zIndex ?? 0}
-                  onChange={(v) => {
-                    if (v !== null) {
-                      liveWidgets.pushUndo?.();
-                      liveWidgets.updateUserSettings(widgetId, {
-                        zIndex: v,
-                      });
-                    }
-                  }}
-                />
-              </Col>
-
-              <Col span={24}>
-                <span className={styles.fieldLabel}>
-                  {t('widgetSettings.fontScale')}
-                </span>
-                <Slider
-                  min={0.4}
-                  max={1.8}
-                  step={0.05}
-                  value={userSettings.fontScale ?? 1}
-                  tooltip={{ formatter: (value) => `${value?.toFixed(2)}x` }}
-                  onChangeComplete={() => liveWidgets.pushUndo?.()}
-                  onChange={(v) => {
-                    liveWidgets.updateUserSettings(widgetId, {
-                      fontScale: v,
-                    });
-                  }}
-                />
-                <div className={styles.fieldDesc}>
-                  {t('widgetSettings.fontScaleDesc')}
-                </div>
-              </Col>
-            </Row>
-          </Card>
-
-          {!['radar-bar', 'led-flags', 'flat-flags'].includes(widgetType) && (
-            <Card group="background">
+            <Card group="size">
               <Row gutter={[24, 24]}>
                 <Col span={12}>
                   <span className={styles.fieldLabel}>
-                    {t('widgetSettings.background')}
+                    {t('widgetSettings.positionX')}
                   </span>
-                  <div className={styles.colorPickerContainer}>
-                    <ColorPicker
-                      value={
-                        userSettings.backgroundColor ?? 'rgba(21, 22, 26, 0.8)'
+                  <InputNumber
+                    style={{ width: '100%' }}
+                    value={userSettings.x}
+                    onChange={(v) => {
+                      if (v !== null) {
+                        liveWidgets.pushUndo?.();
+                        liveWidgets.updateUserSettings(widgetId, { x: v });
                       }
-                      allowClear
-                      onChange={(color) =>
-                        liveWidgets.updateUserSettings(widgetId, {
-                          backgroundColor: color
-                            ? color.toRgbString()
-                            : 'transparent',
-                        })
-                      }
-                    />
-                    <div className={styles.fieldDesc}>
-                      {userSettings.backgroundColor ?? 'transparent'}
-                    </div>
-                  </div>
+                    }}
+                  />
                 </Col>
 
                 <Col span={12}>
                   <span className={styles.fieldLabel}>
-                    {t('widgetSettings.border')}
+                    {t('widgetSettings.positionY')}
                   </span>
-                  <div className={styles.colorPickerContainer}>
-                    <ColorPicker
-                      value={
-                        userSettings.borderColor ?? 'rgba(255, 255, 255, 0.1)'
+                  <InputNumber
+                    style={{ width: '100%' }}
+                    value={userSettings.y}
+                    onChange={(v) => {
+                      if (v !== null) {
+                        liveWidgets.pushUndo?.();
+                        liveWidgets.updateUserSettings(widgetId, { y: v });
                       }
-                      allowClear
-                      onChange={(color) =>
+                    }}
+                  />
+                </Col>
+
+                <Col span={12}>
+                  <span className={styles.fieldLabel}>
+                    {t('widgetSettings.width')}
+                  </span>
+                  <InputNumber
+                    style={{ width: '100%' }}
+                    value={userSettings.currentWidth}
+                    min={10}
+                    onChange={(v) => {
+                      if (v !== null) {
+                        liveWidgets.pushUndo?.();
                         liveWidgets.updateUserSettings(widgetId, {
-                          borderColor: color.toRgbString(),
-                        })
+                          currentWidth: v,
+                        });
                       }
-                    />
-                    <div className={styles.fieldDesc}>
-                      {userSettings.borderColor ?? 'transparent'}
-                    </div>
+                    }}
+                  />
+                </Col>
+
+                <Col span={12}>
+                  <span className={styles.fieldLabel}>
+                    {t('widgetSettings.height')}
+                  </span>
+                  <InputNumber
+                    style={{ width: '100%' }}
+                    value={userSettings.currentHeight}
+                    min={10}
+                    onChange={(v) => {
+                      if (v !== null) {
+                        liveWidgets.pushUndo?.();
+                        liveWidgets.updateUserSettings(widgetId, {
+                          currentHeight: v,
+                        });
+                      }
+                    }}
+                  />
+                </Col>
+
+                <Col span={12}>
+                  <span className={styles.fieldLabel}>
+                    {t('widgetSettings.layerDepth')}
+                  </span>
+                  <InputNumber
+                    style={{ width: '100%' }}
+                    value={userSettings.zIndex ?? 0}
+                    onChange={(v) => {
+                      if (v !== null) {
+                        liveWidgets.pushUndo?.();
+                        liveWidgets.updateUserSettings(widgetId, {
+                          zIndex: v,
+                        });
+                      }
+                    }}
+                  />
+                </Col>
+
+                <Col span={24}>
+                  <span className={styles.fieldLabel}>
+                    {t('widgetSettings.fontScale')}
+                  </span>
+                  <Slider
+                    min={0.4}
+                    max={1.8}
+                    step={0.05}
+                    value={userSettings.fontScale ?? 1}
+                    tooltip={{ formatter: (value) => `${value?.toFixed(2)}x` }}
+                    onChangeComplete={() => liveWidgets.pushUndo?.()}
+                    onChange={(v) => {
+                      liveWidgets.updateUserSettings(widgetId, {
+                        fontScale: v,
+                      });
+                    }}
+                  />
+                  <div className={styles.fieldDesc}>
+                    {t('widgetSettings.fontScaleDesc')}
                   </div>
                 </Col>
               </Row>
             </Card>
-          )}
 
-          {hotkeys && <Card group="hotkeys">{hotkeys}</Card>}
-        </div>
-      </PanelWidgetProvider>
+            {!['radar-bar', 'led-flags', 'flat-flags'].includes(widgetType) && (
+              <Card group="background">
+                <Row gutter={[24, 24]}>
+                  <Col span={12}>
+                    <span className={styles.fieldLabel}>
+                      {t('widgetSettings.background')}
+                    </span>
+                    <div className={styles.colorPickerContainer}>
+                      <ColorPicker
+                        value={
+                          userSettings.backgroundColor ??
+                          'rgba(21, 22, 26, 0.8)'
+                        }
+                        allowClear
+                        onChange={(color) =>
+                          liveWidgets.updateUserSettings(widgetId, {
+                            backgroundColor: color
+                              ? color.toRgbString()
+                              : 'transparent',
+                          })
+                        }
+                      />
+                      <div className={styles.fieldDesc}>
+                        {userSettings.backgroundColor ?? 'transparent'}
+                      </div>
+                    </div>
+                  </Col>
+
+                  <Col span={12}>
+                    <span className={styles.fieldLabel}>
+                      {t('widgetSettings.border')}
+                    </span>
+                    <div className={styles.colorPickerContainer}>
+                      <ColorPicker
+                        value={
+                          userSettings.borderColor ?? 'rgba(255, 255, 255, 0.1)'
+                        }
+                        allowClear
+                        onChange={(color) =>
+                          liveWidgets.updateUserSettings(widgetId, {
+                            borderColor: color.toRgbString(),
+                          })
+                        }
+                      />
+                      <div className={styles.fieldDesc}>
+                        {userSettings.borderColor ?? 'transparent'}
+                      </div>
+                    </div>
+                  </Col>
+                </Row>
+              </Card>
+            )}
+
+            {hotkeys && <Card group="hotkeys">{hotkeys}</Card>}
+          </div>
+        </PanelWidgetProvider>
+      </OpenCardsContext>
     );
   }
 );

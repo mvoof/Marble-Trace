@@ -5,7 +5,16 @@
     "sort": {
       "tier": "По важности",
       "az": "А–Я"
-    }
+    },
+    "widgetsCount_one": "{{count}} виджет",
+    "widgetsCount_few": "{{count}} виджета",
+    "widgetsCount_many": "{{count}} виджетов",
+    "widgetsCount_other": "{{count}} виджета",
+    "previewTop": "Превью над настройками",
+    "previewLeft": "Превью рядом с настройками",
+    "addToLayout": "Добавить в раскладку",
+    "onScreen": "На экране",
+    "addToLayoutHint": "Ставит виджет на первый монитор раскладки, которая сейчас на экране"
   },
   "appHeader": {
     "sections": {
@@ -264,7 +273,8 @@
     "background": "Фон",
     "border": "Рамка",
     "columns": {
-      "move": "Перетащите, чтобы изменить порядок"
+      "move": "Перетащите, чтобы изменить порядок",
+      "alwaysShown": "Показывается всегда"
     },
     "hotkeysShared": "Общие для всех копий этого виджета",
     "hotkeysChange": "Изменить"

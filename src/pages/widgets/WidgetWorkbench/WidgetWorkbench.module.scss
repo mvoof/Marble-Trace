@@ -1,10 +1,26 @@
-// The page scrolls as a whole: the preview stays on top while the settings
-// below it pass under.
+// Below this the preview always goes on top, whatever the switch says.
+$narrow-window: 1100px;
+
+// The page scrolls as a whole: the preview stays in view while the settings
+// pass under (on top) or beside it (on the left).
 .root {
   display: flex;
   flex-direction: column;
   width: 100%;
-  gap: sp(lg);
+  gap: rem(16);
+}
+
+// Modifier declared after its base class.
+.rootPreviewLeft {
+  @extend .root;
+
+  flex-direction: row;
+  align-items: flex-start;
+
+  @media (max-width: $narrow-window) {
+    flex-direction: column;
+    align-items: stretch;
+  }
 }
 
 .previewColumn {
@@ -15,41 +31,48 @@
   z-index: 1;
   display: flex;
   flex-direction: column;
-  gap: sp(sm);
+  gap: rem(8);
   // Opaque, so the settings scrolling under it do not show through.
-  padding: rem(8) 0 sp(sm);
+  padding: rem(8) 0 rem(12);
   background: $sys-bg-main;
+
+  .rootPreviewLeft & {
+    width: 46%;
+    flex: none;
+    top: 0;
+
+    @media (max-width: $narrow-window) {
+      width: auto;
+      top: rem(-8);
+    }
+  }
 }
 
 .scenarioBar {
   display: flex;
   align-items: center;
-  gap: sp(sm);
+  gap: rem(8);
   flex: 0 0 auto;
 }
 
 .scenarioLabel {
-  color: #8b8e98;
-  font-family: $font-widget;
-  font-size: fs(sm);
+  color: $sys-text-secondary;
+  font-size: rem(12);
 }
 
-// Tall enough for a table's first rows, low enough to leave the settings room.
+// The stage the widget stands on, like the mockup's: a quiet checkerboard in
+// a framed box, so the widget reads as an overlay over something.
 .previewPane {
   height: clamp(rem(220), 42vh, rem(460));
   min-width: 0;
-  border-radius: radius(lg);
+  border-radius: rem(10);
   overflow: hidden;
-  background:
-    radial-gradient(
-      circle at 30% 20%,
-      rgba(80, 90, 120, 0.25),
-      transparent 60%
-    ),
-    linear-gradient(135deg, #1a1c22 0%, #0d0e12 100%);
-  border: 1px solid #2a2c32;
+  background: repeating-conic-gradient($sys-bg-sunken 0 25%, $sys-bg-main 0 50%)
+    0 0 / rem(16) rem(16);
+  border: 1px solid $sys-border-sub;
 }
 
 .settingsPane {
+  flex: 1;
   min-width: 0;
 }
