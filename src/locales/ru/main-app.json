@@ -283,6 +283,11 @@
       "launchMinimizedTitle": "Запуск свёрнутым",
       "launchMinimizedDesc": "Запускать приложение свёрнутым в трей."
     },
+    "appearance": {
+      "title": "Внешний вид",
+      "headerAnimationTitle": "Фоновая анимация",
+      "headerAnimationDesc": "Спокойная волна за шапкой окна. Замирает, когда окно свёрнуто или не в фокусе."
+    },
     "interactionMode": {
       "title": "Режим взаимодействия",
       "dragModeTitle": "Режим перетаскивания",

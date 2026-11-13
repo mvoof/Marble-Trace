@@ -54,6 +54,8 @@ export const DEFAULT_APP_SETTINGS = {
   hideAllWidgets: false,
   autoSwitchLayouts: true,
   startMinimized: false,
+  /** The calm wave behind the main window's header. */
+  headerAnimation: true,
   autoUpdate: true,
   updateCheckInterval: 3,
   lastUpdateCheck: null as string | null,

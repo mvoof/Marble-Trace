@@ -279,6 +279,11 @@
       "launchMinimizedTitle": "Launch Minimized",
       "launchMinimizedDesc": "Start the application minimized to the taskbar."
     },
+    "appearance": {
+      "title": "Appearance",
+      "headerAnimationTitle": "Background animation",
+      "headerAnimationDesc": "The calm wave behind the header. Pauses when the window is minimised or not focused."
+    },
     "interactionMode": {
       "title": "Interaction Mode",
       "dragModeTitle": "UI Drag Mode",

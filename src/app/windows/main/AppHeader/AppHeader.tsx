@@ -19,8 +19,9 @@ import {
 } from '@features/main-navigation/main-navigation.store';
 import { useAppLinksStore } from '@features/app-links/app-links-context';
 import { useAppUpdateStore } from '@features/app-update/app-update-context';
+import { useAppSettingsStore } from '@entities/app-settings/app-settings-context';
 import { AppStatus } from '../AppStatus/AppStatus';
-import { HeaderTrace } from './HeaderTrace';
+import { HeaderWave } from './HeaderWave';
 import { HeaderPocket } from './HeaderPocket';
 import { WindowControls } from './WindowControls';
 import Logo from '@assets/brand-mark.svg?react';
@@ -50,6 +51,7 @@ export const AppHeader = observer(() => {
   const navigation = useMainNavigationStore();
   const appLinks = useAppLinksStore();
   const appUpdate = useAppUpdateStore();
+  const appSettings = useAppSettingsStore();
   const { t } = useTranslation('main-app');
   // Elements in state, not refs: the pocket measures them in its own layout
   // effect, which runs before a parent's refs are attached.
@@ -64,7 +66,7 @@ export const AppHeader = observer(() => {
       className={styles.header}
       data-tauri-drag-region
     >
-      <HeaderTrace />
+      {appSettings.appSettings.headerAnimation && <HeaderWave />}
 
       <HeaderPocket header={headerElement} items={itemsElement} />
 

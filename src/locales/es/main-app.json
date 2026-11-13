@@ -279,6 +279,11 @@
       "launchMinimizedTitle": "Arrancar minimizado",
       "launchMinimizedDesc": "Inicia la aplicación minimizada en la barra de tareas."
     },
+    "appearance": {
+      "title": "Apariencia",
+      "headerAnimationTitle": "Animación de fondo",
+      "headerAnimationDesc": "La onda tranquila detrás del encabezado. Se detiene cuando la ventana está minimizada o sin foco."
+    },
     "interactionMode": {
       "title": "Modos de interacción",
       "dragModeTitle": "Modo de arrastre",
