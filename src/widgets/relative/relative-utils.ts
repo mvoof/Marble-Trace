@@ -16,7 +16,9 @@ import {
   srChipWidth,
   type ChipWidth,
 } from '@shared/ui/StatChip/rating';
+import { normalizeOrder } from '@shared/lib/widget-settings-dsl';
 import type { RelativeWidgetSettings } from './settings-schema';
+import { RELATIVE_COLUMNS, type RelativeColumn } from './relative-columns';
 
 const ws = (px: number) => `calc(${px}px * var(--wfs, 1))`;
 
@@ -47,6 +49,23 @@ const clampNameColumnWidth = (width: number | undefined) => {
   );
 };
 
+/**
+ * The groups a thin rule divides the row into: who the driver is, how rated,
+ * where on track. Rules sit between groups, never between the columns of one.
+ */
+type ColumnBlock = 'driver' | 'rating' | 'track';
+
+const COLUMN_BLOCKS: Record<RelativeColumn, ColumnBlock> = {
+  pos: 'driver',
+  carNumber: 'driver',
+  countryFlag: 'driver',
+  name: 'driver',
+  sr: 'rating',
+  ir: 'rating',
+  gap: 'track',
+  distance: 'track',
+};
+
 interface ColSpec {
   px: number;
   /** The track as CSS, when it is more than `px` at the widget's scale. */
@@ -70,26 +89,68 @@ const chipColumn = (
   show: width !== null,
 });
 
-// Single source of truth for column order + widths (px at scale 1). Order MUST
-// match the render order in DriverRow.tsx.
+// Widths of every column (px at scale 1).
+const columnSpecs = (
+  settings: WithFontScale<RelativeWidgetSettings>
+): Record<RelativeColumn, ColSpec> => {
+  const { sr, ir } = ratingChipParts(settings);
+
+  return {
+    pos: { px: 28, show: true },
+    carNumber: { px: padded(40), show: settings.showCarNumber }, // class-colored badge
+    countryFlag: { px: padded(22), show: settings.showCountryFlag },
+    name: { px: clampNameColumnWidth(settings.nameColumnWidth), show: true }, // fixed, user-sized
+    // The safety rating and the iRating, each a column — the same columns
+    // Standings has, so the two tables line up when stacked.
+    sr: chipColumn(srChipWidth(sr, settings.licBadgeStyle), settings),
+    ir: chipColumn(irChipWidth(ir), settings),
+    gap: { px: padded(56), show: true },
+    // Five digits and the unit ("41010 ft"), half a lap of the Nordschleife.
+    distance: { px: padded(DISTANCE_COLUMN_PX), show: settings.showDistance },
+  };
+};
+
+/**
+ * The columns the strip draws, left to right, in the order the settings give
+ * — the one order the grid, the driver rows and the pace car row follow. A
+ * missing order is the shipped one.
+ */
+export const visibleRelativeColumns = (
+  settings: WithFontScale<RelativeWidgetSettings>
+): RelativeColumn[] => {
+  const specs = columnSpecs(settings);
+
+  return normalizeOrder(settings.columnOrder ?? [], RELATIVE_COLUMNS).filter(
+    (column) => specs[column].show
+  );
+};
+
 const colSpecs = (
   settings: WithFontScale<RelativeWidgetSettings>
 ): ColSpec[] => {
-  const { sr, ir } = ratingChipParts(settings);
+  const specs = columnSpecs(settings);
 
-  return [
-    { px: 28, show: true }, // pos
-    { px: padded(40), show: settings.showCarNumber }, // carNum — class-colored badge, right after pos
-    { px: padded(22), show: settings.showCountryFlag }, // country flag, right before the name
-    { px: clampNameColumnWidth(settings.nameColumnWidth), show: true }, // name — fixed, user-sized
-    // The safety rating and the iRating, each a column — the same columns
-    // Standings has, so the two tables line up when stacked.
-    chipColumn(srChipWidth(sr, settings.licBadgeStyle), settings),
-    chipColumn(irChipWidth(ir), settings),
-    { px: padded(56), show: true }, // gap
-    // Distance: five digits and the unit ("41010 ft"), half a lap of the Nordschleife.
-    { px: padded(DISTANCE_COLUMN_PX), show: settings.showDistance },
-  ];
+  return visibleRelativeColumns(settings).map((column) => specs[column]);
+};
+
+/**
+ * The visible columns that close a group with another group after them — the
+ * cells that carry the thin rule on their right edge.
+ */
+export const buildRelativeBlockEnds = (
+  settings: RelativeWidgetSettings
+): ReadonlySet<RelativeColumn> => {
+  const visible = visibleRelativeColumns(settings);
+
+  return new Set(
+    visible.filter((column, index) => {
+      const next = visible[index + 1];
+
+      return (
+        next !== undefined && COLUMN_BLOCKS[next] !== COLUMN_BLOCKS[column]
+      );
+    })
+  );
 };
 
 export const buildRelativeGridTemplate = (
@@ -98,9 +159,7 @@ export const buildRelativeGridTemplate = (
   const parts: string[] = [];
 
   for (const col of colSpecs(settings)) {
-    if (col.show) {
-      parts.push(col.css ?? ws(col.px));
-    }
+    parts.push(col.css ?? ws(col.px));
   }
 
   return parts.join(' ');
@@ -111,7 +170,7 @@ export const buildRelativeGridTemplate = (
 export const computeRelativeDesignWidth = (
   settings: WithFontScale<RelativeWidgetSettings>
 ): number => {
-  const visible = colSpecs(settings).filter((col) => col.show);
+  const visible = colSpecs(settings);
   const columnsWidth = visible.reduce((sum, col) => sum + col.px, 0);
   const gaps = Math.max(0, visible.length - 1) * COL_GAP_PX;
 

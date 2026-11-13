@@ -265,7 +265,10 @@
     "fontScale": "Tamaño del texto",
     "fontScaleDesc": "Escala solo el texto, independientemente del ancho y el alto del widget",
     "background": "Fondo",
-    "border": "Borde"
+    "border": "Borde",
+    "columns": {
+      "move": "Arrastra para reordenar"
+    }
   },
   "settingsPage": {
     "language": {

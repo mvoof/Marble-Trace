@@ -169,7 +169,15 @@
       "gearRpmCard": "Gear and RPM",
       "steeringCard": "Steering",
       "showRadioMark": "Radio Indicator",
-      "showRadioMarkDesc": "Show a mic beside the driver who is talking on the radio, you included."
+      "showRadioMarkDesc": "Show a mic beside the driver who is talking on the radio, you included.",
+      "driverName": "Driver Name",
+      "ratings": "Ratings",
+      "columns": {
+        "pos": "Position",
+        "carNumber": "Car Number",
+        "name": "Driver",
+        "gap": "Gap"
+      }
     },
     "delta": {
       "deltaReference": "Delta Reference",

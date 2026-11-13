@@ -169,7 +169,15 @@
       "gearRpmCard": "Marcha y RPM",
       "steeringCard": "Volante",
       "showRadioMark": "Indicador de radio",
-      "showRadioMarkDesc": "Muestra un micrófono junto al piloto que habla por radio, tú incluido."
+      "showRadioMarkDesc": "Muestra un micrófono junto al piloto que habla por radio, tú incluido.",
+      "driverName": "Nombre del piloto",
+      "ratings": "Clasificaciones",
+      "columns": {
+        "pos": "Posición",
+        "carNumber": "Número de coche",
+        "name": "Piloto",
+        "gap": "Diferencia"
+      }
     },
     "delta": {
       "deltaReference": "Referencia del delta",

@@ -4,10 +4,16 @@ import {
   NAME_COLUMN_DEFAULT_PX,
   NAME_COLUMN_MAX_PX,
   NAME_COLUMN_MIN_PX,
+  buildRelativeBlockEnds,
   buildRelativeGridTemplate,
   computeRelativeDesignWidth,
+  visibleRelativeColumns,
 } from '@widgets/relative/relative-utils';
-import type { RelativeWidgetSettings } from './settings-schema';
+import {
+  RELATIVE_SETTINGS,
+  type RelativeWidgetSettings,
+} from './settings-schema';
+import { RELATIVE_COLUMNS, type RelativeColumn } from './relative-columns';
 
 const settingsWith = (nameColumnWidth: number) =>
   ({
@@ -60,5 +66,60 @@ describe('distance column', () => {
     expect(buildRelativeGridTemplate(withDistance).split(' calc').length).toBe(
       buildRelativeGridTemplate(base).split(' calc').length + 1
     );
+  });
+});
+
+describe('column order', () => {
+  const withOrder = (
+    columnOrder: readonly RelativeColumn[]
+  ): RelativeWidgetSettings => ({
+    ...RELATIVE_SETTINGS.defaults,
+    columnOrder,
+  });
+
+  it('draws the visible columns in the shipped order by default', () => {
+    expect(visibleRelativeColumns(RELATIVE_SETTINGS.defaults)).toEqual([
+      'pos',
+      'carNumber',
+      'name',
+      'sr',
+      'ir',
+      'gap',
+    ]);
+  });
+
+  it('draws the columns in the order the settings give', () => {
+    const reordered = withOrder([
+      'gap',
+      ...RELATIVE_COLUMNS.filter((column) => column !== 'gap'),
+    ]);
+
+    expect(visibleRelativeColumns(reordered)).toEqual([
+      'gap',
+      'pos',
+      'carNumber',
+      'name',
+      'sr',
+      'ir',
+    ]);
+    expect(computeRelativeDesignWidth(reordered)).toBe(
+      computeRelativeDesignWidth(RELATIVE_SETTINGS.defaults)
+    );
+  });
+
+  it('closes the driver and rating groups with a rule', () => {
+    expect([...buildRelativeBlockEnds(RELATIVE_SETTINGS.defaults)]).toEqual([
+      'name',
+      'ir',
+    ]);
+  });
+
+  it('closes a group wherever the next column belongs to another', () => {
+    const gapFirst = withOrder([
+      'gap',
+      ...RELATIVE_COLUMNS.filter((column) => column !== 'gap'),
+    ]);
+
+    expect([...buildRelativeBlockEnds(gapFirst)]).toEqual(['gap', 'name']);
   });
 });

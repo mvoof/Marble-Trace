@@ -13,7 +13,9 @@ import {
   valueChipWidth,
 } from '@shared/ui/StatChip/rating';
 import { formatLapTime } from '@shared/lib/telemetry-format';
+import { normalizeOrder } from '@shared/lib/widget-settings-dsl';
 import type { StandingsWidgetSettings } from './settings-schema';
+import { STANDINGS_COLUMNS, type StandingsColumn } from './standings-columns';
 
 export interface VisibleRows {
   drivers: CarIdentity[];
@@ -176,26 +178,6 @@ const clampNameColumnWidth = (width: number | undefined) => {
   );
 };
 
-// Single source of truth for column order + widths (px at scale 1). Order here
-// MUST match the render order in DriverRow.tsx and StandingsHeader.tsx.
-export type StandingsColumn =
-  | 'pos'
-  | 'carNumber'
-  | 'posChange'
-  | 'countryFlag'
-  | 'name'
-  | 'sr'
-  | 'ir'
-  | 'irChange'
-  | 'laps'
-  | 'gap'
-  | 'interval'
-  | 'lastLap'
-  | 'lapDelta'
-  | 'bestLap'
-  | 'brand'
-  | 'tire';
-
 /**
  * The groups a thin rule divides the row into: who the driver is, how rated,
  * where in the race, how fast, in what car. Rules sit between groups, never
@@ -265,7 +247,8 @@ const bestLapColumn = (
   };
 };
 
-const colSpecs = (
+// Widths and groups of every column (px at scale 1), in the shipped order.
+const shippedColSpecs = (
   settings: WithFontScale<StandingsWidgetSettings>
 ): ColSpec[] => {
   const { sr, ir } = ratingChipParts(settings);
@@ -369,6 +352,30 @@ const colSpecs = (
     { key: 'tire', block: 'car', px: padded(30), show: settings.showTire }, // badge — at end
   ];
 };
+
+/**
+ * Every column in the order the settings give — the one order the grid, the
+ * header and the rows all follow. A missing order is the shipped one.
+ */
+const colSpecs = (
+  settings: WithFontScale<StandingsWidgetSettings>
+): ColSpec[] => {
+  const specs = new Map(
+    shippedColSpecs(settings).map((spec) => [spec.key, spec])
+  );
+
+  return normalizeOrder(settings.columnOrder ?? [], STANDINGS_COLUMNS).flatMap(
+    (column) => specs.get(column) ?? []
+  );
+};
+
+/** The columns the table draws, left to right. */
+export const visibleStandingsColumns = (
+  settings: StandingsWidgetSettings
+): StandingsColumn[] =>
+  colSpecs(settings)
+    .filter((col) => col.show)
+    .map((col) => col.key);
 
 /**
  * The visible columns that close a group with another group after them — the

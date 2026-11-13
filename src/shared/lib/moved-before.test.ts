@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { movedBefore } from './block-order';
+import { movedBefore } from './moved-before';
 
-describe('block order', () => {
+describe('movedBefore', () => {
   const blocks = ['меняй', 'шины', '{tires}'];
 
   it('puts a block before another', () => {

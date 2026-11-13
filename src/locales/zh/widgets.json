@@ -169,7 +169,15 @@
       "gearRpmCard": "挡位与转速",
       "steeringCard": "方向盘",
       "showRadioMark": "无线电指示",
-      "showRadioMarkDesc": "在正在无线电通话的车手旁显示麦克风，包括你自己。"
+      "showRadioMarkDesc": "在正在无线电通话的车手旁显示麦克风，包括你自己。",
+      "driverName": "车手名称",
+      "ratings": "评级",
+      "columns": {
+        "pos": "名次",
+        "carNumber": "车号",
+        "name": "车手",
+        "gap": "差距"
+      }
     },
     "delta": {
       "deltaReference": "差值参考",

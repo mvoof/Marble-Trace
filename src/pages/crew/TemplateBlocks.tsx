@@ -3,7 +3,7 @@ import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
 import { Button, Checkbox, Dropdown, Popover } from 'antd';
 import { Plus } from 'lucide-react';
-import { movedBefore } from '@features/voice-crew/block-order';
+import { movedBefore } from '@shared/lib/moved-before';
 import {
   templateFromBlocks,
   type TemplateBlock,
@@ -13,7 +13,7 @@ import { Block, type BlockChange } from './Block';
 import { BlockInput } from './BlockInput';
 import { ChoiceChip } from './ChoiceChip';
 import { SlotSettings } from './SlotSettings';
-import { useBlockDrag } from './useBlockDrag';
+import { usePointerReorder } from '@shared/hooks/usePointerReorder';
 import styles from './CrewPage.module.scss';
 
 /** A block being added, shown empty until something is written into it. */
@@ -39,7 +39,7 @@ export const TemplateBlocks = observer(
     const remove = (index: number) =>
       write(blocks.filter((_, at) => at !== index));
     const add = (block: TemplateBlock) => write([...blocks, block]);
-    const drag = useBlockDrag(blocks.length, (from, before) =>
+    const drag = usePointerReorder(blocks.length, 'x', (from, before) =>
       write(movedBefore(blocks, from, before))
     );
     const addPending = (text: string) => {
@@ -175,7 +175,7 @@ export const TemplateBlocks = observer(
               (block.kind === 'slot' || block.kind === 'choice') &&
               block.optional === true
             }
-            drag={drag.block(index)}
+            drag={drag.item(index)}
             changes={changes(block, index)}
             onRemove={() => remove(index)}
           >

@@ -265,7 +265,10 @@
     "fontScale": "Text Size",
     "fontScaleDesc": "Scales only the text, independent of widget width/height",
     "background": "Background",
-    "border": "Border"
+    "border": "Border",
+    "columns": {
+      "move": "Drag to reorder"
+    }
   },
   "settingsPage": {
     "language": {

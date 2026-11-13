@@ -10,6 +10,7 @@ import {
   color,
   defineSettings,
   num,
+  order,
   type SettingsOf,
 } from '@shared/lib/widget-settings-dsl';
 import {
@@ -21,6 +22,7 @@ import {
   NAME_COLUMN_MAX_PX,
   NAME_COLUMN_MIN_PX,
 } from './standings-utils';
+import { STANDINGS_COLUMNS } from './standings-columns';
 
 const PLAYER_WINDOW = { min: 0, max: 5, step: 1 };
 
@@ -94,6 +96,12 @@ export const STANDINGS_SETTINGS = defineSettings('standings', {
   /** Seconds of inactivity after which a manual scroll returns to the automatic view (0 = keep it). */
   scrollResetSeconds: num(8, { min: 0, max: 30 }),
   ...COLUMNS,
+  /**
+   * The order the table draws its columns in, left to right — hidden ones
+   * keep their place for when they are switched back on. Order never changes
+   * the table's width, so it is not among the columns above.
+   */
+  columnOrder: order(STANDINGS_COLUMNS),
   /** Transient up/down arrow shown in the position cell right after a live position change. */
   showLivePosChange: bool(true),
   /**

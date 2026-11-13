@@ -9,6 +9,7 @@ import {
   color,
   defineSettings,
   num,
+  order,
   type SettingsOf,
 } from '@shared/lib/widget-settings-dsl';
 import {
@@ -20,6 +21,7 @@ import {
   NAME_COLUMN_MAX_PX,
   NAME_COLUMN_MIN_PX,
 } from './relative-utils';
+import { RELATIVE_COLUMNS } from './relative-columns';
 
 /**
  * The settings that change the table's width: each one re-measures it, so
@@ -75,6 +77,12 @@ export const RELATIVE_SETTINGS = defineSettings('relative', {
   qualifyingVisibility: choice(QUALIFYING_VISIBILITY, 'auto'),
   rowPadding: choice(ROW_PADDING, 'narrow', { label: 'common.rowPadding' }),
   ...COLUMNS,
+  /**
+   * The order the strip draws its columns in, left to right — hidden ones
+   * keep their place for when they are switched back on. Order never changes
+   * the strip's width, so it is not among the columns above.
+   */
+  columnOrder: order(RELATIVE_COLUMNS),
   showPitIndicator: bool(true, { label: 'common.showPitIndicator' }),
   /** Mic beside the driver on the radio, in the channel's colour. */
   showRadioMark: bool(true, { label: 'common.showRadioMark' }),

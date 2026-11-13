@@ -6,6 +6,7 @@ import {
   NAME_COLUMN_DEFAULT_PX,
   NAME_COLUMN_MAX_PX,
   NAME_COLUMN_MIN_PX,
+  buildBlockEndColumns,
   buildGridTemplate,
   computeStandingsDesignWidth,
   buildLapProgress,
@@ -19,11 +20,13 @@ import {
   maxScrollOffset,
   isPersonalBestLastLap,
   resolveBestLapDisplay,
+  visibleStandingsColumns,
 } from './standings-utils';
 import {
   STANDINGS_SETTINGS,
   type StandingsWidgetSettings,
 } from './settings-schema';
+import { STANDINGS_COLUMNS, type StandingsColumn } from './standings-columns';
 
 const makeField = (count: number, playerIdx: number): DriverEntry[] =>
   Array.from(
@@ -529,5 +532,60 @@ describe('columns sized by their format', () => {
         })
       )
     );
+  });
+});
+
+describe('column order', () => {
+  const withOrder = (
+    columnOrder: readonly StandingsColumn[]
+  ): StandingsWidgetSettings => ({
+    ...STANDINGS_SETTINGS.defaults,
+    columnOrder,
+  });
+
+  it('draws the visible columns in the shipped order by default', () => {
+    expect(visibleStandingsColumns(STANDINGS_SETTINGS.defaults)).toEqual(
+      STANDINGS_COLUMNS.filter((column) => column !== 'countryFlag')
+    );
+  });
+
+  it('draws the columns in the order the settings give', () => {
+    const reordered = withOrder([
+      'tire',
+      ...STANDINGS_COLUMNS.filter((column) => column !== 'tire'),
+    ]);
+
+    expect(visibleStandingsColumns(reordered)[0]).toBe('tire');
+    expect(buildGridTemplate(reordered)).not.toBe(
+      buildGridTemplate(STANDINGS_SETTINGS.defaults)
+    );
+  });
+
+  it('closes a group wherever the next column belongs to another', () => {
+    const reordered = withOrder([
+      'tire',
+      ...STANDINGS_COLUMNS.filter((column) => column !== 'tire'),
+    ]);
+    const ends = buildBlockEndColumns(reordered);
+
+    expect(ends.has('tire')).toBe(true);
+    expect(ends.has('brand')).toBe(false);
+  });
+
+  it('keeps the table as wide whatever the order', () => {
+    const reversed = withOrder([...STANDINGS_COLUMNS].reverse());
+
+    expect(computeStandingsDesignWidth(reversed)).toBe(
+      computeStandingsDesignWidth(STANDINGS_SETTINGS.defaults)
+    );
+  });
+
+  it('falls back to the shipped order when the settings hold none', () => {
+    const { columnOrder: _omitted, ...withoutOrder } =
+      STANDINGS_SETTINGS.defaults;
+
+    expect(
+      visibleStandingsColumns(withoutOrder as StandingsWidgetSettings)
+    ).toEqual(visibleStandingsColumns(STANDINGS_SETTINGS.defaults));
   });
 });

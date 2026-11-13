@@ -1267,7 +1267,7 @@ number. Any new list of widgets shown to the user keeps that order: build it fro
 **A setting is described once, in the slice** (ADR-0008). `settings-schema.ts`
 calls `defineSettings('<locale block>', { … })` with the builders of
 `shared/lib/widget-settings-dsl.ts` — `bool`, `num`, `choice`, `color`,
-`numRecord`, `nullable` — and from that one description come:
+`numRecord`, `order`, `nullable` — and from that one description come:
 
 | consumer       | what it takes from the schema                                                                                                                                                                                       |
 | -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |

@@ -259,7 +259,8 @@ One description per setting, in the widget's slice (ADR-0008).
    (with `min` / `max` / `step` — out-of-range values are clamped on load),
    `choice` (string or number members; a choice several widgets share comes
    from `shared/contracts/widget-choices.ts`), `color`, `numRecord`,
-   `nullable(field)`. Export the type as
+   `order` (the order of a fixed list of names — a table's columns; a stored
+   list is made whole on load), `nullable(field)`. Export the type as
    `SettingsOf<typeof <NAME>_SETTINGS.shape>`. Every setting has a default, so
    none is optional and no read needs `?? fallback`.
 2. The `userSettings` block in your manifest — `enabled`, `x`, `y`,

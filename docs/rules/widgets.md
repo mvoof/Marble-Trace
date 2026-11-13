@@ -11,7 +11,7 @@ stay PascalCase), and ships three files of its own that nothing lists by hand:
 
 | file                 | holds                                                                                                                                                                                                                                                      | read by                                                                                       |
 | -------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
-| `settings-schema.ts` | every setting of the widget, once: `defineSettings('<locale block>', { … })` with `bool` / `num` / `choice` / `color` / `numRecord` / `nullable`; exports `<NAME>_SETTINGS` and its type `SettingsOf<typeof X.shape>`                                      | the manifest, the panel, Storybook                                                            |
+| `settings-schema.ts` | every setting of the widget, once: `defineSettings('<locale block>', { … })` with `bool` / `num` / `choice` / `color` / `numRecord` / `order` / `nullable`; exports `<NAME>_SETTINGS` and its type `SettingsOf<typeof X.shape>`                            | the manifest, the panel, Storybook                                                            |
 | `manifest.ts`        | id, label, design size, `userSettings` (spreading the schema's `defaults`), `settingsSchema`, optional `resolveLayoutChange`, `telemetryEvents`, `hotkeyCycles` (a hotkey stepping a choice setting), `frameShape` (a plate that is not a plain rectangle) | `src/entities/widget/widget-catalog.ts` (glob) → `WIDGETS`, `WIDGET_BY_ID`, `DEFAULT_WIDGETS` |
 | `mount.ts`           | `{ id, component }`, optional per-instance `store` factory and `sharedStores`                                                                                                                                                                              | `src/widgets/registry.ts` (glob) → `WIDGET_COMPONENTS`                                        |
 
@@ -98,6 +98,11 @@ after the Size and Background cards `WidgetSettings` adds. Size and Background
 are those common cards; a panel does not draw its own. A block of the widget's
 own never takes a group's name or a synonym of one (View, Appearance, Module
 parameters, Visibility …) — `settings-groups.test.ts` holds it for every panel.
+
+A table widget's Columns card is `<ColumnRows setting="columnOrder" toggles={…} />`
+from `schemaRows`: a flat list, grip · switch · name, whose order is an
+`order` setting the table draws its columns in. A column's own options (badge
+style, abbreviations) are rows in a block of their own, never under its row.
 
 Settings panels are collected the same way: each `*SettingsPanel.tsx` exports
 `PANEL_WIDGET_IDS` (usually one id, two for the radar and flag pairs), and
