@@ -56,7 +56,7 @@ export const AppStatus = observer(() => {
   const config = getStatusConfig();
 
   return (
-    <div className={styles.container}>
+    <div className={styles.container} title={config.label}>
       <span className={`${styles.dot} ${config.dotClass}`} />
       <span className={`${styles.label} ${config.textClass}`}>
         {config.label}

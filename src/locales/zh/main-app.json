@@ -4,10 +4,22 @@
   },
   "appHeader": {
     "sections": {
-      "layouts": "布局",
+      "home": "首页",
       "widgets": "小组件",
+      "layouts": "布局",
       "crew": "车队",
+      "connections": "连接",
+      "data": "数据",
+      "hotkeys": "快捷键",
       "settings": "设置"
+    },
+    "websiteTitle": "打开 marbletrace.com",
+    "releasesTitle": "更新内容 — GitHub 上的版本发布",
+    "discordTitle": "Discord — 社区",
+    "window": {
+      "minimise": "最小化",
+      "maximise": "最大化",
+      "close": "关闭"
     }
   },
   "appStatus": {
@@ -357,7 +369,9 @@
       "title": "关于 Marble Trace",
       "tagline": "iRacing 遥测叠加层。免费开源，采用 GPL-3.0 许可。",
       "trademarks": "Marble Trace™ 及 Marble Trace 标志是 voof 的商标。iRacing 是 iRacing.com Motorsport Simulations, LLC 的商标。TAURI 是 The Tauri Programme within the Commons Conservancy 的商标。Windows 是 Microsoft 集团公司的商标。Twitch 是 Twitch Interactive, Inc. 的商标。YouTube 是 Google LLC 的商标。所有其他名称均为其各自所有者的财产。",
-      "independence": "Marble Trace 是一个独立的开源项目。它并非由 iRacing 开发，与 iRacing.com Motorsport Simulations, LLC 没有任何关系，也与其及下列任何公司无关联，未获得其赞助或认可。"
+      "independence": "Marble Trace 是一个独立的开源项目。它并非由 iRacing 开发，与 iRacing.com Motorsport Simulations, LLC 没有任何关系，也与其及下列任何公司无关联，未获得其赞助或认可。",
+      "links": "链接",
+      "website": "网站"
     },
     "trackMap": {
       "title": "赛道地图",
@@ -536,11 +550,7 @@
       "groups": {
         "application": "应用程序",
         "overlay": "覆盖层",
-        "controls": "控制",
-        "data": "数据",
-        "chat": "聊天",
-        "maintenance": "维护",
-        "remote": "远程"
+        "maintenance": "维护"
       },
       "sections": {
         "general": "常规",
@@ -1375,5 +1385,10 @@
       "numberNote": "0 到 {{max}} 之间的数字，用文字说出：“四十”、“一百二十”。",
       "carNumberNote": "车号按车身上的写法说：“三十三”、“零七”、“五百一十二”。只识别本场中的车。"
     }
+  },
+  "homePage": {
+    "title": "首页",
+    "emptyTitle": "还没有会话",
+    "emptyText": "这里将显示你的统计：会话、圈数、事故和 iRating。驾驶后，Marble Trace 会从 iRacing 写入 Documents\\iRacing\\telemetry 的遥测文件中读取它们。"
   }
 }

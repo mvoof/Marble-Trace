@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { MainNavigationStore } from './main-navigation.store';
+import { MainNavigationStore, POCKET_SECTIONS } from './main-navigation.store';
 
 const buildNavigation = (catalogIds: string[] = ['standings', 'relative']) => {
   const crew = { dirty: false };
@@ -13,10 +13,30 @@ const buildNavigation = (catalogIds: string[] = ['standings', 'relative']) => {
 };
 
 describe('MainNavigationStore', () => {
-  it('opens on the layouts page', () => {
+  it('opens on the home page', () => {
     const { navigation } = buildNavigation();
 
-    expect(navigation.section).toBe('layouts');
+    expect(navigation.section).toBe('home');
+  });
+
+  it('lists the seven top pages in the pocket, settings outside it', () => {
+    expect(POCKET_SECTIONS).toEqual([
+      'home',
+      'widgets',
+      'layouts',
+      'crew',
+      'connections',
+      'data',
+      'hotkeys',
+    ]);
+  });
+
+  it('opens a feature page', () => {
+    const { navigation } = buildNavigation();
+
+    navigation.open('hotkeys');
+
+    expect(navigation.section).toBe('hotkeys');
   });
 
   it('switches to the page it is asked for', () => {

@@ -1,6 +1,17 @@
 import { makeAutoObservable } from 'mobx';
 
-export type MainSection = 'layouts' | 'widgets' | 'crew' | 'settings';
+/** The top pages in the header's pocket, in order; Settings sits outside it. */
+export const POCKET_SECTIONS = [
+  'home',
+  'widgets',
+  'layouts',
+  'crew',
+  'connections',
+  'data',
+  'hotkeys',
+] as const;
+
+export type MainSection = (typeof POCKET_SECTIONS)[number] | 'settings';
 
 export type LayoutsMode = 'list' | 'editor';
 
@@ -18,7 +29,7 @@ type MainNavigationDeps = {
  * store call rather than props threaded through the shell.
  */
 export class MainNavigationStore {
-  section: MainSection = 'layouts';
+  section: MainSection = 'home';
 
   /** The Layouts page's list or editor, kept while other pages are open. */
   layoutsMode: LayoutsMode = 'list';

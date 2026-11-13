@@ -4,10 +4,22 @@
   },
   "appHeader": {
     "sections": {
-      "layouts": "Layouts",
+      "home": "Home",
       "widgets": "Widgets",
+      "layouts": "Layouts",
       "crew": "Crew",
+      "connections": "Connections",
+      "data": "Data",
+      "hotkeys": "Hotkeys",
       "settings": "Settings"
+    },
+    "websiteTitle": "Open marbletrace.com",
+    "releasesTitle": "What's new — releases on GitHub",
+    "discordTitle": "Discord — community",
+    "window": {
+      "minimise": "Minimise",
+      "maximise": "Maximise",
+      "close": "Close"
     }
   },
   "appStatus": {
@@ -359,7 +371,9 @@
       "title": "About Marble Trace",
       "tagline": "A telemetry overlay for iRacing. Free and open source under GPL-3.0.",
       "trademarks": "Marble Trace™ and the Marble Trace logo are trademarks of voof. iRacing is a trademark of iRacing.com Motorsport Simulations, LLC. TAURI is trademark of The Tauri Programme within the Commons Conservancy. Windows is a trademark of the Microsoft group of companies. Twitch is a trademark of Twitch Interactive, Inc. YouTube is a trademark of Google LLC. All other names are the property of their respective owners.",
-      "independence": "Marble Trace is an independent open-source project. It is not made by iRacing, has no connection to iRacing.com Motorsport Simulations, LLC, and is not affiliated with, sponsored or endorsed by it or by any of the companies below."
+      "independence": "Marble Trace is an independent open-source project. It is not made by iRacing, has no connection to iRacing.com Motorsport Simulations, LLC, and is not affiliated with, sponsored or endorsed by it or by any of the companies below.",
+      "links": "Links",
+      "website": "Website"
     },
     "trackMap": {
       "title": "Track Map",
@@ -538,11 +552,7 @@
       "groups": {
         "application": "Application",
         "overlay": "Overlay",
-        "controls": "Controls",
-        "data": "Data",
-        "chat": "Chat",
-        "maintenance": "Maintenance",
-        "remote": "Remote"
+        "maintenance": "Maintenance"
       },
       "sections": {
         "general": "General",
@@ -1379,5 +1389,10 @@
       "numberNote": "A number from 0 to {{max}}, said in words: “forty”, “one hundred twenty”.",
       "carNumberNote": "A car number is said the way it is painted: “thirty three”, “zero seven”, “five hundred twelve”. Only the cars in the session are heard."
     }
+  },
+  "homePage": {
+    "title": "Home",
+    "emptyTitle": "No sessions yet",
+    "emptyText": "Your statistics will live here: sessions, laps, incidents and iRating. Marble Trace will read them from the telemetry files iRacing writes to Documents\\iRacing\\telemetry after you drive."
   }
 }

@@ -8,10 +8,12 @@ import { WidgetWorkbench } from '@pages/widgets/WidgetWorkbench/WidgetWorkbench'
 import { LayoutEditor } from '@pages/layouts/LayoutEditor';
 import { SettingsPage } from '@pages/settings/SettingsPage';
 import { CrewPage } from '@pages/crew/CrewPage';
+import { HomePage } from '@pages/home/HomePage';
+import { FeatureSections } from '@pages/settings/FeatureSections';
+import { isFeaturePage } from '@pages/settings/settings-sections';
 import { CrewLeaveDialog } from '@pages/crew/CrewLeaveDialog';
 import { useMainNavigationStore } from '@features/main-navigation/main-navigation-context';
 import { AppHeader } from './AppHeader/AppHeader';
-import { AppFooter } from './AppFooter/AppFooter';
 import { UpdateBanner } from './UpdateBanner/UpdateBanner';
 import { SettingsLockBanner } from './SettingsLockBanner/SettingsLockBanner';
 import styles from './MainWindow.module.scss';
@@ -125,6 +127,26 @@ export const MainWindow = observer(() => {
           <UpdateBanner />
 
           <Content className={styles.content}>
+            {navigation.section === 'home' && (
+              <div className={styles.scrollContainer} key="home">
+                <div
+                  className={`${styles.contentInner} ${styles.animateFadeIn}`}
+                >
+                  <HomePage />
+                </div>
+              </div>
+            )}
+
+            {isFeaturePage(navigation.section) && (
+              <div className={styles.scrollContainer} key={navigation.section}>
+                <div
+                  className={`${styles.contentInner} ${styles.animateFadeIn}`}
+                >
+                  <FeatureSections page={navigation.section} />
+                </div>
+              </div>
+            )}
+
             {navigation.section === 'settings' && (
               <div className={styles.scrollContainer} key="settings">
                 <div
@@ -179,8 +201,6 @@ export const MainWindow = observer(() => {
               </div>
             )}
           </Content>
-
-          <AppFooter />
         </Layout>
       </AntdApp>
     </ConfigProvider>

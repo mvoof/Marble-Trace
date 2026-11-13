@@ -4,10 +4,22 @@
   },
   "appHeader": {
     "sections": {
-      "layouts": "Раскладки",
+      "home": "Главная",
       "widgets": "Виджеты",
+      "layouts": "Раскладки",
       "crew": "Экипаж",
+      "connections": "Подключения",
+      "data": "Данные",
+      "hotkeys": "Горячие клавиши",
       "settings": "Настройки"
+    },
+    "websiteTitle": "Открыть marbletrace.com",
+    "releasesTitle": "Что нового — релизы на GitHub",
+    "discordTitle": "Discord — сообщество",
+    "window": {
+      "minimise": "Свернуть",
+      "maximise": "Развернуть",
+      "close": "Закрыть"
     }
   },
   "appStatus": {
@@ -363,7 +375,9 @@
       "title": "О Marble Trace",
       "tagline": "Телеметрический оверлей для iRacing. Бесплатный, с открытым кодом под GPL-3.0.",
       "trademarks": "Marble Trace™ и логотип Marble Trace являются товарными знаками voof. iRacing — товарный знак iRacing.com Motorsport Simulations, LLC. TAURI — товарный знак The Tauri Programme within the Commons Conservancy. Windows — товарный знак группы компаний Microsoft. Twitch — товарный знак Twitch Interactive, Inc. YouTube — товарный знак Google LLC. Все прочие названия принадлежат их владельцам.",
-      "independence": "Marble Trace — независимый проект с открытым кодом. Он не создан iRacing, никак не связан с iRacing.com Motorsport Simulations, LLC, не аффилирован с ней и с другими перечисленными ниже компаниями, не спонсируется и не одобрен ими."
+      "independence": "Marble Trace — независимый проект с открытым кодом. Он не создан iRacing, никак не связан с iRacing.com Motorsport Simulations, LLC, не аффилирован с ней и с другими перечисленными ниже компаниями, не спонсируется и не одобрен ими.",
+      "links": "Ссылки",
+      "website": "Сайт"
     },
     "trackMap": {
       "title": "Карта трассы",
@@ -542,11 +556,7 @@
       "groups": {
         "application": "Приложение",
         "overlay": "Оверлей",
-        "controls": "Управление",
-        "data": "Данные",
-        "chat": "Чат",
-        "maintenance": "Обслуживание",
-        "remote": "Внешние экраны"
+        "maintenance": "Обслуживание"
       },
       "sections": {
         "general": "Общие",
@@ -1387,5 +1397,10 @@
       "numberNote": "Число от 0 до {{max}}, сказанное словами: «сорок», «сто двадцать».",
       "carNumberNote": "Номер машины говорится так, как он написан: «тридцать три», «ноль семь», «пятьсот двенадцать». Слышны только машины текущей сессии."
     }
+  },
+  "homePage": {
+    "title": "Главная",
+    "emptyTitle": "Сессий пока нет",
+    "emptyText": "Здесь будет ваша статистика: сессии, круги, инциденты и iRating. Marble Trace прочитает её из файлов телеметрии, которые iRacing пишет в Documents\\iRacing\\telemetry, после ваших заездов."
   }
 }

@@ -129,6 +129,13 @@
   min-width: 0;
 }
 
+// A feature page's sections, one under another.
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: rem(40);
+}
+
 .paneTitle {
   font-size: rem(16);
   font-weight: 600;
@@ -214,6 +221,18 @@
 
 .fieldDescOffset {
   margin-top: 4px;
+}
+
+.linkButtons {
+  margin-top: rem(10);
+  display: flex;
+  flex-wrap: wrap;
+  gap: rem(6);
+}
+
+.linkMark {
+  width: rem(14);
+  height: rem(14);
 }
 
 .versionLabel {

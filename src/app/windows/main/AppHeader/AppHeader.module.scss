@@ -1,63 +1,202 @@
+// Below this width the pocket's items show icons only.
+$narrow-window: 1100px;
+
+// The header's own band; the extra height under the items is where the
+// background wave runs, clear of the pocket.
+$header-height: rem(80);
+$band-height: rem(60);
+
 .header {
   position: relative;
   flex-shrink: 0;
-  height: rem(60);
-  display: grid;
-  grid-template-columns: 1fr auto 1fr;
-  align-items: stretch;
-  padding: 0 rem(20);
-  background: #111216;
-  border-bottom: 1px solid #1d1f25;
-  overflow: hidden;
+  height: $header-height;
+  display: flex;
+  align-items: flex-start;
+  padding: 0 rem(10) 0 rem(16);
+  background: $sys-bg-main;
   z-index: 30;
 }
 
-// Above the HeaderTrace canvas, which is absolutely positioned and would
-// otherwise paint over these static columns.
-.brand {
-  position: relative;
+// The wave canvas sits at the bottom; the pocket covers it; the rest above.
+.pocket {
+  position: absolute;
+  top: 0;
+  left: 0;
   z-index: 1;
+  pointer-events: none;
+
+  path {
+    fill: $sys-bg-sunken;
+    stroke: $sys-edge-sunken;
+    stroke-width: 1;
+  }
+}
+
+.brand,
+.tools {
+  position: relative;
+  z-index: 2;
+  height: $band-height;
   display: flex;
   align-items: center;
-  gap: rem(12);
   min-width: 0;
+}
+
+.brand {
+  gap: rem(9);
+  line-height: 1;
+}
+
+.logoTile {
+  width: rem(28);
+  height: rem(28);
+  flex: none;
+  display: grid;
+  place-items: center;
+  border-radius: rem(8);
+  background: $sys-bg-sunken;
+  box-shadow:
+    inset 0 1px 2px rgba(0, 0, 0, 0.7),
+    0 0 0 1px $sys-edge-sunken;
 }
 
 .logo {
-  width: rem(18);
-  height: rem(20);
-  color: $sys-text-primary;
+  width: rem(14);
+  height: rem(16);
+  color: $sys-accent;
+  display: block;
 }
 
-.name {
+.brandName {
+  padding: 0;
+  border: none;
+  background: none;
+  font: inherit;
+  font-size: rem(15);
   font-weight: 600;
-  font-size: rem(16);
   letter-spacing: 0.02em;
   color: $sys-text-primary;
   white-space: nowrap;
+  cursor: pointer;
+
+  &:hover {
+    color: $sys-accent;
+    text-decoration: underline;
+    text-underline-offset: rem(3);
+    text-decoration-color: $sys-text-muted;
+  }
 }
 
-.nav {
-  position: relative;
-  z-index: 1;
+.versionChip {
+  padding: rem(1) rem(6);
+  border: 1px solid $sys-border-main;
+  border-radius: rem(5);
+  background: none;
+  font-family: $font-mono;
+  font-size: rem(11);
+  color: $sys-text-muted;
+  white-space: nowrap;
+  cursor: pointer;
+
+  &:hover {
+    color: $sys-text-primary;
+    border-color: $sys-border-strong;
+  }
+}
+
+.pocketSlot {
+  position: absolute;
+  z-index: 2;
+  top: 0;
+  left: 50%;
+  height: $band-height;
+  transform: translateX(-50%);
   display: flex;
-  justify-content: center;
   align-items: center;
 }
 
-.status {
-  position: relative;
-  z-index: 1;
+.items {
   display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: rem(16);
-  min-width: 0;
+  gap: rem(2);
+  padding: rem(5);
 }
 
-.statusInfo {
+.item {
   display: flex;
   align-items: center;
-  gap: rem(14);
-  min-width: 0;
+  padding: rem(7) rem(14);
+  border: none;
+  border-radius: 999px;
+  background: none;
+  font: inherit;
+  font-size: rem(14);
+  color: $sys-text-muted;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: color 0.15s;
+
+  &:hover {
+    color: $sys-text-secondary;
+  }
+
+  &.active {
+    color: $sys-accent;
+  }
+}
+
+.itemIcon {
+  display: none;
+}
+
+.tools {
+  margin-left: auto;
+  gap: rem(4);
+}
+
+.toolButton {
+  width: rem(32);
+  height: rem(32);
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: none;
+  border-radius: rem(8);
+  background: none;
+  color: $sys-text-secondary;
+  cursor: pointer;
+  transition:
+    color 0.15s,
+    background 0.15s;
+
+  &:hover {
+    background: $sys-bg-raised;
+    color: $sys-text-primary;
+  }
+
+  &.active {
+    color: $sys-accent;
+
+    &:hover {
+      background: none;
+    }
+  }
+}
+
+.discordMark {
+  width: rem(16);
+  height: rem(16);
+}
+
+@media (max-width: $narrow-window) {
+  .item {
+    padding: rem(8) rem(11);
+  }
+
+  .itemIcon {
+    display: block;
+  }
+
+  .itemLabel {
+    display: none;
+  }
 }

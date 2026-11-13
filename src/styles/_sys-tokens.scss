@@ -3,8 +3,15 @@ $sys-bg-sidebar: #111216;
 $sys-bg-card: rgba(21, 22, 26, 0.8);
 $sys-border-main: #2a2c32;
 $sys-border-sub: #1d1f25;
+$sys-border-strong: #3a3d45;
 $sys-text-primary: #e0e0e0;
 $sys-text-secondary: #8b8e98;
 $sys-text-muted: #5e626d;
 $sys-accent: #e0e0e0;
 $sys-danger: #ff5a5a;
+// The header's pocket and the logo tile: a surface sunk below the page.
+$sys-bg-sunken: #060709;
+$sys-edge-sunken: rgba(255, 255, 255, 0.045);
+$sys-bg-raised: #1c1d22;
+$sys-danger-soft-bg: #3a1c1f;
+$sys-danger-soft-text: #ffb3b3;

@@ -35,6 +35,7 @@ import { SettingsPanelUiContext } from '@entities/widget/settings-panel-ui-conte
 import { BindingsContext } from '@features/hotkey-bindings/bindings-context';
 import { BindingsUiContext } from '@features/hotkey-bindings/bindings-ui-context';
 import { MainNavigationContext } from '@features/main-navigation/main-navigation-context';
+import { AppLinksContext } from '@features/app-links/app-links-context';
 import { DeviceInputContext } from '@features/hotkey-bindings/device-input-context';
 import { FpsDiagnosticsContext } from '@features/diagnostics/fps-diagnostics-context';
 import { DiagnosticsExportContext } from '@features/diagnostics/diagnostics-export-context';
@@ -116,6 +117,7 @@ const mainStores = (root: MainRoot): ProvidedStore[] => [
   provide(DeviceInputContext, root.deviceInput),
   provide(BindingsUiContext, root.bindingsUi),
   provide(MainNavigationContext, root.navigation),
+  provide(AppLinksContext, root.appLinks),
   provide(RemoteDevicesContext, root.remoteDevices),
   provide(FpsDiagnosticsContext, root.fpsDiagnostics),
   provide(DiagnosticsExportContext, root.diagnosticsExport),

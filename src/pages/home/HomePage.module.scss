@@ -1,0 +1,43 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: rem(24);
+}
+
+.title {
+  font-size: rem(24);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: $sys-text-primary;
+  margin: 0;
+}
+
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: rem(10);
+  padding: rem(48) rem(20);
+  text-align: center;
+  border: 1px solid $sys-border-sub;
+  border-radius: rem(10);
+  background: $sys-bg-card;
+}
+
+.emptyIcon {
+  color: $sys-text-muted;
+}
+
+.emptyTitle {
+  margin: 0;
+  font-size: rem(15);
+  color: $sys-text-secondary;
+}
+
+.emptyText {
+  max-width: rem(520);
+  margin: 0;
+  font-size: rem(13);
+  line-height: 1.6;
+  color: $sys-text-muted;
+}

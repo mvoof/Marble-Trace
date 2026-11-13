@@ -21,6 +21,7 @@ import { DiagnosticsExportStore } from '@features/diagnostics/diagnostics-export
 import { TelemetryInspectorStore } from '@features/telemetry-inspector/telemetry-inspector.store';
 import { TrackRotationStore } from '@entities/track/track-rotation.store';
 import { MainNavigationStore } from '@features/main-navigation/main-navigation.store';
+import { AppLinksStore } from '@features/app-links/app-links.store';
 
 /**
  * The main window: the renderer core, the app-window stores, and everything
@@ -47,6 +48,7 @@ export class MainRoot extends RendererCore implements AppWindowStores {
   trackRotation: TrackRotationStore;
   voiceCrew: VoiceCrewStore;
   navigation: MainNavigationStore;
+  appLinks: AppLinksStore;
 
   constructor(options?: { skipInit?: boolean }) {
     super(options);
@@ -72,6 +74,7 @@ export class MainRoot extends RendererCore implements AppWindowStores {
     this.trackRotation = new TrackRotationStore();
     this.voiceCrew = new VoiceCrewStore(this);
     this.navigation = new MainNavigationStore(this);
+    this.appLinks = new AppLinksStore(this);
 
     if (!options?.skipInit) {
       void this.twitchAuth.init();

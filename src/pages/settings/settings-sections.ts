@@ -27,19 +27,10 @@ export interface SettingsGroup {
   sections: SettingsSectionId[];
 }
 
+/** Only what configures the app itself; the rest lives on the feature pages. */
 export const SETTINGS_GROUPS: SettingsGroup[] = [
-  {
-    id: 'application',
-    sections: ['general', 'companionApps', 'updates', 'about'],
-  },
+  { id: 'application', sections: ['general', 'updates', 'about'] },
   { id: 'overlay', sections: ['overlay', 'interaction'] },
-  { id: 'controls', sections: ['bindings', 'devices'] },
-  // Widget data: what the widgets draw from, and the values several of them
-  // read at once. The chat is not either of those — it is a source of its own,
-  // wired to an account rather than to a session, so it keeps its own group.
-  { id: 'data', sections: ['trackMap', 'sharedValues'] },
-  { id: 'chat', sections: ['streamChat'] },
-  { id: 'remote', sections: ['remoteScreens'] },
   // The inspector is a developer tool and is left out of a release build.
   {
     id: 'maintenance',
@@ -48,6 +39,21 @@ export const SETTINGS_GROUPS: SettingsGroup[] = [
       : ['maintenance'],
   },
 ];
+
+export type FeaturePage = 'connections' | 'data' | 'hotkeys';
+
+/**
+ * The sections each feature page shows, one under another, until the page is
+ * given an inner menu of its own.
+ */
+export const FEATURE_PAGE_SECTIONS: Record<FeaturePage, SettingsSectionId[]> = {
+  connections: ['remoteScreens', 'streamChat', 'companionApps'],
+  data: ['trackMap', 'sharedValues'],
+  hotkeys: ['bindings', 'devices'],
+};
+
+export const isFeaturePage = (page: string): page is FeaturePage =>
+  Object.hasOwn(FEATURE_PAGE_SECTIONS, page);
 
 export const DEFAULT_SECTION: SettingsSectionId = 'general';
 
