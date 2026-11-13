@@ -86,6 +86,31 @@ describe('LayoutsStore', () => {
  * marks the whole widget map — the records are what the widgets stand on, and
  * once one of them moves no patch describes where they are.
  */
+describe('a removed layout', () => {
+  it('is no longer what any session switches to', () => {
+    const { store } = freshStore();
+
+    store.setLayouts([
+      layoutNamed('layout-race', [DISPLAY]),
+      layoutNamed('layout-quali', [DISPLAY]),
+    ]);
+    store.setSessionLayouts({
+      Race: 'layout-race',
+      Qualify: 'layout-quali',
+      Practice: 'layout-race',
+    });
+
+    store.removeLayout('layout-race');
+
+    expect(store.sessionLayouts).toEqual({
+      Practice: null,
+      Qualify: 'layout-quali',
+      Race: null,
+      Garage: null,
+    });
+  });
+});
+
 describe('every layout record write leaves its mark', () => {
   type RecordWrite = {
     name: string;

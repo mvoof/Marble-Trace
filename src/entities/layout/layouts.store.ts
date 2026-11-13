@@ -307,9 +307,21 @@ export class LayoutsStore {
     this.removeLayout(id);
   }
 
-  /** Drops the record. The caller decides what becomes active afterwards. */
+  /**
+   * Drops the record and every session assignment to it. The caller decides
+   * what becomes active afterwards.
+   */
   removeLayout(id: string) {
     this.layouts = this.layouts.filter((layout) => layout.id !== id);
+
+    for (const context of Object.keys(
+      this.sessionLayouts
+    ) as SessionContext[]) {
+      if (this.sessionLayouts[context] === id) {
+        this.sessionLayouts[context] = null;
+      }
+    }
+
     this.mutations.record();
   }
 

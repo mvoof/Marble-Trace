@@ -1,9 +1,8 @@
 .previewWrapper {
-  aspect-ratio: 16 / 9;
+  aspect-ratio: 16 / 7;
   width: 100%;
-  background: #0d0e12;
-  border: 1px solid #2a2c32;
-  border-radius: radius(sm);
+  background: $sys-bg-sunken;
+  border-radius: rem(6);
   position: relative;
   overflow: hidden;
 }
@@ -17,18 +16,18 @@
 
 .previewMonitor {
   position: absolute;
-  background: #101115;
-  border: 1px solid #2a2c32;
-  border-radius: 1px;
+  background: $sys-bg-main;
+  border: 1px solid $sys-border-strong;
+  border-radius: 2px;
   background-size: cover;
   background-position: center;
 }
 
+// Widgets in the accent's grey: colour on this page is for data only.
 .previewWidget {
   position: absolute;
-  background: rgba(59, 130, 246, 0.25);
-  border: 1px solid rgba(59, 130, 246, 0.7);
-  box-shadow: inset 0 0 4px rgba(59, 130, 246, 0.3);
+  background: rgba($sys-accent, 0.18);
+  border: 1px solid rgba($sys-accent, 0.35);
   border-radius: 1px;
   pointer-events: none;
 }
@@ -38,8 +37,8 @@
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  font-size: fs(xxs);
-  color: #5e626d;
+  font-size: rem(10);
+  color: $sys-text-muted;
   font-family: $font-mono;
   text-transform: uppercase;
 }
