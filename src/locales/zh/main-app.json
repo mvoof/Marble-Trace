@@ -724,15 +724,24 @@
     "keyIsFree": "{{key}} 尚未绑定到任何操作。"
   },
   "crewPage": {
-    "title": "车队",
     "sections": {
+      "overview": "概览",
       "commands": "命令",
-      "voice": "语音",
-      "downloads": "下载",
-      "pack": "语言包"
+      "phrases": "短语与回复",
+      "packs": "语言包"
     },
-    "notReady": "语音需要引擎、一个声音和一个识别模型——请前往“下载”。",
-    "openDownloads": "打开下载",
+    "notReady": "工程师需要引擎、一个声音和一个识别模型——请前往“概览”。",
+    "openOverview": "打开概览",
+    "status": {
+      "title": "状态",
+      "engineer": "工程师",
+      "ready": "就绪",
+      "off": "已关闭",
+      "notReady": "需要下载",
+      "pushToTalk": "按键通话",
+      "pushToTalkUnbound": "未设置——设置一个按键即可与工程师通话",
+      "change": "更改"
+    },
     "packOutdated": "未保存的修改属于“{{pack}}”语言包，但车队现在使用“{{language}}”。保存或放弃这些修改后才能打开“{{language}}”语言包。",
     "save": "保存",
     "saveBar": {
@@ -752,8 +761,8 @@
       "idle": "按住并说一句话，或在列表中输入",
       "listening": "正在聆听…",
       "draftNote": "同时识别未保存的修改",
-      "voiceOff": "语音已关闭——请在“语音”中开启",
-      "silence": "没有听到声音——请在“语音”中检查麦克风",
+      "voiceOff": "语音已关闭——请在“概览”中开启",
+      "silence": "没有听到声音——请在“概览”中检查麦克风",
       "unknown": "“{{sentence}}”——没有命令能匹配",
       "heard": "“{{sentence}}” → {{action}}{{slots}}",
       "sure": "{{percent}}%",

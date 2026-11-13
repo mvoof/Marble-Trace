@@ -16,6 +16,11 @@ interface SectionedPageProps<SectionId extends string> {
   onSelect: (section: SectionId) => void;
   /** The active section's content, under its name. */
   children: ReactNode;
+  /**
+   * The section fills the pane and scrolls inside itself (an editor with its
+   * own list); the content below the name is then a column that fills it.
+   */
+  fillsHeight?: boolean;
 }
 
 /**
@@ -28,6 +33,7 @@ const SectionedPageView = <SectionId extends string>({
   active,
   onSelect,
   children,
+  fillsHeight = false,
 }: SectionedPageProps<SectionId>) => {
   const activeSection = menu.find(
     (entry): entry is MenuSection<SectionId> =>
@@ -68,8 +74,15 @@ const SectionedPageView = <SectionId extends string>({
       </nav>
 
       {/* Keyed so another section opens at its top, not at the last one's scroll. */}
-      <main className={styles.content} key={active}>
-        <div className={styles.contentInner}>
+      <main
+        className={fillsHeight ? styles.contentFill : styles.content}
+        key={active}
+      >
+        <div
+          className={
+            fillsHeight ? styles.contentInnerFill : styles.contentInner
+          }
+        >
           <h1 className={styles.title}>{activeSection?.label}</h1>
 
           {children}

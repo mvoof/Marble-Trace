@@ -177,7 +177,7 @@ export const MainWindow = observer(() => {
 
             {navigation.section === 'crew' && (
               <div
-                className={`${styles.sectionContainer} ${styles.animateFadeIn}`}
+                className={`${styles.pageContainer} ${styles.animateFadeIn}`}
                 key="crew"
               >
                 <CrewPage />

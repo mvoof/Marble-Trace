@@ -726,15 +726,24 @@
     "keyIsFree": "{{key}} is not bound to anything."
   },
   "crewPage": {
-    "title": "Crew",
     "sections": {
+      "overview": "Overview",
       "commands": "Commands",
-      "voice": "Voice",
-      "downloads": "Downloads",
-      "pack": "Pack"
+      "phrases": "Phrases and replies",
+      "packs": "Packs"
     },
-    "notReady": "The voice needs its engines, a voice and a recognition model — see Downloads.",
-    "openDownloads": "Open Downloads",
+    "notReady": "The engineer needs the engines, a voice and a recognition model — see Overview.",
+    "openOverview": "Open Overview",
+    "status": {
+      "title": "Status",
+      "engineer": "Engineer",
+      "ready": "Ready",
+      "off": "Off",
+      "notReady": "Needs downloads",
+      "pushToTalk": "Push to talk",
+      "pushToTalkUnbound": "Not set — bind one to talk to the engineer",
+      "change": "Change"
+    },
     "packOutdated": "The unsaved edits belong to the “{{pack}}” pack, but the crew now speaks “{{language}}”. Save or discard them to open the “{{language}}” pack.",
     "save": "Save",
     "saveBar": {
@@ -755,8 +764,8 @@
       "idle": "Hold and say a sentence, or type one in the list",
       "listening": "Listening…",
       "draftNote": "listening for the unsaved changes too",
-      "voiceOff": "The voice is off — turn it on under Voice",
-      "silence": "Nothing heard — check the microphone under Voice",
+      "voiceOff": "The voice is off — turn it on under Overview",
+      "silence": "Nothing heard — check the microphone under Overview",
       "unknown": "“{{sentence}}” — no command takes it",
       "heard": "“{{sentence}}” → {{action}}{{slots}}",
       "sure": "{{percent}}%",

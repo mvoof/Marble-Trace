@@ -726,15 +726,24 @@
     "keyIsFree": "{{key}} no está asignado a nada."
   },
   "crewPage": {
-    "title": "Equipo",
     "sections": {
+      "overview": "Resumen",
       "commands": "Comandos",
-      "voice": "Voz",
-      "downloads": "Descargas",
-      "pack": "Paquete"
+      "phrases": "Frases y respuestas",
+      "packs": "Paquetes"
     },
-    "notReady": "La voz necesita sus motores, una voz y un modelo de reconocimiento: ve a Descargas.",
-    "openDownloads": "Abrir Descargas",
+    "notReady": "El ingeniero necesita los motores, una voz y un modelo de reconocimiento: ve a Resumen.",
+    "openOverview": "Abrir Resumen",
+    "status": {
+      "title": "Estado",
+      "engineer": "Ingeniero",
+      "ready": "Listo",
+      "off": "Apagado",
+      "notReady": "Faltan descargas",
+      "pushToTalk": "Pulsar para hablar",
+      "pushToTalkUnbound": "Sin asignar: asigna una para hablar con el ingeniero",
+      "change": "Cambiar"
+    },
     "packOutdated": "Los cambios sin guardar son del paquete «{{pack}}», pero el equipo ahora habla «{{language}}». Guárdalos o descártalos para abrir el paquete «{{language}}».",
     "save": "Guardar",
     "saveBar": {
@@ -755,8 +764,8 @@
       "idle": "Mantén pulsado y di una frase, o escríbela en la lista",
       "listening": "Escuchando…",
       "draftNote": "también escucha los cambios sin guardar",
-      "voiceOff": "La voz está apagada: actívala en Voz",
-      "silence": "No se oyó nada: revisa el micrófono en Voz",
+      "voiceOff": "La voz está apagada: actívala en Resumen",
+      "silence": "No se oyó nada: revisa el micrófono en Resumen",
       "unknown": "«{{sentence}}»: ningún comando la acepta",
       "heard": "«{{sentence}}» → {{action}}{{slots}}",
       "sure": "{{percent}} %",

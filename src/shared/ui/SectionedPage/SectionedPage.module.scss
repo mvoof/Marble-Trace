@@ -81,6 +81,23 @@ $narrow-window: 900px;
   max-width: rem(1120);
 }
 
+// Modifiers declared after their base classes.
+.contentFill {
+  @extend .content;
+
+  display: flex;
+  overflow-y: hidden;
+}
+
+.contentInnerFill {
+  @extend .contentInner;
+
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
 .title {
   margin: rem(6) 0 rem(16) !important;
   font-size: rem(20);
