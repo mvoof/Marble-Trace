@@ -255,7 +255,8 @@
       "display": "Visualización",
       "size": "Tamaño",
       "background": "Fondo",
-      "behaviour": "Comportamiento"
+      "behaviour": "Comportamiento",
+      "hotkeys": "Atajos"
     },
     "positionX": "Posición X",
     "positionY": "Posición Y",
@@ -268,7 +269,9 @@
     "border": "Borde",
     "columns": {
       "move": "Arrastra para reordenar"
-    }
+    },
+    "hotkeysShared": "Compartidos por todas las copias de este widget",
+    "hotkeysChange": "Cambiar"
   },
   "settingsPage": {
     "language": {

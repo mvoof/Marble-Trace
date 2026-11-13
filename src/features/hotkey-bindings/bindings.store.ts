@@ -6,6 +6,12 @@ import {
   type Binding,
   type BindingMap,
 } from '@shared/contracts/input-bindings';
+import type { HotkeyAction } from '@features/hotkey-bindings/binding-types';
+
+export type WidgetBindingRow = {
+  action: HotkeyAction;
+  bindings: Binding[];
+};
 
 export class BindingsStore {
   /**
@@ -66,6 +72,13 @@ export class BindingsStore {
     return (
       this.overrides[actionId] ?? this.registry.defaultBindings[actionId] ?? []
     );
+  }
+
+  /** One widget type's actions in registry order, each with its bindings. */
+  widgetBindings(widgetType: string): WidgetBindingRow[] {
+    return this.registry.actions
+      .filter((action) => action.owner === widgetType)
+      .map((action) => ({ action, bindings: this.bindingsFor(action.id) }));
   }
 
   addBinding(actionId: string, binding: Binding) {

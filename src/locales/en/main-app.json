@@ -255,7 +255,8 @@
       "display": "Display",
       "size": "Size",
       "background": "Background",
-      "behaviour": "Behaviour"
+      "behaviour": "Behaviour",
+      "hotkeys": "Hotkeys"
     },
     "positionX": "Position X",
     "positionY": "Position Y",
@@ -268,7 +269,9 @@
     "border": "Border",
     "columns": {
       "move": "Drag to reorder"
-    }
+    },
+    "hotkeysShared": "Shared by all copies of this widget",
+    "hotkeysChange": "Change"
   },
   "settingsPage": {
     "language": {

@@ -10,6 +10,7 @@ export const SETTINGS_GROUPS = [
   'size',
   'background',
   'behaviour',
+  'hotkeys',
 ] as const;
 
 export type SettingsGroup = (typeof SETTINGS_GROUPS)[number];
@@ -24,6 +25,7 @@ const GROUP_ORDER: Record<SettingsGroup, number> = {
   size: 3,
   background: 4,
   behaviour: 5,
+  hotkeys: 6,
 };
 
 /** Where a card sits among its panel's cards (the flex `order`). */

@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
 import { InputNumber, Row, Col, ColorPicker, Slider } from 'antd';
@@ -11,11 +12,15 @@ export const WidgetSettings = observer(
   ({
     widgetId,
     hideHeader = false,
+    hotkeys,
   }: {
     widgetId: string | null;
     /** The layout editor's inspector and the widget page name the widget
      *  already; a second title under theirs would say the same thing twice. */
     hideHeader?: boolean;
+    /** The Hotkeys group's content. Bindings live in the main window alone,
+     *  so the page brings them; the overlay's popup draws none. */
+    hotkeys?: ReactNode;
   }) => {
     const liveWidgets = useWidgetEditor();
     const { t } = useTranslation('main-app');
@@ -224,6 +229,8 @@ export const WidgetSettings = observer(
               </Row>
             </Card>
           )}
+
+          {hotkeys && <Card group="hotkeys">{hotkeys}</Card>}
         </div>
       </PanelWidgetProvider>
     );

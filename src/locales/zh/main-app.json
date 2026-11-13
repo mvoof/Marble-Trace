@@ -253,7 +253,8 @@
       "display": "显示",
       "size": "尺寸",
       "background": "背景",
-      "behaviour": "行为"
+      "behaviour": "行为",
+      "hotkeys": "快捷键"
     },
     "positionX": "X 坐标",
     "positionY": "Y 坐标",
@@ -266,7 +267,9 @@
     "border": "边框",
     "columns": {
       "move": "拖动以调整顺序"
-    }
+    },
+    "hotkeysShared": "此小组件的所有副本共用",
+    "hotkeysChange": "更改"
   },
   "settingsPage": {
     "language": {

@@ -100,13 +100,14 @@ describe('settings group order', () => {
       settingsGroupOrder('size'),
       settingsGroupOrder('background'),
       settingsGroupOrder('behaviour'),
+      settingsGroupOrder('hotkeys'),
     ];
 
     expect(orders).toEqual([...orders].sort((left, right) => left - right));
     expect(settingsGroupOrder('columns')).toBeLessThan(
       settingsGroupOrder(undefined)
     );
-    expect(SETTINGS_GROUPS).toHaveLength(6);
+    expect(SETTINGS_GROUPS).toHaveLength(7);
   });
 });
 

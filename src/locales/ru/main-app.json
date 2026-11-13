@@ -259,7 +259,8 @@
       "display": "Отображение",
       "size": "Размер",
       "background": "Фон",
-      "behaviour": "Поведение"
+      "behaviour": "Поведение",
+      "hotkeys": "Хоткеи"
     },
     "positionX": "Позиция X",
     "positionY": "Позиция Y",
@@ -272,7 +273,9 @@
     "border": "Рамка",
     "columns": {
       "move": "Перетащите, чтобы изменить порядок"
-    }
+    },
+    "hotkeysShared": "Общие для всех копий этого виджета",
+    "hotkeysChange": "Изменить"
   },
   "settingsPage": {
     "language": {

@@ -5,6 +5,8 @@ import { Select } from 'antd';
 import { WidgetPreview } from '../WidgetPreview/WidgetPreview';
 import { WidgetSettings } from '@features/widget-settings/WidgetSettings';
 import { DefaultsEditorProvider } from '@features/widget-settings/WidgetEditorContext';
+import { WidgetBindingsSummary } from '@features/hotkey-bindings/WidgetBindingsSummary';
+import { useMainNavigationStore } from '@features/main-navigation/main-navigation-context';
 import {
   PREVIEW_SCENARIO_BY_ID,
   DEFAULT_PREVIEW_SCENARIO_ID,
@@ -67,6 +69,7 @@ const openingScenarioFor = (widgetId: string): string =>
 export const WidgetWorkbench = observer(
   ({ widgetId }: { widgetId: string }) => {
     const { t } = useTranslation('main-app');
+    const navigation = useMainNavigationStore();
     // Pinned to the widget it was picked on: a pick says "show me this state of
     // this widget", and carrying it to the next widget shows another domain's
     // state or, on a widget that cannot draw it, nothing at all.
@@ -113,7 +116,18 @@ export const WidgetWorkbench = observer(
           </div>
 
           <div className={styles.settingsPane}>
-            <WidgetSettings widgetId={widgetId} hideHeader />
+            {/* The page edits the widget's defaults, not a copy: the copy's
+                hotkey mark is set where copies are, in the layout editor. */}
+            <WidgetSettings
+              widgetId={widgetId}
+              hideHeader
+              hotkeys={
+                <WidgetBindingsSummary
+                  widgetType={widgetId}
+                  onOpenHotkeys={() => navigation.openHotkeys(widgetId)}
+                />
+              }
+            />
           </div>
         </div>
       </DefaultsEditorProvider>
