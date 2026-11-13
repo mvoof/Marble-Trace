@@ -13,9 +13,9 @@ import type { WidgetDefaultConfig } from '@shared/contracts/widget-settings';
 import { useWidgetDefaultsStore } from '@entities/widget/widget-defaults-context';
 import { getWidgetLabel } from '@entities/widget/widget-i18n';
 import { useMainNavigationStore } from '@features/main-navigation/main-navigation-context';
+import { AllWidgets } from './AllWidgets/AllWidgets';
 import { WidgetWorkbench } from './WidgetWorkbench/WidgetWorkbench';
 import { widgetMenuRuns } from './widget-menu';
-import styles from './WidgetsPage.module.scss';
 
 // The menu's id for All widgets; no widget type is spelled like it.
 const ALL_WIDGETS = '*all';
@@ -96,19 +96,12 @@ export const WidgetsPage = observer(() => {
       fillsHeight={activeWidgetId !== null}
     >
       {activeWidgetId === null ? (
-        <div className={styles.allWidgets}>
-          {runs.flat().map((widget) => (
-            <button
-              key={widget.id}
-              type="button"
-              className={styles.widgetTile}
-              disabled={!available.has(widget.id)}
-              onClick={() => navigation.openWidget(widget.id)}
-            >
-              {getWidgetLabel(t, widget)}
-            </button>
-          ))}
-        </div>
+        <AllWidgets
+          widgets={runs.flat()}
+          isAvailable={(widgetId) => available.has(widgetId)}
+          labelOf={(widget) => getWidgetLabel(t, widget)}
+          onOpen={(widgetId) => navigation.openWidget(widgetId)}
+        />
       ) : (
         <WidgetWorkbench widgetId={activeWidgetId} />
       )}

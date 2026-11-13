@@ -1,0 +1,56 @@
+// Gaps come from masonry.ts, which also sizes the columns; the card's padding
+// from AllWidgets.tsx, which sizes the miniature inside it.
+.grid {
+  display: flex;
+  align-items: flex-start;
+}
+
+.column {
+  display: flex;
+  flex-direction: column;
+  flex: 0 0 auto;
+}
+
+// The border is a shadow so it takes no room from the miniature.
+.card {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  border-radius: rem(8);
+  background: $sys-bg-sunken;
+  box-shadow: inset 0 0 0 1px $sys-border-sub;
+  overflow: hidden;
+  transition: box-shadow 0.15s ease;
+
+  &:hover {
+    box-shadow: inset 0 0 0 1px $sys-border-main;
+  }
+
+  &:has(.open:disabled) {
+    opacity: 0.45;
+  }
+}
+
+// The widget as the overlay draws it; a picture here, never a control.
+.frame {
+  position: relative;
+  box-sizing: border-box;
+  border: 2px solid;
+  border-radius: rem(6);
+  overflow: hidden;
+  flex: 0 0 auto;
+  pointer-events: none;
+}
+
+.open {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  border-radius: inherit;
+  background: transparent;
+  cursor: pointer;
+
+  &:disabled {
+    cursor: not-allowed;
+  }
+}

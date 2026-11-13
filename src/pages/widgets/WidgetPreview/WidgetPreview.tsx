@@ -1,8 +1,7 @@
-import { useEffect, useLayoutEffect, useMemo } from 'react';
+import { useLayoutEffect } from 'react';
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
-import { usePreviewWorldFactory } from '@features/preview/preview-host-context';
-import { useUnitsStore } from '@entities/app-settings/units-context';
+import { useSeededPreviewWorld } from '@features/preview/use-seeded-preview-world';
 import { useWidgetEditor } from '@features/widget-settings/WidgetEditorContext';
 import { componentForWidget } from '@widgets/registry';
 import { WidgetInstanceScope } from '@widgets/instance-scope/WidgetInstanceScope';
@@ -13,11 +12,7 @@ import {
   widgetFrameStyle,
   widgetScaleOf,
 } from '@entities/widget/widget-frame';
-import {
-  seedScenario,
-  DEFAULT_PREVIEW_SCENARIO_ID,
-} from '@features/preview/scenarios';
-import { seedInputHistory } from '@features/preview/preview-animator';
+import { DEFAULT_PREVIEW_SCENARIO_ID } from '@features/preview/scenarios';
 import styles from './WidgetPreview.module.scss';
 
 interface WidgetPreviewProps {
@@ -34,33 +29,11 @@ export const WidgetPreview = observer(
     scenarioId = DEFAULT_PREVIEW_SCENARIO_ID,
   }: WidgetPreviewProps) => {
     const editor = useWidgetEditor();
-    const units = useUnitsStore();
     const { t } = useTranslation('main-app');
 
-    const createPreviewWorld = usePreviewWorldFactory();
-    const previewWorld = useMemo(
-      () => createPreviewWorld(),
-      [createPreviewWorld]
-    );
+    const previewWorld = useSeededPreviewWorld(scenarioId);
     const previewStore = previewWorld.core;
     const PreviewProvide = previewWorld.Provide;
-
-    useEffect(() => () => previewStore.dispose(), [previewStore]);
-
-    useLayoutEffect(() => {
-      seedScenario(previewStore, scenarioId);
-    }, [previewStore, scenarioId]);
-
-    useEffect(() => {
-      seedInputHistory(previewStore);
-    }, [previewStore, scenarioId]);
-
-    // The preview store is its own world, units included — without this it
-    // stays metric while the app is set to imperial, and every distance in the
-    // preview contradicts the widget on the overlay.
-    useLayoutEffect(() => {
-      previewStore.units.setSystem(units.unitSystem);
-    }, [previewStore, units.unitSystem]);
 
     const widget = editor.getWidget(widgetId);
 
