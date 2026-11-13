@@ -214,12 +214,12 @@
   padding: rem(24);
 }
 
+// The Layouts page: the list and the editor each lay out their own padding.
 .sectionContainer {
   position: relative;
   z-index: 10;
   height: 100%;
   overflow: hidden;
-  padding: rem(24);
 }
 
 @keyframes fadeIn {

@@ -5,6 +5,8 @@ import { useTranslation } from 'react-i18next';
 import { useLayoutsStore } from '@entities/layout/layouts-context';
 import { useLayoutEditorStore } from '@features/layout-editor/layout-editor-context';
 
+import { PageTitle } from '@shared/ui/PageTitle/PageTitle';
+
 import { AutoSwitchBlock } from './AutoSwitchBlock';
 import { CreateLayoutButton } from './CreateLayoutButton';
 import { LayoutCard } from './LayoutCard';
@@ -29,16 +31,13 @@ export const LayoutList = observer(({ onOpenEditor }: LayoutListProps) => {
 
   return (
     <div className={styles.page}>
-      <header className={styles.header}>
-        <div>
-          <h1 className={styles.title}>{t('appHeader.sections.layouts')}</h1>
-          <p className={styles.subtitle}>
-            {t('layoutList.layoutsCount', { count: layouts.layouts.length })}
-          </p>
-        </div>
-
-        <CreateLayoutButton />
-      </header>
+      <PageTitle
+        title={t('appHeader.sections.layouts')}
+        subtitle={t('layoutList.layoutsCount', {
+          count: layouts.layouts.length,
+        })}
+        actions={<CreateLayoutButton />}
+      />
 
       <AutoSwitchBlock />
 

@@ -7,6 +7,8 @@ import { useLayoutsStore } from '@entities/layout/layouts-context';
 import type { SessionContext } from '@shared/contracts/widget-settings';
 
 import { SESSION_CONTEXTS, SESSION_LOOKS } from './session-labels';
+import { SettingsCard } from '@shared/ui/SettingsCard/SettingsCard';
+
 import styles from './AutoSwitchBlock.module.scss';
 
 const NO_LAYOUT = '';
@@ -35,25 +37,24 @@ export const AutoSwitchBlock = observer(() => {
   };
 
   return (
-    <section className={styles.block}>
-      <header className={styles.header}>
-        <div>
-          <h2 className={styles.title}>{t('layoutList.autoSwitch.title')}</h2>
-          <p className={styles.description}>
-            {t('layoutList.autoSwitch.description')}
-          </p>
-        </div>
-
+    <SettingsCard
+      title={t('layoutList.autoSwitch.title')}
+      extra={
         <label className={styles.masterSwitch}>
           <span>{t('layoutList.autoSwitch.enabled')}</span>
           <Switch
+            size="small"
             checked={isEnabled}
             onChange={(checked) =>
               appSettings.update({ autoSwitchLayouts: checked })
             }
           />
         </label>
-      </header>
+      }
+    >
+      <p className={styles.description}>
+        {t('layoutList.autoSwitch.description')}
+      </p>
 
       <div className={styles.rules}>
         {SESSION_CONTEXTS.map((context) => {
@@ -64,6 +65,10 @@ export const AutoSwitchBlock = observer(() => {
               <span className={styles.situation}>
                 <SessionIcon size={16} />
                 {t(labelKey)}
+              </span>
+
+              <span className={styles.arrow} aria-hidden>
+                →
               </span>
 
               <Select
@@ -77,6 +82,6 @@ export const AutoSwitchBlock = observer(() => {
           );
         })}
       </div>
-    </section>
+    </SettingsCard>
   );
 });

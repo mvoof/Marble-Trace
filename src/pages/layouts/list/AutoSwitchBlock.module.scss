@@ -1,52 +1,33 @@
-.block {
-  background: $sys-bg-card;
-  border: 1px solid $sys-border-main;
-  border-radius: rem(8);
-  padding: rem(16) rem(20);
-}
-
-.header {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: rem(16);
-  margin-bottom: rem(8);
-}
-
-.title {
-  font-size: rem(14);
-  font-weight: 600;
-  color: $sys-text-primary;
-  margin: 0;
-}
-
 .description {
-  font-size: rem(12);
-  color: $sys-text-muted;
-  margin: rem(4) 0 0;
+  font-size: rem(13);
+  color: $sys-text-secondary;
+  margin: 0 0 rem(8);
 }
 
 .masterSwitch {
   display: flex;
   align-items: center;
   gap: rem(8);
-  font-size: rem(12);
+  font-size: rem(13);
   color: $sys-text-secondary;
-  flex: 0 0 auto;
   cursor: pointer;
 }
 
-// A rule row: the situation, then what it puts on screen. The car class and
-// car fields of later rules take their own columns between the two.
+// A rule row: the situation, an arrow, what it puts on screen. The car class
+// and car fields of later rules take the room after the layout.
 .rule {
   display: grid;
-  grid-template-columns: rem(150) minmax(0, rem(320));
+  grid-template-columns: rem(150) rem(24) minmax(0, 1fr) minmax(0, 2fr);
   align-items: center;
-  gap: rem(16);
+  gap: rem(10);
   padding: rem(8) 0;
 
   & + & {
     border-top: 1px solid $sys-border-sub;
+  }
+
+  @media (max-width: 1000px) {
+    grid-template-columns: rem(120) rem(20) minmax(0, 1fr);
   }
 }
 
@@ -54,8 +35,12 @@
   display: flex;
   align-items: center;
   gap: rem(8);
-  color: $sys-text-secondary;
+  color: $sys-text-primary;
   font-size: rem(13);
+}
+
+.arrow {
+  color: $sys-text-muted;
 }
 
 .layoutSelect {

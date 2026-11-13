@@ -1,32 +1,11 @@
+// Scrolls on its own: the Layouts page is not on the sectioned template, so it
+// carries the mockup's page padding itself.
 .page {
-  display: flex;
-  flex-direction: column;
-  gap: rem(20);
   height: 100%;
   min-height: 0;
   overflow-y: auto;
-}
-
-.header {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: rem(16);
-  margin-bottom: rem(12);
-}
-
-.title {
-  font-size: rem(24);
-  font-weight: 600;
-  letter-spacing: -0.01em;
-  color: $sys-text-primary;
-  margin: 0;
-}
-
-.subtitle {
-  font-size: rem(12);
-  color: $sys-text-muted;
-  margin: rem(4) 0 0;
+  scrollbar-gutter: stable;
+  padding: rem(8) rem(24) rem(28) rem(28);
 }
 
 .grid {
