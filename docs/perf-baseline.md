@@ -484,3 +484,52 @@ of 20 widgets on `DISPLAY1` at 30 Hz. Each cell is the mean of three runs.
   parts. `SessionStore.isSessionEnded` is a computed boolean; the rows wake
   when it flips. Single 30 s runs spread about ±0.04 MiB/s, so 5.39 against
   5.34 is level with `main`.
+
+## 2026-11-13 — bundles per display frame (ADR-0013)
+
+The question: does an overlay apply bundles it never draws? Every bundle is
+applied in its event handler, so if the main thread falls behind, the bundles
+that queued up are all applied before the next frame, though only the last one
+reaches the screen.
+
+Not a `npm run perf` run: a temporary probe in the bundle listener, under
+`tauri:dev` (dev frontend, debug backend) on a tape, read over the MCP bridge.
+These numbers are not comparable with the rows above. Each run is ~30 s on
+`overlay-DISPLAY1`, on a 165 Hz display.
+
+- **frames with 2+**: animation frames whose interval received more than one
+  bundle.
+- **wasted**: the bundles beyond the first in such a frame, as a share of all
+  bundles.
+- **parse**: `JSON.parse` of the payload re-stringified, timed on every 10th
+  bundle. It stands in for the payload literal Tauri evaluates before our
+  handler runs, which cannot be timed directly (see Limits of the method).
+
+| run                                         | bundles/s | frames with 2+ | wasted | apply p50 / p99 / max (ms) | parse p99 (ms) | payload p50 / p99 |
+| ------------------------------------------- | --------- | -------------- | ------ | -------------------------- | -------------- | ----------------- |
+| `race`, 19 widgets on the monitor, 30 Hz    | 28.6      | 0              | 0 %    | 0.2 / 0.6 / 0.7            | 0.1            | 1.3 KB / 18 KB    |
+| `race`, 60 Hz                               | 56.4      | 0              | 0 %    | 0.2 / 0.5 / 0.7            | 0.1            | 1.1 KB / 19 KB    |
+| `perf-all`, 32 widgets, 60 Hz               | 54.8      | 0              | 0 %    | 0.6 / 1.2 / 1.5            | 0.1            | 1.6 KB / 20 KB    |
+| `perf-all`, 60 Hz, 100 ms block every 0.5 s | 56.1      | 40 (4–6 each)  | 14 %   | 0.3 / 1.0 / 1.4            | 0.1            | 1.5 KB / 3.5 KB   |
+
+- **No backlog in steady state.** Even with 32 widgets at 60 Hz, every frame
+  received at most one bundle, and frames over 25 ms were 0–1 per run.
+- **A stall does queue them.** Behind each synthetic 100 ms block, the 5–6
+  bundles that arrived ran back to back before the next frame: 4–5 applies
+  nobody saw, about 1.5–5 ms on top of the stall.
+- **The parse is probably not the cost.** The proxy reads at most 0.2 ms,
+  even for the 20 KB full bundle. The literal Tauri actually evaluates goes
+  through the full JS parser and may cost several times that. It is still
+  well under a frame. Its allocation share is the `event payload literal`
+  bucket of the heap runs (ADR-0006).
+- **One literal per event, not per listener.** Tauri 2.12 evaluates one
+  script per window with every listener's id, and both listeners of the
+  duplicate below received the same object.
+- **A dev build doubled every overlay listener.** The first run read only
+  frames of 0 or 2 bundles: StrictMode ran the overlay's start → stop → start,
+  and the stop landed before the first start had subscribed. Fixed in the
+  `SimStore` listener generations. The table above is after the fix. Release
+  builds were not affected unless the overlay effect re-ran mid-subscribe.
+
+Coalescing per frame would save only the stall rows, and it would have to merge
+partial bundles and concatenate `inputSamples`. Not done: ADR-0013.
