@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { Layout, ConfigProvider, theme, App as AntdApp } from 'antd';
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
@@ -9,8 +9,8 @@ import { LayoutEditor } from '@pages/layouts/LayoutEditor';
 import { SettingsPage } from '@pages/settings/SettingsPage';
 import { CrewPage } from '@pages/crew/CrewPage';
 import { CrewLeaveDialog } from '@pages/crew/CrewLeaveDialog';
-import { useVoiceCrewStore } from '@features/voice-crew/voice-crew-context';
-import { AppHeader, type AppSection } from './AppHeader/AppHeader';
+import { useMainNavigationStore } from '@features/main-navigation/main-navigation-context';
+import { AppHeader } from './AppHeader/AppHeader';
 import { AppFooter } from './AppFooter/AppFooter';
 import { UpdateBanner } from './UpdateBanner/UpdateBanner';
 import { SettingsLockBanner } from './SettingsLockBanner/SettingsLockBanner';
@@ -23,29 +23,11 @@ const { Content } = Layout;
 export const MainWindow = observer(() => {
   const simStore = useSimStore();
   const root = useMainRoot();
-  const crew = useVoiceCrewStore();
+  const navigation = useMainNavigationStore();
   const { t } = useTranslation('main-app');
 
-  const [activeSection, setActiveSection] = useState<AppSection>('layouts');
-  const [selectedWidgetId, setSelectedWidgetId] = useState<string | null>(null);
-  const [layoutsMode, setLayoutsMode] = useState<'list' | 'editor'>('list');
-  const [leavingFor, setLeavingFor] = useState<AppSection | null>(null);
-
-  // The crew's unsaved edits are saved or dropped before another section opens.
-  const changeSection = (next: AppSection) => {
-    if (activeSection === 'crew' && next !== 'crew' && crew.dirty) {
-      setLeavingFor(next);
-
-      return;
-    }
-
-    setActiveSection(next);
-  };
-
-  // Nothing selected yet falls back to the first widget in the catalog, so the
-  // workbench never has to report a default choice back up here.
-  const activeWidgetId =
-    selectedWidgetId ?? root.widgetDefaults.catalogWidgets[0]?.id ?? null;
+  const activeSection = navigation.section;
+  const activeWidgetId = navigation.activeWidgetId;
 
   useEffect(() => {
     void simStore.startStream();
@@ -133,21 +115,12 @@ export const MainWindow = observer(() => {
     >
       <AntdApp style={{ height: '100%' }}>
         <Layout className={styles.layout}>
-          <AppHeader
-            activeSection={activeSection}
-            onSectionChange={changeSection}
-          />
+          <AppHeader />
 
           <CrewLeaveDialog
-            open={leavingFor !== null}
-            onStay={() => setLeavingFor(null)}
-            onLeave={() => {
-              if (leavingFor !== null) {
-                setActiveSection(leavingFor);
-              }
-
-              setLeavingFor(null);
-            }}
+            open={navigation.isAskingToLeave}
+            onStay={() => navigation.stay()}
+            onLeave={() => navigation.leave()}
           />
 
           <SettingsLockBanner />
@@ -180,8 +153,8 @@ export const MainWindow = observer(() => {
                 key="layouts"
               >
                 <LayoutEditor
-                  mode={layoutsMode}
-                  onModeChange={setLayoutsMode}
+                  mode={navigation.layoutsMode}
+                  onModeChange={(mode) => navigation.setLayoutsMode(mode)}
                 />
               </div>
             )}
@@ -198,7 +171,7 @@ export const MainWindow = observer(() => {
                     </div>
                     <WidgetList
                       selectedId={activeWidgetId}
-                      onSelect={setSelectedWidgetId}
+                      onSelect={(widgetId) => navigation.openWidget(widgetId)}
                     />
                   </div>
 

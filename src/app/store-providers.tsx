@@ -34,6 +34,7 @@ import { WidgetAutoHideContext } from '@features/widget-auto-hide/widget-auto-hi
 import { SettingsPanelUiContext } from '@entities/widget/settings-panel-ui-context';
 import { BindingsContext } from '@features/hotkey-bindings/bindings-context';
 import { BindingsUiContext } from '@features/hotkey-bindings/bindings-ui-context';
+import { MainNavigationContext } from '@features/main-navigation/main-navigation-context';
 import { DeviceInputContext } from '@features/hotkey-bindings/device-input-context';
 import { FpsDiagnosticsContext } from '@features/diagnostics/fps-diagnostics-context';
 import { DiagnosticsExportContext } from '@features/diagnostics/diagnostics-export-context';
@@ -114,6 +115,7 @@ const mainStores = (root: MainRoot): ProvidedStore[] => [
   provide(TwitchAuthContext, root.twitchAuth),
   provide(DeviceInputContext, root.deviceInput),
   provide(BindingsUiContext, root.bindingsUi),
+  provide(MainNavigationContext, root.navigation),
   provide(RemoteDevicesContext, root.remoteDevices),
   provide(FpsDiagnosticsContext, root.fpsDiagnostics),
   provide(DiagnosticsExportContext, root.diagnosticsExport),

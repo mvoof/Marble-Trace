@@ -10,13 +10,13 @@ Each window builds its own root; access via context hooks. **Never import stores
 
 _Held by: compiler (an overlay writing settings — the core holds `LiveWidgetsView`; a wrong store handed to a provider in `store-providers.tsx`); lint (a main-only store's hook imported by `widgets/`, `shared/ui`, `shared/hooks` or the overlay, remote and hud shells — this moved from compiler to lint with the per-slice contexts, ADR-0008); test (`overlay-root.test.ts`: an overlay builds none of the main-only stores); review (stores reached through hooks, never as singletons)._
 
-| Root           | Built by                     | Holds                                                                                                                                                            |
-| -------------- | ---------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `RendererCore` | every renderer, and previews | entity stores, sim, settings projection (`layouts`, `liveWidgets`, `widgetDefaults`, `appSettings`, `settingsMutations`), units, widget stores, `widgetAutoHide` |
-| `OverlayRoot`  | `overlay.tsx`                | core + `AppWindowStores` (`bindings`, `settingsPanelUi`) + `settingsClient`                                                                                      |
-| `MainRoot`     | `main.tsx`                   | core + `AppWindowStores` + editor, companion apps, twitch auth, device list, bindings UI, remote devices, fps diagnostics, export, inspector, track rotation     |
-| `RemoteRoot`   | `remote.tsx`                 | core, started without Tauri                                                                                                                                      |
-| `HudRoot`      | `hud.tsx`                    | `diagnosticsHud` only — no core                                                                                                                                  |
+| Root           | Built by                     | Holds                                                                                                                                                                    |
+| -------------- | ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `RendererCore` | every renderer, and previews | entity stores, sim, settings projection (`layouts`, `liveWidgets`, `widgetDefaults`, `appSettings`, `settingsMutations`), units, widget stores, `widgetAutoHide`         |
+| `OverlayRoot`  | `overlay.tsx`                | core + `AppWindowStores` (`bindings`, `settingsPanelUi`) + `settingsClient`                                                                                              |
+| `MainRoot`     | `main.tsx`                   | core + `AppWindowStores` + navigation, editor, companion apps, twitch auth, device list, bindings UI, remote devices, fps diagnostics, export, inspector, track rotation |
+| `RemoteRoot`   | `remote.tsx`                 | core, started without Tauri                                                                                                                                              |
+| `HudRoot`      | `hud.tsx`                    | `diagnosticsHud` only — no core                                                                                                                                          |
 
 The roots are MobX classes in `app/roots/`, not React providers — sync,
 hotkeys, previews and Storybook need the stores outside React.
