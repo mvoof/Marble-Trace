@@ -18,14 +18,14 @@ export type LayoutsMode = 'list' | 'editor';
 /** A page, and what to open inside it. */
 type Destination = {
   section: MainSection;
-  widgetId?: string;
+  /** On the Widgets page: a widget type, or null for all widgets. */
+  widgetId?: string | null;
   /** On the Hotkeys page: the one widget type to show bindings for. */
   hotkeysWidget?: string;
 };
 
 type MainNavigationDeps = {
   voiceCrew: { dirty: boolean };
-  widgetDefaults: { catalogWidgets: readonly { id: string }[] };
 };
 
 /**
@@ -42,22 +42,14 @@ export class MainNavigationStore {
   /** The widget type the Hotkeys page is filtered to; null shows them all. */
   hotkeysWidget: string | null = null;
 
-  private chosenWidgetId: string | null = null;
+  /** The widget the Widgets page shows; null shows all widgets. */
+  activeWidgetId: string | null = null;
 
   /** Where the user asked to go while the crew still holds unsaved edits. */
   private heldDestination: Destination | null = null;
 
   constructor(private readonly deps: MainNavigationDeps) {
     makeAutoObservable<this, 'deps'>(this, { deps: false }, { autoBind: true });
-  }
-
-  /** The chosen widget, or the first in the catalog until one is chosen. */
-  get activeWidgetId(): string | null {
-    return (
-      this.chosenWidgetId ??
-      this.deps.widgetDefaults.catalogWidgets[0]?.id ??
-      null
-    );
   }
 
   /** The crew's unsaved edits are saved or dropped before another page opens. */
@@ -72,6 +64,11 @@ export class MainNavigationStore {
   /** The widgets page, on this widget. */
   openWidget(widgetId: string) {
     this.goTo({ section: 'widgets', widgetId });
+  }
+
+  /** The widgets page, on all widgets. */
+  openAllWidgets() {
+    this.goTo({ section: 'widgets', widgetId: null });
   }
 
   /** The Hotkeys page, showing only this widget type's bindings. */
@@ -121,7 +118,7 @@ export class MainNavigationStore {
 
   private arrive(destination: Destination) {
     if (destination.widgetId !== undefined) {
-      this.chosenWidgetId = destination.widgetId;
+      this.activeWidgetId = destination.widgetId;
     }
 
     if (destination.section === 'hotkeys') {

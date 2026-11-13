@@ -7,7 +7,11 @@ export const MENU_SEPARATOR = 'separator';
 export interface MenuSection<SectionId extends string> {
   id: SectionId;
   label: string;
-  icon: LucideIcon;
+  /** Absent on a text-only menu. */
+  icon?: LucideIcon;
+  /** Shown but not selectable; `hint` says why. */
+  disabled?: boolean;
+  hint?: string;
 }
 
 /** One line of a page's inner menu: a section, or a separator. */

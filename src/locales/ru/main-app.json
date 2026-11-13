@@ -1,6 +1,11 @@
 {
-  "mainWindow": {
-    "widgetModules": "Модули виджетов"
+  "widgetsPage": {
+    "allWidgets": "Все виджеты",
+    "unavailable": "недоступен для этого симулятора",
+    "sort": {
+      "tier": "По важности",
+      "az": "А–Я"
+    }
   },
   "appHeader": {
     "sections": {
@@ -28,10 +33,6 @@
     "waitingForTelemetry": "ОЖИДАНИЕ ТЕЛЕМЕТРИИ",
     "systemError": "СИСТЕМНАЯ ОШИБКА",
     "waitingForGame": "ОЖИДАНИЕ ЗАПУСКА ИГРЫ"
-  },
-  "widgetList": {
-    "unavailable": "Недоступно",
-    "defaultDescription": "Настройка параметров виджета."
   },
   "releaseNotes": {
     "whatsNew": "Что нового",
@@ -217,8 +218,7 @@
     "hotkeysOff": "Хоткеи этот виджет пропускают — нажмите, чтобы включить"
   },
   "widgetWorkbench": {
-    "scenario": "Сценарий",
-    "noWidgets": "Нет доступных виджетов."
+    "scenario": "Сценарий"
   },
   "layoutCanvas": {
     "move": "Перемещение",

@@ -17,7 +17,8 @@ import type {
  * Every list the user sees is alphabetical by label — the Widgets page, each
  * monitor's list in the layout editor, the F9 picker — so the catalog is kept
  * in that order and nothing declares a position of its own. A new widget lands
- * where its name puts it.
+ * where its name puts it. (The Widgets page can also put the `core` tier
+ * first; inside it the order is still the name's.)
  */
 const manifestModules = import.meta.glob<Record<string, WidgetManifest>>(
   '../../widgets/*/manifest.ts',
@@ -35,8 +36,8 @@ const compareText = (left: string, right: string): number =>
 
 /** Catalog order: alphabetical by label, then the id so a tie is deterministic. */
 export const compareManifests = (
-  left: WidgetManifest,
-  right: WidgetManifest
+  left: Pick<WidgetManifest, 'label' | 'id'>,
+  right: Pick<WidgetManifest, 'label' | 'id'>
 ): number =>
   compareText(left.label.toLowerCase(), right.label.toLowerCase()) ||
   compareText(left.id, right.id);
@@ -61,6 +62,7 @@ const NON_SERIALIZABLE_WIDGET_KEYS = new Set([
   'telemetryEvents',
   'previewScenarios',
   'previewBaseline',
+  'tier',
 ]);
 
 export const DEFAULT_WIDGETS: WidgetDefaultConfig[] = WIDGETS.map(

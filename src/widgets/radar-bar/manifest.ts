@@ -15,6 +15,7 @@ export const RADAR_BAR_MANIFEST: WidgetManifest = {
     'traffic-rear-bumper',
   ],
   telemetryEvents: ['proximity'],
+  tier: 'core',
   label: 'Radar Bar',
   description: 'Full-width side proximity indicators.',
   requiredCapabilities: ['radar'],

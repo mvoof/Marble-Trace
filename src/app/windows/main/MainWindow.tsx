@@ -1,10 +1,8 @@
 import { useEffect } from 'react';
 import { Layout, ConfigProvider, theme, App as AntdApp } from 'antd';
 import { observer } from 'mobx-react-lite';
-import { useTranslation } from 'react-i18next';
 import { initMainSync } from '@app/sync/main/main-sync';
-import { WidgetList } from '@pages/widgets/WidgetList/WidgetList';
-import { WidgetWorkbench } from '@pages/widgets/WidgetWorkbench/WidgetWorkbench';
+import { WidgetsPage } from '@pages/widgets/WidgetsPage';
 import { LayoutEditor } from '@pages/layouts/LayoutEditor';
 import { SettingsPage } from '@pages/settings/SettingsPage';
 import { CrewPage } from '@pages/crew/CrewPage';
@@ -27,7 +25,6 @@ export const MainWindow = observer(() => {
   const simStore = useSimStore();
   const root = useMainRoot();
   const navigation = useMainNavigationStore();
-  const { t } = useTranslation('main-app');
 
   useEffect(() => {
     void simStore.startStream();
@@ -198,24 +195,10 @@ export const MainWindow = observer(() => {
 
             {navigation.section === 'widgets' && (
               <div
-                className={`${styles.sectionContainer} ${styles.animateFadeIn}`}
+                className={`${styles.pageContainer} ${styles.animateFadeIn}`}
                 key="widgets"
               >
-                <div className={styles.widgetsSection}>
-                  <div className={styles.widgetCatalog}>
-                    <div className={styles.catalogTitle}>
-                      {t('mainWindow.widgetModules')}
-                    </div>
-                    <WidgetList
-                      selectedId={navigation.activeWidgetId}
-                      onSelect={(widgetId) => navigation.openWidget(widgetId)}
-                    />
-                  </div>
-
-                  <div className={styles.widgetWorkbench}>
-                    <WidgetWorkbench widgetId={navigation.activeWidgetId} />
-                  </div>
-                </div>
+                <WidgetsPage />
               </div>
             )}
           </Content>

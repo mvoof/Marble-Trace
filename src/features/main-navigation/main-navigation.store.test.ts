@@ -1,13 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { MainNavigationStore, POCKET_SECTIONS } from './main-navigation.store';
 
-const buildNavigation = (catalogIds: string[] = ['standings', 'relative']) => {
+const buildNavigation = () => {
   const crew = { dirty: false };
-  const widgetDefaults = { catalogWidgets: catalogIds.map((id) => ({ id })) };
-  const navigation = new MainNavigationStore({
-    voiceCrew: crew,
-    widgetDefaults,
-  });
+  const navigation = new MainNavigationStore({ voiceCrew: crew });
 
   return { navigation, crew };
 };
@@ -47,15 +43,19 @@ describe('MainNavigationStore', () => {
     expect(navigation.section).toBe('settings');
   });
 
-  it('shows the first catalog widget until one is chosen', () => {
+  it('shows all widgets until one is chosen', () => {
     const { navigation } = buildNavigation();
 
-    expect(navigation.activeWidgetId).toBe('standings');
+    expect(navigation.activeWidgetId).toBeNull();
   });
 
-  it('has no widget to show when the catalog is empty', () => {
-    const { navigation } = buildNavigation([]);
+  it('goes back to all widgets from a widget', () => {
+    const { navigation } = buildNavigation();
 
+    navigation.openWidget('relative');
+    navigation.openAllWidgets();
+
+    expect(navigation.section).toBe('widgets');
     expect(navigation.activeWidgetId).toBeNull();
   });
 
@@ -151,7 +151,7 @@ describe('MainNavigationStore', () => {
 
       navigation.openWidget('relative');
 
-      expect(navigation.activeWidgetId).toBe('standings');
+      expect(navigation.activeWidgetId).toBeNull();
 
       navigation.leave();
 
@@ -175,7 +175,7 @@ describe('MainNavigationStore', () => {
       navigation.openWidget('relative');
       navigation.stay();
 
-      expect(navigation.activeWidgetId).toBe('standings');
+      expect(navigation.activeWidgetId).toBeNull();
     });
 
     it('does not ask when the crew page is opened again', () => {

@@ -42,6 +42,9 @@ export type VoiceLanguage = 'app' | 'ru' | 'en' | 'es' | 'zh';
 
 export type LastGoodRestoreStatus = 'idle' | 'failed' | 'restored';
 
+/** The Widgets page's menu: core widgets first (`tier`), or all A–Z. */
+export type WidgetMenuSort = 'tier' | 'az';
+
 export const DEFAULT_APP_SETTINGS = {
   // Interact mode: mouse events reach the overlay without unlocking widget
   // dragging. Whether its binding toggles or is held is a property of the
@@ -56,6 +59,8 @@ export const DEFAULT_APP_SETTINGS = {
   startMinimized: false,
   /** The calm wave behind the main window's header. */
   headerAnimation: true,
+  /** How the Widgets page's menu orders the widgets. */
+  widgetMenuSort: 'tier' as WidgetMenuSort,
   autoUpdate: true,
   updateCheckInterval: 3,
   lastUpdateCheck: null as string | null,

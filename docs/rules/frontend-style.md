@@ -49,6 +49,9 @@ _Held by: review._
   runs) and the active section's content; the template draws the section's
   name as the page title, collapses the menu to icons below 900 px and scrolls
   the content. The page's container in `MainWindow` does not scroll.
+- A menu that lists things rather than sections (the Widgets page) is
+  `textOnly`: names, no icons, and it never collapses — a narrow window only
+  narrows it. A control that orders the list goes in `menuHeader`.
 - A page without sections (Home, Hotkeys) has no inner menu.
 
 ## Color tokens

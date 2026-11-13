@@ -17,6 +17,16 @@ $narrow-window: 900px;
   overflow-y: auto;
 }
 
+// Modifier declared after its base class.
+.menuTextOnly {
+  @extend .menu;
+}
+
+.menuHeader {
+  flex: none;
+  margin-bottom: rem(8);
+}
+
 .item {
   display: flex;
   align-items: center;
@@ -38,6 +48,11 @@ $narrow-window: 900px;
 
   &:hover {
     color: $sys-text-primary;
+  }
+
+  &:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
   }
 }
 
@@ -122,6 +137,25 @@ $narrow-window: 900px;
 
   .separator {
     margin: rem(8) rem(4);
+  }
+
+  // A text-only menu keeps its names; it only narrows.
+  .menuTextOnly {
+    width: rem(168);
+    padding: rem(8) rem(8) rem(16) rem(12);
+
+    .item {
+      justify-content: flex-start;
+      padding: rem(7) rem(10);
+    }
+
+    .itemLabel {
+      display: inline;
+    }
+
+    .separator {
+      margin: rem(8) rem(10);
+    }
   }
 
   .content {

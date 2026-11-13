@@ -63,10 +63,9 @@ const openingScenarioFor = (widgetId: string): string =>
   DEFAULT_PREVIEW_SCENARIO_ID;
 
 // Two-pane widget catalog workspace: live preview column on the left, widget
-// settings panel on the right. The parent owns which widget is active,
-// including the default-to-first fallback.
+// settings panel on the right. The parent owns which widget is active.
 export const WidgetWorkbench = observer(
-  ({ widgetId }: { widgetId: string | null }) => {
+  ({ widgetId }: { widgetId: string }) => {
     const { t } = useTranslation('main-app');
     // Pinned to the widget it was picked on: a pick says "show me this state of
     // this widget", and carrying it to the next widget shows another domain's
@@ -75,12 +74,6 @@ export const WidgetWorkbench = observer(
       widgetId: string;
       scenarioId: string;
     } | null>(null);
-
-    if (!widgetId) {
-      return (
-        <div className={styles.empty}>{t('widgetWorkbench.noWidgets')}</div>
-      );
-    }
 
     const scenarioOptions = scenarioOptionsFor(widgetId);
     const isPickedHere =

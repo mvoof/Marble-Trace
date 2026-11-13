@@ -1,6 +1,11 @@
 {
-  "mainWindow": {
-    "widgetModules": "Módulos de widgets"
+  "widgetsPage": {
+    "allWidgets": "Todos los widgets",
+    "unavailable": "no disponible para este simulador",
+    "sort": {
+      "tier": "Importancia",
+      "az": "A–Z"
+    }
   },
   "appHeader": {
     "sections": {
@@ -28,10 +33,6 @@
     "waitingForTelemetry": "ESPERANDO TELEMETRÍA",
     "systemError": "ERROR DEL SISTEMA",
     "waitingForGame": "ESPERANDO A QUE ARRANQUE EL JUEGO"
-  },
-  "widgetList": {
-    "unavailable": "No disponible",
-    "defaultDescription": "Configura los ajustes del widget."
   },
   "releaseNotes": {
     "whatsNew": "Novedades",
@@ -213,8 +214,7 @@
     "hotkeysOff": "Los atajos omiten este widget — pulsa para incluirlo"
   },
   "widgetWorkbench": {
-    "scenario": "Escenario",
-    "noWidgets": "No hay widgets disponibles."
+    "scenario": "Escenario"
   },
   "layoutCanvas": {
     "move": "Mover",

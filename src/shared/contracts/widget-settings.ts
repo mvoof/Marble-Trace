@@ -185,6 +185,12 @@ export interface WidgetManifest extends WidgetMeta {
    * they picked.
    */
   previewBaseline?: boolean;
+  /**
+   * `core`: one of the widgets nearly every driver runs (Standings, Relative,
+   * Input Trace, the radars); the Widgets page lists them first. Absent: the
+   * rest.
+   */
+  tier?: 'core';
   /** Hotkeys that cycle a setting of this widget. */
   hotkeyCycles?: readonly HotkeyCycle[];
   /** The plate's shape, when it is not a plain rounded rectangle. */

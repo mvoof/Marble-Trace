@@ -1,6 +1,11 @@
 {
-  "mainWindow": {
-    "widgetModules": "Widget Modules"
+  "widgetsPage": {
+    "allWidgets": "All widgets",
+    "unavailable": "not available for this sim",
+    "sort": {
+      "tier": "Importance",
+      "az": "A–Z"
+    }
   },
   "appHeader": {
     "sections": {
@@ -28,10 +33,6 @@
     "waitingForTelemetry": "WAITING FOR TELEMETRY",
     "systemError": "SYSTEM ERROR",
     "waitingForGame": "WAITING FOR GAME TO START"
-  },
-  "widgetList": {
-    "unavailable": "Unavailable",
-    "defaultDescription": "Configure widget settings."
   },
   "releaseNotes": {
     "whatsNew": "What's new",
@@ -213,8 +214,7 @@
     "hotkeysOff": "Hotkeys skip this widget — click to include it"
   },
   "widgetWorkbench": {
-    "scenario": "Scenario",
-    "noWidgets": "No widgets available."
+    "scenario": "Scenario"
   },
   "layoutCanvas": {
     "move": "Move",

@@ -309,7 +309,10 @@ by node-side tests, none of which should drag a React tree in. It carries `id`,
 step 3, and optionally `resolveLayoutChange`.
 
 The widget's place in every list follows from its `label` — lists are
-alphabetical, so there is no position to pick.
+alphabetical, so there is no position to pick. One exception, and not a
+position either: `tier: 'core'` puts a widget nearly every driver runs
+(Standings, Relative, Input Trace, the radars) in the first run of the Widgets
+page's menu. A new widget leaves it out.
 
 **`mount.ts`** — `{ id, component }`, four lines. A second file rather than a
 manifest field because the two change for unrelated reasons: the manifest when

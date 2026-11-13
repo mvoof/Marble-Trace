@@ -1,0 +1,27 @@
+// Until the grid of miniatures (ticket 12): a tile per widget, by name.
+.allWidgets {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(rem(180), 1fr));
+  gap: rem(10);
+}
+
+.widgetTile {
+  padding: rem(14) rem(16);
+  border: 1px solid $sys-border-sub;
+  border-radius: rem(8);
+  background: $sys-bg-raised;
+  color: $sys-text-primary;
+  font-size: rem(13);
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.15s ease;
+
+  &:hover {
+    border-color: $sys-text-muted;
+  }
+
+  &:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+}

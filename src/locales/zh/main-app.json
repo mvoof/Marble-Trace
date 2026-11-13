@@ -1,6 +1,11 @@
 {
-  "mainWindow": {
-    "widgetModules": "小组件模块"
+  "widgetsPage": {
+    "allWidgets": "全部小组件",
+    "unavailable": "此模拟器不可用",
+    "sort": {
+      "tier": "重要性",
+      "az": "A–Z"
+    }
   },
   "appHeader": {
     "sections": {
@@ -28,10 +33,6 @@
     "waitingForTelemetry": "等待遥测数据",
     "systemError": "系统错误",
     "waitingForGame": "等待游戏启动"
-  },
-  "widgetList": {
-    "unavailable": "不可用",
-    "defaultDescription": "配置小组件设置。"
   },
   "releaseNotes": {
     "whatsNew": "更新内容",
@@ -211,8 +212,7 @@
     "hotkeysOff": "快捷键跳过此小组件 — 点击加入"
   },
   "widgetWorkbench": {
-    "scenario": "场景",
-    "noWidgets": "没有可用的小组件。"
+    "scenario": "场景"
   },
   "layoutCanvas": {
     "move": "移动",
