@@ -26,9 +26,14 @@ nothing to coalesce:
   twice a second, the 5–6 bundles that arrived meanwhile ran back to back before
   the next frame: 14 % of applies were for bundles nobody saw, about
   1.5–5 ms on top of a stall that already cost 100.
-- Apply is 0.2–0.6 ms at p50 and 1.2 ms at p99. Parsing the payload, measured as
-  `JSON.parse` of the same text, stays at or under 0.2 ms even for the 20 KB
-  full bundle. ADR-0006 stands.
+- Apply is 0.2–0.6 ms at p50 and 1.2 ms at p99. Tauri delivers the payload as
+  a JS object literal inside the script it evaluates, once per event for every
+  listener in the window, so its parse cannot be timed from the page. As a
+  proxy, `JSON.parse` of the same text stays at or under 0.2 ms even for the
+  20 KB full bundle. A literal goes through the full JS parser and may cost
+  several times that, which is still well under a frame. ADR-0006 stands.
+  Queueing does not depend on where the parse happens: what the probe counts is
+  handler calls per frame.
 
 Coalescing is not free to get right. A bundle carries only what changed, the
 slow tiers ride on a published tick (ADR-0009), and `inputSamples` holds every

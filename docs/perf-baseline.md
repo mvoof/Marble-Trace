@@ -517,8 +517,14 @@ These numbers are not comparable with the rows above. Each run is ~30 s on
 - **A stall does queue them.** Behind each synthetic 100 ms block, the 5–6
   bundles that arrived ran back to back before the next frame: 4–5 applies
   nobody saw, about 1.5–5 ms on top of the stall.
-- **The parse is not the cost.** At most 0.2 ms, even for the 20 KB full
-  bundle.
+- **The parse is probably not the cost.** The proxy reads at most 0.2 ms,
+  even for the 20 KB full bundle. The literal Tauri actually evaluates goes
+  through the full JS parser and may cost several times that. It is still
+  well under a frame. Its allocation share is the `event payload literal`
+  bucket of the heap runs (ADR-0006).
+- **One literal per event, not per listener.** Tauri 2.12 evaluates one
+  script per window with every listener's id, and both listeners of the
+  duplicate below received the same object.
 - **A dev build doubled every overlay listener.** The first run read only
   frames of 0 or 2 bundles: StrictMode ran the overlay's start → stop → start,
   and the stop landed before the first start had subscribed. Fixed in the
