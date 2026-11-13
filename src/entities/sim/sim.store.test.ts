@@ -439,3 +439,48 @@ describe('SimStore reference lap in an overlay window', () => {
     root.dispose();
   });
 });
+
+describe('SimStore overlay listeners', () => {
+  afterEach(() => {
+    asMainWindow();
+  });
+
+  // StrictMode mounts the overlay effect twice: start, stop, start. The stop
+  // lands while the first start still awaits its subscriptions, so it has
+  // nothing to remove yet; every bundle used to reach two handlers.
+  it('keeps one bundle listener when a start is stopped mid-subscribe', async () => {
+    const { listenTo } = await import('@shared/api/events.service');
+    const { SIM_TELEMETRY_BUNDLE } = await import('@shared/api/sim-events');
+    const liveBundleListeners = new Set<number>();
+    let nextListenerId = 0;
+
+    vi.mocked(listenTo).mockImplementation((event) => {
+      const listenerId = nextListenerId++;
+
+      if (event === SIM_TELEMETRY_BUNDLE) {
+        liveBundleListeners.add(listenerId);
+      }
+
+      return Promise.resolve(() => {
+        liveBundleListeners.delete(listenerId);
+      });
+    });
+
+    asOverlayWindow();
+    const root = new MainRoot({ skipInit: true });
+
+    const firstStart = root.sim.startWidgetListener();
+    root.sim.stopWidgetListener();
+    const secondStart = root.sim.startWidgetListener();
+
+    await Promise.all([firstStart, secondStart]);
+
+    expect(liveBundleListeners.size).toBe(1);
+
+    root.dispose();
+
+    expect(liveBundleListeners.size).toBe(0);
+
+    vi.mocked(listenTo).mockImplementation(() => Promise.resolve(() => {}));
+  });
+});

@@ -217,6 +217,7 @@ export class SimStore {
 
     this.disposers.length = 0;
     this.isDisposed = true;
+    this.initId++;
     this.stopWatchingMinimized?.();
     this.stopWatchingMinimized = null;
     this.disposeListeners();
@@ -351,7 +352,6 @@ export class SimStore {
     await this.subscribeAllEvents(currentId);
 
     if (this.initId !== currentId) {
-      this.disposeListeners();
       return;
     }
 
@@ -394,15 +394,25 @@ export class SimStore {
   }
 
   async startWidgetListener() {
+    const currentId = ++this.initId;
+
     this.disposeListeners();
 
-    await this.subscribeAllEvents(this.initId);
+    await this.subscribeAllEvents(currentId);
+
+    if (this.initId !== currentId) {
+      return;
+    }
 
     try {
       const [isConnected, initialInfo] = await Promise.all([
         getConnectionStatus(),
         getLastSessionInfo(),
       ]);
+
+      if (this.initId !== currentId) {
+        return;
+      }
 
       runInAction(() => {
         if (isConnected) {
@@ -415,11 +425,11 @@ export class SimStore {
         }
       });
 
-      await this.hydrateTrackShape(this.initId);
+      await this.hydrateTrackShape(currentId);
       // Like the map, the reference is announced only when it changes: an
       // overlay opened or reloaded after that would compare against nothing
       // until the next best lap.
-      await this.hydrateReferenceLap(this.initId);
+      await this.hydrateReferenceLap(currentId);
     } catch (err) {
       debug.telemetry('Failed to fetch initial status: %o', err);
     }
@@ -443,6 +453,7 @@ export class SimStore {
   }
 
   stopWidgetListener() {
+    this.initId++;
     this.disposeListeners();
   }
 
@@ -529,7 +540,8 @@ export class SimStore {
   private async subscribeAllEvents(guardId: number) {
     await this.subscribeBundle(guardId);
 
-    this.unlistens.push(
+    this.keepListener(
+      guardId,
       await listenTo<SessionSnapshot>(SIM_SESSION, (event) => {
         if (this.initId !== guardId) return;
 
@@ -540,7 +552,8 @@ export class SimStore {
 
     await this.subscribeSlowBundle(guardId);
 
-    this.unlistens.push(
+    this.keepListener(
+      guardId,
       await listenTo<SimPerfFrame>(SIM_PERF, (event) => {
         if (this.initId !== guardId) return;
 
@@ -548,7 +561,8 @@ export class SimStore {
       })
     );
 
-    this.unlistens.push(
+    this.keepListener(
+      guardId,
       await listenTo<SimStatus>(SIM_STATUS, (event) => {
         if (this.initId !== guardId) return;
 
@@ -558,7 +572,8 @@ export class SimStore {
       })
     );
 
-    this.unlistens.push(
+    this.keepListener(
+      guardId,
       await listenTo(SIM_DISCONNECTED, () => {
         if (this.initId !== guardId) return;
 
@@ -568,7 +583,8 @@ export class SimStore {
       })
     );
 
-    this.unlistens.push(
+    this.keepListener(
+      guardId,
       await listenTo<WeatherForecastEntry[]>(SIM_WEATHER, (event) => {
         if (this.initId !== guardId) return;
 
@@ -576,7 +592,8 @@ export class SimStore {
       })
     );
 
-    this.unlistens.push(
+    this.keepListener(
+      guardId,
       await listenTo<TrackShapePayload>(SIM_TRACK_SHAPE, (event) => {
         if (this.initId !== guardId) return;
 
@@ -586,7 +603,8 @@ export class SimStore {
       })
     );
 
-    this.unlistens.push(
+    this.keepListener(
+      guardId,
       await listenTo<ReferenceLapData | null>(
         SIM_REFERENCE_LAP_UPDATED,
         (event) => {
@@ -600,7 +618,8 @@ export class SimStore {
       )
     );
 
-    this.unlistens.push(
+    this.keepListener(
+      guardId,
       await listenTo<CapabilitiesPayload>(SIM_CAPABILITIES, (event) => {
         if (this.initId !== guardId) return;
 
@@ -626,7 +645,8 @@ export class SimStore {
       return;
     }
 
-    this.unlistens.push(
+    this.keepListener(
+      guardId,
       await listenTo<TelemetryBundle>(SIM_TELEMETRY_BUNDLE, (event) => {
         if (this.initId !== guardId) return;
 
@@ -658,7 +678,8 @@ export class SimStore {
       return;
     }
 
-    this.unlistens.push(
+    this.keepListener(
+      guardId,
       await listenTo<TelemetrySlowBundle>(SIM_TELEMETRY_SLOW, (event) => {
         if (this.initId !== guardId) return;
 
@@ -667,6 +688,23 @@ export class SimStore {
         );
       })
     );
+  }
+
+  /**
+   * Keeps a listener only if its subscription is still the current one. A
+   * subscription superseded while it was awaiting `listen` (a stop, or a
+   * second start, in between) drops what it registered itself: the newer one
+   * has already cleared the list, and clearing it again would take the newer
+   * listeners with it.
+   */
+  private keepListener(guardId: number, unlisten: UnlistenFn) {
+    if (this.initId !== guardId) {
+      unlisten();
+
+      return;
+    }
+
+    this.unlistens.push(unlisten);
   }
 
   private disposeListeners() {
