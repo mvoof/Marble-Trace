@@ -1,33 +1,6 @@
-.card {
-  margin-bottom: rem(32);
-}
-
-.cardTitle {
-  color: $sys-text-secondary;
-  font-weight: 500;
-  margin-bottom: rem(12);
-  font-size: rem(11);
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-}
-
-.cardContent {
-  background: $sys-bg-card;
-  border: 1px solid $sys-border-main;
-  border-radius: 6px;
-  padding: rem(20);
-}
-
 .intro {
   font-size: rem(12);
   color: $sys-text-secondary;
-  margin-bottom: rem(16);
-}
-
-.toolbar {
-  display: flex;
-  align-items: center;
-  gap: rem(12);
   margin-bottom: rem(16);
 }
 
@@ -35,70 +8,69 @@
   display: flex;
   align-items: center;
   gap: rem(8);
-  flex: 1;
-  min-width: 0;
 }
 
 .search {
-  flex: 1;
-  min-width: 0;
+  width: rem(240);
 }
 
+// A group is a caption over its rows, as in the mockup: no box of its own.
 .group {
-  border: 1px solid $sys-border-sub;
-  border-radius: 4px;
-  margin-bottom: rem(8);
-  overflow: hidden;
+  & + & {
+    margin-top: rem(8);
+  }
 }
 
 .groupHeader {
   display: flex;
   align-items: center;
-  gap: rem(8);
+  gap: rem(6);
   width: 100%;
-  padding: rem(10) rem(12);
+  padding: rem(10) 0 rem(4);
   border: none;
-  background: $sys-bg-main;
+  background: none;
   cursor: pointer;
   text-align: left;
 
-  &:hover {
-    background: $sys-bg-card;
+  &:hover .groupTitle {
+    color: -text-secondary;
   }
 }
 
 .groupBody {
-  padding: rem(12);
+  padding: rem(4) 0;
 }
 
 // Show/hide leads the group — it keeps working when the widget is out of the
-// layout and the rows below it do not. Position and a wider gap carry that on
-// their own; a rule or a tint here only competed with the row dividers.
+// layout and the rows below it do not.
 .pinnedRow {
-  margin-bottom: rem(16);
+  margin-bottom: rem(8);
 }
 
 .groupTitle {
-  font-size: rem(13);
-  font-weight: 600;
-  color: #ffffff;
+  font-size: rem(11);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: -text-muted;
+  transition: color 0.15s ease;
 }
 
 .groupCount {
   margin-left: auto;
-  font-family: $font-mono;
+  font-family: -mono;
   font-size: rem(11);
-  color: $sys-text-muted;
+  color: -text-muted;
 }
 
 .groupChevron {
-  color: $sys-text-secondary;
+  color: -text-muted;
   transition: transform 0.15s ease;
   transform: rotate(-90deg);
 }
 
 .groupChevronOpen {
-  color: $sys-text-secondary;
+  color: -text-muted;
   transition: transform 0.15s ease;
 }
 
@@ -107,8 +79,8 @@
   align-items: center;
   justify-content: space-between;
   gap: rem(16);
-  padding-top: rem(12);
-  margin-top: rem(12);
+  padding-top: rem(8);
+  margin-top: rem(8);
   border-top: 1px solid $sys-border-sub;
 
   &:first-of-type {
@@ -124,7 +96,7 @@
 
 .rowLabel {
   font-size: rem(13);
-  color: #ffffff;
+  color: $sys-text-primary;
 }
 
 .rowHint {
@@ -151,7 +123,7 @@
   background: $sys-bg-main;
   font-family: $font-mono;
   font-size: rem(11);
-  color: #ffffff;
+  color: $sys-text-primary;
 }
 
 // Modifier classes come after the base class they refine.
@@ -201,7 +173,7 @@
 
 .deviceName {
   font-size: rem(13);
-  color: #ffffff;
+  color: $sys-text-primary;
 }
 
 .deviceMeta {

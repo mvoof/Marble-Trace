@@ -5,6 +5,7 @@ import {
   type MenuSection,
   type SectionMenuEntry,
 } from './section-menu';
+import { PageTitle } from '@shared/ui/PageTitle/PageTitle';
 import styles from './SectionedPage.module.scss';
 
 const MENU_ICON_SIZE = 16;
@@ -28,6 +29,10 @@ interface SectionedPageProps<SectionId extends string> {
   textOnly?: boolean;
   /** Drawn above the menu's items: a control that orders them. */
   menuHeader?: ReactNode;
+  /** A muted note beside the section's name. */
+  subtitle?: ReactNode;
+  /** Controls at the right of the title row. */
+  titleActions?: ReactNode;
 }
 
 /**
@@ -43,6 +48,8 @@ const SectionedPageView = <SectionId extends string>({
   fillsHeight = false,
   textOnly = false,
   menuHeader,
+  subtitle,
+  titleActions,
 }: SectionedPageProps<SectionId>) => {
   const activeSection = menu.find(
     (entry): entry is MenuSection<SectionId> =>
@@ -99,7 +106,11 @@ const SectionedPageView = <SectionId extends string>({
             fillsHeight ? styles.contentInnerFill : styles.contentInner
           }
         >
-          <h1 className={styles.title}>{activeSection?.label}</h1>
+          <PageTitle
+            title={activeSection?.label}
+            subtitle={subtitle}
+            actions={titleActions}
+          />
 
           {children}
         </div>

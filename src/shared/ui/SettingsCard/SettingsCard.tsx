@@ -2,22 +2,23 @@ import type { ReactNode } from 'react';
 import styles from './SettingsCard.module.scss';
 
 interface SettingsCardProps {
-  title?: string;
-  /** Controls beside the title: a filter, an import button. */
+  title?: ReactNode;
+  /** Controls at the right of the title strip: a filter, an import button. */
   extra?: ReactNode;
   children: ReactNode;
 }
 
+/** A main-window card: the title in a strip across its top, the content below. */
 export const SettingsCard = ({ title, extra, children }: SettingsCardProps) => (
-  <div className={styles.card}>
-    {(title || extra) && (
-      <div className={styles.cardHeader}>
-        {title && <h3 className={styles.cardTitle}>{title}</h3>}
+  <section className={styles.card}>
+    {(title !== undefined || extra !== undefined) && (
+      <header className={styles.cardHeader}>
+        {title !== undefined && <h3 className={styles.cardTitle}>{title}</h3>}
 
-        {extra}
-      </div>
+        {extra !== undefined && <div className={styles.cardExtra}>{extra}</div>}
+      </header>
     )}
 
     <div className={styles.cardContent}>{children}</div>
-  </div>
+  </section>
 );

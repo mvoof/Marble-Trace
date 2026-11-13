@@ -190,12 +190,11 @@
   // inspector, opening a long list — makes the bar appear and shifts the whole
   // pane sideways by its width.
   scrollbar-gutter: stable;
-  padding: rem(48);
+  padding: rem(8) rem(24) rem(28) rem(28);
 }
 
 .contentInner {
-  max-width: rem(1120);
-  margin: 0 auto;
+  min-width: 0;
 }
 
 // A page on the sectioned template: it lays out and scrolls its own menu and

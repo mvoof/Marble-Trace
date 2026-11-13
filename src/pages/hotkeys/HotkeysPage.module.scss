@@ -1,29 +1,15 @@
-.header {
-  margin-bottom: rem(40);
-}
+// Bindings, and the devices beside them; one column in a narrow window.
+.columns {
+  display: grid;
+  grid-template-columns: minmax(0, 1.7fr) minmax(0, 1fr);
+  align-items: start;
+  gap: rem(14);
 
-.title {
-  font-size: rem(24);
-  font-weight: 600;
-  letter-spacing: -0.01em;
-  color: $sys-text-primary;
-  margin: 0 !important;
-}
-
-// Bindings, then devices, one under another: the page has no inner menu.
-.stack {
-  display: flex;
-  flex-direction: column;
-  gap: rem(40);
+  @media (max-width: 1000px) {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }
 
 .pane {
   min-width: 0;
-}
-
-.paneTitle {
-  font-size: rem(16);
-  font-weight: 600;
-  color: $sys-text-primary;
-  margin: 0 0 rem(20);
 }

@@ -6,7 +6,6 @@ import { useBindingsStore } from '@features/hotkey-bindings/bindings-context';
 import { useBindingsUiStore } from '@features/hotkey-bindings/bindings-ui-context';
 import { useDeviceInputStore } from '@features/hotkey-bindings/device-input-context';
 import { BindingGroup } from './BindingGroup';
-import { BindingSearch } from './BindingSearch';
 import { BindingCaptureModal } from '@features/hotkey-bindings/BindingCaptureModal';
 import {
   actionLabel,
@@ -14,6 +13,7 @@ import {
   ownerLabel,
 } from '@features/hotkey-bindings/binding-labels';
 import { useMainNavigationStore } from '@features/main-navigation/main-navigation-context';
+import { SettingsCard } from '@shared/ui/SettingsCard/SettingsCard';
 import styles from './BindingsSettings.module.scss';
 
 export const BindingsSettings = observer(() => {
@@ -80,62 +80,59 @@ export const BindingsSettings = observer(() => {
 
   return (
     <>
-      <div className={styles.card}>
-        <div className={styles.cardContent}>
-          <div className={styles.intro}>{t('bindings.intro')}</div>
+      <SettingsCard
+        title={t('bindings.title')}
+        extra={
+          <Popconfirm
+            title={t('bindings.resetConfirm')}
+            onConfirm={() => bindings.resetToDefaults()}
+          >
+            <Button size="small" type="text" danger>
+              {t('bindings.resetAll')}
+            </Button>
+          </Popconfirm>
+        }
+      >
+        <div className={styles.intro}>{t('bindings.intro')}</div>
 
-          {filteredWidget !== null && (
-            <div className={styles.filterRow}>
-              <span>
-                {t('bindings.filteredTo', {
-                  widget: ownerLabel(filteredWidget, bindings.registry, t),
-                })}
-              </span>
+        {filteredWidget !== null && (
+          <div className={styles.filterRow}>
+            <span>
+              {t('bindings.filteredTo', {
+                widget: ownerLabel(filteredWidget, bindings.registry, t),
+              })}
+            </span>
 
-              <Button
-                size="small"
-                type="link"
-                onClick={() => navigation.showAllHotkeys()}
-              >
-                {t('bindings.showAll')}
-              </Button>
-            </div>
-          )}
-
-          <div className={styles.toolbar}>
-            <BindingSearch />
-
-            <Popconfirm
-              title={t('bindings.resetConfirm')}
-              onConfirm={() => bindings.resetToDefaults()}
+            <Button
+              size="small"
+              type="link"
+              onClick={() => navigation.showAllHotkeys()}
             >
-              <Button size="small" danger>
-                {t('bindings.resetAll')}
-              </Button>
-            </Popconfirm>
+              {t('bindings.showAll')}
+            </Button>
           </div>
+        )}
 
-          {groups.length === 0 ? (
-            <div className={styles.empty}>
-              {bindingsUi.searchIsFromKey
-                ? t('bindings.keyIsFree', { key: bindingsUi.search })
-                : t('bindings.noMatches')}
-            </div>
-          ) : (
-            groups.map((group) => (
-              <BindingGroup
-                key={group.owner}
-                owner={group.owner}
-                actionIds={group.actionIds}
-                // A search is a request to see the matches, so it wins over a
-                // group the user collapsed earlier.
-                isOpen={query !== '' || !collapsedOwners.includes(group.owner)}
-                onToggle={() => toggleOwner(group.owner)}
-              />
-            ))
-          )}
-        </div>
-      </div>
+        {groups.length === 0 ? (
+          <div className={styles.empty}>
+            {bindingsUi.searchIsFromKey
+              ? t('bindings.keyIsFree', { key: bindingsUi.search })
+              : t('bindings.noMatches')}
+          </div>
+        ) : (
+          groups.map((group) => (
+            <BindingGroup
+              key={group.owner}
+              owner={group.owner}
+              actionIds={group.actionIds}
+              // A search is a request to see the matches, so it wins over a
+              // group the user collapsed earlier.
+              isOpen={query !== '' || !collapsedOwners.includes(group.owner)}
+              onToggle={() => toggleOwner(group.owner)}
+            />
+          ))
+        )}
+      </SettingsCard>
 
       <BindingCaptureModal />
     </>

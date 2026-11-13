@@ -1,31 +1,32 @@
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
+
+import { PageTitle } from '@shared/ui/PageTitle/PageTitle';
+
+import { BindingSearch } from './BindingSearch';
 import { BindingsSettings } from './BindingsSettings';
 import { DevicesSettings } from './DevicesSettings';
 import styles from './HotkeysPage.module.scss';
 
-/** Bindings and the devices they use; no inner menu, one under another. */
+/** Bindings, with the devices they use beside them; no inner menu. */
 export const HotkeysPage = observer(() => {
   const { t } = useTranslation('main-app');
 
   return (
     <div>
-      <header className={styles.header}>
-        <h1 className={styles.title}>{t('appHeader.sections.hotkeys')}</h1>
-      </header>
+      <PageTitle
+        title={t('appHeader.sections.hotkeys')}
+        actions={<BindingSearch />}
+      />
 
-      <div className={styles.stack}>
-        <section className={styles.pane}>
-          <h2 className={styles.paneTitle}>{t('bindings.title')}</h2>
-
+      <div className={styles.columns}>
+        <div className={styles.pane}>
           <BindingsSettings />
-        </section>
+        </div>
 
-        <section className={styles.pane}>
-          <h2 className={styles.paneTitle}>{t('bindings.devicesTitle')}</h2>
-
+        <div className={styles.pane}>
           <DevicesSettings />
-        </section>
+        </div>
       </div>
     </div>
   );

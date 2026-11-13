@@ -93,7 +93,7 @@ $narrow-window: 900px;
 }
 
 .contentInner {
-  max-width: rem(1120);
+  min-width: 0;
 }
 
 // Modifiers declared after their base classes.
@@ -111,13 +111,6 @@ $narrow-window: 900px;
   display: flex;
   flex-direction: column;
   min-height: 0;
-}
-
-.title {
-  margin: rem(6) 0 rem(16) !important;
-  font-size: rem(20);
-  font-weight: 600;
-  color: $sys-text-primary;
 }
 
 @media (max-width: $narrow-window) {

@@ -1,18 +1,17 @@
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
 import { DeviceList } from './DeviceList';
+import { SettingsCard } from '@shared/ui/SettingsCard/SettingsCard';
 import styles from './BindingsSettings.module.scss';
 
 export const DevicesSettings = observer(() => {
   const { t } = useTranslation('main-app');
 
   return (
-    <div className={styles.card}>
-      <div className={styles.cardContent}>
-        <div className={styles.intro}>{t('bindings.devicesIntro')}</div>
+    <SettingsCard title={t('bindings.devicesTitle')}>
+      <div className={styles.intro}>{t('bindings.devicesIntro')}</div>
 
-        <DeviceList />
-      </div>
-    </div>
+      <DeviceList />
+    </SettingsCard>
   );
 });
