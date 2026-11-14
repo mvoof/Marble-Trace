@@ -12,6 +12,9 @@ const FLOOR_BEND = 18;
 const SHOULDER_OVERHANG = 10;
 /** How far the shoulder curves pull toward the items, as a share of their width. */
 const SHOULDER_PULL = 0.6;
+/** The shoulders' line: the middle of the window's 1px top edge, so the
+ * pocket's 1px stroke lands on it and flows into it. */
+const TOP_EDGE = 0.5;
 
 export type PocketBounds = {
   /** The items' left edge, from the header's left. */
@@ -37,13 +40,14 @@ export const pocketPath = ({ left, width, top, bottom }: PocketBounds) => {
   // Where a wall stops falling and bends into the floor.
   const bendStart = floor - FLOOR_BEND;
 
+  // Left open: the fill closes it along the top on its own, and the window's
+  // edge is the stroke there — a closing line would draw it twice as bright.
   return [
-    `M${outerLeft - SHOULDER_OVERHANG},0`,
-    `C${outerLeft + shoulderPull},0 ${left - 6},${wallAim} ${left + WALL_INSET},${bendStart}`,
+    `M${outerLeft - SHOULDER_OVERHANG},${TOP_EDGE}`,
+    `C${outerLeft + shoulderPull},${TOP_EDGE} ${left - 6},${wallAim} ${left + WALL_INSET},${bendStart}`,
     `Q${left + 14},${floor} ${left + FLOOR_INSET},${floor}`,
     `L${right - FLOOR_INSET},${floor}`,
     `Q${right - 14},${floor} ${right - WALL_INSET},${bendStart}`,
-    `C${right + 6},${wallAim} ${outerRight - shoulderPull},0 ${outerRight + SHOULDER_OVERHANG},0`,
-    'Z',
+    `C${right + 6},${wallAim} ${outerRight - shoulderPull},${TOP_EDGE} ${outerRight + SHOULDER_OVERHANG},${TOP_EDGE}`,
   ].join(' ');
 };

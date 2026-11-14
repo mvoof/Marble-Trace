@@ -46,6 +46,12 @@ export const WindowControls = observer(() => {
     };
   }, []);
 
+  // A maximized window fills the screen edge to edge: the rounded frame goes
+  // square (MainWindow.module.scss reads the flag).
+  useEffect(() => {
+    document.documentElement.dataset.maximized = String(isMaximized);
+  }, [isMaximized]);
+
   return (
     <div
       className={styles.controls}

@@ -25,10 +25,33 @@
   }
 }
 
+// The window is transparent and undecorated: the frame draws its own rounded
+// corners, and its edge carries on the header pocket's outline. The edge is
+// drawn over the content, not as a border, so the header reaches the window's
+// top line and the pocket's shoulders run straight into it.
 .layout {
   height: 100vh;
   background: $sys-bg-main;
+  border-radius: rem(10);
   overflow: hidden;
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border: 1px solid $sys-edge-sunken;
+    border-radius: inherit;
+    pointer-events: none;
+    z-index: 100;
+  }
+
+  :global(html[data-maximized='true']) & {
+    border-radius: 0;
+
+    &::after {
+      content: none;
+    }
+  }
   position: relative;
   display: flex !important;
   flex-direction: column !important;
