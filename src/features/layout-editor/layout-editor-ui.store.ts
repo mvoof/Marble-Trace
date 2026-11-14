@@ -8,6 +8,12 @@ import type { LayoutsStore } from '@entities/layout/layouts.store';
 
 const DEFAULT_IMAGE_EXTENSION = 'png';
 
+/**
+ * The editor's three views: every screen at once on the page, one screen
+ * filling the app window, or one filling the real monitor.
+ */
+export type EditorViewMode = 'overview' | 'fullSize' | 'fullscreen';
+
 /** What the editor's view reads and writes of the layout records. */
 export type LayoutEditorUiLayouts = Pick<
   LayoutsStore,
@@ -30,10 +36,15 @@ export class LayoutEditorUiStore {
    * once — needed to drag widgets between screens, useless for fine work.
    */
   focusedMonitorName: string | null = null;
-  isFullscreen = false;
-  /** The widget list's drawer, in fullscreen. */
+  /**
+   * How the editor is laid out. Outside fullscreen it follows the focus: no
+   * screen in focus is the overview, one is full size. Fullscreen shows
+   * whatever is in focus, every screen included, as it always has.
+   */
+  viewMode: EditorViewMode = 'overview';
+  /** The widget list's drawer, when the canvas fills the view. */
   isPanelOpen = false;
-  /** The inspector's drawer, in fullscreen. */
+  /** The inspector's drawer, when the canvas fills the view. */
   isInspectorOpen = false;
   isUploadingBackground = false;
   /** Widgets whose resize keeps their shape, by id. */
@@ -72,15 +83,68 @@ export class LayoutEditorUiStore {
     this.scenarioId = id;
   }
 
+  /** Outside fullscreen, picking a screen goes full size on it. */
   focusMonitor(name: string | null) {
     this.focusedMonitorName = name;
+
+    if (this.viewMode !== 'fullscreen') {
+      this.setViewMode(this.viewModeForFocus);
+    }
   }
 
-  /** Leaving fullscreen closes the drawers that only it has. */
-  setFullscreen(isFullscreen: boolean) {
-    this.isFullscreen = isFullscreen;
+  showOverview() {
+    this.focusMonitor(null);
+  }
 
-    if (!isFullscreen) {
+  /** Full size on the screen in focus, or on the first one if none is. */
+  showFullSize() {
+    const monitorName =
+      this.focusedMonitorName ?? this.layouts.editingLayout?.monitors[0]?.name;
+
+    if (monitorName) {
+      this.focusedMonitorName = monitorName;
+      this.setViewMode('fullSize');
+    }
+  }
+
+  /**
+   * Follows the document's fullscreen state, which the browser owns: Escape
+   * leaves it without asking. Leaving lands on whatever the focus calls for.
+   */
+  setFullscreen(isFullscreen: boolean) {
+    if (isFullscreen) {
+      this.setViewMode('fullscreen');
+    } else {
+      this.setViewMode(this.viewModeForFocus);
+    }
+  }
+
+  get isFullscreen(): boolean {
+    return this.viewMode === 'fullscreen';
+  }
+
+  get isFullSize(): boolean {
+    return this.viewMode === 'fullSize';
+  }
+
+  /**
+   * Whether the canvas fills the view — full size or fullscreen — with the
+   * toolbar floating over it and the side panels as drawers.
+   */
+  get isCanvasOnly(): boolean {
+    return this.viewMode !== 'overview';
+  }
+
+  /** What the focus calls for outside fullscreen. */
+  private get viewModeForFocus(): EditorViewMode {
+    return this.focusedMonitorName === null ? 'overview' : 'fullSize';
+  }
+
+  /** The overview docks the panels; the widget drawer is not left open. */
+  private setViewMode(viewMode: EditorViewMode) {
+    this.viewMode = viewMode;
+
+    if (viewMode === 'overview') {
       this.isPanelOpen = false;
     }
   }

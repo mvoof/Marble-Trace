@@ -38,7 +38,7 @@ export const LayoutCanvas = observer(() => {
     editorSnapToGrid: snapToGrid,
     editorGridSize: gridSize,
   } = appSettings.appSettings;
-  const fullscreen = editorUi.isFullscreen;
+  const isCanvasOnly = editorUi.isCanvasOnly;
   const selectedWidgetId = editorUi.selectedWidgetId;
   const monitors = layouts.editingLayout?.monitors ?? [];
   const focusedMonitorName = editorUi.focusedMonitorName;
@@ -68,14 +68,14 @@ export const LayoutCanvas = observer(() => {
     <PreviewProvide>
       <div
         className={`${styles.pane} ${
-          fullscreen ? styles.paneFullscreen : ''
+          isCanvasOnly ? styles.paneFullscreen : ''
         } ${draggedScreen ? styles.paneDragging : ''}`}
         ref={paneRef}
       >
         {fit > 0 && (
           <div
             className={`${styles.stage} ${
-              fullscreen ? styles.stageFullscreen : ''
+              isCanvasOnly ? styles.stageFullscreen : ''
             } ${draggedScreen ? styles.stageDragging : ''}`}
             style={{
               width: view.width * fit,
@@ -89,7 +89,7 @@ export const LayoutCanvas = observer(() => {
           >
             {/* The canvas shows one monitor at a time; without naming it,
                 switching monitors reads as the widgets disappearing. */}
-            {!fullscreen && (
+            {!editorUi.isFullscreen && (
               <div className={styles.monitorTag}>
                 <Monitor size={11} />
                 <b>

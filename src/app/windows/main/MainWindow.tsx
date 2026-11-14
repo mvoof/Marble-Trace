@@ -12,6 +12,7 @@ import { ConnectionsPage } from '@pages/connections/ConnectionsPage';
 import { DataPage } from '@pages/data/DataPage';
 import { CrewLeaveDialog } from '@pages/crew/CrewLeaveDialog';
 import { useMainNavigationStore } from '@features/main-navigation/main-navigation-context';
+import { useLayoutEditorUiStore } from '@features/layout-editor/layout-editor-ui-context';
 import { AppHeader } from './AppHeader/AppHeader';
 import { UpdateBanner } from './UpdateBanner/UpdateBanner';
 import { SettingsLockBanner } from './SettingsLockBanner/SettingsLockBanner';
@@ -26,6 +27,7 @@ export const MainWindow = observer(() => {
   const simStore = useSimStore();
   const root = useMainRoot();
   const navigation = useMainNavigationStore();
+  const editorUi = useLayoutEditorUiStore();
 
   useAutoHideScrollbars();
 
@@ -191,7 +193,9 @@ export const MainWindow = observer(() => {
 
             {navigation.section === 'layouts' && (
               <div
-                className={`${styles.sectionContainer} ${styles.animateFadeIn}`}
+                className={`${styles.sectionContainer} ${styles.animateFadeIn} ${
+                  editorUi.isFullSize ? styles.sectionContainerOverHeader : ''
+                }`}
                 key="layouts"
               >
                 <LayoutEditor

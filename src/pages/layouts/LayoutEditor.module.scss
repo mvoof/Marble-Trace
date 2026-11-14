@@ -8,8 +8,9 @@
   padding: rem(24);
 }
 
-// Fullscreen: the canvas fills the whole screen edge-to-edge and the toolbar
-// floats on top as a translucent panel so the overlay underneath stays visible.
+// Full size and fullscreen: the canvas fills the view edge-to-edge and the
+// toolbar floats on top as a translucent panel so the overlay underneath stays
+// visible.
 .rootFullscreen {
   position: relative;
   background: #000;
@@ -39,4 +40,12 @@
 
 .canvasFullscreen {
   background: #000;
+}
+
+// Full size: the same canvas-only editor, laid over the whole app window —
+// the header and its navigation included — instead of the real monitor.
+.rootFullSize {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
 }

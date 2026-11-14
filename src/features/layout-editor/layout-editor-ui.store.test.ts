@@ -81,14 +81,108 @@ describe('LayoutEditorUiStore', () => {
     store.dispose();
   });
 
-  it('closes the widget drawer when fullscreen ends', () => {
+  it('closes the widget drawer when the overview comes back', () => {
     const { store } = makeStore();
 
     store.setFullscreen(true);
     store.setPanelOpen(true);
     store.setFullscreen(false);
 
+    expect(store.viewMode).toBe('overview');
     expect(store.isPanelOpen).toBe(false);
+    store.dispose();
+  });
+});
+
+describe('LayoutEditorUiStore view modes', () => {
+  it('opens on the overview of every screen', () => {
+    const { store } = makeStore();
+
+    expect(store.viewMode).toBe('overview');
+    expect(store.focusedMonitorName).toBeNull();
+    expect(store.isCanvasOnly).toBe(false);
+    store.dispose();
+  });
+
+  it('goes full size on the screen picked in the overview', () => {
+    const { store } = makeStore();
+
+    store.focusMonitor('RIGHT');
+
+    expect(store.viewMode).toBe('fullSize');
+    expect(store.isCanvasOnly).toBe(true);
+    store.dispose();
+  });
+
+  it('goes back to the overview when full size lets go of its screen', () => {
+    const { store } = makeStore();
+
+    store.focusMonitor('RIGHT');
+    store.focusMonitor(null);
+
+    expect(store.viewMode).toBe('overview');
+    store.dispose();
+  });
+
+  it('goes full size on the first screen when none is in focus', () => {
+    const { store } = makeStore();
+
+    store.showFullSize();
+
+    expect(store.viewMode).toBe('fullSize');
+    expect(store.focusedMonitorName).toBe('LEFT');
+    store.dispose();
+  });
+
+  it('keeps the screen in focus when going full size', () => {
+    const { store } = makeStore();
+
+    store.focusMonitor('RIGHT');
+    store.showOverview();
+    store.focusMonitor('RIGHT');
+    store.showFullSize();
+
+    expect(store.focusedMonitorName).toBe('RIGHT');
+    store.dispose();
+  });
+
+  it('lets go of the screen in the overview', () => {
+    const { store } = makeStore();
+
+    store.focusMonitor('RIGHT');
+    store.setPanelOpen(true);
+    store.showOverview();
+
+    expect(store.viewMode).toBe('overview');
+    expect(store.focusedMonitorName).toBeNull();
+    expect(store.isPanelOpen).toBe(false);
+    store.dispose();
+  });
+
+  it('keeps the drawers between full size and fullscreen', () => {
+    const { store } = makeStore();
+
+    store.focusMonitor('RIGHT');
+    store.setPanelOpen(true);
+    store.setFullscreen(true);
+    store.setFullscreen(false);
+
+    expect(store.viewMode).toBe('fullSize');
+    expect(store.focusedMonitorName).toBe('RIGHT');
+    expect(store.isPanelOpen).toBe(true);
+    store.dispose();
+  });
+
+  it('shows every screen in fullscreen when none is in focus, as before', () => {
+    const { store } = makeStore();
+
+    store.setFullscreen(true);
+    store.focusMonitor('LEFT');
+    store.focusMonitor(null);
+
+    expect(store.viewMode).toBe('fullscreen');
+    expect(store.isFullscreen).toBe(true);
+    expect(store.focusedMonitorName).toBeNull();
     store.dispose();
   });
 });

@@ -73,6 +73,9 @@ export const LayoutEditor = observer(
     useEffect(() => {
       if (activeMode !== 'editor') {
         layoutEditor.setOpen(false);
+        // The next layout opened starts on the overview, not on a screen
+        // this one had in focus.
+        editorUi.showOverview();
 
         return;
       }
@@ -82,7 +85,7 @@ export const LayoutEditor = observer(
       return () => {
         layoutEditor.setOpen(false);
       };
-    }, [activeMode, layoutEditor]);
+    }, [activeMode, layoutEditor, editorUi]);
 
     useEffect(() => {
       const onFullscreenChange = () =>
@@ -94,7 +97,7 @@ export const LayoutEditor = observer(
         document.removeEventListener('fullscreenchange', onFullscreenChange);
     }, [editorUi]);
 
-    const isFullscreen = editorUi.isFullscreen;
+    const isCanvasOnly = editorUi.isCanvasOnly;
     const dialogContainer = () => rootRef.current ?? document.body;
 
     if (activeMode === 'list') {
@@ -104,7 +107,11 @@ export const LayoutEditor = observer(
     return (
       <ConfigProvider getPopupContainer={dialogContainer}>
         <div
-          className={cx(styles.root, isFullscreen && styles.rootFullscreen)}
+          className={cx(
+            styles.root,
+            isCanvasOnly && styles.rootFullscreen,
+            editorUi.isFullSize && styles.rootFullSize
+          )}
           ref={rootRef}
         >
           <EditorToolbar
@@ -114,10 +121,10 @@ export const LayoutEditor = observer(
             onBack={() => handleModeChange('list')}
           />
 
-          {!isFullscreen && <MonitorMap />}
+          {!isCanvasOnly && <MonitorMap />}
 
           <div
-            className={cx(styles.body, isFullscreen && styles.bodyFullscreen)}
+            className={cx(styles.body, isCanvasOnly && styles.bodyFullscreen)}
           >
             <EditorSidePanel
               side="left"
@@ -131,7 +138,7 @@ export const LayoutEditor = observer(
             <main
               className={cx(
                 styles.canvas,
-                isFullscreen && styles.canvasFullscreen
+                isCanvasOnly && styles.canvasFullscreen
               )}
             >
               <LayoutCanvas />

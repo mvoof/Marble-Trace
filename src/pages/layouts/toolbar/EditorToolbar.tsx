@@ -1,12 +1,13 @@
 import type { RefObject } from 'react';
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
-import { Button, Select, Tooltip } from 'antd';
+import { Button, Segmented, Select, Tooltip } from 'antd';
 import {
   ArrowLeft,
   Hash,
-  Maximize,
-  Minimize,
+  LayoutDashboard,
+  Maximize2,
+  Monitor,
   PanelLeft,
   PanelRight,
   Play,
@@ -17,6 +18,7 @@ import { useDisplaysStore } from '@entities/layout/displays-context';
 import { useLayoutsStore } from '@entities/layout/layouts-context';
 import { useLayoutEditorStore } from '@features/layout-editor/layout-editor-context';
 import { useLayoutEditorUiStore } from '@features/layout-editor/layout-editor-ui-context';
+import type { EditorViewMode } from '@features/layout-editor/layout-editor-ui.store';
 import { SESSION_PREVIEW_SCENARIOS } from '@features/preview/scenarios';
 import { cx } from '@shared/lib/class-names';
 import { isRemoteMonitor } from '@shared/lib/remote-screen';
@@ -52,8 +54,9 @@ interface EditorToolbarProps {
 
 /**
  * The bar above the canvas: the layout and its screens on the left, the view
- * and editing tools on the right. In fullscreen it floats over the canvas and
- * carries the toggles of the two drawers.
+ * and editing tools on the right. While the canvas fills the view — full size
+ * or fullscreen — it floats over the canvas and carries the toggles of the two
+ * drawers.
  */
 export const EditorToolbar = observer(
   ({ rootRef, toolbarRef, dialogContainer, onBack }: EditorToolbarProps) => {
@@ -62,26 +65,38 @@ export const EditorToolbar = observer(
     const layoutEditor = useLayoutEditorStore();
     const editorUi = useLayoutEditorUiStore();
     const { t } = useTranslation('main-app');
-    const isFullscreen = editorUi.isFullscreen;
+    const isCanvasOnly = editorUi.isCanvasOnly;
 
     const hasRemoteScreens = (layouts.editingLayout?.monitors ?? []).some(
       isRemoteMonitor
     );
 
-    const toggleFullscreen = () => {
+    // Fullscreen belongs to the browser: the store learns of it from the
+    // document's event, so the other two views only have to leave it.
+    const handleViewModeChange = (viewMode: EditorViewMode) => {
+      if (viewMode === 'fullscreen') {
+        void rootRef.current?.requestFullscreen();
+
+        return;
+      }
+
       if (document.fullscreenElement) {
         void document.exitFullscreen();
+      }
+
+      if (viewMode === 'overview') {
+        editorUi.showOverview();
       } else {
-        void rootRef.current?.requestFullscreen();
+        editorUi.showFullSize();
       }
     };
 
     return (
       <header
         ref={toolbarRef}
-        className={cx(styles.toolbar, isFullscreen && styles.toolbarFullscreen)}
+        className={cx(styles.toolbar, isCanvasOnly && styles.toolbarFullscreen)}
       >
-        {isFullscreen ? (
+        {isCanvasOnly ? (
           <Tooltip title={t('layoutEditor.toggleWidgetPanel')}>
             <Button
               size="small"
@@ -114,7 +129,7 @@ export const EditorToolbar = observer(
         )}
 
         {/* Beside the monitor map otherwise; the map is not drawn here. */}
-        {isFullscreen && <AddRemoteScreenButton />}
+        {isCanvasOnly && <AddRemoteScreenButton />}
 
         {hasRemoteScreens && (
           <Tooltip title={t('layoutEditor.arrangeRemoteScreensTooltip')}>
@@ -146,22 +161,31 @@ export const EditorToolbar = observer(
 
           <GridControls />
 
-          <Tooltip
-            title={
-              isFullscreen
-                ? t('layoutEditor.exitFullscreen')
-                : t('layoutEditor.fullscreenPreview')
-            }
-          >
-            <Button
-              size="small"
-              type="text"
-              icon={
-                isFullscreen ? <Minimize size={14} /> : <Maximize size={14} />
-              }
-              onClick={toggleFullscreen}
-            />
-          </Tooltip>
+          <Segmented<EditorViewMode>
+            size="small"
+            value={editorUi.viewMode}
+            onChange={handleViewModeChange}
+            options={[
+              {
+                value: 'overview',
+                icon: <LayoutDashboard size={14} />,
+                label: t('layoutEditor.viewOverview'),
+                title: t('layoutEditor.viewOverviewTooltip'),
+              },
+              {
+                value: 'fullSize',
+                icon: <Maximize2 size={14} />,
+                label: t('layoutEditor.viewFullSize'),
+                title: t('layoutEditor.viewFullSizeTooltip'),
+              },
+              {
+                value: 'fullscreen',
+                icon: <Monitor size={14} />,
+                label: t('layoutEditor.viewFullscreen'),
+                title: t('layoutEditor.viewFullscreenTooltip'),
+              },
+            ]}
+          />
 
           <BackgroundControls />
 
@@ -176,7 +200,7 @@ export const EditorToolbar = observer(
 
           {/* Last on the bar, above the panel it opens: the toggle sits on
               the side the drawer comes from. */}
-          {isFullscreen && (
+          {isCanvasOnly && (
             <Tooltip title={t('layoutEditor.toggleInspector')}>
               <Button
                 size="small"

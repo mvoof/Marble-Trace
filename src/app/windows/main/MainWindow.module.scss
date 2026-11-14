@@ -227,6 +227,11 @@
   overflow: hidden;
 }
 
+// The editor at full size covers the whole window, the header included.
+.sectionContainerOverHeader {
+  z-index: 40;
+}
+
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -238,6 +243,9 @@
   }
 }
 
+// Not held with `forwards`: the last frame is the element's own style, and a
+// transform left on would trap the layout editor's full size view, which is
+// fixed to the window, inside the page.
 .animateFadeIn {
-  animation: fadeIn 0.3s ease-out forwards;
+  animation: fadeIn 0.3s ease-out;
 }
