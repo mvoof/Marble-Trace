@@ -8,7 +8,29 @@
   padding: rem(8) rem(24) rem(28) rem(28);
 }
 
+// The cards take the width; Auto-switch sits in a column on the right. In a
+// narrow window the column drops under the title, above the cards.
+.body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) rem(340);
+  grid-template-areas: 'cards rules';
+  align-items: start;
+  gap: rem(18);
+
+  @media (max-width: 1100px) {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      'rules'
+      'cards';
+  }
+}
+
+.rules {
+  grid-area: rules;
+}
+
 .grid {
+  grid-area: cards;
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(rem(300), 1fr));
   gap: rem(14);

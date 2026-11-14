@@ -94,50 +94,53 @@ const RuleRow = observer(
 
     return (
       <div className={styles.rule}>
-        <div className={styles.conditions}>
+        <Select
+          className={styles.context}
+          value={rule.context ?? ANY}
+          options={contextOptions}
+          onChange={handleContextChange}
+          aria-label={t('layoutList.autoSwitch.session')}
+        />
+        <Select
+          className={styles.carClass}
+          showSearch
+          value={rule.carClass ?? ANY}
+          options={classOptions}
+          onChange={handleClassChange}
+          aria-label={t('layoutList.autoSwitch.carClass')}
+        />
+        <Select
+          className={styles.car}
+          showSearch
+          optionFilterProp="label"
+          value={rule.carId === null ? ANY : String(rule.carId)}
+          options={carOptions}
+          onChange={handleCarChange}
+          aria-label={t('layoutList.autoSwitch.car')}
+        />
+
+        <div className={styles.target}>
+          <span className={styles.arrow} aria-hidden>
+            →
+          </span>
+
           <Select
-            value={rule.context ?? ANY}
-            options={contextOptions}
-            onChange={handleContextChange}
-            aria-label={t('layoutList.autoSwitch.session')}
+            className={styles.select}
+            value={rule.layoutId}
+            options={layoutOptions}
+            onChange={(layoutId: string) =>
+              layouts.updateAutoSwitchRule(rule.id, { layoutId })
+            }
+            aria-label={t('layoutList.autoSwitch.layout')}
           />
-          <Select
-            showSearch
-            value={rule.carClass ?? ANY}
-            options={classOptions}
-            onChange={handleClassChange}
-            aria-label={t('layoutList.autoSwitch.carClass')}
-          />
-          <Select
-            showSearch
-            optionFilterProp="label"
-            value={rule.carId === null ? ANY : String(rule.carId)}
-            options={carOptions}
-            onChange={handleCarChange}
-            aria-label={t('layoutList.autoSwitch.car')}
+
+          <Button
+            type="text"
+            icon={<Trash2 size={16} />}
+            onClick={() => layouts.removeAutoSwitchRule(rule.id)}
+            aria-label={t('layoutList.autoSwitch.removeRule')}
           />
         </div>
-
-        <span className={styles.arrow} aria-hidden>
-          →
-        </span>
-
-        <Select
-          className={styles.layoutSelect}
-          value={rule.layoutId}
-          options={layoutOptions}
-          onChange={(layoutId: string) =>
-            layouts.updateAutoSwitchRule(rule.id, { layoutId })
-          }
-          aria-label={t('layoutList.autoSwitch.layout')}
-        />
-
-        <Button
-          type="text"
-          icon={<Trash2 size={16} />}
-          onClick={() => layouts.removeAutoSwitchRule(rule.id)}
-          aria-label={t('layoutList.autoSwitch.removeRule')}
-        />
       </div>
     );
   }
