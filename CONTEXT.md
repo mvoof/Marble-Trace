@@ -75,6 +75,49 @@ browser on the LAN. A monitor in every way that matters to a layout: it owns its
 own widget set, it is parked in free desktop space, and no overlay window is
 opened for it.
 
+**Session context** — the situation a layout is chosen for: Garage, Practice,
+Qualify or Race (`SessionContext`). Garage means connected but not in the car.
+
+**Auto-switch rule** — a pairing of a situation with the layout to put on screen
+when it arises. The situation is a session context, a car class and a car, any
+of them "any"; the most specific matching rule wins — a car over a class, a
+class over a session context. Edited only in the Auto-switch block of the
+Layouts page.
+_Avoid_: layout binding (a binding is a hotkey), layout mapping.
+
+## Main window
+
+**Feature page** — a top-level page of the main window for a feature that used
+to hide in Settings: Connections, Data, Hotkeys. Settings keeps only what
+configures the app itself.
+
+**Connections** — the feature page for what reaches outside the PC's own
+screens: browser screens, stream chat, companion apps.
+
+**Data** — the feature page for what the app has collected or holds for the
+driver: recorded tracks, strategy values (car length, pit, fuel) and statistics.
+
+**Widget tier** — a widget's place in the importance order (`tier` in its
+manifest): the core widgets (Standings, Relative, Inputs, radars) first, the
+rest after them alphabetically. It sorts the widget menu and the All widgets
+grid; nothing else reads it.
+_Avoid_: priority, importance, weight.
+
+**Pocket** — the smooth cut-out in the centre of the main window's header that
+holds the top-level items. The header around it has no border and no strip of
+its own.
+
+## Statistics
+
+**Session record** — what statistics keep of one driven session, read from one
+`.ibt` file: when, where, in what car and class, the iRating and licence at its
+start, the result, the laps and incidents. It outlives the `.ibt` it came from.
+_Avoid_: run, stint, result.
+
+**Stats import** — reading the `.ibt` files not yet read into session records.
+It runs from app start and pauses while the sim is connected; a file it cannot
+read is skipped and listed, never retried silently.
+
 ## Backend to frontend
 
 **Gated field** — a bundle field filled only while some widget declares it in its
