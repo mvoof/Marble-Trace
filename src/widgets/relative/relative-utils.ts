@@ -96,15 +96,19 @@ const columnSpecs = (
   const { sr, ir } = ratingChipParts(settings);
 
   return {
-    pos: { px: 28, show: true },
+    pos: { px: 28, show: settings.showPosition },
     carNumber: { px: padded(40), show: settings.showCarNumber }, // class-colored badge
     countryFlag: { px: padded(22), show: settings.showCountryFlag },
-    name: { px: clampNameColumnWidth(settings.nameColumnWidth), show: true }, // fixed, user-sized
+    // fixed, user-sized
+    name: {
+      px: clampNameColumnWidth(settings.nameColumnWidth),
+      show: settings.showDriverName,
+    },
     // The safety rating and the iRating, each a column — the same columns
     // Standings has, so the two tables line up when stacked.
     sr: chipColumn(srChipWidth(sr, settings.licBadgeStyle), settings),
     ir: chipColumn(irChipWidth(ir), settings),
-    gap: { px: padded(56), show: true },
+    gap: { px: padded(56), show: settings.showGap },
     // Five digits and the unit ("41010 ft"), half a lap of the Nordschleife.
     distance: { px: padded(DISTANCE_COLUMN_PX), show: settings.showDistance },
   };

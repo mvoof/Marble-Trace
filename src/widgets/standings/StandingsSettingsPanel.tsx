@@ -25,13 +25,13 @@ const { Row, ColumnRows, useLabels } = schemaRows(STANDINGS_SETTINGS);
 // The switch that draws each column; position, number and name always show.
 const COLUMN_TOGGLES: Record<
   StandingsColumn,
-  SwitchKey<StandingsWidgetSettings> | null
+  SwitchKey<StandingsWidgetSettings>
 > = {
-  pos: null,
-  carNumber: null,
+  pos: 'showPosition',
+  carNumber: 'showCarNumber',
   posChange: 'showPosChange',
   countryFlag: 'showCountryFlag',
-  name: null,
+  name: 'showDriverName',
   sr: 'showLicBadge',
   ir: 'showIRating',
   irChange: 'showIrChange',

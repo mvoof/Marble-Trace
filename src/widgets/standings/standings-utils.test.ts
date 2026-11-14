@@ -413,6 +413,9 @@ describe('name column width', () => {
   const settingsWith = (nameColumnWidth: number) =>
     ({
       nameColumnWidth,
+      showPosition: true,
+      showCarNumber: true,
+      showDriverName: true,
       showPosChange: false,
       showLicBadge: false,
       showIRating: false,
@@ -547,6 +550,22 @@ describe('column order', () => {
     expect(visibleStandingsColumns(STANDINGS_SETTINGS.defaults)).toEqual(
       STANDINGS_COLUMNS.filter((column) => column !== 'countryFlag')
     );
+  });
+
+  it('drops position, car number and driver when their switches are off', () => {
+    const settings: StandingsWidgetSettings = {
+      ...STANDINGS_SETTINGS.defaults,
+      showPosition: false,
+      showCarNumber: false,
+      showDriverName: false,
+    };
+
+    const visible = visibleStandingsColumns(settings);
+
+    expect(visible).not.toContain('pos');
+    expect(visible).not.toContain('carNumber');
+    expect(visible).not.toContain('name');
+    expect(visible).toContain('gap');
   });
 
   it('draws the columns in the order the settings give', () => {

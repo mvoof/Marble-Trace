@@ -1,6 +1,5 @@
 import { use } from 'react';
 import { observer } from 'mobx-react-lite';
-import { useTranslation } from 'react-i18next';
 
 import {
   normalizeOrder,
@@ -23,10 +22,10 @@ interface ColumnRowsProps<Shape extends SettingsShape> {
   /** The `order` setting the list reorders. */
   setting: OrderKey<Shape>;
   /**
-   * The switch that draws each column, by column; null for a column the table
-   * always has. A switched column reads its name and hint from its switch.
+   * The switch that draws each column, by column. A column reads its name and
+   * hint from its switch.
    */
-  toggles: Readonly<Record<string, BoolKey<SettingsOf<Shape>> | null>>;
+  toggles: Readonly<Record<string, BoolKey<SettingsOf<Shape>>>>;
 }
 
 /**
@@ -40,7 +39,6 @@ export const columnRows = <Shape extends SettingsShape>(
   useLabelReader: () => (setting: keyof Shape & string) => Labels
 ) =>
   observer(({ setting, toggles }: ColumnRowsProps<Shape>) => {
-    const { t } = useTranslation('widgets');
     const labelOf = useLabelReader();
     const widgetId = use(PanelWidgetContext);
     const editor = useWidgetEditor();
@@ -60,7 +58,7 @@ export const columnRows = <Shape extends SettingsShape>(
     );
 
     const toggleOf = (column: string) =>
-      (toggles[column] ?? null) as (keyof Shape & string) | null;
+      toggles[column] as keyof Shape & string;
 
     const write = (partial: Record<string, unknown>) => {
       if (widgetId) {
@@ -69,19 +67,13 @@ export const columnRows = <Shape extends SettingsShape>(
     };
 
     const items: ColumnListItem<string>[] = order.map((column) => {
-      const toggle = toggleOf(column);
-
-      if (toggle === null) {
-        return { column, label: t(`settingsPanels.common.columns.${column}`) };
-      }
-
-      const { title, desc } = labelOf(toggle);
+      const { title, desc } = labelOf(toggleOf(column));
 
       return {
         column,
         label: title,
         hint: desc,
-        shown: settings[toggle] === true,
+        shown: settings[toggleOf(column)] === true,
       };
     });
 
@@ -89,13 +81,7 @@ export const columnRows = <Shape extends SettingsShape>(
       <ColumnList
         items={items}
         onReorder={(next) => write({ [setting]: next })}
-        onToggle={(column, shown) => {
-          const toggle = toggleOf(column);
-
-          if (toggle !== null) {
-            write({ [toggle]: shown });
-          }
-        }}
+        onToggle={(column, shown) => write({ [toggleOf(column)]: shown })}
       />
     );
   });

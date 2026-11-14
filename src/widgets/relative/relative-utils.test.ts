@@ -18,6 +18,9 @@ import { RELATIVE_COLUMNS, type RelativeColumn } from './relative-columns';
 const settingsWith = (nameColumnWidth: number) =>
   ({
     nameColumnWidth,
+    showPosition: true,
+    showDriverName: true,
+    showGap: true,
     showLicBadge: false,
     showIRating: false,
   }) as unknown as RelativeWidgetSettings;
@@ -86,6 +89,17 @@ describe('column order', () => {
       'ir',
       'gap',
     ]);
+  });
+
+  it('drops position, driver and gap when their switches are off', () => {
+    const settings: RelativeWidgetSettings = {
+      ...RELATIVE_SETTINGS.defaults,
+      showPosition: false,
+      showDriverName: false,
+      showGap: false,
+    };
+
+    expect(visibleRelativeColumns(settings)).toEqual(['carNumber', 'sr', 'ir']);
   });
 
   it('draws the columns in the order the settings give', () => {

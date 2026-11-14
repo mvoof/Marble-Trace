@@ -171,13 +171,7 @@
       "showRadioMark": "无线电指示",
       "showRadioMarkDesc": "在正在无线电通话的车手旁显示麦克风，包括你自己。",
       "driverName": "车手名称",
-      "ratings": "评级",
-      "columns": {
-        "pos": "名次",
-        "carNumber": "车号",
-        "name": "车手",
-        "gap": "差距"
-      }
+      "ratings": "评级"
     },
     "delta": {
       "deltaReference": "差值参考",
@@ -532,7 +526,10 @@
       "useLivePositions": "使用实时名次",
       "useLivePositionsDesc": "按赛道上的位置排名，每帧重算。关闭时使用模拟器的官方名次，仅在通过起终点线时更新。行排序始终按赛道上的间隔。",
       "showCarNumber": "赛车号码",
-      "showCarNumberDesc": "紧跟名次之后、以组别颜色显示的赛车号码标签。"
+      "showCarNumberDesc": "紧跟名次之后、以组别颜色显示的赛车号码标签。",
+      "showPosition": "名次",
+      "showDriverName": "车手",
+      "showGap": "差距"
     },
     "rpmLights": {
       "shiftLights": "换挡灯",
@@ -652,7 +649,10 @@
       "showBestLap": "最快单圈",
       "showBestLapDesc": "每位车手的最快单圈；在跑出成绩前显示排位赛成绩。",
       "useLivePositions": "使用实时名次",
-      "useLivePositionsDesc": "按赛道上的位置排名，每帧重算——影响名次数字、行排序、移动动画和 iR 变化预估。关闭时使用模拟器的官方名次，仅在通过起终点线时更新。适用于所有场次类型。"
+      "useLivePositionsDesc": "按赛道上的位置排名，每帧重算——影响名次数字、行排序、移动动画和 iR 变化预估。关闭时使用模拟器的官方名次，仅在通过起终点线时更新。适用于所有场次类型。",
+      "showPosition": "名次",
+      "showCarNumber": "车号",
+      "showDriverName": "车手"
     },
     "timer": {
       "showSessionType": "显示会话类型",

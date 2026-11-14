@@ -21,15 +21,15 @@ const { Row, ColumnRows, useLabels } = schemaRows(RELATIVE_SETTINGS);
 // The switch that draws each column; position, name and gap always show.
 const COLUMN_TOGGLES: Record<
   RelativeColumn,
-  SwitchKey<RelativeWidgetSettings> | null
+  SwitchKey<RelativeWidgetSettings>
 > = {
-  pos: null,
+  pos: 'showPosition',
   carNumber: 'showCarNumber',
   countryFlag: 'showCountryFlag',
-  name: null,
+  name: 'showDriverName',
   sr: 'showLicBadge',
   ir: 'showIRating',
-  gap: null,
+  gap: 'showGap',
   distance: 'showDistance',
 };
 const { nameColumnWidth } = RELATIVE_SETTINGS.shape;

@@ -39,6 +39,10 @@ const COLUMNS = {
     { min: NAME_COLUMN_MIN_PX, max: NAME_COLUMN_MAX_PX, step: 5 },
     { label: 'common.nameColumnWidth' }
   ),
+  /** The always-there columns, each with its own switch since the redesign. */
+  showPosition: bool(true),
+  showDriverName: bool(true),
+  showGap: bool(true),
   /** Car number badge, in its own column right after the position. */
   showCarNumber: bool(true),
   showLicBadge: bool(true),

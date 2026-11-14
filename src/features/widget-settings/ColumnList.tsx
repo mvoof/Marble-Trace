@@ -15,8 +15,8 @@ export interface ColumnListItem<Column extends string> {
   label: string;
   /** What the column shows, on hover over its name. */
   hint?: string;
-  /** Whether the column is drawn; absent for a column the table always has. */
-  shown?: boolean;
+  /** Whether the column is drawn. */
+  shown: boolean;
 }
 
 interface ColumnListProps<Column extends string> {
@@ -69,28 +69,16 @@ export const ColumnList = observer(
               </span>
 
               <span className={styles.switchSlot}>
-                {shown === undefined ? (
-                  // A column the table always has: its switch says so,
-                  // on and locked, so every row reads the same.
-                  <Switch
-                    size="small"
-                    checked
-                    disabled
-                    aria-label={label}
-                    title={t('widgetSettings.columns.alwaysShown')}
-                  />
-                ) : (
-                  <Switch
-                    size="small"
-                    checked={shown}
-                    aria-label={label}
-                    onChange={(next) => onToggle(column, next)}
-                  />
-                )}
+                <Switch
+                  size="small"
+                  checked={shown}
+                  aria-label={label}
+                  onChange={(next) => onToggle(column, next)}
+                />
               </span>
 
               <span
-                className={cx(styles.label, shown === false && styles.labelOff)}
+                className={cx(styles.label, !shown && styles.labelOff)}
                 title={hint}
               >
                 {label}

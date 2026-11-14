@@ -42,6 +42,10 @@ const COLUMNS = {
     { min: NAME_COLUMN_MIN_PX, max: NAME_COLUMN_MAX_PX, step: 5 },
     { label: 'common.nameColumnWidth' }
   ),
+  /** The always-there columns, each with its own switch since the redesign. */
+  showPosition: bool(true),
+  showCarNumber: bool(true),
+  showDriverName: bool(true),
   showPosChange: bool(true),
   /** Driver's profile country flag, in its own column before the name. */
   showCountryFlag: bool(false),

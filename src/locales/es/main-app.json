@@ -268,8 +268,7 @@
     "background": "Fondo",
     "border": "Borde",
     "columns": {
-      "move": "Arrastra para reordenar",
-      "alwaysShown": "Siempre visible"
+      "move": "Arrastra para reordenar"
     },
     "hotkeysShared": "Compartidos por todas las copias de este widget",
     "hotkeysChange": "Cambiar"

@@ -259,12 +259,17 @@ const shippedColSpecs = (
   const irColumn = chipColumn(irChipWidth(ir), settings);
 
   return [
-    { key: 'pos', block: 'driver', ...textColumn(28, settings, 0), show: true }, // "00" (fs md, bold)
+    {
+      key: 'pos',
+      block: 'driver',
+      ...textColumn(28, settings, 0),
+      show: settings.showPosition,
+    }, // "00" (fs md, bold)
     {
       key: 'carNumber',
       block: 'driver',
       ...textColumn(40, settings),
-      show: true,
+      show: settings.showCarNumber,
     }, // class-colored badge
     {
       key: 'posChange',
@@ -282,7 +287,7 @@ const shippedColSpecs = (
       key: 'name',
       block: 'driver',
       px: clampNameColumnWidth(settings.nameColumnWidth),
-      show: true,
+      show: settings.showDriverName,
     }, // fixed, user-sized
     // The safety rating and the iRating, each a column of its chip's own width
     // plus the cell padding, so a format switch moves a column by what its chip

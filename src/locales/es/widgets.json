@@ -171,13 +171,7 @@
       "showRadioMark": "Indicador de radio",
       "showRadioMarkDesc": "Muestra un micrófono junto al piloto que habla por radio, tú incluido.",
       "driverName": "Nombre del piloto",
-      "ratings": "Clasificaciones",
-      "columns": {
-        "pos": "Posición",
-        "carNumber": "Número de coche",
-        "name": "Piloto",
-        "gap": "Diferencia"
-      }
+      "ratings": "Clasificaciones"
     },
     "delta": {
       "deltaReference": "Referencia del delta",
@@ -532,7 +526,10 @@
       "useLivePositions": "Usar posiciones en vivo",
       "useLivePositionsDesc": "Ordena por la posición en pista, recalculada en cada tick. Desactivado: el número oficial del simulador, que solo se actualiza cuando un coche cruza la meta. El orden de las filas siempre sigue la diferencia en pista.",
       "showCarNumber": "Número del Coche",
-      "showCarNumberDesc": "Distintivo del número del coche con el color de la clase, justo después de la posición."
+      "showCarNumberDesc": "Distintivo del número del coche con el color de la clase, justo después de la posición.",
+      "showPosition": "Posición",
+      "showDriverName": "Piloto",
+      "showGap": "Diferencia"
     },
     "rpmLights": {
       "shiftLights": "Luces de cambio",
@@ -652,7 +649,10 @@
       "showBestLap": "Mejor Vuelta",
       "showBestLapDesc": "Vuelta más rápida de cada piloto; hasta marcar una se muestra el tiempo de clasificación.",
       "useLivePositions": "Usar posiciones en vivo",
-      "useLivePositionsDesc": "Ordena por la posición en pista, recalculada en cada tick: define el número de posición, el orden de las filas, la animación de adelantamiento y el cambio de iR previsto. Desactivado: el número oficial del simulador, que solo se actualiza cuando un coche cruza la meta. Se aplica a cualquier tipo de sesión."
+      "useLivePositionsDesc": "Ordena por la posición en pista, recalculada en cada tick: define el número de posición, el orden de las filas, la animación de adelantamiento y el cambio de iR previsto. Desactivado: el número oficial del simulador, que solo se actualiza cuando un coche cruza la meta. Se aplica a cualquier tipo de sesión.",
+      "showPosition": "Posición",
+      "showCarNumber": "Número de coche",
+      "showDriverName": "Piloto"
     },
     "timer": {
       "showSessionType": "Mostrar el tipo de sesión",

@@ -268,8 +268,7 @@
     "background": "Background",
     "border": "Border",
     "columns": {
-      "move": "Drag to reorder",
-      "alwaysShown": "Always shown"
+      "move": "Drag to reorder"
     },
     "hotkeysShared": "Shared by all copies of this widget",
     "hotkeysChange": "Change"
