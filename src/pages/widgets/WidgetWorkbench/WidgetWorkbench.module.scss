@@ -67,8 +67,11 @@ $narrow-window: 1100px;
   min-width: 0;
   border-radius: rem(10);
   overflow: hidden;
-  background: repeating-conic-gradient($sys-bg-sunken 0 25%, $sys-bg-main 0 50%)
-    0 0 / rem(16) rem(16);
+  background: repeating-conic-gradient(
+    $sys-bg-sunken 0 25%,
+    $sys-bg-main 0 50%
+  );
+  background-size: rem(16) rem(16);
   border: 1px solid $sys-border-sub;
 }
 
