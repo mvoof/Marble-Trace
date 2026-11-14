@@ -1433,6 +1433,24 @@
   "homePage": {
     "title": "首页",
     "emptyTitle": "还没有会话",
-    "emptyText": "这里将显示你的统计：会话、圈数、事故和 iRating。驾驶后，Marble Trace 会从 iRacing 写入 Documents\\iRacing\\telemetry 的遥测文件中读取它们。"
+    "emptyText": "这里将显示你的统计：会话、圈数、事故和 iRating。驾驶后，Marble Trace 会从 iRacing 写入 Documents\\iRacing\\telemetry 的遥测文件中读取它们。",
+    "import": {
+      "reading": "正在读取游戏文件 ·",
+      "paused": "导入已暂停——你正在游戏中",
+      "noFolder": "未找到 iRacing 遥测文件夹"
+    },
+    "recentSessions": {
+      "title": "最近会话",
+      "date": "日期",
+      "track": "赛道",
+      "car": "赛车",
+      "finish": "名次",
+      "bestLap": "最快圈",
+      "incidents": "事故",
+      "eventType": {
+        "practice": "练习",
+        "test": "测试"
+      }
+    }
   }
 }

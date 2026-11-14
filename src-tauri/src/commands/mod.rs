@@ -15,6 +15,7 @@ pub mod perf;
 pub mod pit;
 pub mod remote;
 pub mod settings;
+pub mod stats;
 pub mod telemetry;
 pub mod track;
 pub mod voice;
@@ -113,6 +114,8 @@ pub fn invoke_handler() -> impl Fn(Invoke<Wry>) -> bool + Send + Sync + 'static 
         companions::launch_companion_app,
         companions::close_companion_app,
         companions::close_companion_apps,
-        companions::companion_app_icon
+        companions::companion_app_icon,
+        stats::get_stats_import_status,
+        stats::get_recent_sessions
     ]
 }

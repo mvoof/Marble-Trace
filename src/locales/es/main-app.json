@@ -1439,6 +1439,24 @@
   "homePage": {
     "title": "Inicio",
     "emptyTitle": "Aún no hay sesiones",
-    "emptyText": "Aquí estarán tus estadísticas: sesiones, vueltas, incidentes e iRating. Marble Trace las leerá de los archivos de telemetría que iRacing escribe en Documents\\iRacing\\telemetry cuando conduzcas."
+    "emptyText": "Aquí estarán tus estadísticas: sesiones, vueltas, incidentes e iRating. Marble Trace las leerá de los archivos de telemetría que iRacing escribe en Documents\\iRacing\\telemetry cuando conduzcas.",
+    "import": {
+      "reading": "Leyendo archivos del juego ·",
+      "paused": "Importación en pausa: estás en el juego",
+      "noFolder": "No se encontró la carpeta de telemetría de iRacing"
+    },
+    "recentSessions": {
+      "title": "Sesiones recientes",
+      "date": "Fecha",
+      "track": "Circuito",
+      "car": "Coche",
+      "finish": "Posición",
+      "bestLap": "Mejor vuelta",
+      "incidents": "Inc.",
+      "eventType": {
+        "practice": "Práctica",
+        "test": "Prueba"
+      }
+    }
   }
 }

@@ -4,14 +4,6 @@
   gap: rem(24);
 }
 
-.title {
-  font-size: rem(24);
-  font-weight: 600;
-  letter-spacing: -0.01em;
-  color: $sys-text-primary;
-  margin: 0;
-}
-
 .empty {
   display: flex;
   flex-direction: column;

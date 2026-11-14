@@ -2246,6 +2246,25 @@ export type RawVarMeta = {
   count: number;
 };
 
+/**
+ * One row of the recent sessions table.
+ */
+export type RecentSession = {
+  key: string;
+  /**
+   * UTC unix seconds.
+   */
+  startedAt: number;
+  eventType: string;
+  trackName: string | null;
+  trackConfig: string | null;
+  carName: string | null;
+  finishPos: number | null;
+  fieldSize: number | null;
+  bestLapS: number | null;
+  incidents: number;
+};
+
 export type ReferenceLapData = {
   trackId: number;
   carScreenName: string;
@@ -2900,6 +2919,40 @@ export type SpotterState =
   | 'carLeftRight'
   | 'twoCarsLeft'
   | 'twoCarsRight';
+
+/**
+ * What the stats import is doing, on `stats://import`.
+ */
+export type StatsImportPhase =
+  /**
+   * Nothing left to read.
+   */
+  | 'idle'
+  | 'reading'
+  /**
+   * The sim is connected; reading waits for it to close.
+   */
+  | 'paused'
+  /**
+   * The game's telemetry folder was not found.
+   */
+  | 'noFolder';
+
+export type StatsImportStatus = {
+  phase: StatsImportPhase;
+  /**
+   * Files of this pass read or skipped so far.
+   */
+  done: number;
+  /**
+   * Files this pass found unread.
+   */
+  total: number;
+  /**
+   * Files that could not be read, all passes together.
+   */
+  broken: number;
+};
 
 export type TelemetryBundle = {
   carDynamics?: CarDynamicsFrame | null;

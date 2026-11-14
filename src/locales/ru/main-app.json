@@ -1451,6 +1451,24 @@
   "homePage": {
     "title": "Главная",
     "emptyTitle": "Сессий пока нет",
-    "emptyText": "Здесь будет ваша статистика: сессии, круги, инциденты и iRating. Marble Trace прочитает её из файлов телеметрии, которые iRacing пишет в Documents\\iRacing\\telemetry, после ваших заездов."
+    "emptyText": "Здесь будет ваша статистика: сессии, круги, инциденты и iRating. Marble Trace прочитает её из файлов телеметрии, которые iRacing пишет в Documents\\iRacing\\telemetry, после ваших заездов.",
+    "import": {
+      "reading": "Чтение файлов игры ·",
+      "paused": "Импорт на паузе — вы в игре",
+      "noFolder": "Папка телеметрии iRacing не найдена"
+    },
+    "recentSessions": {
+      "title": "Последние сессии",
+      "date": "Дата",
+      "track": "Трасса",
+      "car": "Машина",
+      "finish": "Финиш",
+      "bestLap": "Лучший круг",
+      "incidents": "Инц.",
+      "eventType": {
+        "practice": "Тренировка",
+        "test": "Тест"
+      }
+    }
   }
 }

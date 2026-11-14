@@ -54,6 +54,7 @@ mt-remote = { path = "crates/mt-remote" }
 mt-companions = { path = "crates/mt-companions" }
 mt-hotkeys = { path = "crates/mt-hotkeys" }
 mt-voice = { path = "crates/mt-voice" }
+mt-stats = { path = "crates/mt-stats" }
 
 serde_json = "1.0"
 # Build scripts read `src-tauri/.env` for the keys baked in at compile time.
@@ -148,6 +149,7 @@ mt-remote.workspace = true
 mt-companions.workspace = true
 mt-hotkeys.workspace = true
 mt-voice.workspace = true
+mt-stats.workspace = true
 reqwest.workspace = true
 rustls.workspace = true
 

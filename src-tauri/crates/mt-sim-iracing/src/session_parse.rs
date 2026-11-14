@@ -77,7 +77,7 @@ fn is_allowed_yaml_char(c: char) -> bool {
 
 /// Quote the values of free-text keys so arbitrary driver/team names cannot
 /// break the YAML document structure.
-fn sanitize_session_yaml(yaml: &str) -> String {
+pub(crate) fn sanitize_session_yaml(yaml: &str) -> String {
     let cleaned: String = yaml.chars().filter(|&c| is_allowed_yaml_char(c)).collect();
     let mut sanitized = String::with_capacity(cleaned.len() + 256);
 

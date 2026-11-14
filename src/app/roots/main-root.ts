@@ -24,6 +24,7 @@ import { DisplaysStore } from '@entities/layout/displays.store';
 import { MainNavigationStore } from '@features/main-navigation/main-navigation.store';
 import { AppLinksStore } from '@features/app-links/app-links.store';
 import { LayoutFilesStore } from '@features/layout-files/layout-files.store';
+import { StatisticsStore } from '@features/statistics/statistics.store';
 import { decodeLayout, encodeLayout } from '@app/sync/main/settings-file';
 
 /**
@@ -54,6 +55,7 @@ export class MainRoot extends RendererCore implements AppWindowStores {
   voiceCrew: VoiceCrewStore;
   navigation: MainNavigationStore;
   appLinks: AppLinksStore;
+  statistics: StatisticsStore;
 
   constructor(options?: { skipInit?: boolean }) {
     super(options);
@@ -86,10 +88,12 @@ export class MainRoot extends RendererCore implements AppWindowStores {
     this.voiceCrew = new VoiceCrewStore(this);
     this.navigation = new MainNavigationStore(this);
     this.appLinks = new AppLinksStore(this);
+    this.statistics = new StatisticsStore();
 
     if (!options?.skipInit) {
       void this.twitchAuth.init();
       this.appUpdate.init();
+      void this.statistics.start();
     }
   }
 
@@ -101,6 +105,7 @@ export class MainRoot extends RendererCore implements AppWindowStores {
     this.twitchAuth.dispose();
     this.companionApps.dispose();
     this.voiceCrew.dispose();
+    this.statistics.dispose();
     super.dispose();
   }
 }

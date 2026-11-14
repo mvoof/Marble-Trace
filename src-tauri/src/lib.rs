@@ -12,6 +12,7 @@ mod remote_events;
 mod settings_snapshot;
 mod sim;
 mod sink;
+mod stats;
 mod voice;
 
 use commands::input::InputState;
@@ -135,6 +136,9 @@ fn setup(app: &mut App) -> Result<(), Box<dyn Error>> {
     forward_to_telemetry(app, "track-map:clear", || TelemetryCommand::ClearTrackShape);
 
     track_app_started(app);
+
+    // From app start; it pauses on its own whenever the sim is connected.
+    stats::start(app.handle());
 
     // Read straight from the file: it has to act before the main window has
     // loaded the settings.

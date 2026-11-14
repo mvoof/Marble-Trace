@@ -1,0 +1,25 @@
+.note {
+  display: inline-flex;
+  align-items: center;
+  gap: rem(8);
+  padding: rem(5) rem(12);
+  border-radius: rem(8);
+  background: $sys-bg-sunken;
+  font-size: rem(13);
+  color: $sys-text-secondary;
+}
+
+.count {
+  font-family: $font-mono;
+  font-variant-numeric: tabular-nums;
+}
+
+.spinner {
+  animation: spin 1.2s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

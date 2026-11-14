@@ -1439,6 +1439,24 @@
   "homePage": {
     "title": "Home",
     "emptyTitle": "No sessions yet",
-    "emptyText": "Your statistics will live here: sessions, laps, incidents and iRating. Marble Trace will read them from the telemetry files iRacing writes to Documents\\iRacing\\telemetry after you drive."
+    "emptyText": "Your statistics will live here: sessions, laps, incidents and iRating. Marble Trace will read them from the telemetry files iRacing writes to Documents\\iRacing\\telemetry after you drive.",
+    "import": {
+      "reading": "Reading game files ·",
+      "paused": "Import paused — you are in the game",
+      "noFolder": "iRacing telemetry folder not found"
+    },
+    "recentSessions": {
+      "title": "Recent sessions",
+      "date": "Date",
+      "track": "Track",
+      "car": "Car",
+      "finish": "Finish",
+      "bestLap": "Best lap",
+      "incidents": "Inc.",
+      "eventType": {
+        "practice": "Practice",
+        "test": "Test"
+      }
+    }
   }
 }
