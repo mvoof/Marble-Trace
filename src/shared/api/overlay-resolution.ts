@@ -1,4 +1,7 @@
+import { invoke } from '@tauri-apps/api/core';
 import { availableMonitors, primaryMonitor } from '@tauri-apps/api/window';
+
+import type { DisplayName } from '@shared/contracts/generated/bindings';
 import type {
   LayoutMonitor,
   LayoutResolution,
@@ -90,4 +93,53 @@ export const resolveMonitorByName = async (
       height: Math.round(monitor.size.height / scale),
     },
   };
+};
+
+export interface MonitorDetails {
+  /** As `listMonitorBounds` names it: `DISPLAY1`. */
+  name: string;
+  /** The model from the monitor's EDID; null when it reports none. */
+  model: string | null;
+  isPrimary: boolean;
+  /** In physical pixels, as the monitor's spec sheet gives it. */
+  resolution: LayoutResolution;
+}
+
+/**
+ * What the editor labels each attached monitor with beyond its bounds: the
+ * model, read by the backend from the display configuration, and whether
+ * Windows has it as the primary.
+ */
+export const listMonitorDetails = async (): Promise<MonitorDetails[]> => {
+  const [monitors, primary, displayNames] = await Promise.all([
+    availableMonitors(),
+    primaryMonitor(),
+    invoke<DisplayName[]>('list_display_names'),
+  ]);
+
+  const primaryName = stripName(primary?.name);
+  const models = new Map(
+    displayNames.map((display) => [
+      stripName(display.deviceName),
+      display.model,
+    ])
+  );
+
+  return monitors
+    .map((monitor) => {
+      const name = stripName(monitor.name);
+
+      if (!name) return null;
+
+      return {
+        name,
+        model: models.get(name) ?? null,
+        isPrimary: name === primaryName,
+        resolution: {
+          width: monitor.size.width,
+          height: monitor.size.height,
+        },
+      };
+    })
+    .filter((details): details is MonitorDetails => details !== null);
 };

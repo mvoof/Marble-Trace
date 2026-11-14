@@ -161,6 +161,15 @@
     "hotkeysActOn": "快捷键作用于此小组件",
     "hotkeysActOnDesc": "其快捷键显示、隐藏和切换此实例。标记多个时会一起变化。浏览器屏幕也会跟随，直播画面会显示你切换后的内容。"
   },
+  "monitorMap": {
+    "primary": "主显示器",
+    "notConnected": "未连接",
+    "notInLayout": "不在此布局中 — 点击添加",
+    "addToLayout": "将此显示器添加到布局",
+    "browserScreens": "浏览器屏幕",
+    "identify": "识别",
+    "identifyTooltip": "在每台显示器上显示其编号"
+  },
   "layoutList": {
     "newLayout": "新建布局",
     "emptyLayout": "空布局",

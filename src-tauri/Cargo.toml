@@ -111,6 +111,7 @@ winreg = "0.56"
 # foreground focus. DirectInput lives under Devices::HumanInterfaceDevice in
 # windows-rs, not under a DirectInput-named feature.
 windows = { version = "0.62", features = [
+    "Win32_Devices_Display",
     "Win32_Devices_HumanInterfaceDevice",
     "Win32_Foundation",
     "Win32_Graphics_Gdi",

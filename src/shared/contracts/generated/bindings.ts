@@ -1049,6 +1049,18 @@ export type DialedPressures = {
   rr: DialedPressure | null;
 };
 
+export type DisplayName = {
+  /**
+   * As Windows spells it, prefix included: `\\.\DISPLAY1`.
+   */
+  deviceName: string;
+  /**
+   * The EDID's friendly name. A monitor that reports none (some laptop
+   * panels, most capture dummies) is left out of the list.
+   */
+  model: string;
+};
+
 export type DriverEntriesFrame = {
   entries: DriverEntry[];
   playerCarIdx: number;
@@ -2589,7 +2601,8 @@ export type SayFormat =
    */
   | 'text'
   /**
-   * Digit by digit, leading zeros said: a car number, "zero seven".
+   * A car number as it is heard: leading zeros said, then the number —
+   * "zero seven", "thirty three".
    */
   | 'digits';
 

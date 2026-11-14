@@ -162,6 +162,15 @@
     "hotkeysActOn": "Los atajos actúan sobre este widget",
     "hotkeysActOnDesc": "Sus atajos muestran, ocultan y cambian esta instancia. Si hay varias marcadas, cambian juntas. Una pantalla para navegador también los sigue, así el stream muestra lo que cambiaste."
   },
+  "monitorMap": {
+    "primary": "principal",
+    "notConnected": "no conectado",
+    "notInLayout": "No está en este diseño: haz clic para añadirlo",
+    "addToLayout": "Añadir este monitor al diseño",
+    "browserScreens": "Pantallas en navegador",
+    "identify": "Identificar",
+    "identifyTooltip": "Mostrar el número de cada monitor en el propio monitor"
+  },
   "layoutList": {
     "newLayout": "Nuevo diseño",
     "emptyLayout": "Diseño vacío",

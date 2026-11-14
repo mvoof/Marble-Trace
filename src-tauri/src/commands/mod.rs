@@ -7,6 +7,7 @@
 
 pub mod chat;
 pub mod companions;
+pub mod displays;
 pub mod hotkeys;
 pub mod input;
 #[cfg(feature = "dev")]
@@ -78,6 +79,7 @@ pub fn invoke_handler() -> impl Fn(Invoke<Wry>) -> bool + Send + Sync + 'static 
         track::reset_pit_lane_pct,
         track::get_active_reference_lap,
         track::delete_reference_lap,
+        displays::list_display_names,
         settings::log_settings_snapshot,
         settings::backup_settings_file,
         settings::load_settings,

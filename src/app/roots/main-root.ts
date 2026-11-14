@@ -20,6 +20,7 @@ import { FpsDiagnosticsStore } from '@features/diagnostics/fps-diagnostics.store
 import { DiagnosticsExportStore } from '@features/diagnostics/diagnostics-export.store';
 import { TelemetryInspectorStore } from '@features/telemetry-inspector/telemetry-inspector.store';
 import { TrackRotationStore } from '@entities/track/track-rotation.store';
+import { DisplaysStore } from '@entities/layout/displays.store';
 import { MainNavigationStore } from '@features/main-navigation/main-navigation.store';
 import { AppLinksStore } from '@features/app-links/app-links.store';
 import { LayoutFilesStore } from '@features/layout-files/layout-files.store';
@@ -49,6 +50,7 @@ export class MainRoot extends RendererCore implements AppWindowStores {
   layoutFiles: LayoutFilesStore;
   telemetryInspector: TelemetryInspectorStore;
   trackRotation: TrackRotationStore;
+  displays: DisplaysStore;
   voiceCrew: VoiceCrewStore;
   navigation: MainNavigationStore;
   appLinks: AppLinksStore;
@@ -80,6 +82,7 @@ export class MainRoot extends RendererCore implements AppWindowStores {
       decodeLayout,
     });
     this.trackRotation = new TrackRotationStore();
+    this.displays = new DisplaysStore(this.liveWidgets);
     this.voiceCrew = new VoiceCrewStore(this);
     this.navigation = new MainNavigationStore(this);
     this.appLinks = new AppLinksStore(this);
@@ -93,6 +96,7 @@ export class MainRoot extends RendererCore implements AppWindowStores {
   override dispose() {
     this.appUpdate.dispose();
     this.layoutEditorUi.dispose();
+    this.displays.dispose();
     this.fpsDiagnostics.dispose();
     this.twitchAuth.dispose();
     this.companionApps.dispose();

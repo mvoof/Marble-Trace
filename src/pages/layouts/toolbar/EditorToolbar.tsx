@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { Button, Select, Tooltip } from 'antd';
 import {
   ArrowLeft,
+  Hash,
   Maximize,
   Minimize,
   PanelLeft,
@@ -12,6 +13,7 @@ import {
   Rows3,
 } from 'lucide-react';
 
+import { useDisplaysStore } from '@entities/layout/displays-context';
 import { useLayoutsStore } from '@entities/layout/layouts-context';
 import { useLayoutEditorStore } from '@features/layout-editor/layout-editor-context';
 import { useLayoutEditorUiStore } from '@features/layout-editor/layout-editor-ui-context';
@@ -56,6 +58,7 @@ interface EditorToolbarProps {
 export const EditorToolbar = observer(
   ({ rootRef, toolbarRef, dialogContainer, onBack }: EditorToolbarProps) => {
     const layouts = useLayoutsStore();
+    const displays = useDisplaysStore();
     const layoutEditor = useLayoutEditorStore();
     const editorUi = useLayoutEditorUiStore();
     const { t } = useTranslation('main-app');
@@ -110,7 +113,8 @@ export const EditorToolbar = observer(
           <span className={styles.activeChip}>{t('layoutEditor.active')}</span>
         )}
 
-        <AddRemoteScreenButton />
+        {/* Beside the monitor map otherwise; the map is not drawn here. */}
+        {isFullscreen && <AddRemoteScreenButton />}
 
         {hasRemoteScreens && (
           <Tooltip title={t('layoutEditor.arrangeRemoteScreensTooltip')}>
@@ -126,6 +130,16 @@ export const EditorToolbar = observer(
         )}
 
         <MonitorPicker dialogContainer={dialogContainer} />
+
+        <Tooltip title={t('monitorMap.identifyTooltip')}>
+          <Button
+            size="small"
+            icon={<Hash size={14} />}
+            onClick={() => displays.identify()}
+          >
+            {t('monitorMap.identify')}
+          </Button>
+        </Tooltip>
 
         <div className={styles.previewControls}>
           <HistoryButtons />

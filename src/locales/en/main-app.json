@@ -162,6 +162,15 @@
     "hotkeysActOn": "Hotkeys act on this widget",
     "hotkeysActOnDesc": "Its hotkeys show, hide and switch this instance. With several marked, they all change together. A browser screen follows them too, so a stream shows what you switched to."
   },
+  "monitorMap": {
+    "primary": "primary",
+    "notConnected": "not connected",
+    "notInLayout": "Not in this layout — click to add",
+    "addToLayout": "Add this monitor to the layout",
+    "browserScreens": "Browser screens",
+    "identify": "Identify",
+    "identifyTooltip": "Show each monitor’s number on the monitor itself"
+  },
   "layoutList": {
     "newLayout": "New Layout",
     "emptyLayout": "Empty Layout",

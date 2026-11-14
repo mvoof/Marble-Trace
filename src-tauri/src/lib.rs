@@ -2,6 +2,7 @@
 mod bindings;
 mod chat_host;
 mod commands;
+mod display_names;
 mod hotkeys;
 mod logging;
 #[cfg(feature = "dev")]

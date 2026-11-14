@@ -23,6 +23,7 @@ import { TrackRotationContext } from '@entities/track/track-rotation-context';
 import { LayoutToastContext } from '@entities/layout/layout-toast-context';
 import { LiveWidgetsContext } from '@entities/layout/live-widgets-context';
 import { MainLiveWidgetsContext } from '@entities/layout/main-live-widgets-context';
+import { DisplaysContext } from '@entities/layout/displays-context';
 import { WidgetDefaultsContext } from '@entities/widget/widget-defaults-context';
 import { LayoutsContext } from '@entities/layout/layouts-context';
 import { SettingsMutationLogContext } from '@entities/layout/mutation-log-context';
@@ -109,6 +110,7 @@ const createPreviewWorld = (): PreviewWorld => {
 const mainStores = (root: MainRoot): ProvidedStore[] => [
   provide(MainRootContext, root),
   provide(MainLiveWidgetsContext, root.liveWidgets),
+  provide(DisplaysContext, root.displays),
   provide(LayoutEditorContext, root.layoutEditor),
   provide(LayoutEditorUiContext, root.layoutEditorUi),
   provide(AppUpdateContext, root.appUpdate),

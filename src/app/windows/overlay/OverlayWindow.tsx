@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow';
 import { OverlayCanvas } from './OverlayCanvas/OverlayCanvas';
+import { MonitorIdentifyFlash } from './components/MonitorIdentifyFlash/MonitorIdentifyFlash';
 import { initOverlaySync } from '@app/sync/overlay/overlay-sync';
 import { useSimStore } from '@entities/sim/sim-context';
 import { useOverlayRoot } from '@app/roots/overlay-root-context';
@@ -56,5 +57,10 @@ export const OverlayWindow = () => {
     };
   }, [root]);
 
-  return <OverlayCanvas />;
+  return (
+    <>
+      <OverlayCanvas />
+      <MonitorIdentifyFlash />
+    </>
+  );
 };
