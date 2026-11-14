@@ -47,6 +47,12 @@ export class LayoutEditorUiStore {
   /** The inspector's drawer, when the canvas fills the view. */
   isInspectorOpen = false;
   isUploadingBackground = false;
+  /**
+   * Whether the monitor arrangement is drawn above the canvas. Hidden, the
+   * canvas takes its height. Kept while the app runs, never in the settings
+   * file.
+   */
+  isArrangementShown = true;
   /** Widgets whose resize keeps their shape, by id. */
   private lockedRatios = new Set<string>();
 
@@ -155,6 +161,10 @@ export class LayoutEditorUiStore {
 
   setInspectorOpen(isOpen: boolean) {
     this.isInspectorOpen = isOpen;
+  }
+
+  setArrangementShown(isShown: boolean) {
+    this.isArrangementShown = isShown;
   }
 
   setUploadingBackground(isUploading: boolean) {

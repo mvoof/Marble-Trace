@@ -14,6 +14,7 @@ import {
   visibilityAfterToggle,
 } from '@entities/layout/hotkey-targets';
 import {
+  centredOnMonitor,
   clampOnOwnMonitor,
   monitorMoveOf,
   withoutGeometry,
@@ -89,6 +90,7 @@ type WidgetSettingsWrite =
   | 'setWidgetEnabled'
   | 'setTypeEnabledOnMonitor'
   | 'addTypeToScreen'
+  | 'addWidgetAtCentre'
   | 'duplicateWidget'
   | 'removeWidgetCopy'
   | 'copySettingsFrom'
@@ -781,6 +783,40 @@ export class LiveWidgetsStore implements WidgetMap {
     this.bumpMutation();
 
     return switchedOnId;
+  }
+
+  /**
+   * The editor's "+ Widget": one more instance of a widget in the middle of a
+   * monitor, above everything else there — the widget switched on, or a copy
+   * of it when it already stands on that monitor. One undo step. Returns the
+   * instance, or null when the layout has no such monitor.
+   */
+  addWidgetAtCentre(type: string, monitorName: string): string | null {
+    const monitor = this.widgetOwner?.monitors.find(
+      (entry) => entry.name === monitorName
+    );
+
+    if (!monitor || !DEFAULT_WIDGET_BY_ID.has(type)) {
+      return null;
+    }
+
+    const standing = this.widgetsOnMonitorNamed(monitorName).find(
+      (widget) => widget.type === type
+    );
+    const addedId = standing
+      ? this.duplicateWidget(standing.id)
+      : this.setTypeEnabledOnMonitor(type, monitorName, true);
+    const added = addedId ? this.getWidget(addedId) : undefined;
+
+    if (!added) {
+      return null;
+    }
+
+    moveWidgetTo(added, centredOnMonitor(added, monitor));
+    added.userSettings.zIndex = topZIndex(this.allWidgets, added.id) + 1;
+    this.bumpMutation();
+
+    return added.id;
   }
 
   /**

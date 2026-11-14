@@ -79,13 +79,8 @@
   "layoutEditor": {
     "backToLayouts": "Volver a los diseños",
     "toggleWidgetPanel": "Mostrar u ocultar el panel de widgets",
-    "newLayoutNamePlaceholder": "Nombre del nuevo diseño",
     "create": "Crear",
     "cancel": "Cancelar",
-    "saveName": "Guardar nombre",
-    "selectLayoutPlaceholder": "Selecciona un diseño…",
-    "newLayout": "Nuevo diseño",
-    "rename": "Renombrar",
     "deleteLayoutConfirm": "¿Eliminar este diseño?",
     "delete": "Eliminar",
     "active": "Activo",
@@ -164,7 +159,24 @@
     "resetSettingsOk": "Restablecer",
     "reset": "Restablecer",
     "hotkeysActOn": "Los atajos actúan sobre este widget",
-    "hotkeysActOnDesc": "Sus atajos muestran, ocultan y cambian esta instancia. Si hay varias marcadas, cambian juntas. Una pantalla para navegador también los sigue, así el stream muestra lo que cambiaste."
+    "hotkeysActOnDesc": "Sus atajos muestran, ocultan y cambian esta instancia. Si hay varias marcadas, cambian juntas. Una pantalla para navegador también los sigue, así el stream muestra lo que cambiaste.",
+    "layouts": "Diseños",
+    "addWidget": "Widget",
+    "addWidgetTooltip": "Añadir un widget",
+    "addWidgetSearch": "Buscar un widget…",
+    "addWidgetCore": "Principales",
+    "addWidgetAll": "Todos",
+    "addWidgetOnScreen": "en pantalla",
+    "addWidgetTarget": "Al monitor:",
+    "addWidgetEmpty": "Ningún widget coincide",
+    "moreTools": "Más herramientas",
+    "grid": "Cuadrícula",
+    "background": "Fondo",
+    "screens": "Pantallas",
+    "hideArrangement": "Ocultar disposición de monitores",
+    "showArrangement": "Mostrar disposición de monitores",
+    "scenarioTooltip": "Escenario de vista previa",
+    "dragToolbar": "Arrastrar la barra"
   },
   "monitorMap": {
     "primary": "principal",
@@ -173,7 +185,9 @@
     "addToLayout": "Añadir este monitor al diseño",
     "browserScreens": "Pantallas en navegador",
     "identify": "Identificar",
-    "identifyTooltip": "Mostrar el número de cada monitor en el propio monitor"
+    "identifyTooltip": "Mostrar el número de cada monitor en el propio monitor",
+    "title": "Disposición de monitores y pantallas de navegador",
+    "hide": "Ocultar"
   },
   "layoutList": {
     "newLayout": "Nuevo diseño",

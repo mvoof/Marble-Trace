@@ -79,13 +79,8 @@
   "layoutEditor": {
     "backToLayouts": "Back to Layouts",
     "toggleWidgetPanel": "Toggle widget panel",
-    "newLayoutNamePlaceholder": "New layout name",
     "create": "Create",
     "cancel": "Cancel",
-    "saveName": "Save name",
-    "selectLayoutPlaceholder": "Select a layout…",
-    "newLayout": "New layout",
-    "rename": "Rename",
     "deleteLayoutConfirm": "Delete this layout?",
     "delete": "Delete",
     "active": "Active",
@@ -164,7 +159,24 @@
     "resetSettingsOk": "Reset",
     "reset": "Reset",
     "hotkeysActOn": "Hotkeys act on this widget",
-    "hotkeysActOnDesc": "Its hotkeys show, hide and switch this instance. With several marked, they all change together. A browser screen follows them too, so a stream shows what you switched to."
+    "hotkeysActOnDesc": "Its hotkeys show, hide and switch this instance. With several marked, they all change together. A browser screen follows them too, so a stream shows what you switched to.",
+    "layouts": "Layouts",
+    "addWidget": "Widget",
+    "addWidgetTooltip": "Add a widget",
+    "addWidgetSearch": "Find a widget…",
+    "addWidgetCore": "Core",
+    "addWidgetAll": "All",
+    "addWidgetOnScreen": "on screen",
+    "addWidgetTarget": "To monitor:",
+    "addWidgetEmpty": "No widget matches",
+    "moreTools": "More tools",
+    "grid": "Grid",
+    "background": "Background",
+    "screens": "Screens",
+    "hideArrangement": "Hide monitor arrangement",
+    "showArrangement": "Show monitor arrangement",
+    "scenarioTooltip": "Preview scenario",
+    "dragToolbar": "Drag the toolbar"
   },
   "monitorMap": {
     "primary": "primary",
@@ -173,7 +185,9 @@
     "addToLayout": "Add this monitor to the layout",
     "browserScreens": "Browser screens",
     "identify": "Identify",
-    "identifyTooltip": "Show each monitor’s number on the monitor itself"
+    "identifyTooltip": "Show each monitor’s number on the monitor itself",
+    "title": "Monitor arrangement and browser screens",
+    "hide": "Hide"
   },
   "layoutList": {
     "newLayout": "New Layout",

@@ -1,0 +1,41 @@
+.root {
+  position: relative;
+  display: inline-flex;
+  flex: none;
+}
+
+.panel {
+  position: absolute;
+  top: calc(100% + #{rem(6)});
+  left: 0;
+  z-index: 60;
+  display: flex;
+  flex-direction: column;
+  min-width: rem(220);
+  max-height: rem(420);
+  padding: rem(4);
+  overflow-y: auto;
+  background: rgba(17, 18, 22, 0.97);
+  border: 1px solid $sys-border-main;
+  border-radius: rem(10);
+  box-shadow:
+    0 24px 60px rgba(0, 0, 0, 0.85),
+    0 0 0 1px rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(20px);
+
+  &[hidden] {
+    display: none;
+  }
+}
+
+.panelEnd {
+  right: 0;
+  left: auto;
+}
+
+.panelWide {
+  width: rem(300);
+  height: rem(360);
+  padding: 0;
+  overflow: hidden;
+}

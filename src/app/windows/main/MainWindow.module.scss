@@ -227,11 +227,6 @@
   overflow: hidden;
 }
 
-// The editor at full size covers the whole window, the header included.
-.sectionContainerOverHeader {
-  z-index: 40;
-}
-
 @keyframes fadeIn {
   from {
     opacity: 0;

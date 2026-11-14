@@ -1,7 +1,7 @@
 import type { CSSProperties } from 'react';
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
-import { Tablet } from 'lucide-react';
+import { ChevronUp, Monitor, Tablet } from 'lucide-react';
 
 import { useDisplaysStore } from '@entities/layout/displays-context';
 import { useLayoutsStore } from '@entities/layout/layouts-context';
@@ -111,73 +111,93 @@ export const MonitorMap = observer(() => {
 
   return (
     <section className={styles.root}>
-      <div className={styles.map}>
-        {extent && (
-          <div
-            className={styles.stage}
-            style={{ aspectRatio: `${extent.width} / ${extent.height}` }}
-          >
-            {tiles.map((tile) => (
-              <button
-                key={tile.name}
-                type="button"
-                className={cx(
-                  styles.tile,
-                  !tile.isInLayout && styles.tileOutside,
-                  tile.number === null && styles.tileUnplugged,
-                  editorUi.focusedMonitorName === tile.name &&
-                    styles.tileSelected
-                )}
-                style={tileStyle(tile.bounds, extent)}
-                title={
-                  tile.isInLayout ? tile.label : t('monitorMap.addToLayout')
-                }
-                onClick={() => handleSelect(tile)}
-              >
-                <span className={styles.tileLabel}>
-                  {tile.number !== null && <b>{tile.number}</b>}
-                  {tile.number !== null && ' · '}
-                  {tile.label}
-                </span>
-
-                {!tile.isInLayout && (
-                  <span className={styles.tileHint}>
-                    {t('monitorMap.notInLayout')}
-                  </span>
-                )}
-
-                {displays.isIdentifying && tile.number !== null && (
-                  <span className={styles.bigNumber}>{tile.number}</span>
-                )}
-              </button>
-            ))}
-          </div>
-        )}
-      </div>
-
-      <div className={styles.remotes}>
-        <span className={styles.remotesTitle}>
-          {t('monitorMap.browserScreens')}
+      <header className={styles.header}>
+        <span className={styles.title}>
+          <Monitor size={14} />
+          {t('monitorMap.title')}
         </span>
 
-        {remoteScreens.map((screen) => (
-          <button
-            key={screen.name}
-            type="button"
-            className={cx(
-              styles.chip,
-              editorUi.focusedMonitorName === screen.name && styles.chipSelected
-            )}
-            onClick={() => editorUi.focusMonitor(screen.name)}
-          >
-            <Tablet size={14} />
-            <span className={styles.chipLabel}>
-              {screen.name} · {screen.bounds.width}×{screen.bounds.height}
-            </span>
-          </button>
-        ))}
+        <button
+          type="button"
+          className={styles.hide}
+          title={t('layoutEditor.hideArrangement')}
+          onClick={() => editorUi.setArrangementShown(false)}
+        >
+          <ChevronUp size={14} />
+          {t('monitorMap.hide')}
+        </button>
+      </header>
 
-        <AddRemoteScreenButton />
+      <div className={styles.columns}>
+        <div className={styles.map}>
+          {extent && (
+            <div
+              className={styles.stage}
+              style={{ aspectRatio: `${extent.width} / ${extent.height}` }}
+            >
+              {tiles.map((tile) => (
+                <button
+                  key={tile.name}
+                  type="button"
+                  className={cx(
+                    styles.tile,
+                    !tile.isInLayout && styles.tileOutside,
+                    tile.number === null && styles.tileUnplugged,
+                    editorUi.focusedMonitorName === tile.name &&
+                      styles.tileSelected
+                  )}
+                  style={tileStyle(tile.bounds, extent)}
+                  title={
+                    tile.isInLayout ? tile.label : t('monitorMap.addToLayout')
+                  }
+                  onClick={() => handleSelect(tile)}
+                >
+                  <span className={styles.tileLabel}>
+                    {tile.number !== null && <b>{tile.number}</b>}
+                    {tile.number !== null && ' · '}
+                    {tile.label}
+                  </span>
+
+                  {!tile.isInLayout && (
+                    <span className={styles.tileHint}>
+                      {t('monitorMap.notInLayout')}
+                    </span>
+                  )}
+
+                  {displays.isIdentifying && tile.number !== null && (
+                    <span className={styles.bigNumber}>{tile.number}</span>
+                  )}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <div className={styles.remotes}>
+          <span className={styles.remotesTitle}>
+            {t('monitorMap.browserScreens')}
+          </span>
+
+          {remoteScreens.map((screen) => (
+            <button
+              key={screen.name}
+              type="button"
+              className={cx(
+                styles.chip,
+                editorUi.focusedMonitorName === screen.name &&
+                  styles.chipSelected
+              )}
+              onClick={() => editorUi.focusMonitor(screen.name)}
+            >
+              <Tablet size={14} />
+              <span className={styles.chipLabel}>
+                {screen.name} · {screen.bounds.width}×{screen.bounds.height}
+              </span>
+            </button>
+          ))}
+
+          <AddRemoteScreenButton />
+        </div>
       </div>
     </section>
   );

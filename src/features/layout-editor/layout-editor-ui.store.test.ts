@@ -257,3 +257,29 @@ describe('LayoutEditorUiStore backgrounds', () => {
     store.dispose();
   });
 });
+
+describe('the monitor arrangement above the canvas', () => {
+  it('is shown until the user hides it', () => {
+    const { store } = makeStore();
+
+    expect(store.isArrangementShown).toBe(true);
+
+    store.setArrangementShown(false);
+
+    expect(store.isArrangementShown).toBe(false);
+    store.dispose();
+  });
+
+  it('stays hidden when another layout is opened', () => {
+    const { layouts, store } = makeStore();
+
+    store.setArrangementShown(false);
+    store.showOverview();
+    runInAction(() => {
+      layouts.editingLayoutId = 'practice';
+    });
+
+    expect(store.isArrangementShown).toBe(false);
+    store.dispose();
+  });
+});

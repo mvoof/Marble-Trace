@@ -1,44 +1,64 @@
-import type { RefObject } from 'react';
+import type { CSSProperties, RefObject } from 'react';
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
-import { Button, Segmented, Select, Tooltip } from 'antd';
 import {
   ArrowLeft,
-  Hash,
+  ChevronDown,
+  ChevronUp,
+  GripVertical,
   LayoutDashboard,
   Maximize2,
   Monitor,
   PanelLeft,
   PanelRight,
   Play,
-  Rows3,
+  type LucideIcon,
 } from 'lucide-react';
 
-import { useDisplaysStore } from '@entities/layout/displays-context';
 import { useLayoutsStore } from '@entities/layout/layouts-context';
 import { useLayoutEditorStore } from '@features/layout-editor/layout-editor-context';
 import { useLayoutEditorUiStore } from '@features/layout-editor/layout-editor-ui-context';
 import type { EditorViewMode } from '@features/layout-editor/layout-editor-ui.store';
-import { SESSION_PREVIEW_SCENARIOS } from '@features/preview/scenarios';
 import { cx } from '@shared/lib/class-names';
-import { isRemoteMonitor } from '@shared/lib/remote-screen';
 
-import { AddRemoteScreenButton } from './AddRemoteScreenButton';
-import { BackgroundControls } from './BackgroundControls';
-import { GridControls } from './GridControls';
+import { AddWidgetMenu } from './AddWidgetMenu';
 import { HistoryButtons } from './HistoryButtons';
-import { LayoutNameField } from './LayoutNameField';
 import { MonitorPicker } from './MonitorPicker';
+import { MoreMenu } from './MoreMenu';
+import { ScenarioPicker } from './ScenarioPicker';
+import { ToolbarButton } from './ToolbarButton';
+import { ToolbarCluster, ToolbarSeparator } from './ToolbarCluster';
+import { ToolbarCompactContext } from './toolbar-compact-context';
+import { useDockDrag } from './use-dock-drag';
 import styles from './EditorToolbar.module.scss';
 
-// The canvas is seeded as a whole, so the bar offers the session-wide moments
-// only — a widget's own domain scenarios belong to that widget's picker.
-const SCENARIO_OPTIONS = SESSION_PREVIEW_SCENARIOS.map((scenario) => ({
-  value: scenario.id,
-  label: scenario.label,
-}));
+const GRIP_ICON_SIZE = 14;
 
-const SCENARIO_SELECT_MIN_WIDTH_PX = 150;
+const VIEW_MODES: {
+  mode: EditorViewMode;
+  icon: LucideIcon;
+  labelKey: string;
+  tooltipKey: string;
+}[] = [
+  {
+    mode: 'overview',
+    icon: LayoutDashboard,
+    labelKey: 'layoutEditor.viewOverview',
+    tooltipKey: 'layoutEditor.viewOverviewTooltip',
+  },
+  {
+    mode: 'fullSize',
+    icon: Maximize2,
+    labelKey: 'layoutEditor.viewFullSize',
+    tooltipKey: 'layoutEditor.viewFullSizeTooltip',
+  },
+  {
+    mode: 'fullscreen',
+    icon: Monitor,
+    labelKey: 'layoutEditor.viewFullscreen',
+    tooltipKey: 'layoutEditor.viewFullscreenTooltip',
+  },
+];
 
 interface EditorToolbarProps {
   /** The editor's root: what goes fullscreen. */
@@ -53,23 +73,20 @@ interface EditorToolbarProps {
 }
 
 /**
- * The bar above the canvas: the layout and its screens on the left, the view
- * and editing tools on the right. While the canvas fills the view — full size
- * or fullscreen — it floats over the canvas and carries the toggles of the two
- * drawers.
+ * The editor's bar, one row, the same groups in every view:
+ * `[← / panel] [name · active] | [monitor · + Widget] | [undo · redo] …
+ * [scenario · mode · …] [inspector]`. In the overview it is a band above the
+ * map; while the canvas fills the view it is a pill of icons floating over
+ * the canvas, dragged by its grip.
  */
 export const EditorToolbar = observer(
   ({ rootRef, toolbarRef, dialogContainer, onBack }: EditorToolbarProps) => {
     const layouts = useLayoutsStore();
-    const displays = useDisplaysStore();
     const layoutEditor = useLayoutEditorStore();
     const editorUi = useLayoutEditorUiStore();
     const { t } = useTranslation('main-app');
     const isCanvasOnly = editorUi.isCanvasOnly;
-
-    const hasRemoteScreens = (layouts.editingLayout?.monitors ?? []).some(
-      isRemoteMonitor
-    );
+    const { offset, handleGripPointerDown } = useDockDrag(editorUi.viewMode);
 
     // Fullscreen belongs to the browser: the store learns of it from the
     // document's event, so the other two views only have to leave it.
@@ -91,129 +108,122 @@ export const EditorToolbar = observer(
       }
     };
 
+    const dockStyle = {
+      '--dock-x': `${offset.x}px`,
+      '--dock-y': `${offset.y}px`,
+    } as CSSProperties;
+
     return (
-      <header
-        ref={toolbarRef}
-        className={cx(styles.toolbar, isCanvasOnly && styles.toolbarFullscreen)}
-      >
-        {isCanvasOnly ? (
-          <Tooltip title={t('layoutEditor.toggleWidgetPanel')}>
-            <Button
-              size="small"
-              type={editorUi.isPanelOpen ? 'primary' : 'text'}
-              icon={<PanelLeft size={14} />}
+      <ToolbarCompactContext.Provider value={isCanvasOnly}>
+        <header
+          ref={toolbarRef}
+          className={cx(styles.toolbar, isCanvasOnly && styles.toolbarFloating)}
+          style={isCanvasOnly ? dockStyle : undefined}
+        >
+          {isCanvasOnly && (
+            <span
+              className={styles.grip}
+              title={t('layoutEditor.dragToolbar')}
+              onPointerDown={handleGripPointerDown}
+            >
+              <GripVertical size={GRIP_ICON_SIZE} />
+            </span>
+          )}
+
+          {isCanvasOnly ? (
+            <ToolbarButton
+              icon={PanelLeft}
+              title={t('layoutEditor.toggleWidgetPanel')}
+              isOn={editorUi.isPanelOpen}
               onClick={() => editorUi.setPanelOpen(!editorUi.isPanelOpen)}
             />
-          </Tooltip>
-        ) : (
-          <Button size="small" icon={<ArrowLeft size={14} />} onClick={onBack}>
-            {t('layoutEditor.backToLayouts')}
-          </Button>
-        )}
+          ) : (
+            <ToolbarButton
+              icon={ArrowLeft}
+              label={t('layoutEditor.layouts')}
+              isLabelCollapsible
+              title={t('layoutEditor.backToLayouts')}
+              onClick={onBack}
+            />
+          )}
 
-        <LayoutNameField />
+          <ToolbarCluster>
+            <span className={styles.name}>{layouts.editingLayout?.name}</span>
 
-        {layoutEditor.previewMode ? (
-          <Tooltip title={t('layoutEditor.applyLayoutTooltip')}>
-            <Button
-              size="small"
-              type="primary"
-              icon={<Play size={14} />}
-              onClick={() => layoutEditor.activateLayout()}
-            >
-              {t('layoutEditor.makeActive')}
-            </Button>
-          </Tooltip>
-        ) : (
-          <span className={styles.activeChip}>{t('layoutEditor.active')}</span>
-        )}
+            {layoutEditor.previewMode ? (
+              <ToolbarButton
+                icon={Play}
+                label={t('layoutEditor.makeActive')}
+                isLabelCollapsible
+                title={t('layoutEditor.applyLayoutTooltip')}
+                onClick={() => layoutEditor.activateLayout()}
+              />
+            ) : (
+              <span className={styles.activeChip}>
+                <span className={styles.activeDot} />
+                {t('layoutEditor.active')}
+              </span>
+            )}
+          </ToolbarCluster>
 
-        {/* Beside the monitor map otherwise; the map is not drawn here. */}
-        {isCanvasOnly && <AddRemoteScreenButton />}
+          <ToolbarSeparator />
 
-        {hasRemoteScreens && (
-          <Tooltip title={t('layoutEditor.arrangeRemoteScreensTooltip')}>
-            <Button
-              size="small"
-              type="text"
-              icon={<Rows3 size={14} />}
-              onClick={() => layouts.arrangeRemoteScreens()}
-            >
-              {t('layoutEditor.arrangeRemoteScreens')}
-            </Button>
-          </Tooltip>
-        )}
+          <ToolbarCluster>
+            <MonitorPicker dialogContainer={dialogContainer} />
 
-        <MonitorPicker dialogContainer={dialogContainer} />
+            {!isCanvasOnly && (
+              <ToolbarButton
+                icon={editorUi.isArrangementShown ? ChevronUp : ChevronDown}
+                title={
+                  editorUi.isArrangementShown
+                    ? t('layoutEditor.hideArrangement')
+                    : t('layoutEditor.showArrangement')
+                }
+                onClick={() =>
+                  editorUi.setArrangementShown(!editorUi.isArrangementShown)
+                }
+              />
+            )}
+          </ToolbarCluster>
 
-        <Tooltip title={t('monitorMap.identifyTooltip')}>
-          <Button
-            size="small"
-            icon={<Hash size={14} />}
-            onClick={() => displays.identify()}
-          >
-            {t('monitorMap.identify')}
-          </Button>
-        </Tooltip>
+          <AddWidgetMenu />
 
-        <div className={styles.previewControls}>
+          <ToolbarSeparator />
+
           <HistoryButtons />
 
-          <GridControls />
+          <div className={styles.spacer} />
 
-          <Segmented<EditorViewMode>
-            size="small"
-            value={editorUi.viewMode}
-            onChange={handleViewModeChange}
-            options={[
-              {
-                value: 'overview',
-                icon: <LayoutDashboard size={14} />,
-                label: t('layoutEditor.viewOverview'),
-                title: t('layoutEditor.viewOverviewTooltip'),
-              },
-              {
-                value: 'fullSize',
-                icon: <Maximize2 size={14} />,
-                label: t('layoutEditor.viewFullSize'),
-                title: t('layoutEditor.viewFullSizeTooltip'),
-              },
-              {
-                value: 'fullscreen',
-                icon: <Monitor size={14} />,
-                label: t('layoutEditor.viewFullscreen'),
-                title: t('layoutEditor.viewFullscreenTooltip'),
-              },
-            ]}
-          />
+          <ScenarioPicker />
 
-          <BackgroundControls />
+          <ToolbarCluster>
+            {VIEW_MODES.map(({ mode, icon, labelKey, tooltipKey }) => (
+              <ToolbarButton
+                key={mode}
+                icon={icon}
+                title={`${t(labelKey)} — ${t(tooltipKey)}`}
+                isOn={editorUi.viewMode === mode}
+                onClick={() => handleViewModeChange(mode)}
+              />
+            ))}
+          </ToolbarCluster>
 
-          <Select
-            size="small"
-            value={editorUi.scenarioId}
-            onChange={(id) => editorUi.setScenario(id)}
-            options={SCENARIO_OPTIONS}
-            style={{ minWidth: SCENARIO_SELECT_MIN_WIDTH_PX }}
-            popupMatchSelectWidth={false}
-          />
+          <MoreMenu />
 
           {/* Last on the bar, above the panel it opens: the toggle sits on
               the side the drawer comes from. */}
           {isCanvasOnly && (
-            <Tooltip title={t('layoutEditor.toggleInspector')}>
-              <Button
-                size="small"
-                type={editorUi.isInspectorOpen ? 'primary' : 'text'}
-                icon={<PanelRight size={14} />}
-                onClick={() =>
-                  editorUi.setInspectorOpen(!editorUi.isInspectorOpen)
-                }
-              />
-            </Tooltip>
+            <ToolbarButton
+              icon={PanelRight}
+              title={t('layoutEditor.toggleInspector')}
+              isOn={editorUi.isInspectorOpen}
+              onClick={() =>
+                editorUi.setInspectorOpen(!editorUi.isInspectorOpen)
+              }
+            />
           )}
-        </div>
-      </header>
+        </header>
+      </ToolbarCompactContext.Provider>
     );
   }
 );

@@ -1507,3 +1507,82 @@ describe('widgets belong to their monitor', () => {
     expect(overlay.getWidget('standings')!.monitor).toBe('RIGHT');
   });
 });
+
+describe('"+ Widget" puts a widget in the middle of a monitor', () => {
+  const LEFT = {
+    name: 'LEFT',
+    bounds: { x: 0, y: 0, width: 1920, height: 1080 },
+  };
+
+  const RIGHT = {
+    name: 'RIGHT',
+    bounds: { x: 1920, y: 0, width: 2560, height: 1440 },
+  };
+
+  const setUp = () => {
+    const rootStore = new MainRoot({ skipInit: true });
+
+    rootStore.liveWidgets.setLayouts(
+      [
+        {
+          id: 'race',
+          name: 'race',
+          createdAt: 1,
+          monitors: [LEFT, RIGHT],
+          widgets: [],
+        },
+      ],
+      'race'
+    );
+
+    return rootStore.liveWidgets;
+  };
+
+  const centreOf = (store: LiveWidgetsStore, id: string) => {
+    const { x, y, currentWidth, currentHeight } =
+      store.getWidget(id)!.userSettings;
+
+    return { x: x + currentWidth / 2, y: y + currentHeight / 2 };
+  };
+
+  it('switches the widget on in the centre of the monitor named', () => {
+    const store = setUp();
+
+    const addedId = store.addWidgetAtCentre('g-meter', 'RIGHT')!;
+    const centre = centreOf(store, addedId);
+
+    expect(store.getWidget(addedId)!.monitor).toBe('RIGHT');
+    expect(store.getWidget(addedId)!.userSettings.enabled).toBe(true);
+    expect(Math.abs(centre.x - 3200)).toBeLessThanOrEqual(1);
+    expect(Math.abs(centre.y - 720)).toBeLessThanOrEqual(1);
+  });
+
+  it('adds another copy when the widget already stands on that monitor', () => {
+    const store = setUp();
+
+    const firstId = store.addWidgetAtCentre('g-meter', 'LEFT')!;
+    const copyId = store.addWidgetAtCentre('g-meter', 'LEFT')!;
+
+    expect(copyId).not.toBe(firstId);
+    expect(store.widgetsOnMonitorNamed('LEFT')).toHaveLength(2);
+    expect(Math.abs(centreOf(store, copyId).x - 960)).toBeLessThanOrEqual(1);
+    expect(store.getWidget(copyId)!.userSettings.zIndex).toBeGreaterThan(
+      store.getWidget(firstId)!.userSettings.zIndex ?? 0
+    );
+  });
+
+  it('is taken back by one undo', () => {
+    const store = setUp();
+
+    store.addWidgetAtCentre('g-meter', 'LEFT');
+    store.undo();
+
+    expect(store.widgetsOnMonitorNamed('LEFT')).toHaveLength(0);
+  });
+
+  it('adds nothing to a monitor the layout does not have', () => {
+    const store = setUp();
+
+    expect(store.addWidgetAtCentre('g-meter', 'NOWHERE')).toBeNull();
+  });
+});

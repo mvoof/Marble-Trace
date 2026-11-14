@@ -107,11 +107,7 @@ export const LayoutEditor = observer(
     return (
       <ConfigProvider getPopupContainer={dialogContainer}>
         <div
-          className={cx(
-            styles.root,
-            isCanvasOnly && styles.rootFullscreen,
-            editorUi.isFullSize && styles.rootFullSize
-          )}
+          className={cx(styles.root, isCanvasOnly && styles.rootFullscreen)}
           ref={rootRef}
         >
           <EditorToolbar
@@ -121,37 +117,44 @@ export const LayoutEditor = observer(
             onBack={() => handleModeChange('list')}
           />
 
-          {!isCanvasOnly && <MonitorMap />}
-
           <div
-            className={cx(styles.body, isCanvasOnly && styles.bodyFullscreen)}
+            className={cx(
+              styles.workspace,
+              isCanvasOnly && styles.workspaceFullscreen
+            )}
           >
-            <EditorSidePanel
-              side="left"
-              title={t('layoutEditor.widgetsPanelTitle')}
-              isOpen={editorUi.isPanelOpen}
-              onClose={() => editorUi.setPanelOpen(false)}
-            >
-              <LayoutWidgetPanel />
-            </EditorSidePanel>
+            {!isCanvasOnly && editorUi.isArrangementShown && <MonitorMap />}
 
-            <main
-              className={cx(
-                styles.canvas,
-                isCanvasOnly && styles.canvasFullscreen
-              )}
+            <div
+              className={cx(styles.body, isCanvasOnly && styles.bodyFullscreen)}
             >
-              <LayoutCanvas />
-            </main>
+              <EditorSidePanel
+                side="left"
+                title={t('layoutEditor.widgetsPanelTitle')}
+                isOpen={editorUi.isPanelOpen}
+                onClose={() => editorUi.setPanelOpen(false)}
+              >
+                <LayoutWidgetPanel />
+              </EditorSidePanel>
 
-            <EditorSidePanel
-              side="right"
-              title={t('layoutEditor.inspectorTitle')}
-              isOpen={editorUi.isInspectorOpen}
-              onClose={() => editorUi.setInspectorOpen(false)}
-            >
-              <WidgetInspector />
-            </EditorSidePanel>
+              <main
+                className={cx(
+                  styles.canvas,
+                  isCanvasOnly && styles.canvasFullscreen
+                )}
+              >
+                <LayoutCanvas />
+              </main>
+
+              <EditorSidePanel
+                side="right"
+                title={t('layoutEditor.inspectorTitle')}
+                isOpen={editorUi.isInspectorOpen}
+                onClose={() => editorUi.setInspectorOpen(false)}
+              >
+                <WidgetInspector />
+              </EditorSidePanel>
+            </div>
           </div>
         </div>
       </ConfigProvider>
