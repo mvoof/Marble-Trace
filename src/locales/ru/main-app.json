@@ -1457,6 +1457,38 @@
       "paused": "Импорт на паузе — вы в игре",
       "noFolder": "Папка телеметрии iRacing не найдена"
     },
+    "categories": {
+      "sportsCar": "Спорткары",
+      "formulaCar": "Формулы",
+      "road": "Шоссе",
+      "oval": "Овал",
+      "dirtRoad": "Грунт",
+      "dirtOval": "Грунтовый овал"
+    },
+    "ratings": {
+      "title": "Лицензия и iRating",
+      "byCategory": "по категориям",
+      "none": "Онлайн-сессий пока нет",
+      "showInChart": "Показать {{category}} на графике iRating",
+      "weekChange": "Изменение за 7 дней"
+    },
+    "kpi": {
+      "sessions": "Сессии за 7 дней",
+      "sessionsSplit": "гонки {{races}} · тренировки {{practices}}",
+      "laps": "Круги",
+      "incidentsPerLap": "Инциденты / круг",
+      "sevenDays": "за 7 дней"
+    },
+    "irating": {
+      "title": "iRating",
+      "perSession": "по сессиям",
+      "noneInRange": "За этот период сессий нет",
+      "range": {
+        "30d": "30 дн",
+        "90d": "90 дн",
+        "all": "Всё"
+      }
+    },
     "recentSessions": {
       "title": "Последние сессии",
       "date": "Дата",

@@ -81,7 +81,7 @@ CREATE TABLE lap (
 CREATE INDEX lap_session ON lap(session_key);
 ";
 
-const STATUS_READ: &str = "read";
+pub(crate) const STATUS_READ: &str = "read";
 const STATUS_BROKEN: &str = "broken";
 const RACE_RUN_TYPE: &str = "Race";
 
@@ -96,7 +96,7 @@ pub struct FileStamp {
 }
 
 pub struct StatsDb {
-    connection: Connection,
+    pub(crate) connection: Connection,
 }
 
 impl StatsDb {
@@ -243,18 +243,7 @@ impl StatsDb {
                 |row| row.get(0),
             )
             .map_err(to_message)?;
-        // A run's count carries over between its files: the largest is the run's.
-        let incidents = self
-            .connection
-            .query_row(
-                "SELECT COALESCE(SUM(run_max), 0) FROM (
-                   SELECT MAX(incidents) AS run_max FROM run
-                   WHERE session_key = ?1 GROUP BY session_num
-                 )",
-                params![session.key],
-                |row| row.get(0),
-            )
-            .map_err(to_message)?;
+        let incidents = self.session_incidents(&session.key)?;
         // The last race of the session, as its latest file saw the flag. The
         // field size comes from the latest file whose results list the race:
         // the one at the flag often opened before the results were out.
@@ -288,6 +277,20 @@ impl StatsDb {
             incidents,
             ..session
         })
+    }
+
+    /// A run's count carries over between its files: the largest is the run's.
+    pub(crate) fn session_incidents(&self, key: &str) -> Result<u32, String> {
+        self.connection
+            .query_row(
+                "SELECT COALESCE(SUM(run_max), 0) FROM (
+                   SELECT MAX(incidents) AS run_max FROM run
+                   WHERE session_key = ?1 GROUP BY session_num
+                 )",
+                params![key],
+                |row| row.get(0),
+            )
+            .map_err(to_message)
     }
 }
 
@@ -454,7 +457,7 @@ fn insert_runs(
     Ok(())
 }
 
-fn to_message(error: rusqlite::Error) -> String {
+pub(crate) fn to_message(error: rusqlite::Error) -> String {
     error.to_string()
 }
 

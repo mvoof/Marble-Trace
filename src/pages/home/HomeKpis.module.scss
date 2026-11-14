@@ -1,0 +1,59 @@
+.kpis {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: rem(12);
+
+  @media (max-width: 1000px) {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.kpi {
+  padding: rem(14) rem(16);
+  background: $sys-bg-card;
+  border: 1px solid $sys-border-sub;
+  border-radius: rem(10);
+}
+
+.label {
+  display: flex;
+  align-items: center;
+  gap: rem(6);
+  font-size: rem(12);
+  color: $sys-text-muted;
+}
+
+.value {
+  margin-top: rem(4);
+  font-family: $font-mono;
+  font-size: rem(24);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: $sys-text-primary;
+}
+
+.detail {
+  margin-top: rem(2);
+  font-size: rem(12);
+}
+
+.change {
+  font-family: $font-mono;
+  font-variant-numeric: tabular-nums;
+}
+
+.muted {
+  color: $sys-text-muted;
+}
+
+.flat {
+  color: $sys-text-muted;
+}
+
+.up {
+  color: $sys-up;
+}
+
+.down {
+  color: $sys-down;
+}

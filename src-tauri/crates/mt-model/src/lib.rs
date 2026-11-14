@@ -100,5 +100,6 @@ pub fn register_types(types: &mut specta::TypeCollection) {
         .register::<app::voice::VoiceRecognisedView>()
         .register::<app::voice::VoiceQuestionPreview>()
         .register::<app::stats::StatsImportStatus>()
-        .register::<app::stats::RecentSession>();
+        .register::<app::stats::RecentSession>()
+        .register::<app::stats::HomeStats>();
 }

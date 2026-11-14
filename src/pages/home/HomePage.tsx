@@ -4,7 +4,9 @@ import { FolderSearch } from 'lucide-react';
 
 import { useStatisticsStore } from '@features/statistics/statistics-context';
 import { PageTitle } from '@shared/ui/PageTitle/PageTitle';
+import { HomeKpis } from './HomeKpis';
 import { ImportNote } from './ImportNote';
+import { IratingChart } from './IratingChart';
 import { RecentSessionsTable } from './RecentSessionsTable';
 import styles from './HomePage.module.scss';
 
@@ -20,7 +22,13 @@ export const HomePage = observer(() => {
       <PageTitle title={t('homePage.title')} actions={<ImportNote />} />
 
       {statistics.hasSessions ? (
-        <RecentSessionsTable />
+        <>
+          <HomeKpis />
+
+          <IratingChart />
+
+          <RecentSessionsTable />
+        </>
       ) : (
         <div className={styles.empty}>
           <FolderSearch size={EMPTY_ICON_SIZE} className={styles.emptyIcon} />

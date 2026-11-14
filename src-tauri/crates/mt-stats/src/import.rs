@@ -10,7 +10,9 @@ use std::sync::{Arc, Mutex};
 use std::thread;
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
-use mt_model::app::stats::{RecentSession, SessionFile, StatsImportPhase, StatsImportStatus};
+use mt_model::app::stats::{
+    HomeStats, RecentSession, SessionFile, StatsImportPhase, StatsImportStatus,
+};
 use mt_model::contract::event_sink::EventSink;
 use mt_model::contract::events::EVENT_STATS_IMPORT;
 use mt_model::utils::lock_or_recover;
@@ -78,6 +80,10 @@ impl StatsService {
 
     pub fn recent_sessions(&self, limit: u32) -> Result<Vec<RecentSession>, String> {
         lock_or_recover(&self.db).recent_sessions(limit)
+    }
+
+    pub fn home_stats(&self) -> Result<HomeStats, String> {
+        lock_or_recover(&self.db).home_stats(now())
     }
 
     fn publish(&self, host: &StatsHost, status: StatsImportStatus) {

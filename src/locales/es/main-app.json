@@ -1445,6 +1445,38 @@
       "paused": "Importación en pausa: estás en el juego",
       "noFolder": "No se encontró la carpeta de telemetría de iRacing"
     },
+    "categories": {
+      "sportsCar": "Sports Car",
+      "formulaCar": "Formula Car",
+      "road": "Road",
+      "oval": "Óvalo",
+      "dirtRoad": "Tierra",
+      "dirtOval": "Óvalo de tierra"
+    },
+    "ratings": {
+      "title": "Licencia e iRating",
+      "byCategory": "por categoría",
+      "none": "Aún no hay sesiones online",
+      "showInChart": "Mostrar {{category}} en el gráfico de iRating",
+      "weekChange": "Cambio en 7 días"
+    },
+    "kpi": {
+      "sessions": "Sesiones en 7 días",
+      "sessionsSplit": "carreras {{races}} · práctica {{practices}}",
+      "laps": "Vueltas",
+      "incidentsPerLap": "Incidentes / vuelta",
+      "sevenDays": "últimos 7 días"
+    },
+    "irating": {
+      "title": "iRating",
+      "perSession": "por sesión",
+      "noneInRange": "No hay sesiones en este periodo",
+      "range": {
+        "30d": "30 d",
+        "90d": "90 d",
+        "all": "Todo"
+      }
+    },
     "recentSessions": {
       "title": "Sesiones recientes",
       "date": "Fecha",

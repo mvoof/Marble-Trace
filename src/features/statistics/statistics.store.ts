@@ -1,17 +1,22 @@
 import { makeAutoObservable, runInAction } from 'mobx';
 
 import {
+  getHomeStats,
   getRecentSessions,
   getStatsImportStatus,
   listenStatsImport,
 } from '@shared/api/stats.service';
 import type {
+  CategoryRating,
+  HomeStats,
   RecentSession,
   StatsImportStatus,
 } from '@shared/contracts/generated/bindings';
+import { iratingSteps, type IratingRange } from './home-stats';
 
 /** Rows of the recent sessions table on Home. */
 const RECENT_SESSIONS_LIMIT = 10;
+const MS_PER_SECOND = 1000;
 
 const INITIAL_STATUS: StatsImportStatus = {
   phase: 'idle',
@@ -28,6 +33,12 @@ const INITIAL_STATUS: StatsImportStatus = {
 export class StatisticsStore {
   importStatus: StatsImportStatus = INITIAL_STATUS;
   recentSessions: RecentSession[] = [];
+  homeStats: HomeStats | null = null;
+  /** When `homeStats` was counted, unix seconds: the chart's ranges end there. */
+  homeStatsAtS = 0;
+  /** The category the iRating chart shows; `null` follows the latest session. */
+  chartCategory: string | null = null;
+  iratingRange: IratingRange = '90d';
   /** The first load has answered, so an empty list means no sessions. */
   loaded = false;
 
@@ -43,6 +54,37 @@ export class StatisticsStore {
 
   get hasSessions() {
     return this.recentSessions.length > 0;
+  }
+
+  get ratings(): CategoryRating[] {
+    return this.homeStats?.ratings ?? [];
+  }
+
+  /** The chosen category while it has a line, else the latest session's. */
+  get chartRating(): CategoryRating | null {
+    const chosen = this.ratings.find(
+      (rating) => rating.category === this.chartCategory
+    );
+
+    return chosen ?? this.ratings[0] ?? null;
+  }
+
+  get iratingSteps() {
+    const rating = this.chartRating;
+
+    if (rating === null) {
+      return [];
+    }
+
+    return iratingSteps(rating.history, this.iratingRange, this.homeStatsAtS);
+  }
+
+  selectChartCategory(category: string) {
+    this.chartCategory = category;
+  }
+
+  setIratingRange(range: IratingRange) {
+    this.iratingRange = range;
   }
 
   async start() {
@@ -87,14 +129,19 @@ export class StatisticsStore {
 
   private async loadSessions() {
     try {
-      const sessions = await getRecentSessions(RECENT_SESSIONS_LIMIT);
+      const [sessions, homeStats] = await Promise.all([
+        getRecentSessions(RECENT_SESSIONS_LIMIT),
+        getHomeStats(),
+      ]);
 
       runInAction(() => {
         this.recentSessions = sessions;
+        this.homeStats = homeStats;
+        this.homeStatsAtS = Date.now() / MS_PER_SECOND;
         this.loaded = true;
       });
     } catch (error) {
-      console.error('Recent sessions not loaded', error);
+      console.error('Statistics not loaded', error);
       runInAction(() => {
         this.loaded = true;
       });

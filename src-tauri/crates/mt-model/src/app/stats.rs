@@ -111,3 +111,62 @@ pub struct RecentSession {
     pub best_lap_s: Option<f64>,
     pub incidents: u32,
 }
+
+/// What Home shows above the recent sessions: the licence and iRating of
+/// each category driven, and the last seven days next to the seven before.
+#[cfg_attr(feature = "dev", derive(specta::Type))]
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct HomeStats {
+    /// The category of the latest session first.
+    pub ratings: Vec<CategoryRating>,
+    /// The seven days up to now.
+    pub week: WeekStats,
+    /// The seven days before those.
+    pub previous_week: WeekStats,
+}
+
+/// One licence and iRating line: the sessions online in one category.
+#[cfg_attr(feature = "dev", derive(specta::Type))]
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
+#[serde(rename_all = "camelCase")]
+pub struct CategoryRating {
+    /// As the sim writes it, e.g. `Sports Car`.
+    pub category: String,
+    /// The latest session's, e.g. `B 3.74`.
+    pub licence: Option<String>,
+    /// The latest session's: the snapshot at its join.
+    pub irating: u32,
+    /// The latest iRating against the one before the last seven days; 0 when
+    /// nothing was driven in them.
+    pub week_change: i32,
+    /// UTC unix seconds.
+    pub last_session_at: f64,
+    /// Oldest first, one point a session.
+    pub history: Vec<RatingPoint>,
+}
+
+#[cfg_attr(feature = "dev", derive(specta::Type))]
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
+#[serde(rename_all = "camelCase")]
+pub struct RatingPoint {
+    pub key: String,
+    /// UTC unix seconds.
+    pub started_at: f64,
+    /// The snapshot at join: a session's own result shows from the next one.
+    pub irating: u32,
+    pub track_name: Option<String>,
+}
+
+/// Sessions, laps and incidents of one span of days, all categories together.
+#[cfg_attr(feature = "dev", derive(specta::Type))]
+#[derive(Serialize, Deserialize, Debug, Clone, Copy, PartialEq, Eq, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct WeekStats {
+    pub sessions: u32,
+    /// Sessions of a race event; the rest are practice and test.
+    pub races: u32,
+    /// Laps completed, whole or not.
+    pub laps: u32,
+    pub incidents: u32,
+}

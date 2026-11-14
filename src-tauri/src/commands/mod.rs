@@ -116,6 +116,7 @@ pub fn invoke_handler() -> impl Fn(Invoke<Wry>) -> bool + Send + Sync + 'static 
         companions::close_companion_apps,
         companions::companion_app_icon,
         stats::get_stats_import_status,
-        stats::get_recent_sessions
+        stats::get_recent_sessions,
+        stats::get_home_stats
     ]
 }

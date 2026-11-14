@@ -542,6 +542,37 @@ export type CarTarget =
   | 'byClassPosition';
 
 /**
+ * One licence and iRating line: the sessions online in one category.
+ */
+export type CategoryRating = {
+  /**
+   * As the sim writes it, e.g. `Sports Car`.
+   */
+  category: string;
+  /**
+   * The latest session's, e.g. `B 3.74`.
+   */
+  licence: string | null;
+  /**
+   * The latest session's: the snapshot at its join.
+   */
+  irating: number;
+  /**
+   * The latest iRating against the one before the last seven days; 0 when
+   * nothing was driven in them.
+   */
+  weekChange: number;
+  /**
+   * UTC unix seconds.
+   */
+  lastSessionAt: number;
+  /**
+   * Oldest first, one point a session.
+   */
+  history: RatingPoint[];
+};
+
+/**
  * Chassis telemetry — per-wheel tire and suspension data.
  *
  * Contains ride height, shock deflection, tire temperatures (3 zones),
@@ -1321,6 +1352,25 @@ export type FuelLapRecord = {
    * `None` for a lap that counts towards the average.
    */
   rejected: string | null;
+};
+
+/**
+ * What Home shows above the recent sessions: the licence and iRating of
+ * each category driven, and the last seven days next to the seven before.
+ */
+export type HomeStats = {
+  /**
+   * The category of the latest session first.
+   */
+  ratings: CategoryRating[];
+  /**
+   * The seven days up to now.
+   */
+  week: WeekStats;
+  /**
+   * The seven days before those.
+   */
+  previousWeek: WeekStats;
 };
 
 /**
@@ -2213,6 +2263,19 @@ export type RadioTransmission = {
  * The frequency a radio is tuned to — what the player transmits on.
  */
 export type RadioTune = { radioNum: number; frequencyNum: number };
+
+export type RatingPoint = {
+  key: string;
+  /**
+   * UTC unix seconds.
+   */
+  startedAt: number;
+  /**
+   * The snapshot at join: a session's own result shows from the next one.
+   */
+  irating: number;
+  trackName: string | null;
+};
 
 /**
  * The session text as the sim wrote it, and the same text as a tree.
@@ -3534,4 +3597,20 @@ export type WeatherForecastEntry = {
   Humidity: number;
   Fog: number;
   RainPct: number;
+};
+
+/**
+ * Sessions, laps and incidents of one span of days, all categories together.
+ */
+export type WeekStats = {
+  sessions: number;
+  /**
+   * Sessions of a race event; the rest are practice and test.
+   */
+  races: number;
+  /**
+   * Laps completed, whole or not.
+   */
+  laps: number;
+  incidents: number;
 };

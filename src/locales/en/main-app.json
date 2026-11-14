@@ -1445,6 +1445,38 @@
       "paused": "Import paused — you are in the game",
       "noFolder": "iRacing telemetry folder not found"
     },
+    "categories": {
+      "sportsCar": "Sports Car",
+      "formulaCar": "Formula Car",
+      "road": "Road",
+      "oval": "Oval",
+      "dirtRoad": "Dirt Road",
+      "dirtOval": "Dirt Oval"
+    },
+    "ratings": {
+      "title": "Licence and iRating",
+      "byCategory": "by category",
+      "none": "No online sessions yet",
+      "showInChart": "Show {{category}} in the iRating chart",
+      "weekChange": "Change in 7 days"
+    },
+    "kpi": {
+      "sessions": "Sessions in 7 days",
+      "sessionsSplit": "races {{races}} · practice {{practices}}",
+      "laps": "Laps",
+      "incidentsPerLap": "Incidents / lap",
+      "sevenDays": "last 7 days"
+    },
+    "irating": {
+      "title": "iRating",
+      "perSession": "per session",
+      "noneInRange": "No sessions in this period",
+      "range": {
+        "30d": "30 d",
+        "90d": "90 d",
+        "all": "All"
+      }
+    },
     "recentSessions": {
       "title": "Recent sessions",
       "date": "Date",

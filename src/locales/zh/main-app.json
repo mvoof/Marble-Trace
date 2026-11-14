@@ -1439,6 +1439,38 @@
       "paused": "导入已暂停——你正在游戏中",
       "noFolder": "未找到 iRacing 遥测文件夹"
     },
+    "categories": {
+      "sportsCar": "跑车",
+      "formulaCar": "方程式",
+      "road": "公路",
+      "oval": "椭圆赛道",
+      "dirtRoad": "泥地公路",
+      "dirtOval": "泥地椭圆"
+    },
+    "ratings": {
+      "title": "执照与 iRating",
+      "byCategory": "按类别",
+      "none": "还没有在线会话",
+      "showInChart": "在 iRating 图表中显示{{category}}",
+      "weekChange": "7 天变化"
+    },
+    "kpi": {
+      "sessions": "7 天内会话",
+      "sessionsSplit": "比赛 {{races}} · 练习 {{practices}}",
+      "laps": "圈数",
+      "incidentsPerLap": "每圈事故",
+      "sevenDays": "最近 7 天"
+    },
+    "irating": {
+      "title": "iRating",
+      "perSession": "按会话",
+      "noneInRange": "此期间没有会话",
+      "range": {
+        "30d": "30 天",
+        "90d": "90 天",
+        "all": "全部"
+      }
+    },
     "recentSessions": {
       "title": "最近会话",
       "date": "日期",
