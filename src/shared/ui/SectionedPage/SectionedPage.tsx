@@ -33,6 +33,12 @@ interface SectionedPageProps<SectionId extends string> {
   subtitle?: ReactNode;
   /** Controls at the right of the title row. */
   titleActions?: ReactNode;
+  /**
+   * The title row stays in place and only the content under it scrolls: a
+   * section whose title row holds controls the driver needs at any depth.
+   * Takes the place of `fillsHeight`.
+   */
+  pinnedTitle?: boolean;
 }
 
 /**
@@ -50,6 +56,7 @@ const SectionedPageView = <SectionId extends string>({
   menuHeader,
   subtitle,
   titleActions,
+  pinnedTitle = false,
 }: SectionedPageProps<SectionId>) => {
   const activeSection = menu.find(
     (entry): entry is MenuSection<SectionId> =>
@@ -97,24 +104,38 @@ const SectionedPageView = <SectionId extends string>({
       </nav>
 
       {/* Keyed so another section opens at its top, not at the last one's scroll. */}
-      <main
-        className={fillsHeight ? styles.contentFill : styles.content}
-        key={active}
-      >
-        <div
-          className={
-            fillsHeight ? styles.contentInnerFill : styles.contentInner
-          }
-        >
-          <PageTitle
-            title={activeSection?.label}
-            subtitle={subtitle}
-            actions={titleActions}
-          />
+      {pinnedTitle ? (
+        <main className={styles.contentPinned} key={active}>
+          <div className={styles.pinnedTitle}>
+            <PageTitle
+              title={activeSection?.label}
+              subtitle={subtitle}
+              actions={titleActions}
+            />
+          </div>
 
-          {children}
-        </div>
-      </main>
+          <div className={styles.pinnedBody}>{children}</div>
+        </main>
+      ) : (
+        <main
+          className={fillsHeight ? styles.contentFill : styles.content}
+          key={active}
+        >
+          <div
+            className={
+              fillsHeight ? styles.contentInnerFill : styles.contentInner
+            }
+          >
+            <PageTitle
+              title={activeSection?.label}
+              subtitle={subtitle}
+              actions={titleActions}
+            />
+
+            {children}
+          </div>
+        </main>
+      )}
     </div>
   );
 };

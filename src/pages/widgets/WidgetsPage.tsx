@@ -153,6 +153,7 @@ export const WidgetsPage = observer(() => {
           : undefined
       }
       titleActions={widgetActions || undefined}
+      pinnedTitle={activeWidgetId !== null}
     >
       {activeWidgetId === null ? (
         <AllWidgets

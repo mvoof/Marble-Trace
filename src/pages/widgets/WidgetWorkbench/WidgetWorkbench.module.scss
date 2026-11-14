@@ -25,9 +25,8 @@ $narrow-window: 1100px;
 
 .previewColumn {
   position: sticky;
-  // Sticks inside the page's top padding (8 px in SectionedPage) and covers it,
-  // or the settings show through that strip above the preview.
-  top: rem(-8);
+  // Right under the page's pinned title row.
+  top: 0;
   z-index: 1;
   display: flex;
   flex-direction: column;
@@ -39,11 +38,9 @@ $narrow-window: 1100px;
   .rootPreviewLeft & {
     width: 46%;
     flex: none;
-    top: 0;
 
     @media (max-width: $narrow-window) {
       width: auto;
-      top: rem(-8);
     }
   }
 }
