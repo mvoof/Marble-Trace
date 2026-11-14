@@ -168,6 +168,7 @@ impl FileYaml {
             irating: player.irating,
             licence: player.lic_string,
             runs,
+            outline: None,
         }
     }
 }

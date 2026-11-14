@@ -32,6 +32,8 @@ struct SessionSummary {
     licence: Option<String>,
     track_name: Option<String>,
     track_config: Option<String>,
+    track_id: Option<i64>,
+    track_country: Option<String>,
     car_name: Option<String>,
     /// All its runs and files together.
     time_in_car_s: f64,
@@ -68,7 +70,8 @@ impl StatsDb {
                          WHERE r.session_key = s.key),
                         s.track_config,
                         EXISTS (SELECT 1 FROM run raced WHERE raced.session_key = s.key
-                                AND raced.run_type = ?2)
+                                AND raced.run_type = ?2),
+                        s.track_id, s.track_country
                  FROM session s
                  JOIN ibt_file f ON f.session_key = s.key AND f.status = ?1
                  GROUP BY s.key
@@ -92,6 +95,8 @@ impl StatsDb {
                     time_in_car_s: row.get(9)?,
                     track_config: row.get(10)?,
                     raced: row.get(11)?,
+                    track_id: row.get(12)?,
+                    track_country: row.get(13)?,
                 })
             })
             .map_err(to_message)?;
@@ -148,6 +153,15 @@ impl StatsDb {
         Ok(Some(LastRace {
             session,
             irating_change: irating_change(race, &sessions[index + 1..]),
+            track_id: race
+                .track_id
+                .and_then(|track_id| i32::try_from(track_id).ok()),
+            track_country: race.track_country.clone(),
+            outline: race
+                .track_id
+                .map(|track_id| self.track_outline(track_id))
+                .transpose()?
+                .flatten(),
         }))
     }
 
@@ -301,7 +315,7 @@ fn category_rating(
 mod tests {
     use super::*;
     use crate::db::FileStamp;
-    use mt_model::app::stats::{SessionFile, SessionFileLap, SessionFileRun};
+    use mt_model::app::stats::{SessionFile, SessionFileLap, SessionFileRun, TrackOutline};
 
     const NOW: i64 = 100 * WEEK_S;
 
@@ -548,6 +562,50 @@ mod tests {
 
         assert_eq!(last_race.session.track_name.as_deref(), Some("Track 1"));
         assert_eq!(last_race.irating_change, None);
+    }
+
+    fn outline(svg_path: &str) -> TrackOutline {
+        TrackOutline {
+            svg_path: svg_path.into(),
+            view_box: "0 0 10 10".into(),
+        }
+    }
+
+    #[test]
+    fn the_last_race_carries_its_country_and_the_first_outline_of_its_track() {
+        let on_track = |file: SessionFile, drawn: Option<TrackOutline>| SessionFile {
+            track_id: Some(262),
+            track_country: Some("Germany".into()),
+            outline: drawn,
+            ..file
+        };
+        let db = db_with(&[
+            on_track(online(1, NOW - 3 * DAY_S, "Sports Car", 2000), None),
+            on_track(
+                online(2, NOW - 2 * DAY_S, "Sports Car", 2000),
+                Some(outline("M 0 0 Z")),
+            ),
+            on_track(
+                raced(3, NOW - DAY_S, "Sports Car", 2010),
+                Some(outline("M 1 1 Z")),
+            ),
+        ]);
+
+        let last_race = db.home_stats(NOW).unwrap().last_race.unwrap();
+
+        assert_eq!(last_race.track_id, Some(262));
+        assert_eq!(last_race.track_country.as_deref(), Some("Germany"));
+        assert_eq!(last_race.outline, Some(outline("M 0 0 Z")));
+    }
+
+    #[test]
+    fn a_track_never_drawn_has_no_outline() {
+        let db = db_with(&[SessionFile {
+            track_id: Some(1),
+            ..raced(1, NOW - DAY_S, "Sports Car", 2000)
+        }]);
+
+        assert_eq!(db.home_stats(NOW).unwrap().last_race.unwrap().outline, None);
     }
 
     #[test]

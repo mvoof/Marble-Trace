@@ -1728,6 +1728,15 @@ export type LastRace = {
    * a race offline.
    */
   iratingChange: number | null;
+  trackId: number | null;
+  /**
+   * As the sim writes it, e.g. `Germany`.
+   */
+  trackCountry: string | null;
+  /**
+   * From the session files read, else the shape the track map recorded.
+   */
+  outline: TrackOutline | null;
 };
 
 export type LateralSide =
@@ -3204,6 +3213,11 @@ export type TireSet = { lf: boolean; rf: boolean; lr: boolean; rr: boolean };
  * stored and compared against separately — one file per track+car+condition.
  */
 export type TrackCondition = 'dry' | 'wet';
+
+/**
+ * A track's shape as an SVG path, north up when drawn from positions.
+ */
+export type TrackOutline = { svgPath: string; viewBox: string };
 
 export type TrackPoint = { x: number; y: number; pct: number };
 

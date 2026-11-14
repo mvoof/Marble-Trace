@@ -3,14 +3,16 @@
 use std::sync::atomic::Ordering;
 use std::sync::Arc;
 
-use tauri::{AppHandle, State};
+use tauri::{AppHandle, Manager, State};
 
 use mt_model::app::stats::{
     AutologState, HomeStats, RecentSession, SkippedFile, StatsFolder, StatsImportStatus,
+    TrackOutline,
 };
 use mt_sim_iracing::app_ini;
 use mt_stats::import::{PassScope, StatsService};
 use mt_telemetry::state::TelemetryState;
+use mt_telemetry::storage::load_cached_track_shape;
 
 use crate::stats;
 
@@ -34,12 +36,34 @@ pub async fn get_recent_sessions(
 }
 
 #[tauri::command]
-pub async fn get_home_stats(state: State<'_, Arc<StatsService>>) -> Result<HomeStats, String> {
+pub async fn get_home_stats(
+    app: AppHandle,
+    state: State<'_, Arc<StatsService>>,
+) -> Result<HomeStats, String> {
     let service = Arc::clone(&state);
+    let data_dir = app.path().app_data_dir().ok();
 
-    tauri::async_runtime::spawn_blocking(move || service.home_stats())
-        .await
-        .map_err(|error| error.to_string())?
+    tauri::async_runtime::spawn_blocking(move || {
+        let mut stats = service.home_stats()?;
+
+        // A track no session file drew may still have the shape the track map
+        // recorded on it.
+        if let (Some(race), Some(data_dir)) = (stats.last_race.as_mut(), data_dir) {
+            if race.outline.is_none() {
+                race.outline = race
+                    .track_id
+                    .and_then(|track_id| load_cached_track_shape(&data_dir, track_id))
+                    .map(|shape| TrackOutline {
+                        svg_path: shape.svg_path,
+                        view_box: shape.view_box,
+                    });
+            }
+        }
+
+        Ok(stats)
+    })
+    .await
+    .map_err(|error| error.to_string())?
 }
 
 #[tauri::command]

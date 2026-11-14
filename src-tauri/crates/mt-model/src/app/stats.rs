@@ -37,6 +37,17 @@ pub struct SessionFile {
     /// As the sim writes it, e.g. `B 3.74`.
     pub licence: Option<String>,
     pub runs: Vec<SessionFileRun>,
+    /// The track drawn from the file's fastest clean lap; `None` without one.
+    pub outline: Option<TrackOutline>,
+}
+
+/// A track's shape as an SVG path, north up when drawn from positions.
+#[cfg_attr(feature = "dev", derive(specta::Type))]
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
+#[serde(rename_all = "camelCase")]
+pub struct TrackOutline {
+    pub svg_path: String,
+    pub view_box: String,
 }
 
 /// The part of one run (practice, qualify, race…) a file holds.
@@ -144,6 +155,11 @@ pub struct LastRace {
     /// one it joined with: unknown until that next session is driven, and for
     /// a race offline.
     pub irating_change: Option<i32>,
+    pub track_id: Option<i32>,
+    /// As the sim writes it, e.g. `Germany`.
+    pub track_country: Option<String>,
+    /// From the session files read, else the shape the track map recorded.
+    pub outline: Option<TrackOutline>,
 }
 
 /// Whether the sim writes a telemetry file each time the driver gets in the

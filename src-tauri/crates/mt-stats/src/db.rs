@@ -10,10 +10,10 @@ use std::path::Path;
 
 use rusqlite::{params, Connection, OptionalExtension, Transaction};
 
-use mt_model::app::stats::{RecentSession, SessionFile, SkippedFile};
+use mt_model::app::stats::{RecentSession, SessionFile, SkippedFile, TrackOutline};
 
 /// Bumped with every schema step; `migrate` runs the steps above the file's.
-const SCHEMA_VERSION: i64 = 2;
+const SCHEMA_VERSION: i64 = 3;
 
 const SCHEMA_V1: &str = "
 CREATE TABLE session (
@@ -86,6 +86,15 @@ const SCHEMA_V2: &str = "
 CREATE TABLE setting (
   key    TEXT PRIMARY KEY,
   value  TEXT NOT NULL
+);
+";
+
+/// One outline per track, from the first file that held a clean lap of it.
+const SCHEMA_V3: &str = "
+CREATE TABLE track_outline (
+  track_id  INTEGER PRIMARY KEY,
+  svg_path  TEXT NOT NULL,
+  view_box  TEXT NOT NULL
 );
 ";
 
@@ -172,8 +181,26 @@ impl StatsDb {
             .execute("DELETE FROM run WHERE path = ?1", params![stamp.path])
             .map_err(to_message)?;
         insert_runs(&transaction, &stamp.path, &key, file)?;
+        insert_outline(&transaction, file)?;
 
         transaction.commit().map_err(to_message)
+    }
+
+    /// The outline a session file drew of the track; `None` before one did.
+    pub fn track_outline(&self, track_id: i64) -> Result<Option<TrackOutline>, String> {
+        self.connection
+            .query_row(
+                "SELECT svg_path, view_box FROM track_outline WHERE track_id = ?1",
+                params![track_id],
+                |row| {
+                    Ok(TrackOutline {
+                        svg_path: row.get(0)?,
+                        view_box: row.get(1)?,
+                    })
+                },
+            )
+            .optional()
+            .map_err(to_message)
     }
 
     /// Marks a file that could not be read, so the next pass skips it until
@@ -407,6 +434,10 @@ fn migrate(connection: &Connection) -> Result<(), String> {
         connection.execute_batch(SCHEMA_V2).map_err(to_message)?;
     }
 
+    if version < 3 {
+        connection.execute_batch(SCHEMA_V3).map_err(to_message)?;
+    }
+
     connection
         .pragma_update(None, "user_version", SCHEMA_VERSION)
         .map_err(to_message)
@@ -445,6 +476,22 @@ fn insert_session(transaction: &Transaction, key: &str, file: &SessionFile) -> R
                 file.irating,
                 file.licence,
             ],
+        )
+        .map(|_| ())
+        .map_err(to_message)
+}
+
+/// The first outline of a track stays: one clean lap draws it as well as another.
+fn insert_outline(transaction: &Transaction, file: &SessionFile) -> Result<(), String> {
+    let (Some(track_id), Some(outline)) = (file.track_id, &file.outline) else {
+        return Ok(());
+    };
+
+    transaction
+        .execute(
+            "INSERT OR IGNORE INTO track_outline (track_id, svg_path, view_box)
+             VALUES (?1, ?2, ?3)",
+            params![track_id, outline.svg_path, outline.view_box],
         )
         .map(|_| ())
         .map_err(to_message)

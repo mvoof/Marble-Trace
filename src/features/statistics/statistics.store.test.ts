@@ -204,14 +204,18 @@ describe('StatisticsStore last race and autolog', () => {
   });
 
   it('serves the last race the home stats hold', async () => {
-    api.home = {
-      ...EMPTY_HOME,
-      lastRace: { session: SESSION, iratingChange: 38 },
+    const lastRace = {
+      session: SESSION,
+      iratingChange: 38,
+      trackId: 262,
+      trackCountry: 'Germany',
+      outline: { svgPath: 'M 0 0 L 1 1 Z', viewBox: '0 0 1 1' },
     };
+    api.home = { ...EMPTY_HOME, lastRace };
     const store = new StatisticsStore();
     await store.start();
 
-    expect(store.lastRace).toEqual({ session: SESSION, iratingChange: 38 });
+    expect(store.lastRace).toEqual(lastRace);
   });
 
   it('reads whether the game logs telemetry on start', async () => {

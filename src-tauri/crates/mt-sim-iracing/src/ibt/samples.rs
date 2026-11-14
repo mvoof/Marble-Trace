@@ -51,6 +51,8 @@ pub(crate) struct Channels {
     incidents: Option<Channel>,
     on_pit_road: Option<Channel>,
     position: Option<Channel>,
+    latitude: Option<Channel>,
+    longitude: Option<Channel>,
 }
 
 /// One row's values.
@@ -64,6 +66,8 @@ pub(crate) struct Sample {
     pub incidents: i64,
     pub on_pit_road: bool,
     pub position: i64,
+    /// (latitude, longitude) in degrees; `None` before the sim has a fix.
+    pub location: Option<(f64, f64)>,
 }
 
 impl Channels {
@@ -86,6 +90,8 @@ impl Channels {
             incidents: find("PlayerCarMyIncidentCount"),
             on_pit_road: find("OnPitRoad"),
             position: find("PlayerCarPosition"),
+            latitude: find("Lat"),
+            longitude: find("Lon"),
         })
     }
 
@@ -102,6 +108,9 @@ impl Channels {
             incidents: number(self.incidents).unwrap_or_default() as i64,
             on_pit_road: number(self.on_pit_road).is_some_and(|value| value != 0.0),
             position: number(self.position).unwrap_or_default() as i64,
+            location: number(self.latitude)
+                .zip(number(self.longitude))
+                .filter(|(latitude, longitude)| *latitude != 0.0 || *longitude != 0.0),
         }
     }
 }
@@ -113,13 +122,25 @@ pub(crate) struct RunSamples {
     pub incidents: i64,
     pub finish_pos: Option<i64>,
     pub laps: Vec<SessionFileLap>,
+    /// The fastest timed lap off pit road, from the line, with a fix all the way.
+    pub fastest_clean_lap: Option<LapPath>,
+}
+
+/// Where a lap went, row by row.
+#[derive(Debug, Clone, PartialEq)]
+pub(crate) struct LapPath {
+    pub time_s: f64,
+    /// (latitude, longitude) in degrees.
+    pub locations: Vec<(f64, f64)>,
 }
 
 /// A completed lap whose time has not settled yet.
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug)]
 struct PendingLap {
     lap: SessionFileLapDraft,
     completed_at: f64,
+    /// `None` when some row of it had no fix.
+    locations: Option<Vec<(f64, f64)>>,
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -153,6 +174,9 @@ struct RunState {
     lap_start_incidents: i64,
     lap_in_pit: bool,
     lap_partial: bool,
+    /// Where the lap under way went; `None` once a row of it had no fix.
+    lap_locations: Option<Vec<(f64, f64)>>,
+    fastest_clean_lap: Option<LapPath>,
     pending: Option<PendingLap>,
     /// The value the previous lap settled on: a lap reading the same never
     /// got a time of its own.
@@ -172,6 +196,8 @@ impl RunState {
             lap_start_incidents: sample.incidents,
             lap_in_pit: sample.on_pit_road,
             lap_partial: true,
+            lap_locations: Some(Vec::new()),
+            fastest_clean_lap: None,
             pending: None,
             previous_lap_time: None,
             last_sample: *sample,
@@ -187,12 +213,23 @@ impl RunState {
             self.finish_pos = Some(sample.position);
         }
 
-        if let Some(pending) = self.pending {
-            if sample.session_time - pending.completed_at >= LAP_TIME_SETTLE_S {
-                self.pending = None;
-                self.settle(pending.lap, sample.lap_last_lap_time);
-            }
+        let settled = self
+            .pending
+            .as_ref()
+            .is_some_and(|pending| sample.session_time - pending.completed_at >= LAP_TIME_SETTLE_S);
+
+        if let Some(pending) = self.pending.take_if(|_| settled) {
+            self.settle(pending, sample.lap_last_lap_time);
         }
+
+        self.lap_locations =
+            self.lap_locations
+                .take()
+                .zip(sample.location)
+                .map(|(mut locations, location)| {
+                    locations.push(location);
+                    locations
+                });
 
         if sample.lap_completed > self.lap_completed {
             self.complete_lap(sample);
@@ -209,7 +246,7 @@ impl RunState {
         // Two laps within the settle time cannot happen on a real track; the
         // older one takes the value there is.
         if let Some(pending) = self.pending.take() {
-            self.settle(pending.lap, sample.lap_last_lap_time);
+            self.settle(pending, sample.lap_last_lap_time);
         }
 
         self.pending = Some(PendingLap {
@@ -220,6 +257,7 @@ impl RunState {
                 incidents: sample.incidents - self.lap_start_incidents,
             },
             completed_at: sample.session_time,
+            locations: self.lap_locations.take(),
         });
         self.start_lap(sample, false);
     }
@@ -227,7 +265,8 @@ impl RunState {
     /// Keeps a lap from the line; lap 0 (the counter leaving -1 on pit exit)
     /// and a number counted already (the counter climbing back after a reset)
     /// are not laps.
-    fn settle(&mut self, lap: SessionFileLapDraft, lap_last_lap_time: Option<f64>) {
+    fn settle(&mut self, pending: PendingLap, lap_last_lap_time: Option<f64>) {
+        let lap = pending.lap;
         let repeats_previous =
             lap_last_lap_time.is_some() && lap_last_lap_time == self.previous_lap_time;
         let time_s = lap_last_lap_time.filter(|time| *time > 0.0 && !repeats_previous);
@@ -241,12 +280,34 @@ impl RunState {
         }
 
         self.laps.push(lap.with_time(time_s));
+        self.offer_clean_lap(&lap, time_s, pending.locations);
+    }
+
+    /// Keeps the lap's path when it is the fastest clean one so far.
+    fn offer_clean_lap(
+        &mut self,
+        lap: &SessionFileLapDraft,
+        time_s: Option<f64>,
+        locations: Option<Vec<(f64, f64)>>,
+    ) {
+        let (Some(time_s), Some(locations)) = (time_s, locations) else {
+            return;
+        };
+        let is_faster = self
+            .fastest_clean_lap
+            .as_ref()
+            .is_none_or(|fastest| time_s < fastest.time_s);
+
+        if !lap.in_pit && !lap.partial && is_faster {
+            self.fastest_clean_lap = Some(LapPath { time_s, locations });
+        }
     }
 
     fn start_lap(&mut self, sample: &Sample, partial: bool) {
         self.lap_start_incidents = sample.incidents;
         self.lap_in_pit = sample.on_pit_road;
         self.lap_partial = partial;
+        self.lap_locations = Some(Vec::new());
     }
 
     fn finish(mut self, tick_rate: f64) -> RunSamples {
@@ -257,7 +318,7 @@ impl RunState {
                 .then_some(self.last_sample.lap_last_lap_time)
                 .flatten();
 
-            self.settle(pending.lap, time);
+            self.settle(pending, time);
         }
 
         RunSamples {
@@ -265,6 +326,7 @@ impl RunState {
             incidents: self.incidents,
             finish_pos: self.finish_pos,
             laps: self.laps,
+            fastest_clean_lap: self.fastest_clean_lap,
         }
     }
 }

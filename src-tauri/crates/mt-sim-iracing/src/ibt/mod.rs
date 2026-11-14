@@ -7,6 +7,7 @@
 //! Only the player's car is in a file. Rows are streamed, never loaded whole:
 //! a long race is half a gigabyte.
 
+mod outline;
 mod samples;
 mod yaml;
 
@@ -104,11 +105,17 @@ fn read_from<R: Read + Seek>(mut reader: R, length: u64) -> Result<SessionFile, 
 
     let duration = (header.end_time - header.start_time).max(0.0);
 
-    Ok(file_yaml.into_session_file(
-        header.started_at,
-        header.started_at + duration as i64,
-        tracker.finish(f64::from(header.tick_rate)),
-    ))
+    let runs = tracker.finish(f64::from(header.tick_rate));
+    let outline = runs
+        .values()
+        .filter_map(|run| run.fastest_clean_lap.as_ref())
+        .min_by(|first, second| first.time_s.total_cmp(&second.time_s))
+        .and_then(|lap| outline::outline_from(&lap.locations));
+
+    Ok(SessionFile {
+        outline,
+        ..file_yaml.into_session_file(header.started_at, header.started_at + duration as i64, runs)
+    })
 }
 
 fn parse_header(bytes: &[u8], length: u64) -> Result<Header, String> {

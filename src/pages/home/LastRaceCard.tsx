@@ -7,6 +7,8 @@ import { directionOf } from '@features/statistics/home-stats';
 import { formatLapTimeOrDash } from '@shared/lib/telemetry-format';
 import { cx } from '@shared/lib/class-names';
 import { SettingsCard } from '@shared/ui/SettingsCard/SettingsCard';
+import { countryCodeForName } from '@shared/ui/CountryFlag/country-name';
+import type { TrackOutline } from '@shared/contracts/generated/bindings';
 import styles from './LastRaceCard.module.scss';
 
 const MS_PER_SECOND = 1000;
@@ -27,6 +29,24 @@ const Figure = ({ label, children, className, title }: FigureProps) => (
   </div>
 );
 
+interface OutlineProps {
+  outline: TrackOutline;
+}
+
+/** The track as a line, scaled to the box whatever its size. */
+const Outline = ({ outline }: OutlineProps) => (
+  <div className={styles.outline}>
+    <svg
+      className={styles.outlineSvg}
+      viewBox={outline.viewBox}
+      preserveAspectRatio="xMidYMid meet"
+      aria-hidden
+    >
+      <path d={outline.svgPath} vectorEffect="non-scaling-stroke" />
+    </svg>
+  </div>
+);
+
 /** The latest race: where, in what, and how it went. */
 export const LastRaceCard = observer(() => {
   const { t, i18n } = useTranslation('main-app');
@@ -36,7 +56,8 @@ export const LastRaceCard = observer(() => {
     return null;
   }
 
-  const { session, iratingChange } = lastRace;
+  const { session, iratingChange, outline, trackCountry } = lastRace;
+  const countryCode = countryCodeForName(trackCountry);
   const date = new Intl.DateTimeFormat(i18n.language, {
     month: 'short',
     day: 'numeric',
@@ -49,7 +70,16 @@ export const LastRaceCard = observer(() => {
 
   return (
     <SettingsCard title={t('homePage.lastRace.title')}>
+      {outline !== null && <Outline outline={outline} />}
+
       <div className={styles.track}>
+        {countryCode !== null && (
+          <span
+            className={cx('fi', `fi-${countryCode}`, styles.flag)}
+            title={trackCountry ?? undefined}
+          />
+        )}
+
         {session.trackName ?? DASH}
 
         {session.trackConfig !== null && (

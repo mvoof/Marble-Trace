@@ -10,7 +10,7 @@ const TYPE_FLOAT: i32 = 4;
 const TYPE_DOUBLE: i32 = 5;
 
 /// (name, type, offset) of each variable in a test row.
-const VARS: [(&str, i32, usize); 8] = [
+const VARS: [(&str, i32, usize); 10] = [
     ("SessionTime", TYPE_DOUBLE, 0),
     ("SessionNum", TYPE_INT, 8),
     ("SessionState", TYPE_INT, 12),
@@ -19,8 +19,10 @@ const VARS: [(&str, i32, usize); 8] = [
     ("PlayerCarMyIncidentCount", TYPE_INT, 24),
     ("PlayerCarPosition", TYPE_INT, 28),
     ("OnPitRoad", TYPE_BOOL, 32),
+    ("Lat", TYPE_DOUBLE, 36),
+    ("Lon", TYPE_DOUBLE, 44),
 ];
-const ROW_LEN: usize = 36;
+const ROW_LEN: usize = 52;
 /// One row a second keeps the settle arithmetic readable.
 const TICK_RATE: i32 = 1;
 const STARTED_AT: i64 = 1_762_449_323;
@@ -78,6 +80,8 @@ struct Row {
     incidents: i32,
     position: i32,
     on_pit_road: bool,
+    /// (latitude, longitude); (0, 0) is a row without a fix.
+    location: (f64, f64),
 }
 
 fn row_bytes(row: &Row) -> Vec<u8> {
@@ -90,6 +94,8 @@ fn row_bytes(row: &Row) -> Vec<u8> {
     bytes.extend(row.incidents.to_le_bytes());
     bytes.extend(row.position.to_le_bytes());
     bytes.extend([u8::from(row.on_pit_road), 0, 0, 0]);
+    bytes.extend(row.location.0.to_le_bytes());
+    bytes.extend(row.location.1.to_le_bytes());
     bytes
 }
 
@@ -315,4 +321,84 @@ fn lap_zero_repeated_laps_and_unsettled_times_are_not_laps() {
         .collect();
 
     assert_eq!(laps, vec![(1, Some(100.0)), (2, Some(101.0)), (3, None)]);
+}
+
+const METRES_PER_DEGREE: f64 = 111_320.0;
+const CIRCLE_LATITUDE: f64 = 10.0;
+
+/// `count` rows round a circle of `radius_m` metres.
+fn circle(radius_m: f64, count: usize) -> Vec<(f64, f64)> {
+    let longitude_scale = CIRCLE_LATITUDE.to_radians().cos() * METRES_PER_DEGREE;
+
+    (0..count)
+        .map(|index| {
+            let angle = std::f64::consts::TAU * index as f64 / count as f64;
+
+            (
+                CIRCLE_LATITUDE + radius_m * angle.cos() / METRES_PER_DEGREE,
+                radius_m * angle.sin() / longitude_scale,
+            )
+        })
+        .collect()
+}
+
+/// A partial lap, then laps of 70 s and 60 s round circles of 500 and 300 m,
+/// then a 50 s lap round 100 m through the pits. `gap` drops the fix for one
+/// row of the 60 s lap.
+fn laps_round_circles(gap: bool) -> Vec<Row> {
+    // (lap counter, last lap time, radius, through the pits)
+    let segments = [
+        (0, -1.0, 800.0, false),
+        (1, 99.0, 500.0, false),
+        (2, 70.0, 300.0, false),
+        (3, 60.0, 100.0, true),
+        (4, 50.0, 100.0, false),
+    ];
+    let mut rows = Vec::new();
+
+    for (lap_completed, last_lap, radius, through_pits) in segments {
+        for (index, location) in circle(radius, 40).into_iter().enumerate() {
+            let lost_fix = gap && lap_completed == 2 && index == 20;
+
+            rows.push(Row {
+                time: rows.len() as f64,
+                session_num: 2,
+                state: 4,
+                lap_completed,
+                last_lap,
+                on_pit_road: through_pits && index == 10,
+                location: if lost_fix { (0.0, 0.0) } else { location },
+                ..Row::default()
+            });
+        }
+    }
+
+    rows
+}
+
+/// How wide the outline drawn from `rows` is, in metres.
+fn outline_width(rows: &[Row]) -> f64 {
+    let outline = read(ibt_file(rows)).unwrap().outline.unwrap();
+
+    outline.view_box.split(' ').nth(2).unwrap().parse().unwrap()
+}
+
+#[test]
+fn the_fastest_clean_lap_draws_the_outline() {
+    // The 60 s lap: 600 m across. The 50 s one went through the pits.
+    let width = outline_width(&laps_round_circles(false));
+
+    assert!((width - 600.0).abs() < 10.0, "{width}");
+}
+
+#[test]
+fn a_lap_that_lost_the_fix_is_not_drawn() {
+    let width = outline_width(&laps_round_circles(true));
+
+    assert!((width - 1000.0).abs() < 10.0, "{width}");
+}
+
+#[test]
+fn a_file_without_positions_has_no_outline() {
+    assert_eq!(read(ibt_file(&race_rows())).unwrap().outline, None);
 }
