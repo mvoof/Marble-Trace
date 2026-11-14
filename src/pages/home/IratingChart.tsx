@@ -25,7 +25,7 @@ import { SettingsCard } from '@shared/ui/SettingsCard/SettingsCard';
 import { useCategoryName } from './home-format';
 import styles from './IratingChart.module.scss';
 
-const CHART_HEIGHT = 180;
+const CHART_HEIGHT = 240;
 const Y_AXIS_WIDTH = 44;
 /** Room above and below the line, in iRating. */
 const Y_PADDING = 40;
