@@ -11,7 +11,9 @@ import type {
   HomeStats,
   RecentSession,
   StatsImportStatus,
+  TimeDriven,
 } from '@shared/contracts/generated/bindings';
+import { drivenWeeks, type DrivenDay } from './days-driven';
 import { iratingSteps, type IratingRange } from './home-stats';
 
 /** Rows of the recent sessions table on Home. */
@@ -77,6 +79,24 @@ export class StatisticsStore {
     }
 
     return iratingSteps(rating.history, this.iratingRange, this.homeStatsAtS);
+  }
+
+  /** The calendar's weeks, Monday first, the current week last. */
+  get drivenWeeks(): DrivenDay[][] {
+    return drivenWeeks(this.homeStats?.driven ?? [], this.homeStatsAtS);
+  }
+
+  /** The calendar's darkest shade: the longest day in it. */
+  get longestDrivenDayS(): number {
+    return Math.max(0, ...this.drivenWeeks.flat().map((day) => day.timeInCarS));
+  }
+
+  get topCars(): TimeDriven[] {
+    return this.homeStats?.topCars ?? [];
+  }
+
+  get topTracks(): TimeDriven[] {
+    return this.homeStats?.topTracks ?? [];
   }
 
   selectChartCategory(category: string) {

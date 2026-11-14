@@ -24,7 +24,14 @@ const SESSION: RecentSession = {
 
 const WEEK = { sessions: 0, races: 0, laps: 0, incidents: 0 };
 
-const EMPTY_HOME: HomeStats = { ratings: [], week: WEEK, previousWeek: WEEK };
+const EMPTY_HOME: HomeStats = {
+  ratings: [],
+  week: WEEK,
+  previousWeek: WEEK,
+  driven: [],
+  topCars: [],
+  topTracks: [],
+};
 
 const rating = (category: string): CategoryRating => ({
   category,

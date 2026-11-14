@@ -1501,6 +1501,22 @@
         "practice": "Тренировка",
         "test": "Тест"
       }
+    },
+    "calendar": {
+      "title": "Дни за рулём",
+      "timeInCar": "время в машине",
+      "less": "меньше",
+      "more": "больше"
+    },
+    "tops": {
+      "cars": "Топ машин",
+      "tracks": "Топ трасс",
+      "byTime": "время в машине"
+    },
+    "duration": {
+      "minutes": "{{minutes}} мин",
+      "hoursMinutes": "{{hours}} ч {{minutes}} мин",
+      "hours": "{{hours}} ч"
     }
   }
 }

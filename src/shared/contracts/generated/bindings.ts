@@ -1092,6 +1092,23 @@ export type DisplayName = {
   model: string;
 };
 
+/**
+ * One session of the days-driven calendar.
+ */
+export type DrivenSession = {
+  key: string;
+  /**
+   * UTC unix seconds.
+   */
+  startedAt: number;
+  /**
+   * All its runs and files together; never 0.
+   */
+  timeInCarS: number;
+  trackName: string | null;
+  carName: string | null;
+};
+
 export type DriverEntriesFrame = {
   entries: DriverEntry[];
   playerCarIdx: number;
@@ -1371,6 +1388,18 @@ export type HomeStats = {
    * The seven days before those.
    */
   previousWeek: WeekStats;
+  /**
+   * The sessions of the calendar's span spent in the car, oldest first.
+   */
+  driven: DrivenSession[];
+  /**
+   * The cars driven longest, all time, the longest first.
+   */
+  topCars: TimeDriven[];
+  /**
+   * The tracks driven longest, all time, the longest first.
+   */
+  topTracks: TimeDriven[];
 };
 
 /**
@@ -3082,6 +3111,11 @@ export type TelemetrySettings = {
  * down to the one frame that answers that.
  */
 export type TelemetrySlowBundle = { carStatus: CarStatusFrame };
+
+/**
+ * A car or a track and the time spent in the car on it.
+ */
+export type TimeDriven = { name: string; timeInCarS: number };
 
 /**
  * Percentiles of one timed operation, in milliseconds.

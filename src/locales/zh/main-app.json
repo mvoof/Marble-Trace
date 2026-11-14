@@ -1483,6 +1483,22 @@
         "practice": "练习",
         "test": "测试"
       }
+    },
+    "calendar": {
+      "title": "驾驶日历",
+      "timeInCar": "驾驶时长",
+      "less": "少",
+      "more": "多"
+    },
+    "tops": {
+      "cars": "常用赛车",
+      "tracks": "常用赛道",
+      "byTime": "驾驶时长"
+    },
+    "duration": {
+      "minutes": "{{minutes}} 分钟",
+      "hoursMinutes": "{{hours}} 小时 {{minutes}} 分钟",
+      "hours": "{{hours}} 小时"
     }
   }
 }

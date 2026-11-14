@@ -1489,6 +1489,22 @@
         "practice": "Practice",
         "test": "Test"
       }
+    },
+    "calendar": {
+      "title": "Days driven",
+      "timeInCar": "time in car",
+      "less": "less",
+      "more": "more"
+    },
+    "tops": {
+      "cars": "Top cars",
+      "tracks": "Top tracks",
+      "byTime": "time in car"
+    },
+    "duration": {
+      "minutes": "{{minutes}} min",
+      "hoursMinutes": "{{hours}} h {{minutes}} min",
+      "hours": "{{hours}} h"
     }
   }
 }

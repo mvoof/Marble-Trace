@@ -1,0 +1,102 @@
+$cell-size: rem(11);
+$cell-gap: rem(3);
+
+.titleAside {
+  font-weight: 400;
+  color: $sys-text-muted;
+}
+
+.legend {
+  display: flex;
+  align-items: center;
+  gap: $cell-gap;
+  font-size: rem(12);
+  color: $sys-text-muted;
+
+  .cell {
+    margin: 0 rem(1);
+  }
+}
+
+// Flex end: what does not fit overflows to the left, the oldest weeks.
+.viewport {
+  display: flex;
+  justify-content: flex-end;
+  overflow: hidden;
+}
+
+.grid {
+  display: grid;
+  flex: none;
+  grid-auto-flow: column;
+  grid-template-rows: repeat(7, $cell-size);
+  grid-auto-columns: $cell-size;
+  gap: $cell-gap;
+}
+
+.cell,
+.future {
+  display: block;
+  width: $cell-size;
+  height: $cell-size;
+  border-radius: rem(2);
+}
+
+// Shades of the accent, from a day not driven to the longest one.
+.cell {
+  background: $sys-bg-raised;
+
+  &[data-level='1'] {
+    background: color-mix(in srgb, $sys-accent 18%, $sys-bg-raised);
+  }
+
+  &[data-level='2'] {
+    background: color-mix(in srgb, $sys-accent 40%, $sys-bg-raised);
+  }
+
+  &[data-level='3'] {
+    background: color-mix(in srgb, $sys-accent 68%, $sys-bg-raised);
+  }
+
+  &[data-level='4'] {
+    background: $sys-accent;
+  }
+}
+
+.tooltip {
+  display: flex;
+  flex-direction: column;
+  gap: rem(4);
+  min-width: rem(200);
+  font-size: rem(12);
+}
+
+.tooltipHead,
+.tooltipSession {
+  display: flex;
+  justify-content: space-between;
+  gap: rem(12);
+}
+
+.tooltipHead {
+  padding-bottom: rem(4);
+  border-bottom: 1px solid $sys-border-main;
+  font-weight: 600;
+}
+
+.tooltipNames {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mono {
+  flex: none;
+  font-family: $font-mono;
+  font-variant-numeric: tabular-nums;
+}
+
+.muted {
+  color: $sys-text-secondary;
+}

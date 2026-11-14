@@ -1489,6 +1489,22 @@
         "practice": "Práctica",
         "test": "Prueba"
       }
+    },
+    "calendar": {
+      "title": "Días al volante",
+      "timeInCar": "tiempo en el coche",
+      "less": "menos",
+      "more": "más"
+    },
+    "tops": {
+      "cars": "Coches principales",
+      "tracks": "Circuitos principales",
+      "byTime": "tiempo en el coche"
+    },
+    "duration": {
+      "minutes": "{{minutes}} min",
+      "hoursMinutes": "{{hours}} h {{minutes}} min",
+      "hours": "{{hours}} h"
     }
   }
 }

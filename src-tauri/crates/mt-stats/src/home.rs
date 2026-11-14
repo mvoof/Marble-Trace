@@ -5,12 +5,19 @@ use std::collections::HashMap;
 
 use rusqlite::params;
 
-use mt_model::app::stats::{CategoryRating, HomeStats, RatingPoint, WeekStats};
+use mt_model::app::stats::{
+    CategoryRating, DrivenSession, HomeStats, RatingPoint, TimeDriven, WeekStats,
+};
 
 use crate::db::{to_message, StatsDb, STATUS_READ};
 
-const WEEK_S: i64 = 7 * 24 * 60 * 60;
+const DAY_S: i64 = 24 * 60 * 60;
+const WEEK_S: i64 = 7 * DAY_S;
 const RACE_EVENT_TYPE: &str = "Race";
+/// The calendar's span: 53 weeks, so its first column is always whole.
+const CALENDAR_DAYS: i64 = 53 * 7;
+/// Entries of each top list.
+const TOP_LIMIT: usize = 5;
 
 /// One session as Home needs it, merged from its files.
 #[derive(Debug, Clone)]
@@ -23,6 +30,9 @@ struct SessionSummary {
     irating: Option<i64>,
     licence: Option<String>,
     track_name: Option<String>,
+    car_name: Option<String>,
+    /// All its runs and files together.
+    time_in_car_s: f64,
 }
 
 impl StatsDb {
@@ -36,6 +46,9 @@ impl StatsDb {
             ratings: category_ratings(&sessions, week_start),
             week: self.week_stats(&sessions, week_start, now)?,
             previous_week: self.week_stats(&sessions, previous_week_start, week_start)?,
+            driven: driven_sessions(&sessions, now - CALENDAR_DAYS * DAY_S),
+            top_cars: top_by_time(&sessions, |session| session.car_name.as_deref()),
+            top_tracks: top_by_time(&sessions, |session| session.track_name.as_deref()),
         })
     }
 
@@ -45,7 +58,9 @@ impl StatsDb {
             .connection
             .prepare(
                 "SELECT s.key, MIN(f.started_at) AS started, s.event_type, s.category,
-                        s.subsession_id, s.irating, s.licence, s.track_name
+                        s.subsession_id, s.irating, s.licence, s.track_name, s.car_name,
+                        (SELECT COALESCE(SUM(r.time_in_car_s), 0) FROM run r
+                         WHERE r.session_key = s.key)
                  FROM session s
                  JOIN ibt_file f ON f.session_key = s.key AND f.status = ?1
                  GROUP BY s.key
@@ -65,6 +80,8 @@ impl StatsDb {
                     irating: row.get(5)?,
                     licence: row.get(6)?,
                     track_name: row.get(7)?,
+                    car_name: row.get(8)?,
+                    time_in_car_s: row.get(9)?,
                 })
             })
             .map_err(to_message)?;
@@ -110,6 +127,58 @@ impl StatsDb {
             )
             .map_err(to_message)
     }
+}
+
+/// The sessions started from `from` on with time in the car; a session only
+/// sat in the garage leaves the calendar empty.
+fn driven_sessions(sessions: &[SessionSummary], from: i64) -> Vec<DrivenSession> {
+    sessions
+        .iter()
+        .filter(|session| session.started_at >= from && session.time_in_car_s > 0.0)
+        .map(|session| DrivenSession {
+            key: session.key.clone(),
+            started_at: session.started_at as f64,
+            time_in_car_s: session.time_in_car_s,
+            track_name: session.track_name.clone(),
+            car_name: session.car_name.clone(),
+        })
+        .collect()
+}
+
+/// The names `name_of` gives the sessions, by the time spent in the car
+/// under each, the longest first.
+fn top_by_time(
+    sessions: &[SessionSummary],
+    name_of: impl Fn(&SessionSummary) -> Option<&str>,
+) -> Vec<TimeDriven> {
+    let mut by_name: HashMap<&str, f64> = HashMap::new();
+
+    for session in sessions
+        .iter()
+        .filter(|session| session.time_in_car_s > 0.0)
+    {
+        if let Some(name) = name_of(session) {
+            *by_name.entry(name).or_default() += session.time_in_car_s;
+        }
+    }
+
+    let mut ranked: Vec<TimeDriven> = by_name
+        .into_iter()
+        .map(|(name, time_in_car_s)| TimeDriven {
+            name: name.to_owned(),
+            time_in_car_s,
+        })
+        .collect();
+
+    ranked.sort_by(|left, right| {
+        right
+            .time_in_car_s
+            .total_cmp(&left.time_in_car_s)
+            .then_with(|| left.name.cmp(&right.name))
+    });
+    ranked.truncate(TOP_LIMIT);
+
+    ranked
 }
 
 /// One line per category driven online, the category of the latest session
@@ -181,7 +250,6 @@ mod tests {
     use mt_model::app::stats::{SessionFile, SessionFileLap, SessionFileRun};
 
     const NOW: i64 = 100 * WEEK_S;
-    const DAY_S: i64 = 24 * 60 * 60;
 
     fn stamp(path: &str) -> FileStamp {
         FileStamp {
@@ -330,5 +398,81 @@ mod tests {
         let week = db_with(&[first, second]).home_stats(NOW).unwrap().week;
 
         assert_eq!((week.sessions, week.laps, week.incidents), (1, 4, 3));
+    }
+
+    fn driven_in(
+        subsession_id: i64,
+        started_at: i64,
+        car: &str,
+        track: &str,
+        seconds: f64,
+    ) -> SessionFile {
+        SessionFile {
+            car_name: Some(car.into()),
+            track_name: Some(track.into()),
+            runs: vec![SessionFileRun {
+                time_in_car_s: seconds,
+                ..run(0, 1)
+            }],
+            ..online(subsession_id, started_at, "Sports Car", 2000)
+        }
+    }
+
+    #[test]
+    fn the_calendar_holds_the_sessions_of_its_span_spent_in_the_car() {
+        let mut two_files = driven_in(3, NOW - DAY_S, "BMW", "Spa", 600.0);
+        let mut second_file = driven_in(3, NOW - DAY_S + 700, "BMW", "Spa", 300.0);
+        two_files.runs[0].session_num = 1;
+        second_file.runs[0].session_num = 2;
+        let db = db_with(&[
+            driven_in(1, NOW - CALENDAR_DAYS * DAY_S - 1, "BMW", "Spa", 900.0),
+            driven_in(2, NOW - 3 * DAY_S, "BMW", "Spa", 0.0),
+            two_files,
+            second_file,
+        ]);
+
+        let driven = db.home_stats(NOW).unwrap().driven;
+        let seen: Vec<(i64, f64)> = driven
+            .iter()
+            .map(|session| (session.started_at as i64, session.time_in_car_s))
+            .collect();
+
+        assert_eq!(seen, vec![(NOW - DAY_S, 900.0)]);
+        assert_eq!(driven[0].car_name.as_deref(), Some("BMW"));
+        assert_eq!(driven[0].track_name.as_deref(), Some("Spa"));
+    }
+
+    #[test]
+    fn the_top_lists_rank_cars_and_tracks_by_time_all_time() {
+        let mut files = vec![
+            driven_in(1, NOW - 400 * DAY_S, "Porsche", "Monza", 3_000.0),
+            driven_in(2, NOW - 5 * DAY_S, "BMW", "Spa", 1_000.0),
+            driven_in(3, NOW - 4 * DAY_S, "BMW", "Monza", 1_500.0),
+            driven_in(4, NOW - 3 * DAY_S, "Ferrari", "Spa", 0.0),
+        ];
+        files.extend(
+            (10..20).map(|id| driven_in(id, NOW - DAY_S, &format!("Car {id}"), "Imola", 10.0)),
+        );
+
+        let stats = db_with(&files).home_stats(NOW).unwrap();
+        let ranked = |list: &[TimeDriven]| -> Vec<(String, f64)> {
+            list.iter()
+                .map(|entry| (entry.name.clone(), entry.time_in_car_s))
+                .collect()
+        };
+
+        assert_eq!(stats.top_cars.len(), TOP_LIMIT);
+        assert_eq!(
+            ranked(&stats.top_cars[..2]),
+            vec![("Porsche".into(), 3_000.0), ("BMW".into(), 2_500.0)]
+        );
+        assert_eq!(
+            ranked(&stats.top_tracks),
+            vec![
+                ("Monza".into(), 4_500.0),
+                ("Spa".into(), 1_000.0),
+                ("Imola".into(), 100.0),
+            ]
+        );
     }
 }

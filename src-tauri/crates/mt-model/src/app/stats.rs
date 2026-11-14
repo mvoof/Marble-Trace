@@ -124,6 +124,35 @@ pub struct HomeStats {
     pub week: WeekStats,
     /// The seven days before those.
     pub previous_week: WeekStats,
+    /// The sessions of the calendar's span spent in the car, oldest first.
+    pub driven: Vec<DrivenSession>,
+    /// The cars driven longest, all time, the longest first.
+    pub top_cars: Vec<TimeDriven>,
+    /// The tracks driven longest, all time, the longest first.
+    pub top_tracks: Vec<TimeDriven>,
+}
+
+/// One session of the days-driven calendar.
+#[cfg_attr(feature = "dev", derive(specta::Type))]
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
+#[serde(rename_all = "camelCase")]
+pub struct DrivenSession {
+    pub key: String,
+    /// UTC unix seconds.
+    pub started_at: f64,
+    /// All its runs and files together; never 0.
+    pub time_in_car_s: f64,
+    pub track_name: Option<String>,
+    pub car_name: Option<String>,
+}
+
+/// A car or a track and the time spent in the car on it.
+#[cfg_attr(feature = "dev", derive(specta::Type))]
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
+#[serde(rename_all = "camelCase")]
+pub struct TimeDriven {
+    pub name: String,
+    pub time_in_car_s: f64,
 }
 
 /// One licence and iRating line: the sessions online in one category.

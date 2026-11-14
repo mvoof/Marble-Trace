@@ -4,10 +4,12 @@ import { FolderSearch } from 'lucide-react';
 
 import { useStatisticsStore } from '@features/statistics/statistics-context';
 import { PageTitle } from '@shared/ui/PageTitle/PageTitle';
+import { DaysDrivenCard } from './DaysDrivenCard';
 import { HomeKpis } from './HomeKpis';
 import { ImportNote } from './ImportNote';
 import { IratingChart } from './IratingChart';
 import { RecentSessionsTable } from './RecentSessionsTable';
+import { TopByTime } from './TopByTime';
 import styles from './HomePage.module.scss';
 
 const EMPTY_ICON_SIZE = 28;
@@ -25,9 +27,13 @@ export const HomePage = observer(() => {
         <>
           <HomeKpis />
 
+          <DaysDrivenCard />
+
           <IratingChart />
 
           <RecentSessionsTable />
+
+          <TopByTime />
         </>
       ) : (
         <div className={styles.empty}>
