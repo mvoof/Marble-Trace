@@ -36,7 +36,8 @@ $narrow-window: 1100px;
   background: $sys-bg-main;
 
   .rootPreviewLeft & {
-    width: 46%;
+    // Two thirds for the preview, a third for the settings.
+    width: calc((100% - #{rem(16)}) * 2 / 3);
     flex: none;
 
     @media (max-width: $narrow-window) {
