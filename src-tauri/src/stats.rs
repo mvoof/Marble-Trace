@@ -52,7 +52,14 @@ fn open_db(app: &AppHandle) -> Result<StatsDb, String> {
 /// `Documents\iRacing\telemetry`, through the known folder: Documents is often
 /// moved to another drive.
 fn session_file_folder(app: &AppHandle) -> Option<PathBuf> {
-    let documents = app.path().document_dir().ok()?;
+    Some(iracing_documents(app)?.join("telemetry"))
+}
 
-    Some(documents.join("iRacing").join("telemetry"))
+/// `Documents\iRacing\app.ini`, the sim's own settings.
+pub fn sim_settings_file(app: &AppHandle) -> Option<PathBuf> {
+    Some(iracing_documents(app)?.join("app.ini"))
+}
+
+fn iracing_documents(app: &AppHandle) -> Option<PathBuf> {
+    Some(app.path().document_dir().ok()?.join("iRacing"))
 }

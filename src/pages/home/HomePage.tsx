@@ -4,10 +4,13 @@ import { FolderSearch } from 'lucide-react';
 
 import { useStatisticsStore } from '@features/statistics/statistics-context';
 import { PageTitle } from '@shared/ui/PageTitle/PageTitle';
+import { AutologHint } from './AutologHint';
 import { DaysDrivenCard } from './DaysDrivenCard';
 import { HomeKpis } from './HomeKpis';
 import { ImportNote } from './ImportNote';
 import { IratingChart } from './IratingChart';
+import { LastRaceCard } from './LastRaceCard';
+import { NowColumn } from './NowColumn';
 import { RecentSessionsTable } from './RecentSessionsTable';
 import { TopByTime } from './TopByTime';
 import styles from './HomePage.module.scss';
@@ -21,29 +24,41 @@ export const HomePage = observer(() => {
 
   return (
     <div className={styles.page}>
-      <PageTitle title={t('homePage.title')} actions={<ImportNote />} />
+      <div className={styles.main}>
+        <PageTitle title={t('homePage.title')} actions={<ImportNote />} />
 
-      {statistics.hasSessions ? (
-        <>
-          <HomeKpis />
+        <AutologHint />
 
-          <DaysDrivenCard />
+        {statistics.hasSessions ? (
+          <>
+            <HomeKpis />
 
-          <IratingChart />
+            <DaysDrivenCard />
 
-          <RecentSessionsTable />
+            <div className={styles.chartRow}>
+              <IratingChart />
 
-          <TopByTime />
-        </>
-      ) : (
-        <div className={styles.empty}>
-          <FolderSearch size={EMPTY_ICON_SIZE} className={styles.emptyIcon} />
+              <LastRaceCard />
+            </div>
 
-          <p className={styles.emptyTitle}>{t('homePage.emptyTitle')}</p>
+            <RecentSessionsTable />
 
-          <p className={styles.emptyText}>{t('homePage.emptyText')}</p>
-        </div>
-      )}
+            <TopByTime />
+          </>
+        ) : (
+          <div className={styles.empty}>
+            <FolderSearch size={EMPTY_ICON_SIZE} className={styles.emptyIcon} />
+
+            <p className={styles.emptyTitle}>{t('homePage.emptyTitle')}</p>
+
+            <p className={styles.emptyText}>{t('homePage.emptyText')}</p>
+
+            <p className={styles.emptyText}>{t('homePage.emptyKept')}</p>
+          </div>
+        )}
+      </div>
+
+      <NowColumn />
     </div>
   );
 });

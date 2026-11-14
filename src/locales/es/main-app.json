@@ -1439,7 +1439,8 @@
   "homePage": {
     "title": "Inicio",
     "emptyTitle": "Aún no hay sesiones",
-    "emptyText": "Aquí estarán tus estadísticas: sesiones, vueltas, incidentes e iRating. Marble Trace las leerá de los archivos de telemetría que iRacing escribe en Documents\\iRacing\\telemetry cuando conduzcas.",
+    "emptyText": "Cada vez que subes al coche, iRacing escribe un archivo de telemetría en DocumentsiRacing\telemetry. Marble Trace lee esos archivos mientras el juego está cerrado y los convierte en tus sesiones, vueltas, incidentes e iRating.",
+    "emptyKept": "Lo que lee se conserva, aunque borres los archivos.",
     "import": {
       "reading": "Leyendo archivos del juego ·",
       "paused": "Importación en pausa: estás en el juego",
@@ -1505,6 +1506,33 @@
       "minutes": "{{minutes}} min",
       "hoursMinutes": "{{hours}} h {{minutes}} min",
       "hours": "{{hours}} h"
+    },
+    "lastRace": {
+      "title": "Última carrera",
+      "finish": "Final",
+      "bestLap": "Mejor vuelta",
+      "incidents": "Inc.",
+      "irating": "iRating",
+      "iratingUnknown": "Aparece tras tu próxima sesión en esta categoría"
+    },
+    "now": {
+      "title": "Ahora",
+      "sim": "iRacing",
+      "connected": "Conectado",
+      "notRunning": "No iniciado",
+      "layout": "Diseño",
+      "noLayout": "Ninguno",
+      "openLayouts": "Abrir diseños",
+      "monitors": "Monitores",
+      "widgetsOn": "Widgets activos",
+      "browserScreens": "Pantallas en navegador"
+    },
+    "autolog": {
+      "title": "iRacing no guarda archivos de telemetría",
+      "text": "Las estadísticas salen de los archivos que iRacing escribe cada vez que subes al coche, y eso está desactivado en su app.ini. Marble Trace puede activarlo por ti.",
+      "enable": "Activar",
+      "closeGame": "Cierra iRacing primero",
+      "failed": "No activado: {{reason}}"
     }
   }
 }

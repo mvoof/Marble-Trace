@@ -1,0 +1,68 @@
+.column {
+  min-width: 0;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: rem(10);
+  min-height: rem(34);
+  font-size: rem(13);
+
+  & + & {
+    border-top: 1px solid $sys-border-sub;
+  }
+}
+
+.label {
+  color: $sys-text-secondary;
+  white-space: nowrap;
+}
+
+.value {
+  font-family: $font-mono;
+  font-variant-numeric: tabular-nums;
+  color: $sys-text-primary;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: rem(6);
+  min-width: 0;
+  max-width: 60%;
+  padding: rem(2) rem(9);
+  font: inherit;
+  font-size: rem(12);
+  color: $sys-text-primary;
+  border: 1px solid $sys-border-sub;
+  border-radius: rem(6);
+  background: $sys-bg-raised;
+}
+
+button.chip {
+  cursor: pointer;
+
+  &:hover {
+    border-color: $sys-border-main;
+  }
+}
+
+.chipText {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dot {
+  flex: none;
+  width: rem(7);
+  height: rem(7);
+  border-radius: 50%;
+  background: $sys-text-muted;
+}
+
+.dotOn {
+  background: $sys-up;
+}

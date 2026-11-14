@@ -1,14 +1,18 @@
 import { makeAutoObservable, runInAction } from 'mobx';
 
 import {
+  enableAutolog,
+  getAutologState,
   getHomeStats,
   getRecentSessions,
   getStatsImportStatus,
   listenStatsImport,
 } from '@shared/api/stats.service';
 import type {
+  AutologState,
   CategoryRating,
   HomeStats,
+  LastRace,
   RecentSession,
   StatsImportStatus,
   TimeDriven,
@@ -43,6 +47,11 @@ export class StatisticsStore {
   iratingRange: IratingRange = '90d';
   /** The first load has answered, so an empty list means no sessions. */
   loaded = false;
+  /** Whether the game writes the files statistics read; `null` until asked. */
+  autolog: AutologState | null = null;
+  enablingAutolog = false;
+  /** Why turning logging on failed, as the backend said it. */
+  autologError: string | null = null;
 
   private unlisten: (() => void) | null = null;
   private disposed = false;
@@ -99,6 +108,10 @@ export class StatisticsStore {
     return this.homeStats?.topTracks ?? [];
   }
 
+  get lastRace(): LastRace | null {
+    return this.homeStats?.lastRace ?? null;
+  }
+
   selectChartCategory(category: string) {
     this.chartCategory = category;
   }
@@ -125,7 +138,29 @@ export class StatisticsStore {
     runInAction(() => {
       this.importStatus = status;
     });
-    await this.loadSessions();
+    await Promise.all([this.loadSessions(), this.loadAutolog()]);
+  }
+
+  /** Writes the setting into the game's app.ini; refused while the game runs. */
+  async enableAutolog() {
+    this.enablingAutolog = true;
+    this.autologError = null;
+
+    try {
+      const autolog = await enableAutolog();
+
+      runInAction(() => {
+        this.autolog = autolog;
+      });
+    } catch (error) {
+      runInAction(() => {
+        this.autologError = String(error);
+      });
+    } finally {
+      runInAction(() => {
+        this.enablingAutolog = false;
+      });
+    }
   }
 
   dispose() {
@@ -144,6 +179,23 @@ export class StatisticsStore {
 
     if (fileFinished || passEnded) {
       void this.loadSessions();
+    }
+
+    // A pass ends when the game closes, and the game writes its settings then.
+    if (passEnded) {
+      void this.loadAutolog();
+    }
+  }
+
+  private async loadAutolog() {
+    try {
+      const autolog = await getAutologState();
+
+      runInAction(() => {
+        this.autolog = autolog;
+      });
+    } catch (error) {
+      console.error('Autolog state not read', error);
     }
   }
 

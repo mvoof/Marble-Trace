@@ -130,6 +130,32 @@ pub struct HomeStats {
     pub top_cars: Vec<TimeDriven>,
     /// The tracks driven longest, all time, the longest first.
     pub top_tracks: Vec<TimeDriven>,
+    /// The latest session that held a race; `None` before the first.
+    pub last_race: Option<LastRace>,
+}
+
+/// The latest race, as Home's last-race card shows it.
+#[cfg_attr(feature = "dev", derive(specta::Type))]
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
+#[serde(rename_all = "camelCase")]
+pub struct LastRace {
+    pub session: RecentSession,
+    /// The iRating the next session in its category joined with, against the
+    /// one it joined with: unknown until that next session is driven, and for
+    /// a race offline.
+    pub irating_change: Option<i32>,
+}
+
+/// Whether the sim writes a telemetry file each time the driver gets in the
+/// car — where statistics come from.
+#[cfg_attr(feature = "dev", derive(specta::Type))]
+#[derive(Serialize, Deserialize, Debug, Clone, Copy, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub enum AutologState {
+    On,
+    Off,
+    /// The sim's settings file, or the setting in it, was not found.
+    Unknown,
 }
 
 /// One session of the days-driven calendar.

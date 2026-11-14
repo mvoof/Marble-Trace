@@ -1,0 +1,66 @@
+.track {
+  font-size: rem(15);
+  font-weight: 600;
+  color: $sys-text-primary;
+}
+
+.config {
+  font-weight: 400;
+  color: $sys-text-secondary;
+}
+
+.carLine {
+  margin-top: rem(2);
+  font-size: rem(13);
+  color: $sys-text-muted;
+}
+
+.figures {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: rem(12) rem(22);
+  margin-top: rem(16);
+}
+
+.figure {
+  display: flex;
+  flex-direction: column;
+  gap: rem(4);
+}
+
+.figureLabel {
+  font-size: rem(12);
+  color: $sys-text-muted;
+}
+
+.figureValue {
+  font-family: $font-mono;
+  font-size: rem(15);
+  font-variant-numeric: tabular-nums;
+  color: $sys-text-primary;
+}
+
+.finish {
+  font-size: rem(26);
+  font-weight: 600;
+  line-height: 1;
+}
+
+.field {
+  font-size: rem(14);
+  font-weight: 400;
+  color: $sys-text-muted;
+}
+
+.up {
+  color: $sys-up;
+}
+
+.down {
+  color: $sys-down;
+}
+
+.flat {
+  color: $sys-text-muted;
+}

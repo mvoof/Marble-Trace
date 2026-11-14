@@ -6,10 +6,11 @@ use std::collections::HashMap;
 use rusqlite::params;
 
 use mt_model::app::stats::{
-    CategoryRating, DrivenSession, HomeStats, RatingPoint, TimeDriven, WeekStats,
+    CategoryRating, DrivenSession, HomeStats, LastRace, RatingPoint, RecentSession, TimeDriven,
+    WeekStats,
 };
 
-use crate::db::{to_message, StatsDb, STATUS_READ};
+use crate::db::{to_message, StatsDb, RACE_RUN_TYPE, STATUS_READ};
 
 const DAY_S: i64 = 24 * 60 * 60;
 const WEEK_S: i64 = 7 * DAY_S;
@@ -30,9 +31,12 @@ struct SessionSummary {
     irating: Option<i64>,
     licence: Option<String>,
     track_name: Option<String>,
+    track_config: Option<String>,
     car_name: Option<String>,
     /// All its runs and files together.
     time_in_car_s: f64,
+    /// It holds a race run, not only the practice of a race event.
+    raced: bool,
 }
 
 impl StatsDb {
@@ -49,6 +53,7 @@ impl StatsDb {
             driven: driven_sessions(&sessions, now - CALENDAR_DAYS * DAY_S),
             top_cars: top_by_time(&sessions, |session| session.car_name.as_deref()),
             top_tracks: top_by_time(&sessions, |session| session.track_name.as_deref()),
+            last_race: self.last_race(&sessions)?,
         })
     }
 
@@ -60,7 +65,10 @@ impl StatsDb {
                 "SELECT s.key, MIN(f.started_at) AS started, s.event_type, s.category,
                         s.subsession_id, s.irating, s.licence, s.track_name, s.car_name,
                         (SELECT COALESCE(SUM(r.time_in_car_s), 0) FROM run r
-                         WHERE r.session_key = s.key)
+                         WHERE r.session_key = s.key),
+                        s.track_config,
+                        EXISTS (SELECT 1 FROM run raced WHERE raced.session_key = s.key
+                                AND raced.run_type = ?2)
                  FROM session s
                  JOIN ibt_file f ON f.session_key = s.key AND f.status = ?1
                  GROUP BY s.key
@@ -68,7 +76,7 @@ impl StatsDb {
             )
             .map_err(to_message)?;
         let rows = statement
-            .query_map(params![STATUS_READ], |row| {
+            .query_map(params![STATUS_READ, RACE_RUN_TYPE], |row| {
                 let subsession_id: Option<i64> = row.get(4)?;
 
                 Ok(SessionSummary {
@@ -82,6 +90,8 @@ impl StatsDb {
                     track_name: row.get(7)?,
                     car_name: row.get(8)?,
                     time_in_car_s: row.get(9)?,
+                    track_config: row.get(10)?,
+                    raced: row.get(11)?,
                 })
             })
             .map_err(to_message)?;
@@ -115,6 +125,32 @@ impl StatsDb {
         Ok(week)
     }
 
+    /// The latest session that held a race, with its results. `sessions` is
+    /// oldest first.
+    fn last_race(&self, sessions: &[SessionSummary]) -> Result<Option<LastRace>, String> {
+        let Some(index) = sessions.iter().rposition(|session| session.raced) else {
+            return Ok(None);
+        };
+        let race = &sessions[index];
+        let session = self.with_results(RecentSession {
+            key: race.key.clone(),
+            started_at: race.started_at as f64,
+            event_type: race.event_type.clone(),
+            track_name: race.track_name.clone(),
+            track_config: race.track_config.clone(),
+            car_name: race.car_name.clone(),
+            finish_pos: None,
+            field_size: None,
+            best_lap_s: None,
+            incidents: 0,
+        })?;
+
+        Ok(Some(LastRace {
+            session,
+            irating_change: irating_change(race, &sessions[index + 1..]),
+        }))
+    }
+
     /// A lap is counted once, whichever of the session's files hold it.
     fn session_laps(&self, key: &str) -> Result<u32, String> {
         self.connection
@@ -127,6 +163,24 @@ impl StatsDb {
             )
             .map_err(to_message)
     }
+}
+
+/// A session carries the iRating it joined with, so what `race` earned shows
+/// in the next rated session of its category, among `later`.
+fn irating_change(race: &SessionSummary, later: &[SessionSummary]) -> Option<i32> {
+    let rated_irating = |session: &SessionSummary| {
+        session
+            .irating
+            .filter(|irating| session.online && *irating > 0)
+    };
+    let before = rated_irating(race)?;
+    let category = race.category.as_deref()?;
+    let after = later
+        .iter()
+        .filter(|session| session.category.as_deref() == Some(category))
+        .find_map(rated_irating)?;
+
+    i32::try_from(after - before).ok()
 }
 
 /// The sessions started from `from` on with time in the car; a session only
@@ -440,6 +494,81 @@ mod tests {
         assert_eq!(seen, vec![(NOW - DAY_S, 900.0)]);
         assert_eq!(driven[0].car_name.as_deref(), Some("BMW"));
         assert_eq!(driven[0].track_name.as_deref(), Some("Spa"));
+    }
+
+    fn raced(subsession_id: i64, started_at: i64, category: &str, irating: i64) -> SessionFile {
+        SessionFile {
+            runs: vec![SessionFileRun {
+                finish_pos: Some(4),
+                field_size: Some(22),
+                ..run(3, 5)
+            }],
+            ..online(subsession_id, started_at, category, irating)
+        }
+    }
+
+    #[test]
+    fn the_last_race_is_the_latest_session_with_a_race_run() {
+        let mut practice_only = online(3, NOW - DAY_S, "Sports Car", 2050);
+        practice_only.runs = vec![SessionFileRun {
+            run_type: "Practice".into(),
+            ..run(1, 2)
+        }];
+        let db = db_with(&[
+            raced(1, NOW - 3 * DAY_S, "Sports Car", 2000),
+            raced(2, NOW - 2 * DAY_S, "Sports Car", 2010),
+            practice_only,
+        ]);
+
+        let last_race = db.home_stats(NOW).unwrap().last_race.unwrap();
+
+        assert_eq!(last_race.session.track_name.as_deref(), Some("Track 2"));
+        assert_eq!(
+            (
+                last_race.session.finish_pos,
+                last_race.session.field_size,
+                last_race.session.incidents,
+                last_race.session.best_lap_s,
+            ),
+            (Some(4), Some(22), 3, Some(100.0))
+        );
+        // The practice joined in the same category with the race's result.
+        assert_eq!(last_race.irating_change, Some(40));
+    }
+
+    #[test]
+    fn the_race_change_waits_for_the_next_session_of_its_category() {
+        let db = db_with(&[
+            raced(1, NOW - 3 * DAY_S, "Sports Car", 2000),
+            online(2, NOW - 2 * DAY_S, "Oval", 1300),
+            online(0, NOW - DAY_S, "Sports Car", 2100),
+        ]);
+
+        let last_race = db.home_stats(NOW).unwrap().last_race.unwrap();
+
+        assert_eq!(last_race.session.track_name.as_deref(), Some("Track 1"));
+        assert_eq!(last_race.irating_change, None);
+    }
+
+    #[test]
+    fn an_offline_race_has_no_change_and_no_race_no_card() {
+        let offline = db_with(&[
+            raced(1, NOW - 3 * DAY_S, "Sports Car", 2000),
+            raced(0, NOW - 2 * DAY_S, "Sports Car", 2050),
+            online(3, NOW - DAY_S, "Sports Car", 2100),
+        ]);
+        let none = db_with(&[online(1, NOW - DAY_S, "Sports Car", 2000)]);
+
+        assert_eq!(
+            offline
+                .home_stats(NOW)
+                .unwrap()
+                .last_race
+                .unwrap()
+                .irating_change,
+            None
+        );
+        assert_eq!(none.home_stats(NOW).unwrap().last_race, None);
     }
 
     #[test]

@@ -1,7 +1,41 @@
+$narrow-window: 1100px;
+
 .page {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) rem(240);
+  gap: rem(20);
+  align-items: start;
+
+  @media (max-width: $narrow-window) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.main {
   display: flex;
   flex-direction: column;
   gap: rem(24);
+  min-width: 0;
+}
+
+// The chart and the last race side by side; the chart alone when there is
+// no race yet.
+.chartRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
+  gap: rem(14);
+
+  > section {
+    margin-bottom: 0;
+  }
+
+  > section:only-child {
+    grid-column: 1 / -1;
+  }
+
+  @media (max-width: 1000px) {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }
 
 .empty {

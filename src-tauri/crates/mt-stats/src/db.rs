@@ -83,7 +83,7 @@ CREATE INDEX lap_session ON lap(session_key);
 
 pub(crate) const STATUS_READ: &str = "read";
 const STATUS_BROKEN: &str = "broken";
-const RACE_RUN_TYPE: &str = "Race";
+pub(crate) const RACE_RUN_TYPE: &str = "Race";
 
 /// A file on disk as the scan saw it: a changed size or time means read again.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -233,7 +233,7 @@ impl StatsDb {
         .collect()
     }
 
-    fn with_results(&self, session: RecentSession) -> Result<RecentSession, String> {
+    pub(crate) fn with_results(&self, session: RecentSession) -> Result<RecentSession, String> {
         let best_lap_s = self
             .connection
             .query_row(

@@ -1,0 +1,53 @@
+.hint {
+  display: flex;
+  align-items: flex-start;
+  gap: rem(12);
+  padding: rem(14) rem(16);
+  border: 1px solid $sys-border-main;
+  border-radius: rem(10);
+  background: $sys-bg-card;
+}
+
+.icon {
+  flex: none;
+  margin-top: rem(1);
+  color: $sys-text-secondary;
+}
+
+.body {
+  flex: 1;
+  min-width: 0;
+}
+
+.title {
+  margin: 0;
+  font-size: rem(14);
+  font-weight: 600;
+  color: $sys-text-primary;
+}
+
+.text {
+  margin: rem(4) 0 0;
+  font-size: rem(13);
+  line-height: 1.5;
+  color: $sys-text-muted;
+}
+
+.error {
+  margin: rem(6) 0 0;
+  font-size: rem(12);
+  color: $sys-down;
+}
+
+.action {
+  display: flex;
+  flex: none;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: rem(4);
+}
+
+.note {
+  font-size: rem(12);
+  color: $sys-text-muted;
+}

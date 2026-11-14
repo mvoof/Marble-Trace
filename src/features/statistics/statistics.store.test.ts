@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type {
+  AutologState,
   CategoryRating,
   HomeStats,
   RecentSession,
@@ -31,6 +32,7 @@ const EMPTY_HOME: HomeStats = {
   driven: [],
   topCars: [],
   topTracks: [],
+  lastRace: null,
 };
 
 const rating = (category: string): CategoryRating => ({
@@ -49,6 +51,8 @@ const api = vi.hoisted(() => ({
   status: null as unknown as StatsImportStatus,
   sessions: [] as RecentSession[],
   home: null as unknown as HomeStats,
+  autolog: 'on' as AutologState,
+  enableAutolog: vi.fn(async (): Promise<AutologState> => 'on'),
   onStatus: null as ((status: StatsImportStatus) => void) | null,
   unlisten: vi.fn(),
 }));
@@ -57,6 +61,8 @@ vi.mock('@shared/api/stats.service', () => ({
   getStatsImportStatus: vi.fn(async () => api.status),
   getRecentSessions: vi.fn(async () => api.sessions),
   getHomeStats: vi.fn(async () => api.home),
+  getAutologState: vi.fn(async () => api.autolog),
+  enableAutolog: api.enableAutolog,
   listenStatsImport: vi.fn(
     async (onStatus: (status: StatsImportStatus) => void) => {
       api.onStatus = onStatus;
@@ -76,6 +82,8 @@ describe('StatisticsStore', () => {
     api.home = EMPTY_HOME;
     api.sessions = [];
     api.onStatus = null;
+    api.autolog = 'on';
+    api.enableAutolog.mockReset();
     api.unlisten.mockClear();
   });
 
@@ -161,5 +169,68 @@ describe('StatisticsStore iRating chart', () => {
     store.setIratingRange('all');
 
     expect(store.iratingSteps.map((step) => step.change)).toEqual([null, 100]);
+  });
+});
+
+describe('StatisticsStore last race and autolog', () => {
+  beforeEach(() => {
+    api.status = IDLE;
+    api.sessions = [SESSION];
+    api.home = EMPTY_HOME;
+    api.autolog = 'off';
+    api.enableAutolog.mockReset();
+  });
+
+  it('serves the last race the home stats hold', async () => {
+    api.home = {
+      ...EMPTY_HOME,
+      lastRace: { session: SESSION, iratingChange: 38 },
+    };
+    const store = new StatisticsStore();
+    await store.start();
+
+    expect(store.lastRace).toEqual({ session: SESSION, iratingChange: 38 });
+  });
+
+  it('reads whether the game logs telemetry on start', async () => {
+    const store = new StatisticsStore();
+    await store.start();
+
+    expect(store.autolog).toBe('off');
+  });
+
+  it('reads it again once a pass ends: the game may have changed it', async () => {
+    const store = new StatisticsStore();
+    await store.start();
+
+    api.autolog = 'on';
+    api.onStatus?.({ phase: 'reading', done: 0, total: 1, broken: 0 });
+    api.onStatus?.(IDLE);
+    await flush();
+
+    expect(store.autolog).toBe('on');
+  });
+
+  it('turns logging on and keeps what the file says after', async () => {
+    api.enableAutolog.mockResolvedValue('on');
+    const store = new StatisticsStore();
+    await store.start();
+
+    await store.enableAutolog();
+
+    expect(store.autolog).toBe('on');
+    expect(store.autologError).toBeNull();
+  });
+
+  it('keeps the state and the reason when the file is not written', async () => {
+    api.enableAutolog.mockRejectedValue('Close iRacing first');
+    const store = new StatisticsStore();
+    await store.start();
+
+    await store.enableAutolog();
+
+    expect(store.autolog).toBe('off');
+    expect(store.autologError).toBe('Close iRacing first');
+    expect(store.enablingAutolog).toBe(false);
   });
 });

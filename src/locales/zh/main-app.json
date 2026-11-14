@@ -1433,7 +1433,8 @@
   "homePage": {
     "title": "首页",
     "emptyTitle": "还没有会话",
-    "emptyText": "这里将显示你的统计：会话、圈数、事故和 iRating。驾驶后，Marble Trace 会从 iRacing 写入 Documents\\iRacing\\telemetry 的遥测文件中读取它们。",
+    "emptyText": "每次上车时，iRacing 都会在 DocumentsiRacing\telemetry 中写入一个遥测文件。Marble Trace 会在游戏关闭时读取这些文件，整理出你的会话、圈数、事故和 iRating。",
+    "emptyKept": "读取的内容会被保留，即使删除了这些文件。",
     "import": {
       "reading": "正在读取游戏文件 ·",
       "paused": "导入已暂停——你正在游戏中",
@@ -1499,6 +1500,33 @@
       "minutes": "{{minutes}} 分钟",
       "hoursMinutes": "{{hours}} 小时 {{minutes}} 分钟",
       "hours": "{{hours}} 小时"
+    },
+    "lastRace": {
+      "title": "上一场比赛",
+      "finish": "名次",
+      "bestLap": "最快圈",
+      "incidents": "事故",
+      "irating": "iRating",
+      "iratingUnknown": "在此类别的下一场会话后显示"
+    },
+    "now": {
+      "title": "当前",
+      "sim": "iRacing",
+      "connected": "已连接",
+      "notRunning": "未运行",
+      "layout": "布局",
+      "noLayout": "无",
+      "openLayouts": "打开布局",
+      "monitors": "显示器",
+      "widgetsOn": "已启用的小组件",
+      "browserScreens": "浏览器屏幕"
+    },
+    "autolog": {
+      "title": "iRacing 没有保存遥测文件",
+      "text": "统计数据来自 iRacing 每次上车时写入的文件，而它的 app.ini 中关闭了此功能。Marble Trace 可以帮你开启。",
+      "enable": "开启",
+      "closeGame": "请先关闭 iRacing",
+      "failed": "未能开启：{{reason}}"
     }
   }
 }

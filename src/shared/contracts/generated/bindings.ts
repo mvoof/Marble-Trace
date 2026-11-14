@@ -3,6 +3,18 @@
 export type AudioDeviceView = { id: string; name: string; isDefault: boolean };
 
 /**
+ * Whether the sim writes a telemetry file each time the driver gets in the
+ * car — where statistics come from.
+ */
+export type AutologState =
+  | 'on'
+  | 'off'
+  /**
+   * The sim's settings file, or the setting in it, was not found.
+   */
+  | 'unknown';
+
+/**
  * An input binding as it is stored and sent: a keyboard accelerator, or a
  * controller button addressed by the device's stable identity.
  */
@@ -1400,6 +1412,10 @@ export type HomeStats = {
    * The tracks driven longest, all time, the longest first.
    */
   topTracks: TimeDriven[];
+  /**
+   * The latest session that held a race; `None` before the first.
+   */
+  lastRace: LastRace | null;
 };
 
 /**
@@ -1700,6 +1716,19 @@ export type LapTimingFrame = {
  * Last completed valid lap — used by DeltaWidget for the flash animation.
  */
 export type LastCompletedLap = { lapNum: number; delta: number | null };
+
+/**
+ * The latest race, as Home's last-race card shows it.
+ */
+export type LastRace = {
+  session: RecentSession;
+  /**
+   * The iRating the next session in its category joined with, against the
+   * one it joined with: unknown until that next session is driven, and for
+   * a race offline.
+   */
+  iratingChange: number | null;
+};
 
 export type LateralSide =
   | 'left'

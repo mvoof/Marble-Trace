@@ -1451,7 +1451,8 @@
   "homePage": {
     "title": "Главная",
     "emptyTitle": "Сессий пока нет",
-    "emptyText": "Здесь будет ваша статистика: сессии, круги, инциденты и iRating. Marble Trace прочитает её из файлов телеметрии, которые iRacing пишет в Documents\\iRacing\\telemetry, после ваших заездов.",
+    "emptyText": "Каждый раз, когда вы садитесь в машину, iRacing пишет файл телеметрии в DocumentsiRacing\telemetry. Marble Trace читает эти файлы, пока игра закрыта, и собирает из них ваши сессии, круги, инциденты и iRating.",
+    "emptyKept": "Прочитанное сохраняется, даже если удалить файлы.",
     "import": {
       "reading": "Чтение файлов игры ·",
       "paused": "Импорт на паузе — вы в игре",
@@ -1517,6 +1518,33 @@
       "minutes": "{{minutes}} мин",
       "hoursMinutes": "{{hours}} ч {{minutes}} мин",
       "hours": "{{hours}} ч"
+    },
+    "lastRace": {
+      "title": "Последняя гонка",
+      "finish": "Финиш",
+      "bestLap": "Лучший круг",
+      "incidents": "Инц.",
+      "irating": "iRating",
+      "iratingUnknown": "Появится после следующей сессии в этой категории"
+    },
+    "now": {
+      "title": "Сейчас",
+      "sim": "iRacing",
+      "connected": "Подключён",
+      "notRunning": "Не запущен",
+      "layout": "Раскладка",
+      "noLayout": "Нет",
+      "openLayouts": "Открыть раскладки",
+      "monitors": "Мониторы",
+      "widgetsOn": "Виджетов включено",
+      "browserScreens": "Экраны в браузере"
+    },
+    "autolog": {
+      "title": "iRacing не сохраняет файлы телеметрии",
+      "text": "Статистика берётся из файлов, которые iRacing пишет каждый раз, когда вы садитесь в машину, а в его app.ini это выключено. Marble Trace может включить это за вас.",
+      "enable": "Включить",
+      "closeGame": "Сначала закройте iRacing",
+      "failed": "Не включено: {{reason}}"
     }
   }
 }

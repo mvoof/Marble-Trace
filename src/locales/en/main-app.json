@@ -1439,7 +1439,8 @@
   "homePage": {
     "title": "Home",
     "emptyTitle": "No sessions yet",
-    "emptyText": "Your statistics will live here: sessions, laps, incidents and iRating. Marble Trace will read them from the telemetry files iRacing writes to Documents\\iRacing\\telemetry after you drive.",
+    "emptyText": "Each time you get in the car, iRacing writes a telemetry file to DocumentsiRacing\telemetry. Marble Trace reads these files while the game is closed and turns them into your sessions, laps, incidents and iRating.",
+    "emptyKept": "What it reads is kept, even after you delete the files.",
     "import": {
       "reading": "Reading game files ·",
       "paused": "Import paused — you are in the game",
@@ -1505,6 +1506,33 @@
       "minutes": "{{minutes}} min",
       "hoursMinutes": "{{hours}} h {{minutes}} min",
       "hours": "{{hours}} h"
+    },
+    "lastRace": {
+      "title": "Last race",
+      "finish": "Finish",
+      "bestLap": "Best lap",
+      "incidents": "Inc.",
+      "irating": "iRating",
+      "iratingUnknown": "Shows after your next session in this category"
+    },
+    "now": {
+      "title": "Now",
+      "sim": "iRacing",
+      "connected": "Connected",
+      "notRunning": "Not running",
+      "layout": "Layout",
+      "noLayout": "None",
+      "openLayouts": "Open layouts",
+      "monitors": "Monitors",
+      "widgetsOn": "Widgets on",
+      "browserScreens": "Browser screens"
+    },
+    "autolog": {
+      "title": "iRacing does not save telemetry files",
+      "text": "Statistics come from the files iRacing writes each time you get in the car, and that is switched off in its app.ini. Marble Trace can switch it on for you.",
+      "enable": "Switch on",
+      "closeGame": "Close iRacing first",
+      "failed": "Not switched on: {{reason}}"
     }
   }
 }
