@@ -26,11 +26,10 @@ pub fn start(app: &AppHandle) {
             return;
         }
     };
-    let service = Arc::new(StatsService::new(db));
+    let service = Arc::new(StatsService::new(db, session_file_folder(app)));
     let telemetry = Arc::clone(&app.state::<TelemetryState>().service);
     let host = StatsHost::new(
         Arc::new(TauriSink(app.clone())),
-        session_file_folder(app),
         mt_sim_iracing::ibt::read_session_file,
         Box::new(move || telemetry.is_connected.load(Ordering::Relaxed)),
     );

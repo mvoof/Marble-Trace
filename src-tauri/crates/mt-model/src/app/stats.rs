@@ -225,3 +225,26 @@ pub struct WeekStats {
     pub laps: u32,
     pub incidents: u32,
 }
+
+/// Where the stats import reads session files from.
+#[cfg_attr(feature = "dev", derive(specta::Type))]
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub struct StatsFolder {
+    /// `None` when no folder was chosen and the sim's own was not found.
+    pub path: Option<String>,
+    /// The sim's own folder, not one the driver chose.
+    pub is_default: bool,
+}
+
+/// A session file the import could not read; not retried until it changes.
+#[cfg_attr(feature = "dev", derive(specta::Type))]
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
+#[serde(rename_all = "camelCase")]
+pub struct SkippedFile {
+    pub path: String,
+    /// What the reader said.
+    pub error: Option<String>,
+    /// When it was tried, UTC unix seconds.
+    pub read_at: f64,
+}

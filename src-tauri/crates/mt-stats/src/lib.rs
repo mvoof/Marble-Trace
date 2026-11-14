@@ -3,6 +3,7 @@
 //! the reader.
 
 pub mod db;
+pub mod export;
 pub mod home;
 pub mod import;
 pub mod scan;

@@ -102,5 +102,7 @@ pub fn register_types(types: &mut specta::TypeCollection) {
         .register::<app::stats::StatsImportStatus>()
         .register::<app::stats::RecentSession>()
         .register::<app::stats::HomeStats>()
-        .register::<app::stats::AutologState>();
+        .register::<app::stats::AutologState>()
+        .register::<app::stats::StatsFolder>()
+        .register::<app::stats::SkippedFile>();
 }

@@ -5,15 +5,15 @@
 //! nothing else, and the order files arrive in does not matter. The session
 //! row holds only what every file of a session agrees on.
 
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::path::Path;
 
 use rusqlite::{params, Connection, OptionalExtension, Transaction};
 
-use mt_model::app::stats::{RecentSession, SessionFile};
+use mt_model::app::stats::{RecentSession, SessionFile, SkippedFile};
 
 /// Bumped with every schema step; `migrate` runs the steps above the file's.
-const SCHEMA_VERSION: i64 = 1;
+const SCHEMA_VERSION: i64 = 2;
 
 const SCHEMA_V1: &str = "
 CREATE TABLE session (
@@ -80,6 +80,16 @@ CREATE TABLE lap (
 );
 CREATE INDEX lap_session ON lap(session_key);
 ";
+
+/// The statistics' own choices, which live with the records they shape.
+const SCHEMA_V2: &str = "
+CREATE TABLE setting (
+  key    TEXT PRIMARY KEY,
+  value  TEXT NOT NULL
+);
+";
+
+const SETTING_FOLDER: &str = "folder";
 
 pub(crate) const STATUS_READ: &str = "read";
 const STATUS_BROKEN: &str = "broken";
@@ -192,6 +202,77 @@ impl StatsDb {
                 |row| row.get(0),
             )
             .map_err(to_message)
+    }
+
+    /// The files that could not be read, the latest tried first.
+    pub fn skipped_files(&self) -> Result<Vec<SkippedFile>, String> {
+        let mut statement = self
+            .connection
+            .prepare(
+                "SELECT path, error, read_at FROM ibt_file
+                 WHERE status = ?1 ORDER BY read_at DESC, path",
+            )
+            .map_err(to_message)?;
+        let rows = statement
+            .query_map(params![STATUS_BROKEN], |row| {
+                Ok(SkippedFile {
+                    path: row.get(0)?,
+                    error: row.get(1)?,
+                    read_at: row.get::<_, i64>(2)? as f64,
+                })
+            })
+            .map_err(to_message)?;
+
+        rows.map(|row| row.map_err(to_message)).collect()
+    }
+
+    /// Forgets the skipped files no longer in the folder read — deleted, or
+    /// left behind by a change of folder. A read file is kept: its sessions
+    /// outlive it.
+    pub fn forget_skipped_except(&mut self, on_disk: &HashSet<String>) -> Result<(), String> {
+        let gone: Vec<String> = self
+            .skipped_files()?
+            .into_iter()
+            .map(|file| file.path)
+            .filter(|path| !on_disk.contains(path))
+            .collect();
+        let transaction = self.connection.transaction().map_err(to_message)?;
+
+        for path in gone {
+            transaction
+                .execute("DELETE FROM ibt_file WHERE path = ?1", params![path])
+                .map_err(to_message)?;
+        }
+
+        transaction.commit().map_err(to_message)
+    }
+
+    /// The folder the driver chose; `None` reads the sim's own.
+    pub fn folder_override(&self) -> Result<Option<String>, String> {
+        self.connection
+            .query_row(
+                "SELECT value FROM setting WHERE key = ?1",
+                params![SETTING_FOLDER],
+                |row| row.get(0),
+            )
+            .optional()
+            .map_err(to_message)
+    }
+
+    pub fn set_folder_override(&mut self, folder: Option<&str>) -> Result<(), String> {
+        match folder {
+            Some(folder) => self.connection.execute(
+                "INSERT INTO setting (key, value) VALUES (?1, ?2)
+                 ON CONFLICT(key) DO UPDATE SET value = excluded.value",
+                params![SETTING_FOLDER, folder],
+            ),
+            None => self.connection.execute(
+                "DELETE FROM setting WHERE key = ?1",
+                params![SETTING_FOLDER],
+            ),
+        }
+        .map(|_| ())
+        .map_err(to_message)
     }
 
     /// The latest sessions first, each merged from all its files.
@@ -320,6 +401,10 @@ fn migrate(connection: &Connection) -> Result<(), String> {
 
     if version < 1 {
         connection.execute_batch(SCHEMA_V1).map_err(to_message)?;
+    }
+
+    if version < 2 {
+        connection.execute_batch(SCHEMA_V2).map_err(to_message)?;
     }
 
     connection
@@ -645,5 +730,68 @@ mod tests {
         db.record_read(&stamp("a.ibt"), &file, 5).unwrap();
 
         assert_eq!(db.recent_sessions(10).unwrap()[0].finish_pos, None);
+    }
+
+    #[test]
+    fn a_skipped_file_is_listed_until_it_reads() {
+        let mut db = StatsDb::open_in_memory().unwrap();
+        db.record_broken(&stamp("bad.ibt"), "truncated", 5).unwrap();
+
+        let skipped = db.skipped_files().unwrap();
+        assert_eq!(skipped.len(), 1);
+        assert_eq!(skipped[0].path, "bad.ibt");
+        assert_eq!(skipped[0].error.as_deref(), Some("truncated"));
+
+        db.record_read(&stamp("bad.ibt"), &race_file(1_000), 6)
+            .unwrap();
+
+        assert!(db.skipped_files().unwrap().is_empty());
+    }
+
+    #[test]
+    fn a_skipped_file_gone_from_the_folder_is_forgotten_a_read_one_kept() {
+        let mut db = StatsDb::open_in_memory().unwrap();
+        db.record_broken(&stamp("gone.ibt"), "truncated", 5)
+            .unwrap();
+        db.record_broken(&stamp("here.ibt"), "truncated", 5)
+            .unwrap();
+        db.record_read(&stamp("read.ibt"), &race_file(1_000), 5)
+            .unwrap();
+
+        db.forget_skipped_except(&HashSet::from(["here.ibt".to_string()]))
+            .unwrap();
+
+        let skipped: Vec<String> = db
+            .skipped_files()
+            .unwrap()
+            .into_iter()
+            .map(|file| file.path)
+            .collect();
+        assert_eq!(skipped, vec!["here.ibt"]);
+        assert_eq!(db.recent_sessions(10).unwrap().len(), 1);
+    }
+
+    #[test]
+    fn the_folder_choice_is_kept_and_cleared() {
+        let mut db = StatsDb::open_in_memory().unwrap();
+        assert_eq!(db.folder_override().unwrap(), None);
+
+        db.set_folder_override(Some("E:/ibt")).unwrap();
+        assert_eq!(db.folder_override().unwrap().as_deref(), Some("E:/ibt"));
+
+        db.set_folder_override(None).unwrap();
+        assert_eq!(db.folder_override().unwrap(), None);
+    }
+
+    #[test]
+    fn a_version_one_database_gains_the_setting_table() {
+        let connection = Connection::open_in_memory().unwrap();
+        connection.execute_batch(SCHEMA_V1).unwrap();
+        connection.pragma_update(None, "user_version", 1).unwrap();
+
+        let mut db = StatsDb::prepared(connection).unwrap();
+
+        db.set_folder_override(Some("E:/ibt")).unwrap();
+        assert_eq!(db.folder_override().unwrap().as_deref(), Some("E:/ibt"));
     }
 }

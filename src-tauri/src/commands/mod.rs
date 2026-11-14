@@ -119,6 +119,11 @@ pub fn invoke_handler() -> impl Fn(Invoke<Wry>) -> bool + Send + Sync + 'static 
         stats::get_recent_sessions,
         stats::get_home_stats,
         stats::get_autolog_state,
-        stats::enable_autolog
+        stats::enable_autolog,
+        stats::get_stats_folder,
+        stats::set_stats_folder,
+        stats::reimport_stats,
+        stats::get_skipped_files,
+        stats::export_sessions_csv
     ]
 }

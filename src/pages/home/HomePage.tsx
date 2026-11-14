@@ -2,12 +2,12 @@ import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
 import { FolderSearch } from 'lucide-react';
 
+import { ImportNote } from '@features/statistics/ImportNote/ImportNote';
 import { useStatisticsStore } from '@features/statistics/statistics-context';
 import { PageTitle } from '@shared/ui/PageTitle/PageTitle';
 import { AutologHint } from './AutologHint';
 import { DaysDrivenCard } from './DaysDrivenCard';
 import { HomeKpis } from './HomeKpis';
-import { ImportNote } from './ImportNote';
 import { IratingChart } from './IratingChart';
 import { LastRaceCard } from './LastRaceCard';
 import { NowColumn } from './NowColumn';

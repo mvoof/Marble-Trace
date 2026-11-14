@@ -57,3 +57,6 @@ The reader is the sim's: `mt-sim-iracing::ibt` turns a file into a
   `PlayerCarPosition` under the checkered flag in the car (provisional, never
   official); a race left before the flag has none.
 - A new sim adds its own reader beside its adapter; the import does not change.
+- The `.ibt` folder the driver chooses lives in `stats.db` (`setting` table,
+  schema step 2), not in `settings.json`: only the import reads it, and a
+  settings reset leaves the records and where they come from alone.

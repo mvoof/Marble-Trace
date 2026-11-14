@@ -2990,6 +2990,21 @@ export type SimType = 'IRacing';
 export type Skies = 'Clear' | 'PartlyCloudy' | 'MostlyCloudy' | 'Overcast';
 
 /**
+ * A session file the import could not read; not retried until it changes.
+ */
+export type SkippedFile = {
+  path: string;
+  /**
+   * What the reader said.
+   */
+  error: string | null;
+  /**
+   * When it was tried, UTC unix seconds.
+   */
+  readAt: number;
+};
+
+/**
  * One adapted telemetry tick: the domain model frames consumed by the
  * telemetry emitter, filled by whichever sim adapter is connected.
  *
@@ -3040,6 +3055,20 @@ export type SpotterState =
   | 'carLeftRight'
   | 'twoCarsLeft'
   | 'twoCarsRight';
+
+/**
+ * Where the stats import reads session files from.
+ */
+export type StatsFolder = {
+  /**
+   * `None` when no folder was chosen and the sim's own was not found.
+   */
+  path: string | null;
+  /**
+   * The sim's own folder, not one the driver chose.
+   */
+  isDefault: boolean;
+};
 
 /**
  * What the stats import is doing, on `stats://import`.

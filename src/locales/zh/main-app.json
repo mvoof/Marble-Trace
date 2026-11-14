@@ -662,8 +662,33 @@
       "statistics": "统计"
     },
     "statistics": {
-      "comingTitle": "统计将随导入功能推出",
-      "comingDesc": "你的会话、成绩、iRating 和事故将从 iRacing 写入磁盘的遥测文件中读取。此处将提供文件夹设置、重新导入、跳过的文件和 CSV 导出。"
+      "subtitle": "读取自游戏的遥测文件",
+      "folderTitle": "遥测文件夹",
+      "folderDefault": "已在“文档”中自动找到。",
+      "folderChosen": "由你选择。",
+      "folderMissing": "未找到 iRacing 遥测文件夹。请选择 .ibt 文件所在位置。",
+      "change": "更改",
+      "useDefault": "使用默认",
+      "folderRefused": "无法使用此文件夹：{{reason}}",
+      "loggingTitle": "iRacing 遥测记录",
+      "logging": {
+        "on": "开启",
+        "off": "关闭",
+        "unknown": "未知"
+      },
+      "importTitle": "导入",
+      "importIdle": "所有文件已读取",
+      "reimport": "全部重新导入",
+      "reimportDesc": "重新读取文件夹中的所有文件，包括已跳过的。文件已删除的会话仍会保留。",
+      "reimportStarted": "已开始重新导入",
+      "reimportQueued": "关闭游戏后将开始重新导入",
+      "skippedTitle": "已跳过的文件",
+      "skippedNone": "所有文件均已读取。",
+      "skippedFile": "文件",
+      "skippedReason": "原因",
+      "exportCsv": "导出 CSV",
+      "exported": "已导出会话：{{count}}",
+      "exportFailed": "导出失败：{{reason}}"
     }
   },
   "bindings": {

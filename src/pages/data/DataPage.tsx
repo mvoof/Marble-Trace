@@ -6,6 +6,7 @@ import { SectionedPage } from '@shared/ui/SectionedPage/SectionedPage';
 import { TrackMapSection } from './TrackMapSection';
 import { SharedValuesSection } from './SharedValuesSection';
 import { StatisticsSection } from './StatisticsSection';
+import { ExportCsvButton } from './ExportCsvButton';
 import {
   DATA_MENU,
   DEFAULT_DATA_SECTION,
@@ -38,12 +39,15 @@ export const DataPage = observer(() => {
   }));
 
   const ActiveSection = SECTION_COMPONENTS[activeSection];
+  const isStatistics = activeSection === 'statistics';
 
   return (
     <SectionedPage
       menu={menu}
       active={activeSection}
       onSelect={setActiveSection}
+      subtitle={isStatistics ? t('dataPage.statistics.subtitle') : undefined}
+      titleActions={isStatistics ? <ExportCsvButton /> : undefined}
     >
       <ActiveSection />
     </SectionedPage>

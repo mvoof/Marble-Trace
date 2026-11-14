@@ -5,9 +5,11 @@ use std::sync::Arc;
 
 use tauri::{AppHandle, State};
 
-use mt_model::app::stats::{AutologState, HomeStats, RecentSession, StatsImportStatus};
+use mt_model::app::stats::{
+    AutologState, HomeStats, RecentSession, SkippedFile, StatsFolder, StatsImportStatus,
+};
 use mt_sim_iracing::app_ini;
-use mt_stats::import::StatsService;
+use mt_stats::import::{PassScope, StatsService};
 use mt_telemetry::state::TelemetryState;
 
 use crate::stats;
@@ -62,4 +64,60 @@ pub async fn enable_autolog(
     let path = stats::sim_settings_file(&app).ok_or("Documents folder not found")?;
 
     app_ini::enable_autolog(&path)
+}
+
+#[tauri::command]
+pub async fn get_stats_folder(state: State<'_, Arc<StatsService>>) -> Result<StatsFolder, String> {
+    let service = Arc::clone(&state);
+
+    tauri::async_runtime::spawn_blocking(move || service.folder())
+        .await
+        .map_err(|error| error.to_string())
+}
+
+/// `None` goes back to the sim's own folder. The import looks at it at once.
+#[tauri::command]
+pub async fn set_stats_folder(
+    state: State<'_, Arc<StatsService>>,
+    path: Option<String>,
+) -> Result<StatsFolder, String> {
+    let service = Arc::clone(&state);
+
+    tauri::async_runtime::spawn_blocking(move || service.set_folder(path.as_deref()))
+        .await
+        .map_err(|error| error.to_string())?
+}
+
+/// Reads every file in the folder again, the skipped ones too.
+#[tauri::command]
+pub async fn reimport_stats(state: State<'_, Arc<StatsService>>) -> Result<(), String> {
+    state.request_pass(PassScope::All);
+
+    Ok(())
+}
+
+#[tauri::command]
+pub async fn get_skipped_files(
+    state: State<'_, Arc<StatsService>>,
+) -> Result<Vec<SkippedFile>, String> {
+    let service = Arc::clone(&state);
+
+    tauri::async_runtime::spawn_blocking(move || service.skipped_files())
+        .await
+        .map_err(|error| error.to_string())?
+}
+
+/// Writes every session record to `path` as CSV. Returns how many.
+#[tauri::command]
+pub async fn export_sessions_csv(
+    state: State<'_, Arc<StatsService>>,
+    path: String,
+) -> Result<u32, String> {
+    let service = Arc::clone(&state);
+
+    tauri::async_runtime::spawn_blocking(move || {
+        service.export_sessions_csv(std::path::Path::new(&path))
+    })
+    .await
+    .map_err(|error| error.to_string())?
 }

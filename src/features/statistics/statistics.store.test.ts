@@ -5,6 +5,8 @@ import type {
   CategoryRating,
   HomeStats,
   RecentSession,
+  SkippedFile,
+  StatsFolder,
   StatsImportStatus,
 } from '@shared/contracts/generated/bindings';
 
@@ -55,6 +57,19 @@ const api = vi.hoisted(() => ({
   enableAutolog: vi.fn(async (): Promise<AutologState> => 'on'),
   onStatus: null as ((status: StatsImportStatus) => void) | null,
   unlisten: vi.fn(),
+  folder: {
+    path: 'D:/Documents/iRacing/telemetry',
+    isDefault: true,
+  } as StatsFolder,
+  skipped: [] as SkippedFile[],
+  pickedFolder: null as string | null,
+  csvTarget: null as string | null,
+  setStatsFolder: vi.fn(async (path: string | null): Promise<StatsFolder> => ({
+    path: path ?? 'D:/Documents/iRacing/telemetry',
+    isDefault: path === null,
+  })),
+  reimportStats: vi.fn(async () => undefined),
+  exportSessionsCsv: vi.fn(async () => 12),
 }));
 
 vi.mock('@shared/api/stats.service', () => ({
@@ -63,6 +78,13 @@ vi.mock('@shared/api/stats.service', () => ({
   getHomeStats: vi.fn(async () => api.home),
   getAutologState: vi.fn(async () => api.autolog),
   enableAutolog: api.enableAutolog,
+  getStatsFolder: vi.fn(async () => api.folder),
+  setStatsFolder: api.setStatsFolder,
+  reimportStats: api.reimportStats,
+  getSkippedFiles: vi.fn(async () => api.skipped),
+  exportSessionsCsv: api.exportSessionsCsv,
+  pickStatsFolder: vi.fn(async () => api.pickedFolder),
+  pickSessionsCsvTarget: vi.fn(async () => api.csvTarget),
   listenStatsImport: vi.fn(
     async (onStatus: (status: StatsImportStatus) => void) => {
       api.onStatus = onStatus;
@@ -232,5 +254,88 @@ describe('StatisticsStore last race and autolog', () => {
     expect(store.autolog).toBe('off');
     expect(store.autologError).toBe('Close iRacing first');
     expect(store.enablingAutolog).toBe(false);
+  });
+});
+
+describe('StatisticsStore data section', () => {
+  const SKIPPED: SkippedFile = {
+    path: 'D:/Documents/iRacing/telemetry/cut.ibt',
+    error: 'file ends mid-sample',
+    readAt: 5,
+  };
+
+  beforeEach(() => {
+    api.status = IDLE;
+    api.sessions = [];
+    api.home = EMPTY_HOME;
+    api.skipped = [];
+    api.pickedFolder = null;
+    api.csvTarget = null;
+    api.setStatsFolder.mockClear();
+    api.reimportStats.mockClear();
+    api.exportSessionsCsv.mockClear();
+  });
+
+  it('loads the folder and the skipped files on start', async () => {
+    api.skipped = [SKIPPED];
+    const store = new StatisticsStore();
+
+    await store.start();
+
+    expect(store.folder).toEqual(api.folder);
+    expect(store.skippedFiles).toEqual([SKIPPED]);
+  });
+
+  it('keeps the folder picked, and leaves it when the picker is closed', async () => {
+    const store = new StatisticsStore();
+    await store.start();
+
+    await store.chooseFolder();
+    expect(api.setStatsFolder).not.toHaveBeenCalled();
+
+    api.pickedFolder = 'E:/ibt';
+    await store.chooseFolder();
+
+    expect(api.setStatsFolder).toHaveBeenCalledWith('E:/ibt');
+    expect(store.folder).toEqual({ path: 'E:/ibt', isDefault: false });
+
+    await store.useDefaultFolder();
+
+    expect(api.setStatsFolder).toHaveBeenLastCalledWith(null);
+    expect(store.folder?.isDefault).toBe(true);
+  });
+
+  it('reloads the skipped files when the count of them changes', async () => {
+    const store = new StatisticsStore();
+    await store.start();
+
+    api.skipped = [SKIPPED];
+    api.onStatus?.({ phase: 'reading', done: 0, total: 3, broken: 1 });
+    await flush();
+
+    expect(store.skippedFiles).toEqual([SKIPPED]);
+  });
+
+  it('asks for a full pass on re-import', async () => {
+    const store = new StatisticsStore();
+
+    await store.reimport();
+
+    expect(api.reimportStats).toHaveBeenCalledOnce();
+  });
+
+  it('exports to the file picked and answers how many sessions', async () => {
+    const store = new StatisticsStore();
+
+    expect(await store.exportCsv()).toBeNull();
+    expect(api.exportSessionsCsv).not.toHaveBeenCalled();
+
+    api.csvTarget = 'C:/out/sessions.csv';
+
+    expect(await store.exportCsv()).toEqual({
+      path: 'C:/out/sessions.csv',
+      count: 12,
+    });
+    expect(api.exportSessionsCsv).toHaveBeenCalledWith('C:/out/sessions.csv');
   });
 });

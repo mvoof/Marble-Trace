@@ -666,8 +666,33 @@
       "statistics": "Estadísticas"
     },
     "statistics": {
-      "comingTitle": "Las estadísticas llegan con la importación",
-      "comingDesc": "Tus sesiones, resultados, iRating e incidentes se leerán de los archivos de telemetría que iRacing guarda en el disco. Esta sección tendrá su carpeta, la reimportación, los archivos omitidos y la exportación a CSV."
+      "subtitle": "leídas de los archivos de telemetría del juego",
+      "folderTitle": "Carpeta de telemetría",
+      "folderDefault": "Encontrada automáticamente en Documentos.",
+      "folderChosen": "Elegida por ti.",
+      "folderMissing": "No se encontró la carpeta de telemetría de iRacing. Elige dónde están tus archivos .ibt.",
+      "change": "Cambiar",
+      "useDefault": "Usar la predeterminada",
+      "folderRefused": "No se puede usar esta carpeta: {{reason}}",
+      "loggingTitle": "Registro de telemetría en iRacing",
+      "logging": {
+        "on": "Activado",
+        "off": "Desactivado",
+        "unknown": "Desconocido"
+      },
+      "importTitle": "Importación",
+      "importIdle": "Todos los archivos leídos",
+      "reimport": "Reimportar todo",
+      "reimportDesc": "Vuelve a leer todos los archivos de la carpeta, también los omitidos. Las sesiones cuyos archivos ya no existen se conservan.",
+      "reimportStarted": "Reimportación iniciada",
+      "reimportQueued": "La reimportación empezará cuando cierres el juego",
+      "skippedTitle": "Archivos omitidos",
+      "skippedNone": "Se leyeron todos los archivos.",
+      "skippedFile": "Archivo",
+      "skippedReason": "Motivo",
+      "exportCsv": "Exportar CSV",
+      "exported": "Sesiones exportadas: {{count}}",
+      "exportFailed": "La exportación falló: {{reason}}"
     }
   },
   "bindings": {

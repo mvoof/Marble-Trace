@@ -1,12 +1,20 @@
 import { makeAutoObservable, runInAction } from 'mobx';
 
+import { fileStamp } from '@shared/api/file-export.service';
 import {
   enableAutolog,
+  exportSessionsCsv,
   getAutologState,
   getHomeStats,
   getRecentSessions,
+  getSkippedFiles,
+  getStatsFolder,
   getStatsImportStatus,
   listenStatsImport,
+  pickSessionsCsvTarget,
+  pickStatsFolder,
+  reimportStats,
+  setStatsFolder,
 } from '@shared/api/stats.service';
 import type {
   AutologState,
@@ -14,6 +22,8 @@ import type {
   HomeStats,
   LastRace,
   RecentSession,
+  SkippedFile,
+  StatsFolder,
   StatsImportStatus,
   TimeDriven,
 } from '@shared/contracts/generated/bindings';
@@ -23,6 +33,12 @@ import { iratingSteps, type IratingRange } from './home-stats';
 /** Rows of the recent sessions table on Home. */
 const RECENT_SESSIONS_LIMIT = 10;
 const MS_PER_SECOND = 1000;
+
+/** A CSV export written: where, and how many sessions it holds. */
+export interface CsvExport {
+  path: string;
+  count: number;
+}
 
 const INITIAL_STATUS: StatsImportStatus = {
   phase: 'idle',
@@ -52,6 +68,10 @@ export class StatisticsStore {
   enablingAutolog = false;
   /** Why turning logging on failed, as the backend said it. */
   autologError: string | null = null;
+  /** Where the import reads from; `null` until asked. */
+  folder: StatsFolder | null = null;
+  /** The files the import could not read, the latest tried first. */
+  skippedFiles: SkippedFile[] = [];
 
   private unlisten: (() => void) | null = null;
   private disposed = false;
@@ -138,7 +158,62 @@ export class StatisticsStore {
     runInAction(() => {
       this.importStatus = status;
     });
-    await Promise.all([this.loadSessions(), this.loadAutolog()]);
+    await Promise.all([
+      this.loadSessions(),
+      this.loadAutolog(),
+      this.loadFolder(),
+      this.loadSkippedFiles(),
+    ]);
+  }
+
+  /**
+   * Asks for a folder; a closed picker changes nothing. Rejects with the
+   * backend's reason when the folder is refused.
+   */
+  async chooseFolder() {
+    const picked = await pickStatsFolder(this.folder?.path ?? null);
+
+    if (picked === null) {
+      return;
+    }
+
+    const folder = await setStatsFolder(picked);
+
+    runInAction(() => {
+      this.folder = folder;
+    });
+  }
+
+  /** Back to the game's own folder. */
+  async useDefaultFolder() {
+    const folder = await setStatsFolder(null);
+
+    runInAction(() => {
+      this.folder = folder;
+    });
+  }
+
+  /** Reads every file in the folder again, the skipped ones too. */
+  async reimport() {
+    await reimportStats();
+  }
+
+  /**
+   * Writes every session record to a file the driver picks; `null` when the
+   * picker is closed.
+   */
+  async exportCsv(): Promise<CsvExport | null> {
+    const path = await pickSessionsCsvTarget(
+      `marble-trace-sessions-${fileStamp()}.csv`
+    );
+
+    if (path === null) {
+      return null;
+    }
+
+    const count = await exportSessionsCsv(path);
+
+    return { path, count };
   }
 
   /** Writes the setting into the game's app.ini; refused while the game runs. */
@@ -181,9 +256,37 @@ export class StatisticsStore {
       void this.loadSessions();
     }
 
+    if (status.broken !== previous.broken || passEnded) {
+      void this.loadSkippedFiles();
+    }
+
     // A pass ends when the game closes, and the game writes its settings then.
     if (passEnded) {
       void this.loadAutolog();
+    }
+  }
+
+  private async loadFolder() {
+    try {
+      const folder = await getStatsFolder();
+
+      runInAction(() => {
+        this.folder = folder;
+      });
+    } catch (error) {
+      console.error('Stats folder not read', error);
+    }
+  }
+
+  private async loadSkippedFiles() {
+    try {
+      const skippedFiles = await getSkippedFiles();
+
+      runInAction(() => {
+        this.skippedFiles = skippedFiles;
+      });
+    } catch (error) {
+      console.error('Skipped files not read', error);
     }
   }
 

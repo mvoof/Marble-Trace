@@ -3,15 +3,17 @@
 //! the sim is connected — the sim writes those files and wants the disk.
 //!
 //! After a pass it waits for the sim to come and go, then looks again for the
-//! files that session wrote.
+//! files that session wrote — or sooner, when the main window changes the
+//! folder or asks to read every file again.
 
 use std::path::{Path, PathBuf};
-use std::sync::{Arc, Mutex};
+use std::sync::{Arc, Condvar, Mutex};
 use std::thread;
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
 use mt_model::app::stats::{
-    HomeStats, RecentSession, SessionFile, StatsImportPhase, StatsImportStatus,
+    HomeStats, RecentSession, SessionFile, SkippedFile, StatsFolder, StatsImportPhase,
+    StatsImportStatus,
 };
 use mt_model::contract::event_sink::EventSink;
 use mt_model::contract::events::EVENT_STATS_IMPORT;
@@ -23,6 +25,7 @@ use crate::scan::{list_session_files, pending_files};
 /// How often a waiting import looks at the sim's connection.
 const CONNECTION_POLL: Duration = Duration::from_secs(3);
 const THREAD_NAME: &str = "stats-import";
+const UTF8_BOM: [u8; 3] = [0xEF, 0xBB, 0xBF];
 
 /// Reads one session file; the sim's adapter provides it.
 pub type SessionFileReader = fn(&Path) -> Result<SessionFile, String>;
@@ -30,8 +33,6 @@ pub type SessionFileReader = fn(&Path) -> Result<SessionFile, String>;
 /// What the import needs from the app.
 pub struct StatsHost {
     pub sink: Arc<dyn EventSink>,
-    /// The sim's session file folder; `None` when it could not be resolved.
-    pub folder: Option<PathBuf>,
     pub read_file: SessionFileReader,
     pub is_connected: Box<dyn Fn() -> bool + Send + Sync>,
     /// How long to wait between two looks at the connection.
@@ -41,13 +42,11 @@ pub struct StatsHost {
 impl StatsHost {
     pub fn new(
         sink: Arc<dyn EventSink>,
-        folder: Option<PathBuf>,
         read_file: SessionFileReader,
         is_connected: Box<dyn Fn() -> bool + Send + Sync>,
     ) -> Self {
         Self {
             sink,
-            folder,
             read_file,
             is_connected,
             poll: CONNECTION_POLL,
@@ -55,14 +54,28 @@ impl StatsHost {
     }
 }
 
+/// Which files a pass reads.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum PassScope {
+    /// Those never seen or changed since.
+    Unread,
+    /// Every file in the folder again, the skipped ones too.
+    All,
+}
+
 /// The database and the import's progress, shared with the commands.
 pub struct StatsService {
     db: Mutex<StatsDb>,
     status: Mutex<StatsImportStatus>,
+    /// The sim's own session file folder; `None` when it was not found.
+    default_folder: Option<PathBuf>,
+    /// A pass the main window asked for, run once the current one ends.
+    requested: Mutex<Option<PassScope>>,
+    request_made: Condvar,
 }
 
 impl StatsService {
-    pub fn new(db: StatsDb) -> Self {
+    pub fn new(db: StatsDb, default_folder: Option<PathBuf>) -> Self {
         let broken = db.broken_count().unwrap_or_default();
 
         Self {
@@ -71,11 +84,99 @@ impl StatsService {
                 broken,
                 ..StatsImportStatus::default()
             }),
+            default_folder,
+            requested: Mutex::new(None),
+            request_made: Condvar::new(),
         }
     }
 
     pub fn status(&self) -> StatsImportStatus {
         *lock_or_recover(&self.status)
+    }
+
+    /// The folder the driver chose, else the sim's own.
+    pub fn folder(&self) -> StatsFolder {
+        let chosen = lock_or_recover(&self.db)
+            .folder_override()
+            .unwrap_or_else(|error| {
+                tracing::warn!(%error, "stats folder choice not read");
+                None
+            });
+
+        match chosen {
+            Some(path) => StatsFolder {
+                path: Some(path),
+                is_default: false,
+            },
+            None => StatsFolder {
+                path: self
+                    .default_folder
+                    .as_ref()
+                    .map(|folder| folder.to_string_lossy().into_owned()),
+                is_default: true,
+            },
+        }
+    }
+
+    /// Reads from `folder` from now on; `None` goes back to the sim's own.
+    /// The next pass looks at the new folder.
+    pub fn set_folder(&self, folder: Option<&str>) -> Result<StatsFolder, String> {
+        if let Some(folder) = folder {
+            if !Path::new(folder).is_dir() {
+                return Err(format!("Not a folder: {folder}"));
+            }
+        }
+
+        lock_or_recover(&self.db).set_folder_override(folder)?;
+        self.request_pass(PassScope::Unread);
+
+        Ok(self.folder())
+    }
+
+    /// Asks for a pass; `All` wins over `Unread` while both wait.
+    pub fn request_pass(&self, scope: PassScope) {
+        let mut requested = lock_or_recover(&self.requested);
+
+        if *requested != Some(PassScope::All) {
+            *requested = Some(scope);
+        }
+
+        self.request_made.notify_all();
+    }
+
+    pub fn skipped_files(&self) -> Result<Vec<SkippedFile>, String> {
+        lock_or_recover(&self.db).skipped_files()
+    }
+
+    /// Writes every session record to `path` as CSV. Returns how many.
+    pub fn export_sessions_csv(&self, path: &Path) -> Result<u32, String> {
+        let (text, count) = lock_or_recover(&self.db).sessions_csv()?;
+        // Excel reads a file without the mark in the system's code page.
+        let bytes = [UTF8_BOM.as_slice(), text.as_bytes()].concat();
+
+        std::fs::write(path, bytes).map_err(|error| error.to_string())?;
+
+        Ok(count)
+    }
+
+    fn take_request(&self) -> Option<PassScope> {
+        lock_or_recover(&self.requested).take()
+    }
+
+    /// Waits up to `timeout` for a request. Returns whether one is waiting.
+    fn wait_for_request(&self, timeout: Duration) -> bool {
+        let requested = lock_or_recover(&self.requested);
+
+        if requested.is_some() {
+            return true;
+        }
+
+        let (requested, _) = self
+            .request_made
+            .wait_timeout(requested, timeout)
+            .unwrap_or_else(std::sync::PoisonError::into_inner);
+
+        requested.is_some()
     }
 
     pub fn recent_sessions(&self, limit: u32) -> Result<Vec<RecentSession>, String> {
@@ -107,35 +208,48 @@ pub fn start(service: Arc<StatsService>, host: StatsHost) {
 }
 
 fn run(service: &StatsService, host: &StatsHost) {
+    let mut scope = PassScope::Unread;
+
     loop {
-        let met_the_sim = run_pass(service, host);
+        let met_the_sim = run_pass(service, host, scope);
 
         // A session driven during the pass wrote files the pass did not list.
         if !met_the_sim {
-            wait_for_a_session(host);
+            wait_for_a_session_or_request(service, host);
         }
+
+        scope = service.take_request().unwrap_or(PassScope::Unread);
     }
 }
 
-/// Reads every pending file once. Returns whether the sim connected meanwhile.
-pub fn run_pass(service: &StatsService, host: &StatsHost) -> bool {
-    let Some(folder) = host.folder.as_deref().filter(|folder| folder.is_dir()) else {
+/// Reads the files of `scope` once. Returns whether the sim connected meanwhile.
+pub fn run_pass(service: &StatsService, host: &StatsHost, scope: PassScope) -> bool {
+    let folder = service.folder().path.map(PathBuf::from);
+    let Some(folder) = folder.filter(|folder| folder.is_dir()) else {
         service.publish(host, phase_only(service, StatsImportPhase::NoFolder));
 
         return false;
     };
 
-    let pending = match list_session_files(folder) {
+    let (pending, broken) = match list_session_files(&folder) {
         Ok(on_disk) => {
-            let known = lock_or_recover(&service.db)
-                .known_files()
-                .unwrap_or_default();
+            let mut db = lock_or_recover(&service.db);
+            let paths = on_disk.iter().map(|stamp| stamp.path.clone()).collect();
 
-            pending_files(on_disk, &known)
+            if let Err(error) = db.forget_skipped_except(&paths) {
+                tracing::warn!(%error, "skipped files not tidied");
+            }
+
+            let pending = match scope {
+                PassScope::All => on_disk,
+                PassScope::Unread => pending_files(on_disk, &db.known_files().unwrap_or_default()),
+            };
+
+            (pending, db.broken_count().unwrap_or_default())
         }
         Err(error) => {
             tracing::warn!(%error, folder = %folder.display(), "session file folder not listed");
-            Vec::new()
+            (Vec::new(), service.status().broken)
         }
     };
 
@@ -144,7 +258,7 @@ pub fn run_pass(service: &StatsService, host: &StatsHost) -> bool {
         phase: StatsImportPhase::Reading,
         done: 0,
         total,
-        broken: service.status().broken,
+        broken,
     };
     let mut met_the_sim = false;
 
@@ -216,10 +330,13 @@ fn wait_while_connected(host: &StatsHost) {
     }
 }
 
-/// Until the sim has connected and gone again.
-fn wait_for_a_session(host: &StatsHost) {
+/// Until the sim has connected and gone again, or the main window asks for a
+/// pass.
+fn wait_for_a_session_or_request(service: &StatsService, host: &StatsHost) {
     while !(host.is_connected)() {
-        thread::sleep(host.poll);
+        if service.wait_for_request(host.poll) {
+            return;
+        }
     }
 
     wait_while_connected(host);
@@ -286,18 +403,22 @@ mod tests {
         folder
     }
 
-    fn host(sink: Arc<RecordingSink>, folder: Option<PathBuf>) -> StatsHost {
-        StatsHost::new(sink, folder, fake_reader, Box::new(|| false))
+    fn host(sink: Arc<RecordingSink>) -> StatsHost {
+        StatsHost::new(sink, fake_reader, Box::new(|| false))
+    }
+
+    fn service(default_folder: Option<PathBuf>) -> StatsService {
+        StatsService::new(StatsDb::open_in_memory().unwrap(), default_folder)
     }
 
     #[test]
     fn a_pass_reads_new_files_skips_broken_ones_and_reads_nothing_twice() {
         let folder = folder_with(&["a.ibt", "bb.ibt", "broken.ibt", "notes.txt"]);
         let sink = Arc::new(RecordingSink::default());
-        let host = host(Arc::clone(&sink), Some(folder.clone()));
-        let service = StatsService::new(StatsDb::open_in_memory().unwrap());
+        let host = host(Arc::clone(&sink));
+        let service = service(Some(folder.clone()));
 
-        run_pass(&service, &host);
+        run_pass(&service, &host, PassScope::Unread);
 
         assert_eq!(
             service.status(),
@@ -310,7 +431,7 @@ mod tests {
         );
         assert_eq!(service.recent_sessions(10).unwrap().len(), 2);
 
-        run_pass(&service, &host);
+        run_pass(&service, &host, PassScope::Unread);
 
         assert_eq!(service.status().total, 0);
         assert_eq!(
@@ -322,14 +443,73 @@ mod tests {
     }
 
     #[test]
+    fn a_full_pass_reads_every_file_again_the_skipped_ones_too() {
+        let folder = folder_with(&["a.ibt", "broken.ibt"]);
+        let host = host(Arc::new(RecordingSink::default()));
+        let service = service(Some(folder.clone()));
+        run_pass(&service, &host, PassScope::Unread);
+
+        run_pass(&service, &host, PassScope::All);
+
+        assert_eq!(service.status().total, 2);
+        assert_eq!(service.status().broken, 1);
+        assert_eq!(service.skipped_files().unwrap().len(), 1);
+        assert_eq!(service.recent_sessions(10).unwrap().len(), 1);
+
+        fs::remove_dir_all(folder).unwrap();
+    }
+
+    #[test]
+    fn a_chosen_folder_is_read_instead_of_the_sims_own() {
+        let own = folder_with(&["a.ibt"]);
+        let chosen = folder_with(&["bb.ibt", "ccc.ibt"]);
+        let host = host(Arc::new(RecordingSink::default()));
+        let service = service(Some(own.clone()));
+        let chosen_path = chosen.to_string_lossy().into_owned();
+
+        let folder = service.set_folder(Some(&chosen_path)).unwrap();
+        run_pass(&service, &host, PassScope::Unread);
+
+        assert_eq!(folder.path.as_deref(), Some(chosen_path.as_str()));
+        assert!(!folder.is_default);
+        assert_eq!(service.status().total, 2);
+        assert_eq!(service.take_request(), Some(PassScope::Unread));
+
+        let folder = service.set_folder(None).unwrap();
+
+        assert!(folder.is_default);
+        assert_eq!(folder.path, Some(own.to_string_lossy().into_owned()));
+
+        fs::remove_dir_all(own).unwrap();
+        fs::remove_dir_all(chosen).unwrap();
+    }
+
+    #[test]
+    fn a_missing_folder_cannot_be_chosen() {
+        let service = service(None);
+
+        assert!(service.set_folder(Some("Z:/no/such/folder")).is_err());
+        assert_eq!(service.folder().path, None);
+    }
+
+    #[test]
+    fn a_full_pass_request_is_not_narrowed_by_a_later_one() {
+        let service = service(None);
+
+        service.request_pass(PassScope::All);
+        service.request_pass(PassScope::Unread);
+
+        assert!(service.wait_for_request(Duration::ZERO));
+        assert_eq!(service.take_request(), Some(PassScope::All));
+        assert_eq!(service.take_request(), None);
+    }
+
+    #[test]
     fn a_missing_folder_is_reported() {
         let sink = Arc::new(RecordingSink::default());
-        let service = StatsService::new(StatsDb::open_in_memory().unwrap());
+        let service = service(Some(PathBuf::from("Z:/no/such/folder")));
 
-        run_pass(
-            &service,
-            &host(sink, Some(PathBuf::from("Z:/no/such/folder"))),
-        );
+        run_pass(&service, &host(sink), PassScope::Unread);
 
         assert_eq!(service.status().phase, StatsImportPhase::NoFolder);
     }

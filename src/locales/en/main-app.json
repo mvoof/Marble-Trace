@@ -666,8 +666,33 @@
       "statistics": "Statistics"
     },
     "statistics": {
-      "comingTitle": "Statistics arrive with the import",
-      "comingDesc": "Your sessions, results, iRating and incidents will be read from the telemetry files iRacing writes to disk. This section will hold the folder they come from, re-import, skipped files and CSV export."
+      "subtitle": "read from the game's telemetry files",
+      "folderTitle": "Telemetry folder",
+      "folderDefault": "Found automatically in Documents.",
+      "folderChosen": "Chosen by you.",
+      "folderMissing": "iRacing's telemetry folder was not found. Choose where your .ibt files are.",
+      "change": "Change",
+      "useDefault": "Use the default",
+      "folderRefused": "This folder cannot be used: {{reason}}",
+      "loggingTitle": "Telemetry logging in iRacing",
+      "logging": {
+        "on": "On",
+        "off": "Off",
+        "unknown": "Unknown"
+      },
+      "importTitle": "Import",
+      "importIdle": "All files read",
+      "reimport": "Re-import everything",
+      "reimportDesc": "Reads every file in the folder again, the skipped ones too. Sessions whose files are gone stay.",
+      "reimportStarted": "Re-import started",
+      "reimportQueued": "Re-import starts when you close the game",
+      "skippedTitle": "Skipped files",
+      "skippedNone": "Every file was read.",
+      "skippedFile": "File",
+      "skippedReason": "Reason",
+      "exportCsv": "Export CSV",
+      "exported": "Sessions exported: {{count}}",
+      "exportFailed": "Export failed: {{reason}}"
     }
   },
   "bindings": {
