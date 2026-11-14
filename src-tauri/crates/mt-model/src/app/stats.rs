@@ -253,6 +253,19 @@ pub struct StatsFolder {
     pub is_default: bool,
 }
 
+/// A car the driver has a session record in: what the auto-switch rules offer
+/// while the sim is off.
+#[cfg_attr(feature = "dev", derive(specta::Type))]
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
+#[serde(rename_all = "camelCase")]
+pub struct KnownCar {
+    pub car_id: i32,
+    pub car_name: Option<String>,
+    /// The class badge the live session would give it, else the sim's class
+    /// name; `None` when neither is known.
+    pub car_class: Option<String>,
+}
+
 /// A session file the import could not read; not retried until it changes.
 #[cfg_attr(feature = "dev", derive(specta::Type))]
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]

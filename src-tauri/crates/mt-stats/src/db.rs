@@ -10,7 +10,7 @@ use std::path::Path;
 
 use rusqlite::{params, Connection, OptionalExtension, Transaction};
 
-use mt_model::app::stats::{RecentSession, SessionFile, SkippedFile, TrackOutline};
+use mt_model::app::stats::{KnownCar, RecentSession, SessionFile, SkippedFile, TrackOutline};
 
 /// Bumped with every schema step; `migrate` runs the steps above the file's.
 const SCHEMA_VERSION: i64 = 3;
@@ -246,6 +246,38 @@ impl StatsDb {
                     path: row.get(0)?,
                     error: row.get(1)?,
                     read_at: row.get::<_, i64>(2)? as f64,
+                })
+            })
+            .map_err(to_message)?;
+
+        rows.map(|row| row.map_err(to_message)).collect()
+    }
+
+    /// Every car of a read session, once, by name; the class as the sim wrote
+    /// it, the latest session's.
+    pub fn known_cars(&self) -> Result<Vec<KnownCar>, String> {
+        let mut statement = self
+            .connection
+            .prepare(
+                // With one MAX() aggregate, SQLite takes the bare columns from
+                // the row holding the maximum: the latest session's.
+                "SELECT s.car_id, s.car_name, s.car_class, MAX(f.started_at)
+                 FROM session s
+                 JOIN ibt_file f ON f.session_key = s.key AND f.status = ?1
+                 WHERE s.car_id IS NOT NULL
+                 GROUP BY s.car_id
+                 ORDER BY s.car_name, s.car_id",
+            )
+            .map_err(to_message)?;
+        let rows = statement
+            .query_map(params![STATUS_READ], |row| {
+                Ok(KnownCar {
+                    car_id: row.get(0)?,
+                    car_name: row.get(1)?,
+                    car_class: row
+                        .get::<_, Option<String>>(2)?
+                        .map(|name| name.trim().to_string())
+                        .filter(|name| !name.is_empty()),
                 })
             })
             .map_err(to_message)?;
@@ -671,6 +703,41 @@ mod tests {
                 field_size: Some(50),
                 best_lap_s: Some(490.0),
                 incidents: 12,
+            }]
+        );
+    }
+
+    #[test]
+    fn known_cars_are_each_car_once_with_its_latest_class() {
+        let mut db = StatsDb::open_in_memory().unwrap();
+        let older = SessionFile {
+            subsession_id: Some(1),
+            car_id: Some(156),
+            car_class: Some("GT3 Class".into()),
+            ..race_file(1_000)
+        };
+        let newer = SessionFile {
+            subsession_id: Some(2),
+            car_id: Some(156),
+            car_class: Some(" GT3 ".into()),
+            ..race_file(2_000)
+        };
+        let unknown_car = SessionFile {
+            subsession_id: Some(3),
+            car_id: None,
+            ..race_file(3_000)
+        };
+
+        db.record_read(&stamp("a.ibt"), &older, 5).unwrap();
+        db.record_read(&stamp("b.ibt"), &newer, 5).unwrap();
+        db.record_read(&stamp("c.ibt"), &unknown_car, 5).unwrap();
+
+        assert_eq!(
+            db.known_cars().unwrap(),
+            vec![KnownCar {
+                car_id: 156,
+                car_name: Some("Mercedes-AMG GT3".into()),
+                car_class: Some("GT3".into()),
             }]
         );
     }

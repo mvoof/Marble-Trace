@@ -2,6 +2,7 @@ import {
   fuelStrategyOf,
   pitStrategyOf,
 } from '@entities/app-settings/app-settings.store';
+import { ruleLayoutFor } from '@entities/layout/auto-switch-rules';
 import { widgetsOnMonitor } from '@entities/layout/virtual-desktop';
 import { cloneMonitor } from '@shared/lib/remote-screen';
 import type { MainRoot } from '@app/roots/main-root';
@@ -10,6 +11,14 @@ import type {
   LayoutMonitor,
   SavedLayout,
 } from '@shared/contracts/widget-settings';
+
+/** The layout auto-switch puts on in the garage in this car, or `null`. */
+const garageLayoutId = (root: MainRoot): string | null =>
+  ruleLayoutFor(root.layouts.autoSwitchRules, {
+    context: 'Garage',
+    carClass: root.session.playerCar?.carClass ?? null,
+    carId: root.session.playerCar?.carId ?? null,
+  });
 
 /**
  * What one client draws, as main holds it: one screen of one layout, the
@@ -31,8 +40,7 @@ export const clientSnapshotFor = (
     widgets: widgetsOnMonitor(layout.widgets, monitor.name),
     hideAllWidgets: settings.hideAllWidgets,
     hideWidgetsWhenGameClosed: settings.hideWidgetsWhenGameClosed,
-    hidesOffTrack:
-      settings.autoSwitchLayouts && !root.layouts.sessionLayouts.Garage,
+    hidesOffTrack: settings.autoSwitchLayouts && garageLayoutId(root) === null,
     units: root.units.unitSystem,
     language: settings.language,
     steeringLock: settings.steeringLock,
@@ -80,7 +88,7 @@ export const snapshotAppInputs = (root: MainRoot): unknown[] => {
     settings.hideAllWidgets,
     settings.hideWidgetsWhenGameClosed,
     settings.autoSwitchLayouts,
-    root.layouts.sessionLayouts.Garage,
+    garageLayoutId(root),
     root.units.unitSystem,
     settings.language,
     settings.steeringLock,

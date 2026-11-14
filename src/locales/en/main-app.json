@@ -206,9 +206,20 @@
     "notAutoSwitched": "Not auto-switched",
     "autoSwitch": {
       "title": "Auto-switch",
-      "description": "Put a layout on screen when the situation in the sim changes. Layouts are assigned here only.",
+      "description": "Put a layout on screen when the situation in the sim changes. Each rule names a session, a car class and a car, any of them \"any\"; the most specific matching rule wins: a car over a class, a class over a session. Layouts are assigned here only.",
       "enabled": "On",
-      "noLayout": "Keep the current layout"
+      "anySession": "Any session",
+      "anyClass": "Any class",
+      "anyCar": "Any car",
+      "anySituation": "Any situation",
+      "session": "Session",
+      "carClass": "Car class",
+      "car": "Car",
+      "layout": "Layout",
+      "carById": "Car {{id}}",
+      "addRule": "Add rule",
+      "removeRule": "Remove rule",
+      "noRules": "No rules yet. Add one to put a layout on screen by session, car class or car."
     },
     "exported": "Layout saved to {{path}}",
     "exportFailed": "Could not save the layout file",

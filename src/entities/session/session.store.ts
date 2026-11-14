@@ -1,6 +1,7 @@
 import { makeAutoObservable, observableRef } from 'mobx';
 
 import type {
+  KnownCar,
   SessionEntry,
   SessionFrame,
   SessionSnapshot,
@@ -8,6 +9,14 @@ import type {
 } from '@shared/contracts/generated/bindings';
 import { computeClassSof } from '@shared/lib/driver';
 import { isSessionEnded } from '@shared/lib/timer-utils';
+
+type RosterCar = SessionSnapshot['cars'][number];
+
+const knownCarOf = (car: RosterCar): KnownCar => ({
+  carId: car.carId,
+  carName: car.carScreenName || null,
+  carClass: car.carClassShortName.trim() || null,
+});
 
 export class SessionStore {
   session: SessionFrame | null = null;
@@ -44,6 +53,27 @@ export class SessionStore {
     );
 
     return sof > 0 ? sof : null;
+  }
+
+  /** The player's car, its class as the field shows it; `null` before a session. */
+  get playerCar(): KnownCar | null {
+    const info = this.sessionInfo;
+    const player = info?.cars.find((car) => car.carIdx === info.playerCarIdx);
+
+    return player ? knownCarOf(player) : null;
+  }
+
+  /** Every car model in the field, once — what the auto-switch rules offer. */
+  get fieldCars(): KnownCar[] {
+    const byId = new Map<number, KnownCar>();
+
+    for (const car of this.sessionInfo?.cars ?? []) {
+      if (!car.isPaceCar && !car.isSpectator && !byId.has(car.carId)) {
+        byId.set(car.carId, knownCarOf(car));
+      }
+    }
+
+    return [...byId.values()];
   }
 
   /** The session being run now, or `null` while the sim names none. */

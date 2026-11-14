@@ -82,6 +82,7 @@ vi.mock('@shared/api/stats.service', () => ({
   setStatsFolder: api.setStatsFolder,
   reimportStats: api.reimportStats,
   getSkippedFiles: vi.fn(async () => api.skipped),
+  getKnownCars: vi.fn(async () => []),
   exportSessionsCsv: api.exportSessionsCsv,
   pickStatsFolder: vi.fn(async () => api.pickedFolder),
   pickSessionsCsvTarget: vi.fn(async () => api.csvTarget),

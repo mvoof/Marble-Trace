@@ -6,6 +6,7 @@ import { STATS_IMPORT_EVENT } from '@shared/contracts/generated/backend-events';
 import type {
   AutologState,
   HomeStats,
+  KnownCar,
   RecentSession,
   SkippedFile,
   StatsFolder,
@@ -36,6 +37,9 @@ export const setStatsFolder = (path: string | null) =>
 export const reimportStats = () => invoke<void>('reimport_stats');
 
 export const getSkippedFiles = () => invoke<SkippedFile[]>('get_skipped_files');
+
+/** Every car of the session records, with its class badge. */
+export const getKnownCars = () => invoke<KnownCar[]>('get_known_cars');
 
 /** Writes every session record to `path`; answers how many. */
 export const exportSessionsCsv = (path: string) =>

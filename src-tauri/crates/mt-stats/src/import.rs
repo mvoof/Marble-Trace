@@ -12,7 +12,7 @@ use std::thread;
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
 use mt_model::app::stats::{
-    HomeStats, RecentSession, SessionFile, SkippedFile, StatsFolder, StatsImportPhase,
+    HomeStats, KnownCar, RecentSession, SessionFile, SkippedFile, StatsFolder, StatsImportPhase,
     StatsImportStatus,
 };
 use mt_model::contract::event_sink::EventSink;
@@ -146,6 +146,10 @@ impl StatsService {
 
     pub fn skipped_files(&self) -> Result<Vec<SkippedFile>, String> {
         lock_or_recover(&self.db).skipped_files()
+    }
+
+    pub fn known_cars(&self) -> Result<Vec<KnownCar>, String> {
+        lock_or_recover(&self.db).known_cars()
     }
 
     /// Writes every session record to `path` as CSV. Returns how many.

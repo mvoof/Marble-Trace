@@ -28,6 +28,7 @@ import {
 import { setUpFirstRun } from '@entities/layout/first-run';
 import { watchMonitorArrangement } from './monitor-watch';
 import type { SessionContext } from '@shared/contracts/widget-settings';
+import { ruleLayoutFor } from '@entities/layout/auto-switch-rules';
 import type { MainRoot } from '@app/roots/main-root';
 
 let mainSyncInitPromise: Promise<() => void> | null = null;
@@ -46,10 +47,19 @@ export const registerLayoutAutoSwitchReaction = (
       isConnected: root.sim.isConnected,
       isOnTrack: root.player.isOnTrack,
       sessionType: root.session.currentSessionType,
+      carId: root.session.playerCar?.carId ?? null,
+      carClass: root.session.playerCar?.carClass ?? null,
       autoSwitchLayouts: root.appSettings.appSettings.autoSwitchLayouts,
-      sessionLayouts: JSON.stringify(root.layouts.sessionLayouts),
+      autoSwitchRules: JSON.stringify(root.layouts.autoSwitchRules),
     }),
-    ({ isConnected, isOnTrack, sessionType, autoSwitchLayouts }) => {
+    ({
+      isConnected,
+      isOnTrack,
+      sessionType,
+      carId,
+      carClass,
+      autoSwitchLayouts,
+    }) => {
       if (!autoSwitchLayouts) return;
       if (!isConnected) return;
 
@@ -67,7 +77,11 @@ export const registerLayoutAutoSwitchReaction = (
 
       if (!context) return;
 
-      const layoutId = root.layouts.sessionLayouts?.[context];
+      const layoutId = ruleLayoutFor(root.layouts.autoSwitchRules, {
+        context,
+        carClass,
+        carId,
+      });
 
       if (!layoutId) return;
 

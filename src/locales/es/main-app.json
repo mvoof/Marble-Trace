@@ -206,9 +206,20 @@
     "notAutoSwitched": "Sin cambio automático",
     "autoSwitch": {
       "title": "Cambio automático",
-      "description": "Pone un diseño en pantalla cuando cambia la situación en el simulador. Los diseños se asignan solo aquí.",
+      "description": "Muestra un diseño en pantalla cuando cambia la situación en el simulador. Cada regla indica una sesión, una clase y un coche, cualquiera puede ser «cualquiera»; gana la regla más específica que coincida: un coche antes que una clase, una clase antes que una sesión. Los diseños se asignan solo aquí.",
       "enabled": "Activado",
-      "noLayout": "Mantener el actual"
+      "anySession": "Cualquier sesión",
+      "anyClass": "Cualquier clase",
+      "anyCar": "Cualquier coche",
+      "anySituation": "Cualquier situación",
+      "session": "Sesión",
+      "carClass": "Clase",
+      "car": "Coche",
+      "layout": "Diseño",
+      "carById": "Coche {{id}}",
+      "addRule": "Añadir regla",
+      "removeRule": "Eliminar regla",
+      "noRules": "Aún no hay reglas. Añade una para mostrar un diseño según la sesión, la clase o el coche."
     },
     "exported": "Diseño guardado en {{path}}",
     "exportFailed": "No se pudo guardar el archivo del diseño",

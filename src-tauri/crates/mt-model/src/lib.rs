@@ -104,5 +104,6 @@ pub fn register_types(types: &mut specta::TypeCollection) {
         .register::<app::stats::HomeStats>()
         .register::<app::stats::AutologState>()
         .register::<app::stats::StatsFolder>()
-        .register::<app::stats::SkippedFile>();
+        .register::<app::stats::SkippedFile>()
+        .register::<app::stats::KnownCar>();
 }

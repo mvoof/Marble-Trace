@@ -10,11 +10,17 @@ import { useMainLiveWidgetsStore } from '@entities/layout/main-live-widgets-cont
 import { useLayoutGestureStores } from '@features/layout-editor/layout-editor-context';
 import { deleteLayoutAndBackgrounds } from '@features/layout-editor/layout-gestures';
 import { useLayoutFilesStore } from '@features/layout-files/layout-files-context';
-import type { SavedLayout } from '@shared/contracts/widget-settings';
+import { useSessionStore } from '@entities/session/session-context';
+import { useStatisticsStore } from '@features/statistics/statistics-context';
+import type {
+  AutoSwitchRule,
+  SavedLayout,
+} from '@shared/contracts/widget-settings';
 import { cx } from '@shared/lib/class-names';
 
 import { LayoutPreview } from './LayoutPreview';
-import { SESSION_CONTEXTS, SESSION_LOOKS } from './session-labels';
+import { SESSION_LOOKS } from './session-labels';
+import { carNameOf, ruleCars } from './rule-options';
 import styles from './LayoutCard.module.scss';
 
 interface LayoutCardProps {
@@ -43,9 +49,29 @@ export const LayoutCard = observer(
 
     const autoSwitchEnabled = appSettings.appSettings.autoSwitchLayouts;
     const isOnScreen = layout.id === layouts.liveLayoutId;
-    const assignedSessions = SESSION_CONTEXTS.filter(
-      (context) => layouts.sessionLayouts[context] === layout.id
+    const session = useSessionStore();
+    const statistics = useStatisticsStore();
+    const cars = ruleCars(session.fieldCars, statistics.knownCars);
+    const layoutRules = layouts.autoSwitchRules.filter(
+      (rule) => rule.layoutId === layout.id
     );
+
+    const ruleLabel = (rule: AutoSwitchRule): string => {
+      const carName =
+        rule.carId === null
+          ? null
+          : (carNameOf(cars, rule.carId) ??
+            t('layoutList.autoSwitch.carById', { id: rule.carId }));
+      const parts = [
+        rule.context === null ? null : t(SESSION_LOOKS[rule.context].labelKey),
+        rule.carClass,
+        carName,
+      ].filter((part): part is string => part !== null);
+
+      return parts.length > 0
+        ? parts.join(' · ')
+        : t('layoutList.autoSwitch.anySituation');
+    };
     const monitorCount = layout.monitors.length;
     const enabledWidgetsCount = layout.widgets.filter(
       (widget) => widget.userSettings.enabled
@@ -117,16 +143,16 @@ export const LayoutCard = observer(
           </span>
 
           <span className={styles.chips}>
-            {assignedSessions.length > 0 ? (
-              assignedSessions.map((session) => (
+            {layoutRules.length > 0 ? (
+              layoutRules.map((rule) => (
                 <span
-                  key={session}
+                  key={rule.id}
                   className={cx(
                     styles.chip,
                     !autoSwitchEnabled && styles.chipOff
                   )}
                 >
-                  {t(SESSION_LOOKS[session].labelKey)}
+                  {ruleLabel(rule)}
                 </span>
               ))
             ) : (

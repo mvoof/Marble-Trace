@@ -6,6 +6,7 @@ import {
   exportSessionsCsv,
   getAutologState,
   getHomeStats,
+  getKnownCars,
   getRecentSessions,
   getSkippedFiles,
   getStatsFolder,
@@ -20,6 +21,7 @@ import type {
   AutologState,
   CategoryRating,
   HomeStats,
+  KnownCar,
   LastRace,
   RecentSession,
   SkippedFile,
@@ -72,6 +74,8 @@ export class StatisticsStore {
   folder: StatsFolder | null = null;
   /** The files the import could not read, the latest tried first. */
   skippedFiles: SkippedFile[] = [];
+  /** The cars of the session records, by name. */
+  knownCars: KnownCar[] = [];
 
   private unlisten: (() => void) | null = null;
   private disposed = false;
@@ -304,14 +308,16 @@ export class StatisticsStore {
 
   private async loadSessions() {
     try {
-      const [sessions, homeStats] = await Promise.all([
+      const [sessions, homeStats, knownCars] = await Promise.all([
         getRecentSessions(RECENT_SESSIONS_LIMIT),
         getHomeStats(),
+        getKnownCars(),
       ]);
 
       runInAction(() => {
         this.recentSessions = sessions;
         this.homeStats = homeStats;
+        this.knownCars = knownCars;
         this.homeStatsAtS = Date.now() / MS_PER_SECOND;
         this.loaded = true;
       });

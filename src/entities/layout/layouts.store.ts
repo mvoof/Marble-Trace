@@ -19,11 +19,30 @@ import {
 } from '@shared/lib/remote-screen';
 import type { SettingsMutationLog } from '@entities/layout/mutation-log.store';
 import type {
+  AutoSwitchRule,
   LayoutMonitor,
   SavedLayout,
   SessionContext,
   WidgetDefaultConfig,
 } from '@shared/contracts/widget-settings';
+
+const FIRST_RUN_CONTEXTS: readonly SessionContext[] = [
+  'Practice',
+  'Qualify',
+  'Race',
+];
+
+/** A rule for the session context, any class and any car. */
+const newAutoSwitchRule = (
+  layoutId: string,
+  context: SessionContext | null
+): AutoSwitchRule => ({
+  id: crypto.randomUUID(),
+  context,
+  carClass: null,
+  carId: null,
+  layoutId,
+});
 
 export interface RemoteScreenDescriptor {
   layoutId: string;
@@ -101,12 +120,8 @@ export class LayoutsStore {
   layouts: SavedLayout[] = [];
   editingLayoutId: string | null = null;
 
-  sessionLayouts: Record<SessionContext, string | null> = {
-    Practice: null,
-    Qualify: null,
-    Race: null,
-    Garage: null,
-  };
+  /** In the user's order: of equally specific rules, the higher one wins. */
+  autoSwitchRules: AutoSwitchRule[] = [];
 
   /**
    * Every write below marks itself in the log, so a caller cannot make one that
@@ -204,21 +219,40 @@ export class LayoutsStore {
     this.mutations.record();
   }
 
-  setSessionLayout(context: SessionContext, layoutId: string | null) {
-    this.sessionLayouts[context] = layoutId;
+  setAutoSwitchRules(rules: AutoSwitchRule[]) {
+    this.autoSwitchRules = rules;
     this.mutations.record();
   }
 
-  setSessionLayouts(layouts: Partial<Record<SessionContext, string | null>>) {
-    this.sessionLayouts = {
-      Practice: null,
-      Qualify: null,
-      Race: null,
-      Garage: null,
-      ...layouts,
-    };
-
+  /** Appends a rule for any situation, putting the layout on screen. */
+  addAutoSwitchRule(layoutId: string) {
+    this.autoSwitchRules.push(newAutoSwitchRule(layoutId, null));
     this.mutations.record();
+  }
+
+  updateAutoSwitchRule(id: string, patch: Partial<Omit<AutoSwitchRule, 'id'>>) {
+    const rule = this.autoSwitchRules.find((entry) => entry.id === id);
+
+    if (!rule) return;
+
+    Object.assign(rule, patch);
+    this.mutations.record();
+  }
+
+  removeAutoSwitchRule(id: string) {
+    this.autoSwitchRules = this.autoSwitchRules.filter(
+      (rule) => rule.id !== id
+    );
+    this.mutations.record();
+  }
+
+  /** The session contexts the layout's rules name; "any" names none. */
+  sessionContextsOf(layoutId: string): SessionContext[] {
+    const contexts = this.autoSwitchRules
+      .filter((rule) => rule.layoutId === layoutId && rule.context !== null)
+      .map((rule) => rule.context as SessionContext);
+
+    return [...new Set(contexts)];
   }
 
   /** Creates an empty layout record and returns its id. */
@@ -259,12 +293,10 @@ export class LayoutsStore {
     const id = this.addLayout(DEFAULT_LAYOUT_NAME);
 
     this.editingLayoutId = id;
-    this.sessionLayouts = {
-      Practice: id,
-      Qualify: id,
-      Race: id,
-      Garage: null,
-    };
+    // On track only: with no Garage rule, the widgets hide off track.
+    this.autoSwitchRules = FIRST_RUN_CONTEXTS.map((context) =>
+      newAutoSwitchRule(id, context)
+    );
 
     return id;
   }
@@ -308,19 +340,14 @@ export class LayoutsStore {
   }
 
   /**
-   * Drops the record and every session assignment to it. The caller decides
+   * Drops the record and every auto-switch rule to it. The caller decides
    * what becomes active afterwards.
    */
   removeLayout(id: string) {
     this.layouts = this.layouts.filter((layout) => layout.id !== id);
-
-    for (const context of Object.keys(
-      this.sessionLayouts
-    ) as SessionContext[]) {
-      if (this.sessionLayouts[context] === id) {
-        this.sessionLayouts[context] = null;
-      }
-    }
+    this.autoSwitchRules = this.autoSwitchRules.filter(
+      (rule) => rule.layoutId !== id
+    );
 
     this.mutations.record();
   }
@@ -440,11 +467,7 @@ export class LayoutsStore {
 
     for (const layout of this.layouts) {
       const isLive = layout.id === liveId;
-      const sessionContexts: SessionContext[] = (
-        Object.entries(this.sessionLayouts) as [SessionContext, string | null][]
-      )
-        .filter(([, id]) => id === layout.id)
-        .map(([ctx]) => ctx);
+      const sessionContexts = this.sessionContextsOf(layout.id);
 
       for (const monitor of layout.monitors) {
         if (isRemoteMonitor(monitor)) {
@@ -469,16 +492,11 @@ export class LayoutsStore {
    */
   get groupedRemoteScreens(): GroupedRemoteScreen[] {
     const liveId = this.liveLayoutId;
-    const sessionMap = this.sessionLayouts;
     const groups = new Map<string, GroupedRemoteScreen>();
 
     for (const layout of this.layouts) {
       const isLive = layout.id === liveId;
-      const sessionContexts: SessionContext[] = (
-        Object.entries(sessionMap) as [SessionContext, string | null][]
-      )
-        .filter(([, id]) => id === layout.id)
-        .map(([ctx]) => ctx);
+      const sessionContexts = this.sessionContextsOf(layout.id);
 
       for (const monitor of layout.monitors) {
         if (!isRemoteMonitor(monitor) || !monitor.slug) {

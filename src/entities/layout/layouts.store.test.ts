@@ -8,8 +8,10 @@ import { deleteLayout } from '@features/layout-editor/layout-gestures';
 import { layoutGestureStores } from '@features/layout-editor/layout-gestures';
 import { SettingsMutationLog } from './mutation-log.store';
 import type {
+  AutoSwitchRule,
   LayoutMonitor,
   SavedLayout,
+  SessionContext,
 } from '@shared/contracts/widget-settings';
 
 const DISPLAY: LayoutMonitor = {
@@ -21,6 +23,17 @@ const SECOND_DISPLAY: LayoutMonitor = {
   name: 'DISPLAY2',
   bounds: { x: 1920, y: 0, width: 1920, height: 1080 },
 };
+
+const sessionRule = (
+  context: SessionContext | null,
+  layoutId: string
+): AutoSwitchRule => ({
+  id: `${context ?? 'any'}-${layoutId}`,
+  context,
+  carClass: null,
+  carId: null,
+  layoutId,
+});
 
 const layoutNamed = (id: string, monitors: LayoutMonitor[]): SavedLayout => ({
   id,
@@ -53,13 +66,22 @@ describe('LayoutsStore', () => {
     expect(store.byId('layout-race')?.monitors).toEqual([DISPLAY]);
   });
 
-  it('maps a session to a layout, and leaves the rest unmapped', () => {
+  it('adds a rule for any situation, then narrows it', () => {
     const { store } = freshStore();
 
-    store.setSessionLayout('Race', 'layout-race');
+    store.addAutoSwitchRule('layout-race');
+    const [rule] = store.autoSwitchRules;
+    store.updateAutoSwitchRule(rule.id, { context: 'Race', carClass: 'GT3' });
 
-    expect(store.sessionLayouts.Race).toBe('layout-race');
-    expect(store.sessionLayouts.Qualify).toBeNull();
+    expect(store.autoSwitchRules).toEqual([
+      {
+        id: rule.id,
+        context: 'Race',
+        carClass: 'GT3',
+        carId: null,
+        layoutId: 'layout-race',
+      },
+    ]);
   });
 
   it('spans every monitor of the active layout', () => {
@@ -115,20 +137,17 @@ describe('a removed layout', () => {
       layoutNamed('layout-race', [DISPLAY]),
       layoutNamed('layout-quali', [DISPLAY]),
     ]);
-    store.setSessionLayouts({
-      Race: 'layout-race',
-      Qualify: 'layout-quali',
-      Practice: 'layout-race',
-    });
+    store.setAutoSwitchRules([
+      sessionRule('Race', 'layout-race'),
+      sessionRule('Qualify', 'layout-quali'),
+      sessionRule('Practice', 'layout-race'),
+    ]);
 
     store.removeLayout('layout-race');
 
-    expect(store.sessionLayouts).toEqual({
-      Practice: null,
-      Qualify: 'layout-quali',
-      Race: null,
-      Garage: null,
-    });
+    expect(store.autoSwitchRules).toEqual([
+      sessionRule('Qualify', 'layout-quali'),
+    ]);
   });
 });
 
@@ -151,12 +170,26 @@ describe('every layout record write leaves its mark', () => {
       run: (store) => store.setEditingLayoutId(null),
     },
     {
-      name: 'setSessionLayout',
-      run: (store) => store.setSessionLayout('Race', 'layout-race'),
+      name: 'setAutoSwitchRules',
+      run: (store) =>
+        store.setAutoSwitchRules([sessionRule('Race', 'layout-race')]),
     },
     {
-      name: 'setSessionLayouts',
-      run: (store) => store.setSessionLayouts({ Race: 'layout-race' }),
+      name: 'addAutoSwitchRule',
+      run: (store) => store.addAutoSwitchRule('layout-race'),
+    },
+    {
+      name: 'updateAutoSwitchRule',
+      setup: (store) =>
+        store.setAutoSwitchRules([sessionRule('Race', 'layout-race')]),
+      run: (store) =>
+        store.updateAutoSwitchRule('Race-layout-race', { carId: 156 }),
+    },
+    {
+      name: 'removeAutoSwitchRule',
+      setup: (store) =>
+        store.setAutoSwitchRules([sessionRule('Race', 'layout-race')]),
+      run: (store) => store.removeAutoSwitchRule('Race-layout-race'),
     },
     {
       name: 'addLayout',
@@ -564,8 +597,11 @@ describe('a screen added to a layout', () => {
     rootStore.layouts.setEditingLayoutId(layout2Id);
     rootStore.layouts.addRemoteScreen('LapScreen', 1920, 1080);
 
-    rootStore.layouts.setSessionLayout('Race', layout1Id);
-    rootStore.layouts.setSessionLayout('Qualify', layout2Id);
+    rootStore.layouts.setAutoSwitchRules([
+      sessionRule('Race', layout1Id),
+      sessionRule('Qualify', layout2Id),
+      sessionRule(null, layout2Id),
+    ]);
     rootStore.layouts.setPinnedLiveLayoutId(layout1Id);
 
     const all = rootStore.layouts.allRemoteScreens;

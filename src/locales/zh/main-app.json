@@ -202,9 +202,20 @@
     "notAutoSwitched": "不自动切换",
     "autoSwitch": {
       "title": "自动切换",
-      "description": "模拟器中的情况变化时，将布局显示到屏幕上。布局只在此处分配。",
+      "description": "当模拟器中的情况变化时切换显示的布局。每条规则指定会话、车辆组别和车辆，均可设为“任意”；最具体的匹配规则优先：车辆优先于组别，组别优先于会话。布局只在此处分配。",
       "enabled": "开启",
-      "noLayout": "保持当前布局"
+      "anySession": "任意会话",
+      "anyClass": "任意组别",
+      "anyCar": "任意车辆",
+      "anySituation": "任意情况",
+      "session": "会话",
+      "carClass": "组别",
+      "car": "车辆",
+      "layout": "布局",
+      "carById": "车辆 {{id}}",
+      "addRule": "添加规则",
+      "removeRule": "删除规则",
+      "noRules": "还没有规则。添加一条，按会话、组别或车辆切换布局。"
     },
     "exported": "布局已保存到 {{path}}",
     "exportFailed": "无法保存布局文件",

@@ -2,6 +2,7 @@ import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest';
 import { runInAction, type IReactionDisposer } from 'mobx';
 
 import { MainRoot } from '@app/roots/main-root';
+import type { AutoSwitchRule } from '@shared/contracts/widget-settings';
 
 // The reaction only reads the sim and writes the active layout; everything it
 // would emit crosses the Tauri boundary, which is not what is under test.
@@ -25,6 +26,20 @@ const MONITOR = {
   bounds: { x: 0, y: 0, width: 1920, height: 1080 },
 };
 
+const MERCEDES_GT3 = 156;
+
+const rule = (
+  layoutId: string,
+  conditions: Partial<Omit<AutoSwitchRule, 'id' | 'layoutId'>>
+): AutoSwitchRule => ({
+  id: layoutId,
+  context: null,
+  carClass: null,
+  carId: null,
+  layoutId,
+  ...conditions,
+});
+
 const layout = (id: string) => ({
   id,
   name: id,
@@ -46,6 +61,17 @@ describe('session layout auto-switch', () => {
       root.session.sessionInfo = {
         currentSessionNum: 0,
         sessions: [{ sessionType: 'Practice' }],
+        playerCarIdx: 0,
+        cars: [
+          {
+            carIdx: 0,
+            carId: MERCEDES_GT3,
+            carScreenName: 'Mercedes-AMG GT3 2020',
+            carClassShortName: 'GT3',
+            isPaceCar: false,
+            isSpectator: false,
+          },
+        ],
       } as unknown as typeof root.session.sessionInfo;
     });
   };
@@ -55,13 +81,17 @@ describe('session layout auto-switch', () => {
     root = new MainRoot({ skipInit: true });
 
     root.liveWidgets.setLayouts(
-      [layout('layout-garage'), layout('layout-practice')],
+      [
+        layout('layout-garage'),
+        layout('layout-practice'),
+        layout('layout-mercedes'),
+      ],
       'layout-garage'
     );
-    root.layouts.setSessionLayouts({
-      Practice: 'layout-practice',
-      Garage: 'layout-garage',
-    });
+    root.layouts.setAutoSwitchRules([
+      rule('layout-practice', { context: 'Practice' }),
+      rule('layout-garage', { context: 'Garage' }),
+    ]);
 
     runInAction(() => {
       root.appSettings.appSettings.autoSwitchLayouts = true;
@@ -79,6 +109,17 @@ describe('session layout auto-switch', () => {
     goOnTrackInPractice();
 
     expect(root.layouts.editingLayoutId).toBe('layout-practice');
+  });
+
+  it('puts on the layout of a rule naming the car over the session rule', () => {
+    root.layouts.setAutoSwitchRules([
+      rule('layout-practice', { context: 'Practice' }),
+      rule('layout-mercedes', { carId: MERCEDES_GT3 }),
+    ]);
+
+    goOnTrackInPractice();
+
+    expect(root.layouts.editingLayoutId).toBe('layout-mercedes');
   });
 
   // Fixed three times, the last two in opposite directions. Auto-switch used to

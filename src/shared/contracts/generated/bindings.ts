@@ -1583,6 +1583,20 @@ export type JsonValue =
   | Partial<{ [key in string]: JsonValue }>;
 
 /**
+ * A car the driver has a session record in: what the auto-switch rules offer
+ * while the sim is off.
+ */
+export type KnownCar = {
+  carId: number;
+  carName: string | null;
+  /**
+   * The class badge the live session would give it, else the sim's class
+   * name; `None` when neither is known.
+   */
+  carClass: string | null;
+};
+
+/**
  * Sector timing data for the sector matrix widget.
  * Total delta is provided directly by iRacing via LapTimingFrame delta fields.
  */

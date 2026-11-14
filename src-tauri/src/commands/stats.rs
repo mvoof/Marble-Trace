@@ -6,10 +6,11 @@ use std::sync::Arc;
 use tauri::{AppHandle, Manager, State};
 
 use mt_model::app::stats::{
-    AutologState, HomeStats, RecentSession, SkippedFile, StatsFolder, StatsImportStatus,
+    AutologState, HomeStats, KnownCar, RecentSession, SkippedFile, StatsFolder, StatsImportStatus,
     TrackOutline,
 };
 use mt_sim_iracing::app_ini;
+use mt_sim_iracing::car_badges::badge_for_car;
 use mt_stats::import::{PassScope, StatsService};
 use mt_telemetry::state::TelemetryState;
 use mt_telemetry::storage::load_cached_track_shape;
@@ -129,6 +130,26 @@ pub async fn get_skipped_files(
     tauri::async_runtime::spawn_blocking(move || service.skipped_files())
         .await
         .map_err(|error| error.to_string())?
+}
+
+/// The cars of the session records, each with the class badge a live session
+/// would give it, so a rule picked offline matches the car on track.
+#[tauri::command]
+pub async fn get_known_cars(state: State<'_, Arc<StatsService>>) -> Result<Vec<KnownCar>, String> {
+    let service = Arc::clone(&state);
+    let cars = tauri::async_runtime::spawn_blocking(move || service.known_cars())
+        .await
+        .map_err(|error| error.to_string())??;
+
+    Ok(cars
+        .into_iter()
+        .map(|car| KnownCar {
+            car_class: badge_for_car(car.car_id)
+                .map(str::to_string)
+                .or(car.car_class),
+            ..car
+        })
+        .collect())
 }
 
 /// Writes every session record to `path` as CSV. Returns how many.

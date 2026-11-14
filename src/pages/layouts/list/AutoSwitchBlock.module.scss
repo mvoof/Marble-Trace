@@ -13,11 +13,11 @@
   cursor: pointer;
 }
 
-// A rule row: the situation, an arrow, what it puts on screen. The car class
-// and car fields of later rules take the room after the layout.
+// A rule row: the situation (session, class, car), an arrow, what it puts on
+// screen, and its remove button.
 .rule {
   display: grid;
-  grid-template-columns: rem(150) rem(24) minmax(0, 1fr) minmax(0, 2fr);
+  grid-template-columns: minmax(0, 3fr) rem(24) minmax(0, 1fr) auto;
   align-items: center;
   gap: rem(10);
   padding: rem(8) 0;
@@ -25,18 +25,26 @@
   & + & {
     border-top: 1px solid $sys-border-sub;
   }
+}
+
+.conditions {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: rem(8);
 
   @media (max-width: 1000px) {
-    grid-template-columns: rem(120) rem(20) minmax(0, 1fr);
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 
-.situation {
-  display: flex;
-  align-items: center;
-  gap: rem(8);
-  color: $sys-text-primary;
+.empty {
+  margin: rem(8) 0;
   font-size: rem(13);
+  color: $sys-text-muted;
+}
+
+.addRule {
+  margin-top: rem(8);
 }
 
 .arrow {

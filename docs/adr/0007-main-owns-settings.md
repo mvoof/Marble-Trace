@@ -96,8 +96,8 @@ A client receives a snapshot of **what it draws, and nothing else**:
 
 - an overlay: its own monitor — the widgets on it, its bounds — plus the
   app-level state its widgets read: `hideAllWidgets`,
-  `hideWidgetsWhenGameClosed`, a derived `hidesOffTrack` (today the overlay
-  reads `autoSwitchLayouts` and `sessionLayouts.Garage` to compute it), units,
+  `hideWidgetsWhenGameClosed`, a derived `hidesOffTrack` (main computes it
+  from `autoSwitchLayouts` and the auto-switch rule for the garage), units,
   steering lock, pit strategy, language, stream-chat filters, the binding
   overrides, the layout name, `settingsLocked`, and `lastHandledCommandNo`
   for that client;

@@ -877,14 +877,13 @@ describe('every settings write leaves its mark', () => {
 
     // Layout records.
     {
-      name: 'setSessionLayout',
-      run: (_store, layouts) => layouts.setSessionLayout('Race', 'layout-race'),
+      name: 'addAutoSwitchRule',
+      run: (_store, layouts) => layouts.addAutoSwitchRule('layout-race'),
       expected: { changes: true },
     },
     {
-      name: 'setSessionLayouts',
-      run: (_store, layouts) =>
-        layouts.setSessionLayouts({ Race: 'layout-race' }),
+      name: 'setAutoSwitchRules',
+      run: (_store, layouts) => layouts.setAutoSwitchRules([]),
       expected: { changes: true },
     },
     // `createLayout` is deliberately absent: it marks synchronously and then
