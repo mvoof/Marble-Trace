@@ -1,7 +1,6 @@
-// Safety car row — same column grid as DriverRow (pos | car# | ... | gap) for
-// alignment, but the name spans the whole middle area (through where lic/iR
-// would sit) instead of being confined to the name column, and stripes across
-// the full row read as "not a competitor".
+// Safety car row — same column grid and order as DriverRow for alignment, but
+// the name spans the rating columns after it instead of being confined to the
+// name column, and stripes across the full row read as "not a competitor".
 .paceCarRow {
   display: grid;
   align-items: center;
@@ -66,15 +65,17 @@
 }
 
 .posBlock {
-  grid-column: 1;
   align-self: stretch;
   margin-top: calc(-1 * sp(xxxs));
   margin-bottom: calc(-1 * sp(xxxs));
+}
+
+// Leading the row, the class stripe sits on the row's left edge.
+.posBlock:first-child {
   margin-left: calc(-1 * sp(md));
 }
 
 .carNumberCell {
-  grid-column: 2;
   display: flex;
   align-items: center;
   justify-content: flex-end;
@@ -97,17 +98,7 @@
   color: $pace-car-number-text;
 }
 
-// Spans from the name column through wherever lic/iR would be, so the label
-// centers across the whole row rather than just its own narrow column.
-// The flag placeholder must be placed explicitly: an auto-placed item cannot
-// fit beside a label that spans to the last column, and grid would push it onto
-// a second row — making the pace car row taller than every driver row.
-.flagCell {
-  grid-column: 3;
-}
-
 .centerLabel {
-  grid-column: 3 / -2;
   text-align: center;
   font-weight: 700;
   font-size: fs(md);
@@ -119,12 +110,7 @@
   white-space: nowrap;
 }
 
-.centerLabelWithFlag {
-  grid-column: 4 / -2;
-}
-
 .gapBlock {
-  grid-column: -2 / -1;
   display: flex;
   justify-content: flex-end;
   align-items: center;
@@ -132,25 +118,6 @@
 }
 
 // With the distance column last, the label and the gap each step one column left.
-.withDistance {
-  .centerLabel {
-    grid-column: 3 / -3;
-  }
-
-  .centerLabelWithFlag {
-    grid-column: 4 / -3;
-  }
-
-  .gapBlock {
-    grid-column: -3 / -2;
-  }
-
-  // The distance cell, placed explicitly like every other cell of this row.
-  > :last-child {
-    grid-column: -2 / -1;
-  }
-}
-
 .gap {
   font-family: $font-mono;
   font-weight: 900;

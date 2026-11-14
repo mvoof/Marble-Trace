@@ -2,12 +2,18 @@
 // instead of a manually-toggled "compact" flag — the same panel renders
 // inside a 280px layout-editor drawer, a ~460px drag-mode popup, and a
 // preview pane, and each needs to stack independently.
+//
+// A column, so each card's `order` (its settings group) places it: the panel's
+// Behaviour card follows the common Size and Background cards drawn after it.
 .settingsRoot {
   container-type: inline-size;
   container-name: settingsPanel;
+  display: flex;
+  flex-direction: column;
 }
 
 .header {
+  order: -1;
   margin-bottom: rem(40);
 }
 
@@ -88,7 +94,8 @@
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
   // The collapsible header sits above and owns the gap when open.
   margin-top: rem(10);
-  margin-bottom: rem(22);
+  // Added to the card's own margin below: a flex item does not collapse them.
+  margin-bottom: rem(12);
 
   // Every block inside a group is separated from the next one, whether or not
   // the panel wrapped it in .fieldGroup — panels that stacked bare SettingRows
@@ -96,6 +103,42 @@
   > * + * {
     padding-top: rem(24);
     margin-top: rem(24);
+    border-top: 1px solid $sys-border-sub;
+  }
+}
+
+// An always-open group on the Widgets page: the mockup's card, its title in a
+// strip across the top.
+.openCard {
+  background: $sys-bg-card;
+  border: 1px solid $sys-border-sub;
+  border-radius: rem(10);
+  margin-bottom: rem(14);
+}
+
+.openCardHeader {
+  display: flex;
+  align-items: center;
+  min-height: rem(46);
+  padding: rem(12) rem(16);
+  border-bottom: 1px solid $sys-border-sub;
+}
+
+.openCardTitle {
+  margin: 0 !important;
+  font-size: rem(13);
+  font-weight: 600;
+  color: $sys-text-primary;
+}
+
+.openCardContent {
+  padding: rem(14) rem(16);
+
+  // Every block inside a group is separated from the next one, as in a
+  // foldable card.
+  > * + * {
+    padding-top: rem(16);
+    margin-top: rem(16);
     border-top: 1px solid $sys-border-sub;
   }
 }
@@ -126,7 +169,8 @@
 
 // A dependant placed straight in the card (`dependsOn`) joins the block above
 // it instead of being ruled off as a block of its own.
-.cardContent > .fieldSubRow {
+.cardContent > .fieldSubRow,
+.openCardContent > .fieldSubRow {
   margin-top: rem(14);
   padding-top: 0;
   border-top: 0;
@@ -231,7 +275,7 @@
   .cardContent {
     padding: rem(12);
     margin-top: rem(8);
-    margin-bottom: rem(16);
+    margin-bottom: rem(8);
 
     > * + * {
       padding-top: rem(14);

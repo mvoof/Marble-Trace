@@ -23,6 +23,7 @@ import { TrackRotationContext } from '@entities/track/track-rotation-context';
 import { LayoutToastContext } from '@entities/layout/layout-toast-context';
 import { LiveWidgetsContext } from '@entities/layout/live-widgets-context';
 import { MainLiveWidgetsContext } from '@entities/layout/main-live-widgets-context';
+import { DisplaysContext } from '@entities/layout/displays-context';
 import { WidgetDefaultsContext } from '@entities/widget/widget-defaults-context';
 import { LayoutsContext } from '@entities/layout/layouts-context';
 import { SettingsMutationLogContext } from '@entities/layout/mutation-log-context';
@@ -34,14 +35,18 @@ import { WidgetAutoHideContext } from '@features/widget-auto-hide/widget-auto-hi
 import { SettingsPanelUiContext } from '@entities/widget/settings-panel-ui-context';
 import { BindingsContext } from '@features/hotkey-bindings/bindings-context';
 import { BindingsUiContext } from '@features/hotkey-bindings/bindings-ui-context';
+import { MainNavigationContext } from '@features/main-navigation/main-navigation-context';
+import { AppLinksContext } from '@features/app-links/app-links-context';
 import { DeviceInputContext } from '@features/hotkey-bindings/device-input-context';
 import { FpsDiagnosticsContext } from '@features/diagnostics/fps-diagnostics-context';
 import { DiagnosticsExportContext } from '@features/diagnostics/diagnostics-export-context';
+import { LayoutFilesContext } from '@features/layout-files/layout-files-context';
 import { TelemetryInspectorContext } from '@features/telemetry-inspector/telemetry-inspector-context';
 import { TwitchAuthContext } from '@features/twitch-auth/twitch-auth-context';
 import { AppUpdateContext } from '@features/app-update/app-update-context';
 import { CompanionAppsContext } from '@features/companion-apps/companion-apps-context';
 import { VoiceCrewContext } from '@features/voice-crew/voice-crew-context';
+import { StatisticsContext } from '@features/statistics/statistics-context';
 import { RemoteDevicesContext } from '@features/remote-screens/remote-devices-context';
 import { WidgetHostContext } from '@widgets/widget-host-context';
 import {
@@ -106,17 +111,22 @@ const createPreviewWorld = (): PreviewWorld => {
 const mainStores = (root: MainRoot): ProvidedStore[] => [
   provide(MainRootContext, root),
   provide(MainLiveWidgetsContext, root.liveWidgets),
+  provide(DisplaysContext, root.displays),
   provide(LayoutEditorContext, root.layoutEditor),
   provide(LayoutEditorUiContext, root.layoutEditorUi),
   provide(AppUpdateContext, root.appUpdate),
   provide(CompanionAppsContext, root.companionApps),
   provide(VoiceCrewContext, root.voiceCrew),
+  provide(StatisticsContext, root.statistics),
   provide(TwitchAuthContext, root.twitchAuth),
   provide(DeviceInputContext, root.deviceInput),
   provide(BindingsUiContext, root.bindingsUi),
+  provide(MainNavigationContext, root.navigation),
+  provide(AppLinksContext, root.appLinks),
   provide(RemoteDevicesContext, root.remoteDevices),
   provide(FpsDiagnosticsContext, root.fpsDiagnostics),
   provide(DiagnosticsExportContext, root.diagnosticsExport),
+  provide(LayoutFilesContext, root.layoutFiles),
   provide(TelemetryInspectorContext, root.telemetryInspector),
   provide(TrackRotationContext, root.trackRotation),
   provide(PreviewWorldContext, createPreviewWorld),

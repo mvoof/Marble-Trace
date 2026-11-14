@@ -1,5 +1,4 @@
 import { observer } from 'mobx-react-lite';
-import { useTranslation } from 'react-i18next';
 
 import { Card } from '@features/widget-settings/Card';
 import { schemaRows } from '@features/widget-settings/schema-rows';
@@ -11,10 +10,8 @@ export const PANEL_WIDGET_IDS = ['incident-tracker'];
 const { Row } = schemaRows(INCIDENT_TRACKER_SETTINGS);
 
 export const IncidentTrackerSettingsPanel = observer(() => {
-  const { t } = useTranslation('widgets');
-
   return (
-    <Card title={t('settingsPanels.incidentTracker.moduleParameters')}>
+    <Card group="content">
       <Row setting="showProjectedSr" />
       <Row setting="srChipMode" dependsOn="showProjectedSr" />
       <Row setting="showPenalties" />

@@ -82,6 +82,27 @@ export const clampOnOwnMonitor = (
 };
 
 /**
+ * Where a widget stands in the middle of a monitor, by its stored size, kept
+ * inside the monitor the way a drag is.
+ */
+export const centredOnMonitor = (
+  widget: WidgetDefaultConfig,
+  monitor: LayoutMonitor
+): Position => {
+  const { bounds } = monitor;
+  const { currentWidth, currentHeight } = widget.userSettings;
+
+  return clampToBounds(
+    bounds,
+    {
+      x: Math.round(bounds.x + (bounds.width - currentWidth) / 2),
+      y: Math.round(bounds.y + (bounds.height - currentHeight) / 2),
+    },
+    clampSizeOf(widget)
+  );
+};
+
+/**
  * Gives a widget that stands on no monitor of this layout the first display,
  * and moves it inside that monitor — a widget is drawn only by its own
  * monitor's window, and one left at stale coordinates would be invisible.

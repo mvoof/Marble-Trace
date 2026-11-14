@@ -7,6 +7,7 @@
 
 pub mod chat;
 pub mod companions;
+pub mod displays;
 pub mod hotkeys;
 pub mod input;
 #[cfg(feature = "dev")]
@@ -14,6 +15,7 @@ pub mod perf;
 pub mod pit;
 pub mod remote;
 pub mod settings;
+pub mod stats;
 pub mod telemetry;
 pub mod track;
 pub mod voice;
@@ -78,6 +80,7 @@ pub fn invoke_handler() -> impl Fn(Invoke<Wry>) -> bool + Send + Sync + 'static 
         track::reset_pit_lane_pct,
         track::get_active_reference_lap,
         track::delete_reference_lap,
+        displays::list_display_names,
         settings::log_settings_snapshot,
         settings::backup_settings_file,
         settings::load_settings,
@@ -111,6 +114,17 @@ pub fn invoke_handler() -> impl Fn(Invoke<Wry>) -> bool + Send + Sync + 'static 
         companions::launch_companion_app,
         companions::close_companion_app,
         companions::close_companion_apps,
-        companions::companion_app_icon
+        companions::companion_app_icon,
+        stats::get_stats_import_status,
+        stats::get_recent_sessions,
+        stats::get_home_stats,
+        stats::get_autolog_state,
+        stats::enable_autolog,
+        stats::get_stats_folder,
+        stats::set_stats_folder,
+        stats::reimport_stats,
+        stats::get_skipped_files,
+        stats::get_known_cars,
+        stats::export_sessions_csv
     ]
 }

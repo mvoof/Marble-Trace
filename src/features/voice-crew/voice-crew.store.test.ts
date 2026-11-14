@@ -234,6 +234,31 @@ describe('voice crew cheat sheet', () => {
     expect(store.importedSwitchedOff).toEqual(['Car']);
   });
 
+  it('shows the sheet it would export', async () => {
+    const store = storeWith(packWithQuestion());
+
+    voiceService.pickVoiceSheetTarget.mockResolvedValueOnce('C:/sheet.html');
+    voiceService.exportVoiceSheet.mockClear();
+    voiceService.exportVoiceSheet.mockResolvedValueOnce(undefined);
+
+    const shown = store.commandSheet(labels);
+    await store.exportSheet(labels);
+
+    expect(shown).toContain('crewPage.cheatSheet.title');
+    expect(voiceService.exportVoiceSheet).toHaveBeenCalledWith(
+      'C:/sheet.html',
+      shown
+    );
+  });
+
+  it('shows no sheet before a pack is loaded', () => {
+    const store = storeWith(packWithQuestion());
+
+    store.pack = null;
+
+    expect(store.commandSheet(labels)).toBeNull();
+  });
+
   it('writes no sheet when the pack was edited behind the dialog', async () => {
     const store = storeWith(packWithQuestion());
 

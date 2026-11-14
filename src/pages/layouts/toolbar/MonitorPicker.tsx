@@ -1,7 +1,7 @@
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
-import { App, Select, Tooltip } from 'antd';
-import { Monitor, X } from 'lucide-react';
+import { App } from 'antd';
+import { LayoutDashboard, Monitor, Tablet, X } from 'lucide-react';
 
 import { useLayoutsStore } from '@entities/layout/layouts-context';
 import { useMainLiveWidgetsStore } from '@entities/layout/main-live-widgets-context';
@@ -10,15 +10,21 @@ import { useLayoutEditorUiStore } from '@features/layout-editor/layout-editor-ui
 import { removeMonitor } from '@features/layout-editor/layout-gestures';
 import { isRemoteMonitor } from '@shared/lib/remote-screen';
 
+import { ToolbarButton } from './ToolbarButton';
+import { ToolbarMenuItem } from './ToolbarMenuItem';
+import { ToolbarPopover } from './ToolbarPopover';
 import styles from './MonitorPicker.module.scss';
-
-const ALL_MONITORS = '__all__';
-const PICKER_WIDTH_PX = 240;
-const PICKER_MIN_WIDTH_PX = 180;
 
 interface MonitorPickerProps {
   /** Where a dialog is mounted: in fullscreen only the editor is drawn. */
   dialogContainer: () => HTMLElement;
+}
+
+interface MonitorOption {
+  name: string;
+  note: string;
+  isInLayout: boolean;
+  isRemote: boolean;
 }
 
 /**
@@ -43,54 +49,37 @@ export const MonitorPicker = observer(
       (editingLayout?.monitors ?? []).map((monitor) => monitor.name)
     );
 
-    const options = [
-      {
-        value: ALL_MONITORS,
-        label: t('layoutEditor.allMonitors'),
-        inLayout: false,
-      },
+    const options: MonitorOption[] = [
       ...attached.map((monitor) => ({
-        value: monitor.name,
-        inLayout: layoutMonitorNames.has(monitor.name),
-        label: layoutMonitorNames.has(monitor.name)
-          ? `${monitor.name} · ${monitor.bounds.width}×${monitor.bounds.height}`
-          : `${monitor.name} · ${t('layoutEditor.monitorAdd')}`,
+        name: monitor.name,
+        isInLayout: layoutMonitorNames.has(monitor.name),
+        isRemote: false,
+        note: layoutMonitorNames.has(monitor.name)
+          ? `${monitor.bounds.width}×${monitor.bounds.height}`
+          : t('layoutEditor.monitorAdd'),
       })),
-      // Remote screens live in the layout only — the machine has no display to
-      // offer them from, so they are listed straight from the layout itself.
+      // Remote screens live in the layout only — the machine has no display
+      // to offer them from, so they are listed straight from the layout.
       ...(editingLayout?.monitors ?? [])
         .filter(isRemoteMonitor)
         .map((monitor) => ({
-          value: monitor.name,
-          inLayout: true,
-          label: `${monitor.name} · ${monitor.bounds.width}×${monitor.bounds.height} · ${t('layoutEditor.remoteScreenTag')}`,
+          name: monitor.name,
+          isInLayout: true,
+          isRemote: true,
+          note: `${monitor.bounds.width}×${monitor.bounds.height}`,
         })),
     ];
 
-    const handleSelect = (name: string) => {
-      if (name === ALL_MONITORS) {
-        editorUi.focusMonitor(null);
+    const handleSelect = (option: MonitorOption) => {
+      const monitor = attached.find(
+        (candidate) => candidate.name === option.name
+      );
 
-        return;
-      }
-
-      const monitor = attached.find((candidate) => candidate.name === name);
-
-      // A remote screen is already part of the layout, so selecting one only
-      // ever means focusing it.
-      if (!monitor) {
-        if (layoutMonitorNames.has(name)) {
-          editorUi.focusMonitor(name);
-        }
-
-        return;
-      }
-
-      if (!layoutMonitorNames.has(name)) {
+      if (monitor && !option.isInLayout) {
         layouts.addMonitor({ name: monitor.name, bounds: monitor.bounds });
       }
 
-      editorUi.focusMonitor(name);
+      editorUi.focusMonitor(option.name);
     };
 
     // A screen's widgets go with it — they are its own set — so a mis-click
@@ -119,45 +108,63 @@ export const MonitorPicker = observer(
     };
 
     return (
-      <Tooltip title={t('layoutEditor.monitorTooltip')}>
-        <Select
-          size="small"
-          placeholder={
-            <>
-              <Monitor size={12} /> {t('layoutEditor.monitorPlaceholder')}
-            </>
-          }
-          value={editorUi.focusedMonitorName ?? ALL_MONITORS}
-          onChange={handleSelect}
-          options={options}
-          optionRender={(option) => (
-            <div className={styles.monitorOption}>
-              <span className={styles.monitorOptionLabel}>{option.label}</span>
+      <ToolbarPopover
+        trigger={({ isOpen, toggle }) => (
+          <ToolbarButton
+            icon={Monitor}
+            label={editorUi.focusedMonitorName ?? t('layoutEditor.allMonitors')}
+            title={t('layoutEditor.monitorTooltip')}
+            isSelect
+            isExpanded={isOpen}
+            isDisabled={!editingLayout}
+            onClick={toggle}
+          />
+        )}
+      >
+        {({ close }) => (
+          <>
+            <ToolbarMenuItem
+              icon={LayoutDashboard}
+              label={t('layoutEditor.allMonitors')}
+              isChecked={editorUi.focusedMonitorName === null}
+              onClick={() => {
+                editorUi.focusMonitor(null);
+                close();
+              }}
+            />
 
-              {option.data.inLayout && (
-                <button
-                  type="button"
-                  className={styles.monitorOptionRemove}
-                  tabIndex={-1}
-                  title={t('layoutEditor.removeMonitor')}
-                  // The click must not reach the option itself, or removing a
-                  // screen would also focus it.
-                  onMouseDown={(event) => {
-                    event.preventDefault();
-                    event.stopPropagation();
-                    handleRemove(String(option.value));
-                  }}
-                >
-                  <X size={12} />
-                </button>
-              )}
-            </div>
-          )}
-          disabled={!editingLayout}
-          popupMatchSelectWidth={PICKER_WIDTH_PX}
-          style={{ minWidth: PICKER_MIN_WIDTH_PX }}
-        />
-      </Tooltip>
+            {options.map((option) => (
+              <ToolbarMenuItem
+                key={option.name}
+                icon={option.isRemote ? Tablet : Monitor}
+                label={option.name}
+                note={option.note}
+                isChecked={editorUi.focusedMonitorName === option.name}
+                onClick={() => {
+                  handleSelect(option);
+                  close();
+                }}
+                action={
+                  option.isInLayout && (
+                    <button
+                      type="button"
+                      className={styles.remove}
+                      title={t('layoutEditor.removeMonitor')}
+                      aria-label={t('layoutEditor.removeMonitor')}
+                      onClick={() => {
+                        close();
+                        handleRemove(option.name);
+                      }}
+                    >
+                      <X size={12} />
+                    </button>
+                  )
+                }
+              />
+            ))}
+          </>
+        )}
+      </ToolbarPopover>
     );
   }
 );

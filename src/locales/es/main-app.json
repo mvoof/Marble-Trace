@@ -1,25 +1,45 @@
 {
-  "mainWindow": {
-    "widgetModules": "Módulos de widgets"
+  "widgetsPage": {
+    "allWidgets": "Todos los widgets",
+    "unavailable": "no disponible para este simulador",
+    "sort": {
+      "tier": "Importancia",
+      "az": "A–Z"
+    },
+    "widgetsCount_one": "{{count}} widget",
+    "widgetsCount_other": "{{count}} widgets",
+    "previewTop": "Vista previa sobre los ajustes",
+    "previewLeft": "Vista previa junto a los ajustes",
+    "addToLayout": "Añadir al diseño",
+    "onScreen": "En pantalla",
+    "addToLayoutHint": "Pone el widget en el primer monitor del diseño en pantalla"
   },
   "appHeader": {
     "sections": {
-      "layouts": "Diseños",
+      "home": "Inicio",
       "widgets": "Widgets",
+      "layouts": "Diseños",
       "crew": "Equipo",
+      "connections": "Conexiones",
+      "data": "Datos",
+      "hotkeys": "Atajos",
       "settings": "Ajustes"
+    },
+    "websiteTitle": "Abrir marbletrace.com",
+    "releasesTitle": "Novedades — versiones en GitHub",
+    "discordTitle": "Discord — comunidad",
+    "window": {
+      "minimise": "Minimizar",
+      "maximise": "Maximizar",
+      "close": "Cerrar"
     }
   },
   "appStatus": {
-    "connectedTo": "CONECTADO A {{sim}}",
-    "replaying": "REPRODUCCIÓN: {{tape}}",
-    "waitingForTelemetry": "ESPERANDO TELEMETRÍA",
-    "systemError": "ERROR DEL SISTEMA",
-    "waitingForGame": "ESPERANDO A QUE ARRANQUE EL JUEGO"
-  },
-  "widgetList": {
-    "unavailable": "No disponible",
-    "defaultDescription": "Configura los ajustes del widget."
+    "connectedTo": "{{sim}} · conectado",
+    "replaying": "Repetición · {{tape}}",
+    "waitingForTelemetry": "{{sim}} · esperando telemetría",
+    "systemError": "Error del sistema",
+    "waitingForGame": "{{sim}} · no está abierto"
   },
   "releaseNotes": {
     "whatsNew": "Novedades",
@@ -59,13 +79,8 @@
   "layoutEditor": {
     "backToLayouts": "Volver a los diseños",
     "toggleWidgetPanel": "Mostrar u ocultar el panel de widgets",
-    "newLayoutNamePlaceholder": "Nombre del nuevo diseño",
     "create": "Crear",
     "cancel": "Cancelar",
-    "saveName": "Guardar nombre",
-    "selectLayoutPlaceholder": "Selecciona un diseño…",
-    "newLayout": "Nuevo diseño",
-    "rename": "Renombrar",
     "deleteLayoutConfirm": "¿Eliminar este diseño?",
     "delete": "Eliminar",
     "active": "Activo",
@@ -88,8 +103,12 @@
     "toggleGridTooltip": "Mostrar u ocultar la cuadrícula de alineación",
     "gridSizeTooltip": "Tamaño de la cuadrícula",
     "snapToGridTooltip": "Ajustar a la cuadrícula",
-    "exitFullscreen": "Salir de pantalla completa",
-    "fullscreenPreview": "Vista previa a pantalla completa",
+    "viewOverview": "Todos los monitores",
+    "viewOverviewTooltip": "Todas las pantallas del diseño a la vez",
+    "viewFullSize": "Tamaño completo",
+    "viewFullSizeTooltip": "Una pantalla en toda la ventana de la app",
+    "viewFullscreen": "En el monitor",
+    "viewFullscreenTooltip": "Una pantalla en todo su monitor real",
     "setBackgroundTooltip": "Definir el fondo del editor (por ejemplo, la vista de cabina)",
     "clearBackgroundTooltip": "Quitar el fondo",
     "widgetsPanelTitle": "Widgets",
@@ -109,10 +128,10 @@
     "addRemoteScreenTooltip": "Añadir una pantalla virtual: no un monitor de este PC, sino una página que un navegador abre por enlace — una tableta, un teléfono o una fuente de navegador en OBS",
     "addRemoteScreenConfirm": "Añadir pantalla para navegador",
     "remoteScreenNamePlaceholder": "Nombre de la pantalla, p. ej. Tablet del volante",
-    "remoteScreenDefaultName": "Pantalla remota",
-    "remoteScreenTag": "remota",
-    "arrangeRemoteScreens": "Ordenar las pantallas remotas",
-    "arrangeRemoteScreensTooltip": "Coloca las pantallas remotas en filas bajo el escritorio, widgets incluidos",
+    "remoteScreenDefaultName": "Pantalla para navegador",
+    "remoteScreenTag": "navegador",
+    "arrangeRemoteScreens": "Ordenar las pantallas para navegador",
+    "arrangeRemoteScreensTooltip": "Coloca las pantallas para navegador en filas bajo el escritorio, widgets incluidos",
     "addRemoteScreenHint": "La pantalla la dibuja lo que abra el enlace: una tablet de tu red o un Browser Source en OBS. Para OBS pon el fondo transparente y da a la fuente el mismo tamaño — el primero que se conecta informa del suyo, y ajustarse a él mueve todos los widgets de la pantalla.",
     "remoteScreenTransparent": "Fondo transparente (para OBS)",
     "remoteScreenTransparentSuffix": "transparente",
@@ -140,38 +159,44 @@
     "resetSettingsOk": "Restablecer",
     "reset": "Restablecer",
     "hotkeysActOn": "Los atajos actúan sobre este widget",
-    "hotkeysActOnDesc": "Sus atajos muestran, ocultan y cambian esta instancia. Si hay varias marcadas, cambian juntas. Una pantalla para navegador también los sigue, así el stream muestra lo que cambiaste."
+    "hotkeysActOnDesc": "Sus atajos muestran, ocultan y cambian esta instancia. Si hay varias marcadas, cambian juntas. Una pantalla para navegador también los sigue, así el stream muestra lo que cambiaste.",
+    "layouts": "Diseños",
+    "addWidget": "Widget",
+    "addWidgetTooltip": "Añadir un widget",
+    "addWidgetSearch": "Buscar un widget…",
+    "addWidgetCore": "Principales",
+    "addWidgetAll": "Todos",
+    "addWidgetOnScreen": "en pantalla",
+    "addWidgetTarget": "Al monitor:",
+    "addWidgetEmpty": "Ningún widget coincide",
+    "moreTools": "Más herramientas",
+    "grid": "Cuadrícula",
+    "background": "Fondo",
+    "screens": "Pantallas",
+    "hideArrangement": "Ocultar disposición de monitores",
+    "showArrangement": "Mostrar disposición de monitores",
+    "scenarioTooltip": "Escenario de vista previa",
+    "dragToolbar": "Arrastrar la barra"
+  },
+  "monitorMap": {
+    "primary": "principal",
+    "notConnected": "no conectado",
+    "notInLayout": "No está en este diseño: haz clic para añadirlo",
+    "addToLayout": "Añadir este monitor al diseño",
+    "browserScreens": "Pantallas en navegador",
+    "identify": "Identificar",
+    "identifyTooltip": "Mostrar el número de cada monitor en el propio monitor",
+    "title": "Disposición de monitores y pantallas de navegador",
+    "hide": "Ocultar",
+    "show": "Mostrar"
   },
   "layoutList": {
-    "moduleLabel": "Diseños",
-    "title": "Gestionar los diseños de widgets",
-    "subtitleAutoSwitch": "El cambio automático está activo. Los diseños se cargarán según la sesión de juego.",
-    "subtitleManual": "Selecciona un diseño para ver sus detalles. Haz doble clic en una tarjeta para abrirlo en el editor.",
-    "toggleAutoSwitchTooltip": "Manual: un solo diseño en todas partes. Automático por sesión: los diseños cambian solos según la sesión de juego.",
-    "modeManual": "Un diseño en todas partes",
-    "modeAuto": "Automático por sesión",
     "newLayout": "Nuevo diseño",
     "emptyLayout": "Diseño vacío",
-    "active": "Activo",
-    "assignedTo": "Asignado a {{session}}",
-    "manualActivationOnly": "Solo activación manual",
-    "manual": "Manual",
     "widgetsCount_one": "{{count}} widget",
     "widgetsCount_other": "{{count}} widgets",
-    "created": "Creado:",
-    "autoSwitchAssignment": "Asignación de cambio automático",
-    "activeMonitor": "Monitor activo",
-    "none": "Ninguno",
-    "resolution": "Resolución",
-    "activeWidgets": "Widgets activos",
-    "activateLayout": "Activar diseño",
-    "activateDisabledAutoSwitch": "El cambio automático está activado: los diseños cambian solos según la sesión. Desactívalo para activarlos a mano.",
-    "openEditor": "Abrir el editor",
-    "duplicateLayout": "Duplicar diseño",
     "deleteLayoutConfirmTitle": "¿Eliminar este diseño?",
     "deleteLayoutConfirmDescription": "Esta acción no se puede deshacer.",
-    "deleteLayout": "Eliminar diseño",
-    "emptySelection": "Selecciona un diseño para ver sus detalles y acciones",
     "createNewLayout": "Crear un diseño nuevo",
     "enterLayoutName": "Escribe el nombre del diseño...",
     "sessions": {
@@ -183,26 +208,58 @@
     "monitorsCount_one": "{{count}} monitor",
     "monitorsCount_other": "{{count}} monitores",
     "noMonitors": "Sin monitores",
-    "monitors": "Monitores",
-    "removeMonitor": "Quitar este monitor del diseño",
-    "monitorOffline": "no encontrado",
-    "totalWidgets": "Widgets en total",
-    "remoteNoDevice": "sin dispositivo",
-    "removeMonitorWithWidgets": "¿Quitar este monitor y sus {{count}} widgets?"
+    "removeMonitorWithWidgets": "¿Quitar este monitor y sus {{count}} widgets?",
+    "layoutsCount_one": "{{count}} diseño",
+    "layoutsCount_other": "{{count}} diseños",
+    "open": "Abrir",
+    "onScreen": "En pantalla",
+    "putOnScreen": "Poner en pantalla",
+    "duplicate": "Duplicar",
+    "rename": "Renombrar",
+    "export": "Exportar a un archivo",
+    "delete": "Eliminar",
+    "notAutoSwitched": "Sin cambio automático",
+    "autoSwitch": {
+      "title": "Cambio automático",
+      "description": "Muestra un diseño en pantalla cuando cambia la situación en el simulador. Cada regla indica una sesión, una clase y un coche, cualquiera puede ser «cualquiera»; gana la regla más específica que coincida: un coche antes que una clase, una clase antes que una sesión. Los diseños se asignan solo aquí.",
+      "enabled": "Activado",
+      "anySession": "Cualquier sesión",
+      "anyClass": "Cualquier clase",
+      "anyCar": "Cualquier coche",
+      "anySituation": "Cualquier situación",
+      "session": "Sesión",
+      "carClass": "Clase",
+      "car": "Coche",
+      "layout": "Diseño",
+      "carById": "Coche {{id}}",
+      "addRule": "Añadir regla",
+      "removeRule": "Eliminar regla",
+      "noRules": "Aún no hay reglas. Añade una para mostrar un diseño según la sesión, la clase o el coche."
+    },
+    "exported": "Diseño guardado en {{path}}",
+    "exportFailed": "No se pudo guardar el archivo del diseño",
+    "import": "Importar",
+    "imported": "Diseño «{{name}}» añadido",
+    "importFailed": "Este archivo no contiene un diseño de Marble Trace"
   },
   "layoutWidgetPanel": {
     "onMonitor": "en {{monitor}}",
     "offScreen": "Fuera de las pantallas",
     "copyTooltip": "Una copia: con sus propios ajustes, lugar e interruptor",
     "originalTooltip": "La primera instancia en esta pantalla; las demás aquí son sus copias",
-    "deleteCopyConfirm": "¿Eliminar esta copia?",
-    "deleteCopyOk": "Eliminar",
+    "deleteCopy": "Eliminar esta copia",
+    "removeWidget": "Quitar de este monitor",
+    "hide": "Ocultar",
+    "show": "Mostrar",
+    "addTo": "Añadir un widget a {{monitor}}",
+    "empty": "No hay widgets en este monitor",
+    "search": "Buscar un widget…",
+    "noMatch": "Ningún widget coincide",
     "hotkeysOn": "Los atajos actúan sobre este widget — pulsa para excluirlo",
     "hotkeysOff": "Los atajos omiten este widget — pulsa para incluirlo"
   },
   "widgetWorkbench": {
-    "scenario": "Escenario",
-    "noWidgets": "No hay widgets disponibles."
+    "scenario": "Escenario"
   },
   "layoutCanvas": {
     "move": "Mover",
@@ -237,7 +294,15 @@
     "selectToConfigure": "Selecciona un widget para configurarlo",
     "notFound": "Widget no encontrado",
     "moduleConfig": "Configuración del módulo",
-    "layoutAndDimensions": "Posición y tamaño",
+    "groups": {
+      "columns": "Columnas",
+      "content": "Contenido",
+      "display": "Visualización",
+      "size": "Tamaño",
+      "background": "Fondo",
+      "behaviour": "Comportamiento",
+      "hotkeys": "Atajos"
+    },
     "positionX": "Posición X",
     "positionY": "Posición Y",
     "width": "Ancho (px)",
@@ -245,13 +310,15 @@
     "layerDepth": "Profundidad de capa (Z-Index)",
     "fontScale": "Tamaño del texto",
     "fontScaleDesc": "Escala solo el texto, independientemente del ancho y el alto del widget",
-    "aesthetics": "Fondo y borde",
     "background": "Fondo",
-    "border": "Borde"
+    "border": "Borde",
+    "columns": {
+      "move": "Arrastra para reordenar"
+    },
+    "hotkeysShared": "Compartidos por todas las copias de este widget",
+    "hotkeysChange": "Cambiar"
   },
   "settingsPage": {
-    "moduleLabel": "Configuración",
-    "title": "Ajustes globales de la aplicación",
     "language": {
       "title": "Idioma",
       "fieldLabel": "Idioma de la aplicación",
@@ -266,6 +333,11 @@
       "title": "Comportamiento al arrancar",
       "launchMinimizedTitle": "Arrancar minimizado",
       "launchMinimizedDesc": "Inicia la aplicación minimizada en la barra de tareas."
+    },
+    "appearance": {
+      "title": "Apariencia",
+      "headerAnimationTitle": "Animación de fondo",
+      "headerAnimationDesc": "La onda tranquila detrás del encabezado. Se detiene cuando la ventana está minimizada o sin foco."
     },
     "interactionMode": {
       "title": "Modos de interacción",
@@ -359,7 +431,9 @@
       "title": "Acerca de Marble Trace",
       "tagline": "Un overlay de telemetría para iRacing. Gratuito y de código abierto bajo GPL-3.0.",
       "trademarks": "Marble Trace™ y el logotipo de Marble Trace son marcas comerciales de voof. iRacing es una marca de iRacing.com Motorsport Simulations, LLC. TAURI es una marca de The Tauri Programme within the Commons Conservancy. Windows es una marca del grupo de empresas Microsoft. Twitch es una marca de Twitch Interactive, Inc. YouTube es una marca de Google LLC. Los demás nombres pertenecen a sus respectivos propietarios.",
-      "independence": "Marble Trace es un proyecto independiente de código abierto. No está hecho por iRacing, no tiene ninguna relación con iRacing.com Motorsport Simulations, LLC y no está afiliado, patrocinado ni respaldado por ella ni por ninguna de las empresas indicadas a continuación."
+      "independence": "Marble Trace es un proyecto independiente de código abierto. No está hecho por iRacing, no tiene ninguna relación con iRacing.com Motorsport Simulations, LLC y no está afiliado, patrocinado ni respaldado por ella ni por ninguna de las empresas indicadas a continuación.",
+      "links": "Enlaces",
+      "website": "Sitio web"
     },
     "trackMap": {
       "title": "Mapa del circuito",
@@ -535,34 +609,18 @@
       }
     },
     "nav": {
-      "groups": {
-        "application": "Aplicación",
-        "overlay": "Superposición",
-        "controls": "Controles",
-        "data": "Datos",
-        "chat": "Chat",
-        "maintenance": "Mantenimiento",
-        "remote": "Remoto"
-      },
       "sections": {
         "general": "General",
-        "companionApps": "Aplicaciones complementarias",
         "updates": "Actualizaciones",
         "about": "Acerca de",
         "overlay": "Visibilidad de widgets",
         "interaction": "Modos de interacción",
-        "bindings": "Asignaciones de control",
-        "devices": "Dispositivos",
-        "trackMap": "Datos del circuito",
-        "sharedValues": "Valores compartidos",
-        "streamChat": "Chat del directo",
         "maintenance": "Restablecer y diagnóstico",
-        "telemetryInspector": "Inspector de telemetría",
-        "remoteScreens": "Pantallas remotas"
+        "telemetryInspector": "Inspector de telemetría"
       }
     },
     "remote": {
-      "title": "Pantallas remotas",
+      "title": "Pantallas para navegador",
       "enableTitle": "Servir los diseños a otros dispositivos",
       "enableDesc": "Levanta un pequeño servidor web para que un móvil o una tablet de la misma red pueda abrir una pantalla del diseño activo en su navegador. Los dispositivos solo miran: no pueden cambiar nada.",
       "running": "En marcha en {{ip}}:{{port}}",
@@ -577,9 +635,9 @@
       "tokenDesc": "Los dispositivos necesitan este token para abrir una pantalla. Ya está incluido en los enlaces y los códigos QR de abajo.",
       "lanLabel": "Accesible desde la red local",
       "regenerateToken": "Token nuevo",
-      "screensTitle": "Pantallas remotas",
+      "screensTitle": "Pantallas para navegador",
       "screensDesc": "Abre la dirección en el dispositivo. Si la añades a la pantalla de inicio, la barra del navegador desaparece y el diseño ocupa toda la pantalla.",
-      "screensEmpty": "Todavía no hay pantallas remotas. Añade una en el editor de diseños, junto a los monitores.",
+      "screensEmpty": "Todavía no hay pantallas para navegador. Añade una en el editor de diseños, junto a los monitores.",
       "usedInLayouts": "Diseños",
       "activeNow": "Activo ahora",
       "inactive": "Inactivo en la sesión actual",
@@ -626,6 +684,49 @@
       "title": "Aplicaciones complementarias"
     }
   },
+  "connectionsPage": {
+    "sections": {
+      "browserScreens": "Pantallas para navegador",
+      "streamChat": "Chat del directo",
+      "companionApps": "Aplicaciones complementarias"
+    }
+  },
+  "dataPage": {
+    "sections": {
+      "tracks": "Circuitos grabados",
+      "strategy": "Estrategia",
+      "statistics": "Estadísticas"
+    },
+    "statistics": {
+      "subtitle": "leídas de los archivos de telemetría del juego",
+      "folderTitle": "Carpeta de telemetría",
+      "folderDefault": "Encontrada automáticamente en Documentos.",
+      "folderChosen": "Elegida por ti.",
+      "folderMissing": "No se encontró la carpeta de telemetría de iRacing. Elige dónde están tus archivos .ibt.",
+      "change": "Cambiar",
+      "useDefault": "Usar la predeterminada",
+      "folderRefused": "No se puede usar esta carpeta: {{reason}}",
+      "loggingTitle": "Registro de telemetría en iRacing",
+      "logging": {
+        "on": "Activado",
+        "off": "Desactivado",
+        "unknown": "Desconocido"
+      },
+      "importTitle": "Importación",
+      "importIdle": "Todos los archivos leídos",
+      "reimport": "Reimportar todo",
+      "reimportDesc": "Vuelve a leer todos los archivos de la carpeta, también los omitidos. Las sesiones cuyos archivos ya no existen se conservan.",
+      "reimportStarted": "Reimportación iniciada",
+      "reimportQueued": "La reimportación empezará cuando cierres el juego",
+      "skippedTitle": "Archivos omitidos",
+      "skippedNone": "Se leyeron todos los archivos.",
+      "skippedFile": "Archivo",
+      "skippedReason": "Motivo",
+      "exportCsv": "Exportar CSV",
+      "exported": "Sesiones exportadas: {{count}}",
+      "exportFailed": "La exportación falló: {{reason}}"
+    }
+  },
   "bindings": {
     "title": "Asignaciones de control",
     "intro": "Las teclas y los botones del mando funcionan en toda la aplicación, en cualquier diseño. Las asignaciones que choquen con los controles del simulador no se pueden detectar aquí: compruébalas en iRacing.",
@@ -633,6 +734,8 @@
     "resetAll": "Restablecer todo",
     "resetConfirm": "¿Restablecer todas las asignaciones a sus valores por defecto?",
     "noMatches": "Ninguna acción coincide con la búsqueda.",
+    "filteredTo": "Solo {{widget}}",
+    "showAll": "Mostrar todo",
     "unbound": "Sin asignar",
     "addBinding": "Añadir asignación",
     "removeBinding": "Quitar asignación",
@@ -705,15 +808,25 @@
     "keyIsFree": "{{key}} no está asignado a nada."
   },
   "crewPage": {
-    "title": "Equipo",
     "sections": {
-      "commands": "Comandos",
-      "voice": "Voz",
+      "overview": "Resumen",
       "downloads": "Descargas",
-      "pack": "Paquete"
+      "commands": "Comandos",
+      "phrases": "Frases y respuestas",
+      "packs": "Paquetes"
     },
-    "notReady": "La voz necesita sus motores, una voz y un modelo de reconocimiento: ve a Descargas.",
-    "openDownloads": "Abrir Descargas",
+    "notReady": "El ingeniero necesita los motores, una voz y un modelo de reconocimiento: ve a Resumen.",
+    "openOverview": "Abrir Resumen",
+    "status": {
+      "title": "Estado",
+      "engineer": "Ingeniero",
+      "ready": "Listo",
+      "off": "Apagado",
+      "notReady": "Faltan descargas",
+      "pushToTalk": "Pulsar para hablar",
+      "pushToTalkUnbound": "Sin asignar: asigna una para hablar con el ingeniero",
+      "change": "Cambiar"
+    },
     "packOutdated": "Los cambios sin guardar son del paquete «{{pack}}», pero el equipo ahora habla «{{language}}». Guárdalos o descártalos para abrir el paquete «{{language}}».",
     "save": "Guardar",
     "saveBar": {
@@ -734,8 +847,8 @@
       "idle": "Mantén pulsado y di una frase, o escríbela en la lista",
       "listening": "Escuchando…",
       "draftNote": "también escucha los cambios sin guardar",
-      "voiceOff": "La voz está apagada: actívala en Voz",
-      "silence": "No se oyó nada: revisa el micrófono en Voz",
+      "voiceOff": "La voz está apagada: actívala en Resumen",
+      "silence": "No se oyó nada: revisa el micrófono en Resumen",
       "unknown": "«{{sentence}}»: ningún comando la acepta",
       "heard": "«{{sentence}}» → {{action}}{{slots}}",
       "sure": "{{percent}} %",
@@ -1378,6 +1491,105 @@
       "number": "número",
       "numberNote": "Un número del 0 al {{max}}, dicho con palabras: «cuarenta», «ciento veinte».",
       "carNumberNote": "El número de un coche se dice tal como está pintado: «treinta y tres», «cero siete», «quinientos doce». Solo se oyen los coches de la sesión."
+    }
+  },
+  "homePage": {
+    "title": "Inicio",
+    "emptyTitle": "Aún no hay sesiones",
+    "emptyText": "Cada vez que subes al coche, iRacing escribe un archivo de telemetría en DocumentsiRacing\telemetry. Marble Trace lee esos archivos mientras el juego está cerrado y los convierte en tus sesiones, vueltas, incidentes e iRating.",
+    "emptyKept": "Lo que lee se conserva, aunque borres los archivos.",
+    "import": {
+      "reading": "Leyendo archivos del juego ·",
+      "paused": "Importación en pausa: estás en el juego",
+      "noFolder": "No se encontró la carpeta de telemetría de iRacing"
+    },
+    "categories": {
+      "sportsCar": "Sports Car",
+      "formulaCar": "Formula Car",
+      "road": "Road",
+      "oval": "Óvalo",
+      "dirtRoad": "Tierra",
+      "dirtOval": "Óvalo de tierra"
+    },
+    "ratings": {
+      "title": "Licencia e iRating",
+      "byCategory": "por categoría",
+      "none": "Aún no hay sesiones online",
+      "showInChart": "Mostrar {{category}} en el gráfico de iRating",
+      "weekChange": "Cambio en 7 días"
+    },
+    "kpi": {
+      "sessions": "Sesiones en 7 días",
+      "sessionsSplit": "carreras {{races}} · práctica {{practices}}",
+      "laps": "Vueltas",
+      "incidentsPerLap": "Incidentes / vuelta",
+      "sevenDays": "últimos 7 días"
+    },
+    "irating": {
+      "title": "iRating",
+      "perSession": "por sesión",
+      "noneInRange": "No hay sesiones en este periodo",
+      "range": {
+        "30d": "30 d",
+        "90d": "90 d",
+        "all": "Todo"
+      }
+    },
+    "recentSessions": {
+      "title": "Sesiones recientes",
+      "date": "Fecha",
+      "track": "Circuito",
+      "car": "Coche",
+      "finish": "Posición",
+      "bestLap": "Mejor vuelta",
+      "incidents": "Inc.",
+      "eventType": {
+        "practice": "Práctica",
+        "test": "Prueba"
+      }
+    },
+    "calendar": {
+      "title": "Días al volante",
+      "timeInCar": "tiempo en el coche",
+      "less": "menos",
+      "more": "más"
+    },
+    "tops": {
+      "cars": "Coches principales",
+      "tracks": "Circuitos principales",
+      "byTime": "tiempo en el coche"
+    },
+    "duration": {
+      "minutes": "{{minutes}} min",
+      "hoursMinutes": "{{hours}} h {{minutes}} min",
+      "hours": "{{hours}} h"
+    },
+    "lastRace": {
+      "title": "Última carrera",
+      "finish": "Final",
+      "bestLap": "Mejor vuelta",
+      "incidents": "Inc.",
+      "irating": "iRating",
+      "iratingUnknown": "Aparece tras tu próxima sesión en esta categoría"
+    },
+    "now": {
+      "title": "Ahora",
+      "sim": "iRacing",
+      "connected": "Conectado",
+      "notRunning": "No iniciado",
+      "layout": "Diseño",
+      "noLayout": "Ninguno",
+      "openLayouts": "Abrir diseños",
+      "monitors": "Monitores",
+      "widgetsOn": "Widgets activos",
+      "browserScreens": "Pantallas en navegador"
+    },
+    "autolog": {
+      "title": "iRacing no guarda archivos de telemetría",
+      "text": "Las estadísticas salen de los archivos que iRacing escribe cada vez que subes al coche, y eso está desactivado en su app.ini. Marble Trace puede activarlo por ti.",
+      "enable": "Activar",
+      "closeGame": "Cierra iRacing primero",
+      "failed": "No activado: {{reason}}"
     }
   }
 }

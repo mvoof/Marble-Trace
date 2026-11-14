@@ -1,0 +1,69 @@
+$narrow-window: 1100px;
+
+.page {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) rem(240);
+  gap: rem(20);
+  align-items: start;
+
+  @media (max-width: $narrow-window) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.main {
+  display: flex;
+  flex-direction: column;
+  gap: rem(24);
+  min-width: 0;
+}
+
+// The chart and the last race side by side; the chart alone when there is
+// no race yet.
+.chartRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
+  gap: rem(14);
+
+  > section {
+    margin-bottom: 0;
+  }
+
+  > section:only-child {
+    grid-column: 1 / -1;
+  }
+
+  @media (max-width: 1000px) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: rem(10);
+  padding: rem(48) rem(20);
+  text-align: center;
+  border: 1px solid $sys-border-sub;
+  border-radius: rem(10);
+  background: $sys-bg-card;
+}
+
+.emptyIcon {
+  color: $sys-text-muted;
+}
+
+.emptyTitle {
+  margin: 0;
+  font-size: rem(15);
+  color: $sys-text-secondary;
+}
+
+.emptyText {
+  max-width: rem(520);
+  margin: 0;
+  font-size: rem(13);
+  line-height: 1.6;
+  color: $sys-text-muted;
+}

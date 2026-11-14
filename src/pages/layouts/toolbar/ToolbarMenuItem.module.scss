@@ -1,0 +1,86 @@
+.row {
+  display: flex;
+  align-items: center;
+  border-radius: rem(6);
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.05);
+  }
+}
+
+.rowChecked {
+  color: $sys-text-primary;
+}
+
+.item {
+  display: flex;
+  flex: 1 1 auto;
+  align-items: center;
+  gap: rem(8);
+  min-width: 0;
+  height: rem(28);
+  padding: 0 rem(8);
+  background: transparent;
+  border: 0;
+  color: $sys-text-secondary;
+  font-size: rem(12);
+  text-align: left;
+  font-family: inherit;
+  cursor: pointer;
+
+  .rowChecked &,
+  &:hover {
+    color: $sys-text-primary;
+  }
+
+  &:disabled {
+    opacity: 0.35;
+    cursor: default;
+  }
+}
+
+.icon {
+  display: inline-flex;
+  flex: none;
+  width: rem(14);
+  color: $sys-text-muted;
+}
+
+.label {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.note {
+  flex: none;
+  color: $sys-text-muted;
+  font-size: rem(11);
+}
+
+.check {
+  flex: none;
+  color: $sys-text-primary;
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+
+  & + & {
+    margin-top: rem(4);
+    padding-top: rem(4);
+    border-top: 1px solid $sys-border-sub;
+  }
+}
+
+.sectionTitle {
+  padding: rem(4) rem(8) rem(2);
+  color: $sys-text-muted;
+  font-size: rem(10.5);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}

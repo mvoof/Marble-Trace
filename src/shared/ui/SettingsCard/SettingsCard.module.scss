@@ -1,29 +1,38 @@
 .card {
-  margin-bottom: rem(24);
+  background: $sys-bg-card;
+  border: 1px solid $sys-border-sub;
+  border-radius: rem(10);
+
+  margin-bottom: rem(14);
+
+  &:last-child {
+    margin-bottom: 0;
+  }
 }
 
 .cardHeader {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: rem(12);
-  margin-bottom: rem(12);
+  gap: rem(8);
+  min-height: rem(46);
+  padding: rem(12) rem(16);
+  border-bottom: 1px solid $sys-border-sub;
 }
 
 .cardTitle {
-  color: $sys-text-secondary;
-  font-weight: 500;
-  margin: 0;
-  font-size: rem(11);
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
+  margin: 0 !important;
+  font-size: rem(13);
+  font-weight: 600;
+  color: $sys-text-primary;
+}
+
+.cardExtra {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: rem(6);
 }
 
 .cardContent {
-  background: $sys-bg-card;
-  backdrop-filter: blur(20px);
-  border: 1px solid $sys-border-main;
-  border-radius: 6px;
-  padding: rem(20);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  padding: rem(14) rem(16);
 }

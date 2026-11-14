@@ -41,17 +41,34 @@ fn summarize_enabled_widgets(widgets: &Value) -> Vec<String> {
         .collect()
 }
 
-fn sessions_by_layout_id(session_layouts: Option<&Value>) -> HashMap<&str, Vec<&str>> {
-    let mut sessions: HashMap<&str, Vec<&str>> = HashMap::new();
+/// A rule's situation as `context/class/car`, `any` for each it leaves open.
+fn rule_label(rule: &Value) -> String {
+    let context = rule.get("context").and_then(Value::as_str).unwrap_or("any");
+    let car_class = rule
+        .get("carClass")
+        .and_then(Value::as_str)
+        .unwrap_or("any");
+    let car = rule
+        .get("carId")
+        .and_then(Value::as_i64)
+        .map_or_else(|| "any".to_string(), |id| format!("car {id}"));
 
-    if let Some(map) = session_layouts.and_then(|value| value.as_object()) {
-        for (context, layout_id) in map {
-            if let Some(layout_id) = layout_id.as_str() {
-                sessions
-                    .entry(layout_id)
-                    .or_default()
-                    .push(context.as_str());
-            }
+    format!("{context}/{car_class}/{car}")
+}
+
+fn rules_by_layout_id(auto_switch_rules: Option<&Value>) -> HashMap<&str, Vec<String>> {
+    let mut sessions: HashMap<&str, Vec<String>> = HashMap::new();
+
+    for rule in auto_switch_rules
+        .and_then(Value::as_array)
+        .into_iter()
+        .flatten()
+    {
+        if let Some(layout_id) = rule.get("layoutId").and_then(Value::as_str) {
+            sessions
+                .entry(layout_id)
+                .or_default()
+                .push(rule_label(rule));
         }
     }
 
@@ -61,7 +78,7 @@ fn sessions_by_layout_id(session_layouts: Option<&Value>) -> HashMap<&str, Vec<&
 fn summarize_layout(
     layout: &Value,
     active_layout_id: Option<&str>,
-    sessions_by_layout_id: &HashMap<&str, Vec<&str>>,
+    rules_by_layout_id: &HashMap<&str, Vec<String>>,
 ) -> String {
     let name = layout
         .get("name")
@@ -71,7 +88,7 @@ fn summarize_layout(
     let is_active = layout_id == active_layout_id;
 
     let sessions = layout_id
-        .and_then(|id| sessions_by_layout_id.get(id))
+        .and_then(|id| rules_by_layout_id.get(id))
         .map(|contexts| contexts.join(", "))
         .unwrap_or_default();
 
@@ -119,7 +136,7 @@ pub fn log_settings_snapshot(settings: &Value) {
     let app = settings.get("app");
     let active_layout_id = settings.get("activeLayoutId").and_then(|id| id.as_str());
 
-    let sessions_by_layout_id = sessions_by_layout_id(settings.get("sessionLayouts"));
+    let rules_by_layout_id = rules_by_layout_id(settings.get("autoSwitchRules"));
 
     let layouts = settings
         .get("layouts")
@@ -127,7 +144,7 @@ pub fn log_settings_snapshot(settings: &Value) {
         .map(|layouts| {
             layouts
                 .iter()
-                .map(|layout| summarize_layout(layout, active_layout_id, &sessions_by_layout_id))
+                .map(|layout| summarize_layout(layout, active_layout_id, &rules_by_layout_id))
                 .collect::<Vec<_>>()
                 .join(" | ")
         })

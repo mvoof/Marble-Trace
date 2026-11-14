@@ -1,0 +1,101 @@
+.outline {
+  box-sizing: border-box;
+  height: rem(90);
+  overflow: hidden;
+  margin-bottom: rem(12);
+  padding: rem(10);
+  background: $sys-bg-sunken;
+  border-radius: rem(8);
+}
+
+.outlineSvg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  fill: none;
+  stroke: $sys-accent;
+  stroke-width: 2;
+  stroke-linejoin: round;
+}
+
+.flag {
+  width: rem(18);
+  height: rem(13);
+  margin-right: rem(8);
+  vertical-align: rem(-1);
+  border-radius: 1px;
+
+  // The sprite is a background image; the package's `:before` spacer would
+  // widen the box by a space.
+  &::before {
+    content: none;
+  }
+}
+
+.track {
+  font-size: rem(15);
+  font-weight: 600;
+  color: $sys-text-primary;
+}
+
+.config {
+  font-weight: 400;
+  color: $sys-text-secondary;
+}
+
+.carLine {
+  margin-top: rem(2);
+  font-size: rem(13);
+  color: $sys-text-muted;
+}
+
+.figures {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: rem(12) rem(22);
+  margin-top: rem(16);
+}
+
+.figure {
+  display: flex;
+  flex-direction: column;
+  gap: rem(4);
+}
+
+.figureLabel {
+  font-size: rem(12);
+  color: $sys-text-muted;
+}
+
+.figureValue {
+  font-family: $font-mono;
+  font-size: rem(15);
+  font-variant-numeric: tabular-nums;
+  color: $sys-text-primary;
+}
+
+.finish {
+  font-size: rem(26);
+  font-weight: 600;
+  line-height: 1;
+}
+
+.field {
+  font-size: rem(14);
+  font-weight: 400;
+  color: $sys-text-muted;
+}
+
+.up {
+  color: $sys-up;
+}
+
+.down {
+  color: $sys-down;
+}
+
+.flat {
+  color: $sys-text-muted;
+}

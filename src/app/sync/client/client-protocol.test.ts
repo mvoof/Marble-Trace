@@ -196,7 +196,17 @@ describe('the snapshot main builds for one overlay', () => {
 
     expect(overlaySnapshotFor(root, 'LEFT')!.hidesOffTrack).toBe(true);
 
-    runInAction(() => root.layouts.setSessionLayout('Garage', 'layout-race'));
+    runInAction(() =>
+      root.layouts.setAutoSwitchRules([
+        {
+          id: 'garage',
+          context: 'Garage',
+          carClass: null,
+          carId: null,
+          layoutId: 'layout-race',
+        },
+      ])
+    );
 
     expect(overlaySnapshotFor(root, 'LEFT')!.hidesOffTrack).toBe(false);
   });

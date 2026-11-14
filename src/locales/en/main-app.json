@@ -1,25 +1,45 @@
 {
-  "mainWindow": {
-    "widgetModules": "Widget Modules"
+  "widgetsPage": {
+    "allWidgets": "All widgets",
+    "unavailable": "not available for this sim",
+    "sort": {
+      "tier": "Importance",
+      "az": "A–Z"
+    },
+    "widgetsCount_one": "{{count}} widget",
+    "widgetsCount_other": "{{count}} widgets",
+    "previewTop": "Preview above the settings",
+    "previewLeft": "Preview beside the settings",
+    "addToLayout": "Add to layout",
+    "onScreen": "On screen",
+    "addToLayoutHint": "Puts the widget on the first monitor of the layout on screen"
   },
   "appHeader": {
     "sections": {
-      "layouts": "Layouts",
+      "home": "Home",
       "widgets": "Widgets",
+      "layouts": "Layouts",
       "crew": "Crew",
+      "connections": "Connections",
+      "data": "Data",
+      "hotkeys": "Hotkeys",
       "settings": "Settings"
+    },
+    "websiteTitle": "Open marbletrace.com",
+    "releasesTitle": "What's new — releases on GitHub",
+    "discordTitle": "Discord — community",
+    "window": {
+      "minimise": "Minimise",
+      "maximise": "Maximise",
+      "close": "Close"
     }
   },
   "appStatus": {
-    "connectedTo": "CONNECTED TO {{sim}}",
-    "replaying": "REPLAY: {{tape}}",
-    "waitingForTelemetry": "WAITING FOR TELEMETRY",
-    "systemError": "SYSTEM ERROR",
-    "waitingForGame": "WAITING FOR GAME TO START"
-  },
-  "widgetList": {
-    "unavailable": "Unavailable",
-    "defaultDescription": "Configure widget settings."
+    "connectedTo": "{{sim}} · connected",
+    "replaying": "Replay · {{tape}}",
+    "waitingForTelemetry": "{{sim}} · waiting for telemetry",
+    "systemError": "System error",
+    "waitingForGame": "{{sim}} · not running"
   },
   "releaseNotes": {
     "whatsNew": "What's new",
@@ -59,13 +79,8 @@
   "layoutEditor": {
     "backToLayouts": "Back to Layouts",
     "toggleWidgetPanel": "Toggle widget panel",
-    "newLayoutNamePlaceholder": "New layout name",
     "create": "Create",
     "cancel": "Cancel",
-    "saveName": "Save name",
-    "selectLayoutPlaceholder": "Select a layout…",
-    "newLayout": "New layout",
-    "rename": "Rename",
     "deleteLayoutConfirm": "Delete this layout?",
     "delete": "Delete",
     "active": "Active",
@@ -88,8 +103,12 @@
     "toggleGridTooltip": "Toggle alignment grid",
     "gridSizeTooltip": "Grid size",
     "snapToGridTooltip": "Snap to grid",
-    "exitFullscreen": "Exit fullscreen",
-    "fullscreenPreview": "Fullscreen preview",
+    "viewOverview": "All monitors",
+    "viewOverviewTooltip": "Every screen of the layout at once",
+    "viewFullSize": "Full size",
+    "viewFullSizeTooltip": "One screen filling the app window",
+    "viewFullscreen": "On the monitor",
+    "viewFullscreenTooltip": "One screen filling its real monitor",
     "setBackgroundTooltip": "Set editor background (e.g. cockpit view)",
     "clearBackgroundTooltip": "Clear background",
     "widgetsPanelTitle": "Widgets",
@@ -109,10 +128,10 @@
     "addRemoteScreenTooltip": "Add a virtual screen — not a monitor of this PC, but a page a browser opens by link: a tablet, a phone, or a browser source in OBS",
     "addRemoteScreenConfirm": "Add browser screen",
     "remoteScreenNamePlaceholder": "Screen name, e.g. Wheel tablet",
-    "remoteScreenDefaultName": "Remote screen",
-    "remoteScreenTag": "remote",
-    "arrangeRemoteScreens": "Tidy remote screens",
-    "arrangeRemoteScreensTooltip": "Lay the remote screens out in rows under the desktop, widgets included",
+    "remoteScreenDefaultName": "Browser screen",
+    "remoteScreenTag": "browser",
+    "arrangeRemoteScreens": "Tidy browser screens",
+    "arrangeRemoteScreensTooltip": "Lay the browser screens out in rows under the desktop, widgets included",
     "addRemoteScreenHint": "Anything that opens the link renders this screen: a tablet on your network, or a Browser Source in OBS. Make the ground transparent for OBS, and size the source to match — the first one that connects reports its own size, and fitting to it moves every widget on the screen.",
     "remoteScreenTransparent": "Transparent background (for OBS)",
     "remoteScreenTransparentSuffix": "transparent",
@@ -140,38 +159,44 @@
     "resetSettingsOk": "Reset",
     "reset": "Reset",
     "hotkeysActOn": "Hotkeys act on this widget",
-    "hotkeysActOnDesc": "Its hotkeys show, hide and switch this instance. With several marked, they all change together. A browser screen follows them too, so a stream shows what you switched to."
+    "hotkeysActOnDesc": "Its hotkeys show, hide and switch this instance. With several marked, they all change together. A browser screen follows them too, so a stream shows what you switched to.",
+    "layouts": "Layouts",
+    "addWidget": "Widget",
+    "addWidgetTooltip": "Add a widget",
+    "addWidgetSearch": "Find a widget…",
+    "addWidgetCore": "Core",
+    "addWidgetAll": "All",
+    "addWidgetOnScreen": "on screen",
+    "addWidgetTarget": "To monitor:",
+    "addWidgetEmpty": "No widget matches",
+    "moreTools": "More tools",
+    "grid": "Grid",
+    "background": "Background",
+    "screens": "Screens",
+    "hideArrangement": "Hide monitor arrangement",
+    "showArrangement": "Show monitor arrangement",
+    "scenarioTooltip": "Preview scenario",
+    "dragToolbar": "Drag the toolbar"
+  },
+  "monitorMap": {
+    "primary": "primary",
+    "notConnected": "not connected",
+    "notInLayout": "Not in this layout — click to add",
+    "addToLayout": "Add this monitor to the layout",
+    "browserScreens": "Browser screens",
+    "identify": "Identify",
+    "identifyTooltip": "Show each monitor’s number on the monitor itself",
+    "title": "Monitor arrangement and browser screens",
+    "hide": "Hide",
+    "show": "Show"
   },
   "layoutList": {
-    "moduleLabel": "Layouts",
-    "title": "Manage Widget Layouts",
-    "subtitleAutoSwitch": "Auto-switching is active. Layouts will load dynamically matching your game session.",
-    "subtitleManual": "Select a layout to see details. Double-click a card to open it in the editor.",
-    "toggleAutoSwitchTooltip": "Manual: one layout everywhere. Auto by session: layouts switch automatically per game session.",
-    "modeManual": "One layout everywhere",
-    "modeAuto": "Auto by session",
     "newLayout": "New Layout",
     "emptyLayout": "Empty Layout",
-    "active": "Active",
-    "assignedTo": "Assigned to {{session}}",
-    "manualActivationOnly": "Manual activation only",
-    "manual": "Manual",
     "widgetsCount_one": "{{count}} widget",
     "widgetsCount_other": "{{count}} widgets",
-    "created": "Created:",
-    "autoSwitchAssignment": "Auto-Switch Assignment",
-    "activeMonitor": "Active Monitor",
-    "none": "None",
-    "resolution": "Resolution",
-    "activeWidgets": "Active Widgets",
-    "activateLayout": "Activate Layout",
-    "activateDisabledAutoSwitch": "Auto-Switching is on — layouts switch automatically based on session. Turn it off to activate manually.",
-    "openEditor": "Open Editor",
-    "duplicateLayout": "Duplicate Layout",
     "deleteLayoutConfirmTitle": "Delete this layout?",
     "deleteLayoutConfirmDescription": "This action cannot be undone.",
-    "deleteLayout": "Delete Layout",
-    "emptySelection": "Select a layout to see details and actions",
     "createNewLayout": "Create New Layout",
     "enterLayoutName": "Enter layout name...",
     "sessions": {
@@ -183,26 +208,58 @@
     "monitorsCount_one": "{{count}} monitor",
     "monitorsCount_other": "{{count}} monitors",
     "noMonitors": "No monitors",
-    "monitors": "Monitors",
-    "removeMonitor": "Remove this monitor from the layout",
-    "monitorOffline": "not found",
-    "totalWidgets": "Total Widgets",
-    "remoteNoDevice": "no device",
-    "removeMonitorWithWidgets": "Remove this monitor and its {{count}} widgets?"
+    "removeMonitorWithWidgets": "Remove this monitor and its {{count}} widgets?",
+    "layoutsCount_one": "{{count}} layout",
+    "layoutsCount_other": "{{count}} layouts",
+    "open": "Open",
+    "onScreen": "On screen",
+    "putOnScreen": "Put on screen",
+    "duplicate": "Duplicate",
+    "rename": "Rename",
+    "export": "Export to a file",
+    "delete": "Delete",
+    "notAutoSwitched": "Not auto-switched",
+    "autoSwitch": {
+      "title": "Auto-switch",
+      "description": "Put a layout on screen when the situation in the sim changes. Each rule names a session, a car class and a car, any of them \"any\"; the most specific matching rule wins: a car over a class, a class over a session. Layouts are assigned here only.",
+      "enabled": "On",
+      "anySession": "Any session",
+      "anyClass": "Any class",
+      "anyCar": "Any car",
+      "anySituation": "Any situation",
+      "session": "Session",
+      "carClass": "Car class",
+      "car": "Car",
+      "layout": "Layout",
+      "carById": "Car {{id}}",
+      "addRule": "Add rule",
+      "removeRule": "Remove rule",
+      "noRules": "No rules yet. Add one to put a layout on screen by session, car class or car."
+    },
+    "exported": "Layout saved to {{path}}",
+    "exportFailed": "Could not save the layout file",
+    "import": "Import",
+    "imported": "Layout \"{{name}}\" added",
+    "importFailed": "This file holds no Marble Trace layout"
   },
   "layoutWidgetPanel": {
     "onMonitor": "on {{monitor}}",
     "offScreen": "Off every screen",
     "copyTooltip": "A copy — its own settings, place and switch",
     "originalTooltip": "The first instance on this screen; the others here are its copies",
-    "deleteCopyConfirm": "Delete this copy?",
-    "deleteCopyOk": "Delete",
+    "deleteCopy": "Delete this copy",
+    "removeWidget": "Remove from this monitor",
+    "hide": "Hide",
+    "show": "Show",
+    "addTo": "Add a widget to {{monitor}}",
+    "empty": "No widgets on this monitor",
+    "search": "Find a widget…",
+    "noMatch": "No widget matches",
     "hotkeysOn": "Hotkeys act on this widget — click to exclude it",
     "hotkeysOff": "Hotkeys skip this widget — click to include it"
   },
   "widgetWorkbench": {
-    "scenario": "Scenario",
-    "noWidgets": "No widgets available."
+    "scenario": "Scenario"
   },
   "layoutCanvas": {
     "move": "Move",
@@ -237,7 +294,15 @@
     "selectToConfigure": "Select a widget to configure",
     "notFound": "Widget not found",
     "moduleConfig": "Module Config",
-    "layoutAndDimensions": "Layout & Dimensions",
+    "groups": {
+      "columns": "Columns",
+      "content": "Content",
+      "display": "Display",
+      "size": "Size",
+      "background": "Background",
+      "behaviour": "Behaviour",
+      "hotkeys": "Hotkeys"
+    },
     "positionX": "Position X",
     "positionY": "Position Y",
     "width": "Width (px)",
@@ -245,13 +310,15 @@
     "layerDepth": "Layer Depth (Z-Index)",
     "fontScale": "Text Size",
     "fontScaleDesc": "Scales only the text, independent of widget width/height",
-    "aesthetics": "Background & border",
     "background": "Background",
-    "border": "Border"
+    "border": "Border",
+    "columns": {
+      "move": "Drag to reorder"
+    },
+    "hotkeysShared": "Shared by all copies of this widget",
+    "hotkeysChange": "Change"
   },
   "settingsPage": {
-    "moduleLabel": "Configuration",
-    "title": "Global Application Settings",
     "language": {
       "title": "Language",
       "fieldLabel": "Application Language",
@@ -266,6 +333,11 @@
       "title": "Startup Behavior",
       "launchMinimizedTitle": "Launch Minimized",
       "launchMinimizedDesc": "Start the application minimized to the taskbar."
+    },
+    "appearance": {
+      "title": "Appearance",
+      "headerAnimationTitle": "Background animation",
+      "headerAnimationDesc": "The calm wave behind the header. Pauses when the window is minimised or not focused."
     },
     "interactionMode": {
       "title": "Interaction Mode",
@@ -359,7 +431,9 @@
       "title": "About Marble Trace",
       "tagline": "A telemetry overlay for iRacing. Free and open source under GPL-3.0.",
       "trademarks": "Marble Trace™ and the Marble Trace logo are trademarks of voof. iRacing is a trademark of iRacing.com Motorsport Simulations, LLC. TAURI is trademark of The Tauri Programme within the Commons Conservancy. Windows is a trademark of the Microsoft group of companies. Twitch is a trademark of Twitch Interactive, Inc. YouTube is a trademark of Google LLC. All other names are the property of their respective owners.",
-      "independence": "Marble Trace is an independent open-source project. It is not made by iRacing, has no connection to iRacing.com Motorsport Simulations, LLC, and is not affiliated with, sponsored or endorsed by it or by any of the companies below."
+      "independence": "Marble Trace is an independent open-source project. It is not made by iRacing, has no connection to iRacing.com Motorsport Simulations, LLC, and is not affiliated with, sponsored or endorsed by it or by any of the companies below.",
+      "links": "Links",
+      "website": "Website"
     },
     "trackMap": {
       "title": "Track Map",
@@ -535,34 +609,18 @@
       }
     },
     "nav": {
-      "groups": {
-        "application": "Application",
-        "overlay": "Overlay",
-        "controls": "Controls",
-        "data": "Data",
-        "chat": "Chat",
-        "maintenance": "Maintenance",
-        "remote": "Remote"
-      },
       "sections": {
         "general": "General",
-        "companionApps": "Companion apps",
         "updates": "Updates",
         "about": "About",
         "overlay": "Widget display",
         "interaction": "Interaction modes",
-        "bindings": "Input bindings",
-        "devices": "Devices",
-        "trackMap": "Track data",
-        "sharedValues": "Shared values",
-        "streamChat": "Stream chat",
         "maintenance": "Reset & diagnostics",
-        "telemetryInspector": "Telemetry inspector",
-        "remoteScreens": "Remote screens"
+        "telemetryInspector": "Telemetry inspector"
       }
     },
     "remote": {
-      "title": "Remote screens",
+      "title": "Browser screens",
       "enableTitle": "Serve layouts to other devices",
       "enableDesc": "Runs a small web server so a phone or tablet on the same network can open a screen of the active layout in its browser. Devices only watch — they cannot change anything.",
       "running": "Running on {{ip}}:{{port}}",
@@ -577,9 +635,9 @@
       "tokenDesc": "Devices need this token to open a screen. It is already part of the links and QR codes below.",
       "lanLabel": "Reachable from the local network",
       "regenerateToken": "New token",
-      "screensTitle": "Remote screens",
+      "screensTitle": "Browser screens",
       "screensDesc": "Open the address on the device. Adding it to the home screen hides the browser bar, so the layout gets the whole display.",
-      "screensEmpty": "No remote screens yet. Add one in the layout editor, next to the monitors.",
+      "screensEmpty": "No browser screens yet. Add one in the layout editor, next to the monitors.",
       "usedInLayouts": "Layouts",
       "activeNow": "Active now",
       "inactive": "Inactive in current session",
@@ -626,6 +684,49 @@
       "title": "Companion apps"
     }
   },
+  "connectionsPage": {
+    "sections": {
+      "browserScreens": "Browser screens",
+      "streamChat": "Stream chat",
+      "companionApps": "Companion apps"
+    }
+  },
+  "dataPage": {
+    "sections": {
+      "tracks": "Recorded tracks",
+      "strategy": "Strategy",
+      "statistics": "Statistics"
+    },
+    "statistics": {
+      "subtitle": "read from the game's telemetry files",
+      "folderTitle": "Telemetry folder",
+      "folderDefault": "Found automatically in Documents.",
+      "folderChosen": "Chosen by you.",
+      "folderMissing": "iRacing's telemetry folder was not found. Choose where your .ibt files are.",
+      "change": "Change",
+      "useDefault": "Use the default",
+      "folderRefused": "This folder cannot be used: {{reason}}",
+      "loggingTitle": "Telemetry logging in iRacing",
+      "logging": {
+        "on": "On",
+        "off": "Off",
+        "unknown": "Unknown"
+      },
+      "importTitle": "Import",
+      "importIdle": "All files read",
+      "reimport": "Re-import everything",
+      "reimportDesc": "Reads every file in the folder again, the skipped ones too. Sessions whose files are gone stay.",
+      "reimportStarted": "Re-import started",
+      "reimportQueued": "Re-import starts when you close the game",
+      "skippedTitle": "Skipped files",
+      "skippedNone": "Every file was read.",
+      "skippedFile": "File",
+      "skippedReason": "Reason",
+      "exportCsv": "Export CSV",
+      "exported": "Sessions exported: {{count}}",
+      "exportFailed": "Export failed: {{reason}}"
+    }
+  },
   "bindings": {
     "title": "Input bindings",
     "intro": "Keys and controller buttons work app-wide, in every layout. Bindings that clash with the sim’s own controls cannot be detected here — check them in iRacing.",
@@ -633,6 +734,8 @@
     "resetAll": "Reset all",
     "resetConfirm": "Reset every binding to its default?",
     "noMatches": "No actions match the search.",
+    "filteredTo": "Showing {{widget}} only",
+    "showAll": "Show all",
     "unbound": "Not bound",
     "addBinding": "Add binding",
     "removeBinding": "Remove binding",
@@ -705,15 +808,25 @@
     "keyIsFree": "{{key}} is not bound to anything."
   },
   "crewPage": {
-    "title": "Crew",
     "sections": {
-      "commands": "Commands",
-      "voice": "Voice",
+      "overview": "Overview",
       "downloads": "Downloads",
-      "pack": "Pack"
+      "commands": "Commands",
+      "phrases": "Phrases and replies",
+      "packs": "Packs"
     },
-    "notReady": "The voice needs its engines, a voice and a recognition model — see Downloads.",
-    "openDownloads": "Open Downloads",
+    "notReady": "The engineer needs the engines, a voice and a recognition model — see Overview.",
+    "openOverview": "Open Overview",
+    "status": {
+      "title": "Status",
+      "engineer": "Engineer",
+      "ready": "Ready",
+      "off": "Off",
+      "notReady": "Needs downloads",
+      "pushToTalk": "Push to talk",
+      "pushToTalkUnbound": "Not set — bind one to talk to the engineer",
+      "change": "Change"
+    },
     "packOutdated": "The unsaved edits belong to the “{{pack}}” pack, but the crew now speaks “{{language}}”. Save or discard them to open the “{{language}}” pack.",
     "save": "Save",
     "saveBar": {
@@ -734,8 +847,8 @@
       "idle": "Hold and say a sentence, or type one in the list",
       "listening": "Listening…",
       "draftNote": "listening for the unsaved changes too",
-      "voiceOff": "The voice is off — turn it on under Voice",
-      "silence": "Nothing heard — check the microphone under Voice",
+      "voiceOff": "The voice is off — turn it on under Overview",
+      "silence": "Nothing heard — check the microphone under Overview",
       "unknown": "“{{sentence}}” — no command takes it",
       "heard": "“{{sentence}}” → {{action}}{{slots}}",
       "sure": "{{percent}}%",
@@ -1378,6 +1491,105 @@
       "number": "number",
       "numberNote": "A number from 0 to {{max}}, said in words: “forty”, “one hundred twenty”.",
       "carNumberNote": "A car number is said the way it is painted: “thirty three”, “zero seven”, “five hundred twelve”. Only the cars in the session are heard."
+    }
+  },
+  "homePage": {
+    "title": "Home",
+    "emptyTitle": "No sessions yet",
+    "emptyText": "Each time you get in the car, iRacing writes a telemetry file to DocumentsiRacing\telemetry. Marble Trace reads these files while the game is closed and turns them into your sessions, laps, incidents and iRating.",
+    "emptyKept": "What it reads is kept, even after you delete the files.",
+    "import": {
+      "reading": "Reading game files ·",
+      "paused": "Import paused — you are in the game",
+      "noFolder": "iRacing telemetry folder not found"
+    },
+    "categories": {
+      "sportsCar": "Sports Car",
+      "formulaCar": "Formula Car",
+      "road": "Road",
+      "oval": "Oval",
+      "dirtRoad": "Dirt Road",
+      "dirtOval": "Dirt Oval"
+    },
+    "ratings": {
+      "title": "Licence and iRating",
+      "byCategory": "by category",
+      "none": "No online sessions yet",
+      "showInChart": "Show {{category}} in the iRating chart",
+      "weekChange": "Change in 7 days"
+    },
+    "kpi": {
+      "sessions": "Sessions in 7 days",
+      "sessionsSplit": "races {{races}} · practice {{practices}}",
+      "laps": "Laps",
+      "incidentsPerLap": "Incidents / lap",
+      "sevenDays": "last 7 days"
+    },
+    "irating": {
+      "title": "iRating",
+      "perSession": "per session",
+      "noneInRange": "No sessions in this period",
+      "range": {
+        "30d": "30 d",
+        "90d": "90 d",
+        "all": "All"
+      }
+    },
+    "recentSessions": {
+      "title": "Recent sessions",
+      "date": "Date",
+      "track": "Track",
+      "car": "Car",
+      "finish": "Finish",
+      "bestLap": "Best lap",
+      "incidents": "Inc.",
+      "eventType": {
+        "practice": "Practice",
+        "test": "Test"
+      }
+    },
+    "calendar": {
+      "title": "Days driven",
+      "timeInCar": "time in car",
+      "less": "less",
+      "more": "more"
+    },
+    "tops": {
+      "cars": "Top cars",
+      "tracks": "Top tracks",
+      "byTime": "time in car"
+    },
+    "duration": {
+      "minutes": "{{minutes}} min",
+      "hoursMinutes": "{{hours}} h {{minutes}} min",
+      "hours": "{{hours}} h"
+    },
+    "lastRace": {
+      "title": "Last race",
+      "finish": "Finish",
+      "bestLap": "Best lap",
+      "incidents": "Inc.",
+      "irating": "iRating",
+      "iratingUnknown": "Shows after your next session in this category"
+    },
+    "now": {
+      "title": "Now",
+      "sim": "iRacing",
+      "connected": "Connected",
+      "notRunning": "Not running",
+      "layout": "Layout",
+      "noLayout": "None",
+      "openLayouts": "Open layouts",
+      "monitors": "Monitors",
+      "widgetsOn": "Widgets on",
+      "browserScreens": "Browser screens"
+    },
+    "autolog": {
+      "title": "iRacing does not save telemetry files",
+      "text": "Statistics come from the files iRacing writes each time you get in the car, and that is switched off in its app.ini. Marble Trace can switch it on for you.",
+      "enable": "Switch on",
+      "closeGame": "Close iRacing first",
+      "failed": "Not switched on: {{reason}}"
     }
   }
 }

@@ -3,6 +3,18 @@
 export type AudioDeviceView = { id: string; name: string; isDefault: boolean };
 
 /**
+ * Whether the sim writes a telemetry file each time the driver gets in the
+ * car — where statistics come from.
+ */
+export type AutologState =
+  | 'on'
+  | 'off'
+  /**
+   * The sim's settings file, or the setting in it, was not found.
+   */
+  | 'unknown';
+
+/**
  * An input binding as it is stored and sent: a keyboard accelerator, or a
  * controller button addressed by the device's stable identity.
  */
@@ -542,6 +554,37 @@ export type CarTarget =
   | 'byClassPosition';
 
 /**
+ * One licence and iRating line: the sessions online in one category.
+ */
+export type CategoryRating = {
+  /**
+   * As the sim writes it, e.g. `Sports Car`.
+   */
+  category: string;
+  /**
+   * The latest session's, e.g. `B 3.74`.
+   */
+  licence: string | null;
+  /**
+   * The latest session's: the snapshot at its join.
+   */
+  irating: number;
+  /**
+   * The latest iRating against the one before the last seven days; 0 when
+   * nothing was driven in them.
+   */
+  weekChange: number;
+  /**
+   * UTC unix seconds.
+   */
+  lastSessionAt: number;
+  /**
+   * Oldest first, one point a session.
+   */
+  history: RatingPoint[];
+};
+
+/**
  * Chassis telemetry — per-wheel tire and suspension data.
  *
  * Contains ride height, shock deflection, tire temperatures (3 zones),
@@ -1049,6 +1092,35 @@ export type DialedPressures = {
   rr: DialedPressure | null;
 };
 
+export type DisplayName = {
+  /**
+   * As Windows spells it, prefix included: `\\.\DISPLAY1`.
+   */
+  deviceName: string;
+  /**
+   * The EDID's friendly name. A monitor that reports none (some laptop
+   * panels, most capture dummies) is left out of the list.
+   */
+  model: string;
+};
+
+/**
+ * One session of the days-driven calendar.
+ */
+export type DrivenSession = {
+  key: string;
+  /**
+   * UTC unix seconds.
+   */
+  startedAt: number;
+  /**
+   * All its runs and files together; never 0.
+   */
+  timeInCarS: number;
+  trackName: string | null;
+  carName: string | null;
+};
+
 export type DriverEntriesFrame = {
   entries: DriverEntry[];
   playerCarIdx: number;
@@ -1312,6 +1384,41 @@ export type FuelLapRecord = {
 };
 
 /**
+ * What Home shows above the recent sessions: the licence and iRating of
+ * each category driven, and the last seven days next to the seven before.
+ */
+export type HomeStats = {
+  /**
+   * The category of the latest session first.
+   */
+  ratings: CategoryRating[];
+  /**
+   * The seven days up to now.
+   */
+  week: WeekStats;
+  /**
+   * The seven days before those.
+   */
+  previousWeek: WeekStats;
+  /**
+   * The sessions of the calendar's span spent in the car, oldest first.
+   */
+  driven: DrivenSession[];
+  /**
+   * The cars driven longest, all time, the longest first.
+   */
+  topCars: TimeDriven[];
+  /**
+   * The tracks driven longest, all time, the longest first.
+   */
+  topTracks: TimeDriven[];
+  /**
+   * The latest session that held a race; `None` before the first.
+   */
+  lastRace: LastRace | null;
+};
+
+/**
  * An action as the settings window lists it.
  */
 export type HotkeyActionSpec = {
@@ -1476,6 +1583,20 @@ export type JsonValue =
   | Partial<{ [key in string]: JsonValue }>;
 
 /**
+ * A car the driver has a session record in: what the auto-switch rules offer
+ * while the sim is off.
+ */
+export type KnownCar = {
+  carId: number;
+  carName: string | null;
+  /**
+   * The class badge the live session would give it, else the sim's class
+   * name; `None` when neither is known.
+   */
+  carClass: string | null;
+};
+
+/**
  * Sector timing data for the sector matrix widget.
  * Total delta is provided directly by iRacing via LapTimingFrame delta fields.
  */
@@ -1609,6 +1730,28 @@ export type LapTimingFrame = {
  * Last completed valid lap — used by DeltaWidget for the flash animation.
  */
 export type LastCompletedLap = { lapNum: number; delta: number | null };
+
+/**
+ * The latest race, as Home's last-race card shows it.
+ */
+export type LastRace = {
+  session: RecentSession;
+  /**
+   * The iRating the next session in its category joined with, against the
+   * one it joined with: unknown until that next session is driven, and for
+   * a race offline.
+   */
+  iratingChange: number | null;
+  trackId: number | null;
+  /**
+   * As the sim writes it, e.g. `Germany`.
+   */
+  trackCountry: string | null;
+  /**
+   * From the session files read, else the shape the track map recorded.
+   */
+  outline: TrackOutline | null;
+};
 
 export type LateralSide =
   | 'left'
@@ -2202,6 +2345,19 @@ export type RadioTransmission = {
  */
 export type RadioTune = { radioNum: number; frequencyNum: number };
 
+export type RatingPoint = {
+  key: string;
+  /**
+   * UTC unix seconds.
+   */
+  startedAt: number;
+  /**
+   * The snapshot at join: a session's own result shows from the next one.
+   */
+  irating: number;
+  trackName: string | null;
+};
+
 /**
  * The session text as the sim wrote it, and the same text as a tree.
  *
@@ -2232,6 +2388,25 @@ export type RawVarMeta = {
    * `1` for a scalar, the length for an array (`64` for a `CarIdx*` one).
    */
   count: number;
+};
+
+/**
+ * One row of the recent sessions table.
+ */
+export type RecentSession = {
+  key: string;
+  /**
+   * UTC unix seconds.
+   */
+  startedAt: number;
+  eventType: string;
+  trackName: string | null;
+  trackConfig: string | null;
+  carName: string | null;
+  finishPos: number | null;
+  fieldSize: number | null;
+  bestLapS: number | null;
+  incidents: number;
 };
 
 export type ReferenceLapData = {
@@ -2589,7 +2764,8 @@ export type SayFormat =
    */
   | 'text'
   /**
-   * Digit by digit, leading zeros said: a car number, "zero seven".
+   * A car number as it is heard: leading zeros said, then the number —
+   * "zero seven", "thirty three".
    */
   | 'digits';
 
@@ -2837,6 +3013,21 @@ export type SimType = 'IRacing';
 export type Skies = 'Clear' | 'PartlyCloudy' | 'MostlyCloudy' | 'Overcast';
 
 /**
+ * A session file the import could not read; not retried until it changes.
+ */
+export type SkippedFile = {
+  path: string;
+  /**
+   * What the reader said.
+   */
+  error: string | null;
+  /**
+   * When it was tried, UTC unix seconds.
+   */
+  readAt: number;
+};
+
+/**
  * One adapted telemetry tick: the domain model frames consumed by the
  * telemetry emitter, filled by whichever sim adapter is connected.
  *
@@ -2887,6 +3078,54 @@ export type SpotterState =
   | 'carLeftRight'
   | 'twoCarsLeft'
   | 'twoCarsRight';
+
+/**
+ * Where the stats import reads session files from.
+ */
+export type StatsFolder = {
+  /**
+   * `None` when no folder was chosen and the sim's own was not found.
+   */
+  path: string | null;
+  /**
+   * The sim's own folder, not one the driver chose.
+   */
+  isDefault: boolean;
+};
+
+/**
+ * What the stats import is doing, on `stats://import`.
+ */
+export type StatsImportPhase =
+  /**
+   * Nothing left to read.
+   */
+  | 'idle'
+  | 'reading'
+  /**
+   * The sim is connected; reading waits for it to close.
+   */
+  | 'paused'
+  /**
+   * The game's telemetry folder was not found.
+   */
+  | 'noFolder';
+
+export type StatsImportStatus = {
+  phase: StatsImportPhase;
+  /**
+   * Files of this pass read or skipped so far.
+   */
+  done: number;
+  /**
+   * Files this pass found unread.
+   */
+  total: number;
+  /**
+   * Files that could not be read, all passes together.
+   */
+  broken: number;
+};
 
 export type TelemetryBundle = {
   carDynamics?: CarDynamicsFrame | null;
@@ -2955,6 +3194,11 @@ export type TelemetrySettings = {
 export type TelemetrySlowBundle = { carStatus: CarStatusFrame };
 
 /**
+ * A car or a track and the time spent in the car on it.
+ */
+export type TimeDriven = { name: string; timeInCarS: number };
+
+/**
  * Percentiles of one timed operation, in milliseconds.
  */
 export type TimingSummary = {
@@ -2983,6 +3227,11 @@ export type TireSet = { lf: boolean; rf: boolean; lr: boolean; rr: boolean };
  * stored and compared against separately — one file per track+car+condition.
  */
 export type TrackCondition = 'dry' | 'wet';
+
+/**
+ * A track's shape as an SVG path, north up when drawn from positions.
+ */
+export type TrackOutline = { svgPath: string; viewBox: string };
 
 export type TrackPoint = { x: number; y: number; pct: number };
 
@@ -3468,4 +3717,20 @@ export type WeatherForecastEntry = {
   Humidity: number;
   Fog: number;
   RainPct: number;
+};
+
+/**
+ * Sessions, laps and incidents of one span of days, all categories together.
+ */
+export type WeekStats = {
+  sessions: number;
+  /**
+   * Sessions of a race event; the rest are practice and test.
+   */
+  races: number;
+  /**
+   * Laps completed, whole or not.
+   */
+  laps: number;
+  incidents: number;
 };

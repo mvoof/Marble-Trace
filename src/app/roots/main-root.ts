@@ -20,6 +20,12 @@ import { FpsDiagnosticsStore } from '@features/diagnostics/fps-diagnostics.store
 import { DiagnosticsExportStore } from '@features/diagnostics/diagnostics-export.store';
 import { TelemetryInspectorStore } from '@features/telemetry-inspector/telemetry-inspector.store';
 import { TrackRotationStore } from '@entities/track/track-rotation.store';
+import { DisplaysStore } from '@entities/layout/displays.store';
+import { MainNavigationStore } from '@features/main-navigation/main-navigation.store';
+import { AppLinksStore } from '@features/app-links/app-links.store';
+import { LayoutFilesStore } from '@features/layout-files/layout-files.store';
+import { StatisticsStore } from '@features/statistics/statistics.store';
+import { decodeLayout, encodeLayout } from '@app/sync/main/settings-file';
 
 /**
  * The main window: the renderer core, the app-window stores, and everything
@@ -42,9 +48,14 @@ export class MainRoot extends RendererCore implements AppWindowStores {
   remoteDevices: RemoteDevicesStore;
   fpsDiagnostics: FpsDiagnosticsStore;
   diagnosticsExport: DiagnosticsExportStore;
+  layoutFiles: LayoutFilesStore;
   telemetryInspector: TelemetryInspectorStore;
   trackRotation: TrackRotationStore;
+  displays: DisplaysStore;
   voiceCrew: VoiceCrewStore;
+  navigation: MainNavigationStore;
+  appLinks: AppLinksStore;
+  statistics: StatisticsStore;
 
   constructor(options?: { skipInit?: boolean }) {
     super(options);
@@ -67,22 +78,34 @@ export class MainRoot extends RendererCore implements AppWindowStores {
     this.fpsDiagnostics = new FpsDiagnosticsStore(this);
     this.telemetryInspector = new TelemetryInspectorStore(this);
     this.diagnosticsExport = new DiagnosticsExportStore(this);
+    this.layoutFiles = new LayoutFilesStore({
+      layouts: this.layouts,
+      encodeLayout,
+      decodeLayout,
+    });
     this.trackRotation = new TrackRotationStore();
+    this.displays = new DisplaysStore(this.liveWidgets);
     this.voiceCrew = new VoiceCrewStore(this);
+    this.navigation = new MainNavigationStore(this);
+    this.appLinks = new AppLinksStore(this);
+    this.statistics = new StatisticsStore();
 
     if (!options?.skipInit) {
       void this.twitchAuth.init();
       this.appUpdate.init();
+      void this.statistics.start();
     }
   }
 
   override dispose() {
     this.appUpdate.dispose();
     this.layoutEditorUi.dispose();
+    this.displays.dispose();
     this.fpsDiagnostics.dispose();
     this.twitchAuth.dispose();
     this.companionApps.dispose();
     this.voiceCrew.dispose();
+    this.statistics.dispose();
     super.dispose();
   }
 }

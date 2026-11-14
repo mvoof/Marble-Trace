@@ -1,0 +1,57 @@
+.list {
+  display: flex;
+  flex-direction: column;
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  gap: rem(10);
+  min-height: rem(30);
+  padding: 0 rem(4);
+  border-radius: rem(4);
+
+  &:hover {
+    background: $sys-bg-raised;
+  }
+}
+
+.itemDragged {
+  opacity: 0.4;
+}
+
+.itemDropBefore {
+  box-shadow: 0 rem(-2) 0 $sys-accent;
+}
+
+.itemDropAfter {
+  box-shadow: 0 rem(2) 0 $sys-accent;
+}
+
+.grip {
+  display: flex;
+  align-items: center;
+  color: $sys-text-muted;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+
+  &:active {
+    cursor: grabbing;
+  }
+}
+
+// The same room with or without a switch, so every name starts in one line.
+.switchSlot {
+  display: flex;
+  align-items: center;
+  width: rem(28);
+}
+
+.label {
+  color: $sys-text-primary;
+}
+
+.labelOff {
+  color: $sys-text-muted;
+}

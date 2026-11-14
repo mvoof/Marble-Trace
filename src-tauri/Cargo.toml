@@ -54,6 +54,7 @@ mt-remote = { path = "crates/mt-remote" }
 mt-companions = { path = "crates/mt-companions" }
 mt-hotkeys = { path = "crates/mt-hotkeys" }
 mt-voice = { path = "crates/mt-voice" }
+mt-stats = { path = "crates/mt-stats" }
 
 serde_json = "1.0"
 # Build scripts read `src-tauri/.env` for the keys baked in at compile time.
@@ -111,6 +112,7 @@ winreg = "0.56"
 # foreground focus. DirectInput lives under Devices::HumanInterfaceDevice in
 # windows-rs, not under a DirectInput-named feature.
 windows = { version = "0.62", features = [
+    "Win32_Devices_Display",
     "Win32_Devices_HumanInterfaceDevice",
     "Win32_Foundation",
     "Win32_Graphics_Gdi",
@@ -147,6 +149,7 @@ mt-remote.workspace = true
 mt-companions.workspace = true
 mt-hotkeys.workspace = true
 mt-voice.workspace = true
+mt-stats.workspace = true
 reqwest.workspace = true
 rustls.workspace = true
 

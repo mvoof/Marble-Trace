@@ -253,4 +253,27 @@ describe('BindingsStore', () => {
       { kind: 'device', deviceId: 'other', button: 1 },
     ]);
   });
+
+  it('lists one widget actions with their bindings, the edits included', () => {
+    const store = new BindingsStore(registry);
+
+    store.applyBindings({ 'standings:class-next': [keyboard('F7')] });
+
+    const rows = store.widgetBindings('standings');
+
+    expect(rows.map((row) => row.action.id)).toEqual(
+      ACTIONS.filter((action) => action.owner === 'standings').map(
+        (action) => action.id
+      )
+    );
+    expect(
+      rows.find((row) => row.action.id === 'standings:class-next')?.bindings
+    ).toEqual([keyboard('F7')]);
+  });
+
+  it('lists no actions for a widget type it does not know', () => {
+    const store = new BindingsStore(registry);
+
+    expect(store.widgetBindings('no-such-widget')).toEqual([]);
+  });
 });

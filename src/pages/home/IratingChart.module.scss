@@ -1,0 +1,69 @@
+.titleAside {
+  font-weight: 400;
+  color: $sys-text-muted;
+}
+
+.empty {
+  margin: rem(24) 0;
+  font-size: rem(13);
+  text-align: center;
+  color: $sys-text-muted;
+}
+
+// The line in the accent: its stroke and fill follow `currentColor`.
+.chart {
+  color: $sys-accent;
+
+  :global(.recharts-cartesian-axis-tick-value) {
+    fill: $sys-text-muted;
+    font-family: $font-mono;
+    font-size: rem(11);
+  }
+}
+
+.grid line {
+  stroke: $sys-border-sub;
+}
+
+.cursor {
+  stroke: $sys-border-strong;
+}
+
+.tooltip {
+  padding: rem(8) rem(10);
+  border: 1px solid $sys-border-main;
+  border-radius: rem(8);
+  background: $sys-bg-raised;
+  font-size: rem(12);
+  color: $sys-text-secondary;
+}
+
+.tooltipDate {
+  color: $sys-text-muted;
+}
+
+.tooltipFigures {
+  display: flex;
+  gap: rem(8);
+  margin-top: rem(4);
+  font-family: $font-mono;
+  font-variant-numeric: tabular-nums;
+  font-size: rem(14);
+  color: $sys-text-primary;
+}
+
+// A session's dot: colour only for a rise or a fall.
+.flat {
+  fill: $sys-accent;
+  color: $sys-text-muted;
+}
+
+.up {
+  fill: $sys-up;
+  color: $sys-up;
+}
+
+.down {
+  fill: $sys-down;
+  color: $sys-down;
+}

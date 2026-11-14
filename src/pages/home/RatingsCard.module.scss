@@ -1,0 +1,135 @@
+.card {
+  grid-column: span 2;
+  padding: rem(14) rem(16) rem(8);
+  background: $sys-bg-card;
+  border: 1px solid $sys-border-sub;
+  border-radius: rem(10);
+
+  @media (max-width: 1000px) {
+    grid-column: 1 / -1;
+  }
+}
+
+.label {
+  display: flex;
+  align-items: center;
+  gap: rem(6);
+  font-size: rem(12);
+  color: $sys-text-muted;
+}
+
+.labelAside {
+  margin-left: auto;
+  font-size: rem(11);
+}
+
+.none {
+  margin: rem(10) 0 rem(6);
+  font-size: rem(12);
+  color: $sys-text-muted;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto rem(56) rem(56) rem(48);
+  align-items: center;
+  gap: rem(10);
+  width: calc(100% + rem(16));
+  margin: rem(2) rem(-8) 0;
+  padding: rem(5) rem(8);
+  border: 0;
+  border-radius: rem(7);
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+
+  &:first-of-type {
+    margin-top: rem(8);
+  }
+
+  &:hover {
+    background: $sys-bg-raised;
+  }
+}
+
+.rowSelected {
+  background: $sys-bg-raised;
+}
+
+.category {
+  display: flex;
+  align-items: center;
+  gap: rem(8);
+  overflow: hidden;
+  font-size: rem(13);
+  white-space: nowrap;
+  color: $sys-text-secondary;
+}
+
+.figure {
+  font-family: $font-mono;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.irating {
+  font-size: rem(15);
+  font-weight: 600;
+  color: $sys-text-primary;
+}
+
+.small {
+  font-size: rem(12);
+  text-align: right;
+}
+
+.flat {
+  color: $sys-text-muted;
+}
+
+.up {
+  color: $sys-up;
+}
+
+.down {
+  color: $sys-down;
+}
+
+.lastSession {
+  color: $sys-text-muted;
+}
+
+.licence {
+  padding: rem(1) rem(7);
+  border: 1px solid color-mix(in srgb, var(--licence) 35%, transparent);
+  border-radius: rem(5);
+  background: color-mix(in srgb, var(--licence) 16%, transparent);
+  color: var(--licence);
+  font: 600 rem(12) $font-mono;
+}
+
+.licR {
+  --licence: #{$sys-lic-r};
+}
+
+.licD {
+  --licence: #{$sys-lic-d};
+}
+
+.licC {
+  --licence: #{$sys-lic-c};
+}
+
+.licB {
+  --licence: #{$sys-lic-b};
+}
+
+.licA {
+  --licence: #{$sys-lic-a};
+}
+
+.licPro {
+  --licence: #{$sys-lic-pro};
+}

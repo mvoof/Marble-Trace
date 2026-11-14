@@ -1,5 +1,4 @@
 import { observer } from 'mobx-react-lite';
-import { useTranslation } from 'react-i18next';
 
 import { Card } from '@features/widget-settings/Card';
 import { schemaRows } from '@features/widget-settings/schema-rows';
@@ -11,15 +10,18 @@ export const PANEL_WIDGET_IDS = ['lap-log'];
 const { Row } = schemaRows(LAP_LOG_SETTINGS);
 
 export const LapLogSettingsPanel = observer(() => {
-  const { t } = useTranslation('widgets');
-
   return (
-    <Card title={t('settingsPanels.lapLog.moduleParameters')}>
-      <Row setting="rowPadding" />
-      <Row setting="showDelta" />
-      <Row setting="paceLossBars" dependsOn="showDelta" />
-      <Row setting="bestLapChip" />
-      <Row setting="averageFooter" />
-    </Card>
+    <>
+      <Card group="content">
+        <Row setting="showDelta" />
+        <Row setting="paceLossBars" dependsOn="showDelta" />
+        <Row setting="bestLapChip" />
+        <Row setting="averageFooter" />
+      </Card>
+
+      <Card group="display">
+        <Row setting="rowPadding" />
+      </Card>
+    </>
   );
 });

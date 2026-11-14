@@ -127,6 +127,7 @@ const INPUT_TRACE_DESIGN_WIDTH = computeInputTraceDesignWidth(
 export const INPUT_TRACE_MANIFEST: WidgetManifest = {
   id: 'input-trace',
   telemetryEvents: ['carDynamics', 'carInputs', 'inputSamples', 'cornerSpeeds'],
+  tier: 'core',
   label: 'Input Trace',
   description: 'Live throttle, brake, and clutch inputs.',
   resolveLayoutChange: resolveInputTraceLayout,

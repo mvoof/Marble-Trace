@@ -1,79 +1,37 @@
-.container {
-  display: flex;
-  flex-direction: column;
+// Scrolls on its own: the Layouts page is not on the sectioned template, so it
+// carries the mockup's page padding itself.
+.page {
   height: 100%;
-  width: 100%;
-  gap: sp(lg);
-  min-height: 0;
-}
-
-.header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex: 0 0 auto;
-}
-
-.headerInfo {
-  display: flex;
-  flex-direction: column;
-}
-
-.moduleLabel {
-  font-size: 10px;
-  color: #8b8e98;
-  text-transform: uppercase;
-  letter-spacing: 0.15em;
-  font-family: $font-mono;
-  margin-bottom: 6px;
-  display: block;
-}
-
-.title {
-  font-size: fs(lg);
-  font-weight: 600;
-  color: #e0e0e0;
-  margin: 0;
-  display: flex;
-  align-items: center;
-  gap: sp(sm);
-}
-
-.modeSwitch {
-  font-family: $font-mono;
-  font-size: fs(xs);
-  text-transform: uppercase;
-}
-
-.headerActions {
-  display: flex;
-  align-items: center;
-  gap: sp(sm);
-}
-
-.subtitle {
-  font-size: fs(sm);
-  color: #8b8e98;
-  margin: 0;
-}
-
-.content {
-  display: flex;
-  flex: 1 1 0;
-  gap: sp(lg);
-  min-height: 0;
-}
-
-.gridSection {
-  flex: 1 1 0;
   min-height: 0;
   overflow-y: auto;
-  padding: 4px;
-  padding-right: sp(xs);
+  scrollbar-gutter: stable;
+  padding: rem(8) rem(24) rem(28) rem(28);
 }
 
-.layoutsGrid {
+// The cards take the width; Auto-switch sits in a column on the right. In a
+// narrow window the column drops under the title, above the cards.
+.body {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: sp(md);
+  grid-template-columns: minmax(0, 1fr) rem(340);
+  grid-template-areas: 'cards rules';
+  align-items: start;
+  gap: rem(18);
+
+  @media (max-width: 1100px) {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      'rules'
+      'cards';
+  }
+}
+
+.rules {
+  grid-area: rules;
+}
+
+.grid {
+  grid-area: cards;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(rem(300), 1fr));
+  gap: rem(14);
 }

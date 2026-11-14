@@ -1,0 +1,175 @@
+.intro {
+  font-size: rem(12);
+  color: $sys-text-secondary;
+  margin-bottom: rem(16);
+}
+
+.searchRow {
+  display: flex;
+  align-items: center;
+  gap: rem(8);
+}
+
+.search {
+  width: rem(240);
+}
+
+// A group is a heading over its rows: which widget or part of the app the
+// keys belong to. No box of its own, nothing to fold.
+.group {
+  & + & {
+    margin-top: rem(18);
+  }
+}
+
+.groupHeader {
+  display: flex;
+  align-items: center;
+  gap: rem(8);
+  padding: rem(4) 0 rem(6);
+  border-bottom: 1px solid $sys-border-main;
+}
+
+.groupBody {
+  padding: rem(4) 0;
+}
+
+// Show/hide leads the group — it keeps working when the widget is out of the
+// layout and the rows below it do not.
+.pinnedRow {
+  margin-bottom: rem(8);
+}
+
+.groupTitle {
+  margin: 0 !important;
+  font-size: rem(12);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: $sys-text-secondary;
+}
+
+.groupCount {
+  margin-left: auto;
+  font-family: $font-mono;
+  font-size: rem(11);
+  color: $sys-text-muted;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: rem(16);
+  padding-top: rem(8);
+  margin-top: rem(8);
+  border-top: 1px solid $sys-border-sub;
+
+  &:first-of-type {
+    padding-top: 0;
+    margin-top: 0;
+    border-top: none;
+  }
+}
+
+.rowTexts {
+  min-width: 0;
+}
+
+.rowLabel {
+  font-size: rem(13);
+  color: $sys-text-primary;
+}
+
+.rowHint {
+  margin-top: rem(3);
+  font-size: rem(11);
+  color: $race-amber;
+}
+
+.chips {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: rem(6);
+  justify-content: flex-end;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: rem(6);
+  padding: rem(3) rem(10);
+  border: 1px solid $sys-border-main;
+  border-radius: rem(6);
+  background: $sys-bg-raised;
+  font-family: $font-mono;
+  font-size: rem(12);
+  color: $sys-text-primary;
+}
+
+// Modifier classes come after the base class they refine.
+.chipConflicting {
+  border-color: $race-amber;
+  color: $race-amber;
+}
+
+.chipOffline {
+  opacity: 0.5;
+}
+
+.chipRemove {
+  display: inline-flex;
+  align-items: center;
+  border: none;
+  background: none;
+  padding: 0;
+  cursor: pointer;
+  color: $sys-text-secondary;
+
+  &:hover {
+    color: $race-red;
+  }
+}
+
+.empty {
+  font-size: rem(12);
+  color: $sys-text-muted;
+}
+
+.deviceRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: rem(12);
+  padding-top: rem(12);
+  margin-top: rem(12);
+  border-top: 1px solid $sys-border-sub;
+
+  &:first-of-type {
+    padding-top: 0;
+    margin-top: 0;
+    border-top: none;
+  }
+}
+
+.deviceName {
+  font-size: rem(13);
+  color: $sys-text-primary;
+}
+
+.deviceMeta {
+  font-size: rem(11);
+  color: $sys-text-muted;
+  font-family: $font-mono;
+}
+
+// Opened from one widget: says whose bindings these are, and how to see all.
+.filterRow {
+  display: flex;
+  align-items: center;
+  gap: rem(8);
+  margin-bottom: rem(16);
+  font-size: rem(12);
+  color: $sys-text-primary;
+}

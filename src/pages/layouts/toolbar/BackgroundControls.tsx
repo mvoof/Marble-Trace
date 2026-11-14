@@ -1,73 +1,76 @@
 import { useRef, type ChangeEvent } from 'react';
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
-import { Button, Tooltip } from 'antd';
 import { Image, ImageOff } from 'lucide-react';
 
 import { useLayoutsStore } from '@entities/layout/layouts-context';
 import { useLayoutEditorUiStore } from '@features/layout-editor/layout-editor-ui-context';
 
+import { ToolbarMenuItem, ToolbarMenuSection } from './ToolbarMenuItem';
+
 const ACCEPTED_IMAGES = 'image/png,image/jpeg,image/webp,image/avif,image/gif';
 
 /**
- * A screen's background picture: set and clear. Background images belong to
- * a screen, so they go to the one in focus — in the overview, the first.
+ * A screen's background picture, in the "…" menu: set and clear. Background
+ * images belong to a screen, so they go to the one in focus — in the
+ * overview, the first.
  */
-export const BackgroundControls = observer(() => {
-  const layouts = useLayoutsStore();
-  const editorUi = useLayoutEditorUiStore();
-  const { t } = useTranslation('main-app');
-  const inputRef = useRef<HTMLInputElement | null>(null);
+export const BackgroundControls = observer(
+  ({ onPicked }: { onPicked: () => void }) => {
+    const layouts = useLayoutsStore();
+    const editorUi = useLayoutEditorUiStore();
+    const { t } = useTranslation('main-app');
+    const inputRef = useRef<HTMLInputElement | null>(null);
 
-  const handlePick = (event: ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
+    const handlePick = (event: ChangeEvent<HTMLInputElement>) => {
+      const file = event.target.files?.[0];
 
-    event.target.value = '';
-    void editorUi.setBackgroundFromFile(file);
-  };
+      event.target.value = '';
+      void editorUi.setBackgroundFromFile(file);
+    };
 
-  return (
-    <>
-      <input
-        ref={(node) => {
-          inputRef.current = node;
+    return (
+      <ToolbarMenuSection title={t('layoutEditor.background')}>
+        <input
+          ref={(node) => {
+            inputRef.current = node;
 
-          if (node) {
-            node.oncancel = () => editorUi.setUploadingBackground(false);
-          }
-        }}
-        type="file"
-        accept={ACCEPTED_IMAGES}
-        aria-label={t('layoutEditor.backgroundImageAria')}
-        hidden
-        onChange={handlePick}
-      />
+            if (node) {
+              node.oncancel = () => editorUi.setUploadingBackground(false);
+            }
+          }}
+          type="file"
+          accept={ACCEPTED_IMAGES}
+          aria-label={t('layoutEditor.backgroundImageAria')}
+          hidden
+          onChange={handlePick}
+        />
 
-      <Tooltip title={t('layoutEditor.setBackgroundTooltip')}>
-        <Button
-          size="small"
-          type="text"
-          icon={<Image size={14} />}
-          disabled={!layouts.editingLayout}
+        <ToolbarMenuItem
+          icon={Image}
+          label={t('layoutEditor.setBackgroundTooltip')}
+          isDisabled={!layouts.editingLayout}
           onClick={() => {
             if (inputRef.current) {
               editorUi.setUploadingBackground(true);
               inputRef.current.click();
             }
+
+            onPicked();
           }}
         />
-      </Tooltip>
 
-      {editorUi.currentBackground && (
-        <Tooltip title={t('layoutEditor.clearBackgroundTooltip')}>
-          <Button
-            size="small"
-            type="text"
-            icon={<ImageOff size={14} />}
-            onClick={() => editorUi.clearBackground()}
+        {editorUi.currentBackground && (
+          <ToolbarMenuItem
+            icon={ImageOff}
+            label={t('layoutEditor.clearBackgroundTooltip')}
+            onClick={() => {
+              editorUi.clearBackground();
+              onPicked();
+            }}
           />
-        </Tooltip>
-      )}
-    </>
-  );
-});
+        )}
+      </ToolbarMenuSection>
+    );
+  }
+);

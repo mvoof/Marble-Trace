@@ -1,0 +1,27 @@
+.row {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: rem(12);
+  margin: rem(6) 0 rem(16);
+}
+
+.title {
+  margin: 0 !important;
+  font-size: rem(20);
+  font-weight: 600;
+  color: $sys-text-primary;
+}
+
+.subtitle {
+  font-size: rem(13);
+  color: $sys-text-muted;
+}
+
+.actions {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: rem(8);
+  align-self: center;
+}

@@ -1,25 +1,44 @@
 {
-  "mainWindow": {
-    "widgetModules": "小组件模块"
+  "widgetsPage": {
+    "allWidgets": "全部小组件",
+    "unavailable": "此模拟器不可用",
+    "sort": {
+      "tier": "重要性",
+      "az": "A–Z"
+    },
+    "widgetsCount_other": "{{count}} 个小组件",
+    "previewTop": "预览在设置上方",
+    "previewLeft": "预览在设置旁边",
+    "addToLayout": "添加到布局",
+    "onScreen": "显示中",
+    "addToLayoutHint": "将小组件放到当前显示布局的第一个显示器上"
   },
   "appHeader": {
     "sections": {
-      "layouts": "布局",
+      "home": "首页",
       "widgets": "小组件",
+      "layouts": "布局",
       "crew": "车队",
+      "connections": "连接",
+      "data": "数据",
+      "hotkeys": "快捷键",
       "settings": "设置"
+    },
+    "websiteTitle": "打开 marbletrace.com",
+    "releasesTitle": "更新内容 — GitHub 上的版本发布",
+    "discordTitle": "Discord — 社区",
+    "window": {
+      "minimise": "最小化",
+      "maximise": "最大化",
+      "close": "关闭"
     }
   },
   "appStatus": {
-    "connectedTo": "已连接到 {{sim}}",
-    "replaying": "回放：{{tape}}",
-    "waitingForTelemetry": "等待遥测数据",
+    "connectedTo": "{{sim}} · 已连接",
+    "replaying": "回放 · {{tape}}",
+    "waitingForTelemetry": "{{sim}} · 等待遥测数据",
     "systemError": "系统错误",
-    "waitingForGame": "等待游戏启动"
-  },
-  "widgetList": {
-    "unavailable": "不可用",
-    "defaultDescription": "配置小组件设置。"
+    "waitingForGame": "{{sim}} 未运行"
   },
   "releaseNotes": {
     "whatsNew": "更新内容",
@@ -59,13 +78,8 @@
   "layoutEditor": {
     "backToLayouts": "返回布局列表",
     "toggleWidgetPanel": "显示/隐藏小组件面板",
-    "newLayoutNamePlaceholder": "新布局名称",
     "create": "创建",
     "cancel": "取消",
-    "saveName": "保存名称",
-    "selectLayoutPlaceholder": "选择一个布局…",
-    "newLayout": "新建布局",
-    "rename": "重命名",
     "deleteLayoutConfirm": "删除此布局？",
     "delete": "删除",
     "active": "已激活",
@@ -88,8 +102,12 @@
     "toggleGridTooltip": "显示/隐藏对齐网格",
     "gridSizeTooltip": "网格大小",
     "snapToGridTooltip": "吸附到网格",
-    "exitFullscreen": "退出全屏",
-    "fullscreenPreview": "全屏预览",
+    "viewOverview": "所有显示器",
+    "viewOverviewTooltip": "同时显示布局的所有屏幕",
+    "viewFullSize": "全尺寸",
+    "viewFullSizeTooltip": "一个屏幕填满应用窗口",
+    "viewFullscreen": "在显示器上",
+    "viewFullscreenTooltip": "一个屏幕填满其实际显示器",
     "setBackgroundTooltip": "设置编辑器背景（例如驾驶舱视图）",
     "clearBackgroundTooltip": "清除背景",
     "widgetsPanelTitle": "小组件",
@@ -109,10 +127,10 @@
     "addRemoteScreenTooltip": "添加一个虚拟屏幕——不是这台电脑的显示器，而是浏览器通过链接打开的页面：平板、手机或 OBS 中的浏览器源",
     "addRemoteScreenConfirm": "添加浏览器屏幕",
     "remoteScreenNamePlaceholder": "屏幕名称，例如“方向盘平板”",
-    "remoteScreenDefaultName": "远程屏幕",
-    "remoteScreenTag": "远程",
-    "arrangeRemoteScreens": "整理远程屏幕",
-    "arrangeRemoteScreensTooltip": "将远程屏幕连同其挂件排列在桌面下方的多行中",
+    "remoteScreenDefaultName": "浏览器屏幕",
+    "remoteScreenTag": "浏览器",
+    "arrangeRemoteScreens": "整理浏览器屏幕",
+    "arrangeRemoteScreensTooltip": "将浏览器屏幕连同其挂件排列在桌面下方的多行中",
     "addRemoteScreenHint": "任何打开该链接的设备都会渲染此屏幕：网络中的平板，或 OBS 的浏览器源。用于 OBS 时请将背景设为透明，并把源设成相同尺寸——第一个连接的会上报自己的尺寸，按它调整会移动该屏幕上的所有挂件。",
     "remoteScreenTransparent": "透明背景（用于 OBS）",
     "remoteScreenTransparentSuffix": "透明",
@@ -140,37 +158,43 @@
     "resetSettingsOk": "重置",
     "reset": "重置",
     "hotkeysActOn": "快捷键作用于此小组件",
-    "hotkeysActOnDesc": "其快捷键显示、隐藏和切换此实例。标记多个时会一起变化。浏览器屏幕也会跟随，直播画面会显示你切换后的内容。"
+    "hotkeysActOnDesc": "其快捷键显示、隐藏和切换此实例。标记多个时会一起变化。浏览器屏幕也会跟随，直播画面会显示你切换后的内容。",
+    "layouts": "布局",
+    "addWidget": "组件",
+    "addWidgetTooltip": "添加组件",
+    "addWidgetSearch": "查找组件…",
+    "addWidgetCore": "核心",
+    "addWidgetAll": "全部",
+    "addWidgetOnScreen": "已在屏幕上",
+    "addWidgetTarget": "到显示器：",
+    "addWidgetEmpty": "没有匹配的组件",
+    "moreTools": "更多工具",
+    "grid": "网格",
+    "background": "背景",
+    "screens": "屏幕",
+    "hideArrangement": "隐藏显示器排列",
+    "showArrangement": "显示显示器排列",
+    "scenarioTooltip": "预览场景",
+    "dragToolbar": "拖动工具栏"
+  },
+  "monitorMap": {
+    "primary": "主显示器",
+    "notConnected": "未连接",
+    "notInLayout": "不在此布局中 — 点击添加",
+    "addToLayout": "将此显示器添加到布局",
+    "browserScreens": "浏览器屏幕",
+    "identify": "识别",
+    "identifyTooltip": "在每台显示器上显示其编号",
+    "title": "显示器排列与浏览器屏幕",
+    "hide": "隐藏",
+    "show": "显示"
   },
   "layoutList": {
-    "moduleLabel": "布局",
-    "title": "管理小组件布局",
-    "subtitleAutoSwitch": "自动切换已启用。布局将根据您的游戏会话自动动态加载。",
-    "subtitleManual": "选择一个布局查看详情。双击卡片以在编辑器中打开。",
-    "toggleAutoSwitchTooltip": "手动：始终使用同一布局。按赛段自动：布局根据当前赛段自动切换。",
-    "modeManual": "统一布局",
-    "modeAuto": "按赛段自动切换",
     "newLayout": "新建布局",
     "emptyLayout": "空布局",
-    "active": "已激活",
-    "assignedTo": "已分配给 {{session}}",
-    "manualActivationOnly": "仅手动激活",
-    "manual": "手动",
     "widgetsCount_other": "{{count}} 个小组件",
-    "created": "创建于：",
-    "autoSwitchAssignment": "自动切换分配",
-    "activeMonitor": "当前显示器",
-    "none": "无",
-    "resolution": "分辨率",
-    "activeWidgets": "已启用的小组件",
-    "activateLayout": "激活布局",
-    "activateDisabledAutoSwitch": "自动切换已开启——布局会根据赛段自动切换。请关闭该选项以手动激活。",
-    "openEditor": "打开编辑器",
-    "duplicateLayout": "复制布局",
     "deleteLayoutConfirmTitle": "删除此布局？",
     "deleteLayoutConfirmDescription": "此操作无法撤销。",
-    "deleteLayout": "删除布局",
-    "emptySelection": "选择一个布局以查看详情和操作",
     "createNewLayout": "创建新布局",
     "enterLayoutName": "输入布局名称...",
     "sessions": {
@@ -181,26 +205,57 @@
     },
     "monitorsCount_other": "{{count}} 个显示器",
     "noMonitors": "无显示器",
-    "monitors": "显示器",
-    "removeMonitor": "从布局中移除该显示器",
-    "monitorOffline": "未找到",
-    "totalWidgets": "部件总数",
-    "remoteNoDevice": "无设备",
-    "removeMonitorWithWidgets": "移除此显示器及其 {{count}} 个小组件？"
+    "removeMonitorWithWidgets": "移除此显示器及其 {{count}} 个小组件？",
+    "layoutsCount_other": "{{count}} 个布局",
+    "open": "打开",
+    "onScreen": "显示中",
+    "putOnScreen": "显示到屏幕",
+    "duplicate": "复制",
+    "rename": "重命名",
+    "export": "导出为文件",
+    "delete": "删除",
+    "notAutoSwitched": "不自动切换",
+    "autoSwitch": {
+      "title": "自动切换",
+      "description": "当模拟器中的情况变化时切换显示的布局。每条规则指定会话、车辆组别和车辆，均可设为“任意”；最具体的匹配规则优先：车辆优先于组别，组别优先于会话。布局只在此处分配。",
+      "enabled": "开启",
+      "anySession": "任意会话",
+      "anyClass": "任意组别",
+      "anyCar": "任意车辆",
+      "anySituation": "任意情况",
+      "session": "会话",
+      "carClass": "组别",
+      "car": "车辆",
+      "layout": "布局",
+      "carById": "车辆 {{id}}",
+      "addRule": "添加规则",
+      "removeRule": "删除规则",
+      "noRules": "还没有规则。添加一条，按会话、组别或车辆切换布局。"
+    },
+    "exported": "布局已保存到 {{path}}",
+    "exportFailed": "无法保存布局文件",
+    "import": "导入",
+    "imported": "已添加布局「{{name}}」",
+    "importFailed": "此文件不包含 Marble Trace 布局"
   },
   "layoutWidgetPanel": {
     "onMonitor": "在 {{monitor}}",
     "offScreen": "不在任何屏幕上",
     "copyTooltip": "副本——拥有自己的设置、位置和开关",
     "originalTooltip": "此屏幕上的第一个实例；此处其余的都是它的副本",
-    "deleteCopyConfirm": "删除此副本？",
-    "deleteCopyOk": "删除",
+    "deleteCopy": "删除此副本",
+    "removeWidget": "从此显示器移除",
+    "hide": "隐藏",
+    "show": "显示",
+    "addTo": "向 {{monitor}} 添加组件",
+    "empty": "此显示器上没有组件",
+    "search": "查找组件…",
+    "noMatch": "没有匹配的组件",
     "hotkeysOn": "快捷键作用于此小组件 — 点击排除",
     "hotkeysOff": "快捷键跳过此小组件 — 点击加入"
   },
   "widgetWorkbench": {
-    "scenario": "场景",
-    "noWidgets": "没有可用的小组件。"
+    "scenario": "场景"
   },
   "layoutCanvas": {
     "move": "移动",
@@ -235,7 +290,15 @@
     "selectToConfigure": "选择要配置的小组件",
     "notFound": "未找到该小组件",
     "moduleConfig": "模块配置",
-    "layoutAndDimensions": "布局与尺寸",
+    "groups": {
+      "columns": "列",
+      "content": "内容",
+      "display": "显示",
+      "size": "尺寸",
+      "background": "背景",
+      "behaviour": "行为",
+      "hotkeys": "快捷键"
+    },
     "positionX": "X 坐标",
     "positionY": "Y 坐标",
     "width": "宽度（像素）",
@@ -243,13 +306,15 @@
     "layerDepth": "层级深度（Z-Index）",
     "fontScale": "文字大小",
     "fontScaleDesc": "仅缩放文字，与组件的宽度/高度无关",
-    "aesthetics": "背景与边框",
     "background": "背景",
-    "border": "边框"
+    "border": "边框",
+    "columns": {
+      "move": "拖动以调整顺序"
+    },
+    "hotkeysShared": "此小组件的所有副本共用",
+    "hotkeysChange": "更改"
   },
   "settingsPage": {
-    "moduleLabel": "配置",
-    "title": "全局应用设置",
     "language": {
       "title": "语言",
       "fieldLabel": "应用语言",
@@ -264,6 +329,11 @@
       "title": "启动行为",
       "launchMinimizedTitle": "启动时最小化",
       "launchMinimizedDesc": "启动应用程序时最小化到任务栏。"
+    },
+    "appearance": {
+      "title": "外观",
+      "headerAnimationTitle": "背景动画",
+      "headerAnimationDesc": "标题栏后方的平缓波浪。窗口最小化或失去焦点时暂停。"
     },
     "interactionMode": {
       "title": "交互模式",
@@ -357,7 +427,9 @@
       "title": "关于 Marble Trace",
       "tagline": "iRacing 遥测叠加层。免费开源，采用 GPL-3.0 许可。",
       "trademarks": "Marble Trace™ 及 Marble Trace 标志是 voof 的商标。iRacing 是 iRacing.com Motorsport Simulations, LLC 的商标。TAURI 是 The Tauri Programme within the Commons Conservancy 的商标。Windows 是 Microsoft 集团公司的商标。Twitch 是 Twitch Interactive, Inc. 的商标。YouTube 是 Google LLC 的商标。所有其他名称均为其各自所有者的财产。",
-      "independence": "Marble Trace 是一个独立的开源项目。它并非由 iRacing 开发，与 iRacing.com Motorsport Simulations, LLC 没有任何关系，也与其及下列任何公司无关联，未获得其赞助或认可。"
+      "independence": "Marble Trace 是一个独立的开源项目。它并非由 iRacing 开发，与 iRacing.com Motorsport Simulations, LLC 没有任何关系，也与其及下列任何公司无关联，未获得其赞助或认可。",
+      "links": "链接",
+      "website": "网站"
     },
     "trackMap": {
       "title": "赛道地图",
@@ -533,34 +605,18 @@
       }
     },
     "nav": {
-      "groups": {
-        "application": "应用程序",
-        "overlay": "覆盖层",
-        "controls": "控制",
-        "data": "数据",
-        "chat": "聊天",
-        "maintenance": "维护",
-        "remote": "远程"
-      },
       "sections": {
         "general": "常规",
-        "companionApps": "配套程序",
         "updates": "更新",
         "about": "关于",
         "overlay": "组件显示",
         "interaction": "交互模式",
-        "bindings": "输入绑定",
-        "devices": "设备",
-        "trackMap": "赛道数据",
-        "sharedValues": "通用数值",
-        "streamChat": "直播聊天",
         "maintenance": "重置与诊断",
-        "telemetryInspector": "遥测检查器",
-        "remoteScreens": "远程屏幕"
+        "telemetryInspector": "遥测检查器"
       }
     },
     "remote": {
-      "title": "远程屏幕",
+      "title": "浏览器屏幕",
       "enableTitle": "将布局提供给其他设备",
       "enableDesc": "启动一个小型网页服务器，让同一网络中的手机或平板在浏览器中打开当前布局的一个屏幕。设备只能观看，无法更改任何内容。",
       "running": "运行于 {{ip}}:{{port}}",
@@ -575,9 +631,9 @@
       "tokenDesc": "设备需要此令牌才能打开屏幕。下方的链接和二维码中已包含该令牌。",
       "lanLabel": "可从局域网访问",
       "regenerateToken": "新令牌",
-      "screensTitle": "远程屏幕",
+      "screensTitle": "浏览器屏幕",
       "screensDesc": "在设备上打开该地址。将其添加到主屏幕会隐藏浏览器地址栏，使布局占满整个显示屏。",
-      "screensEmpty": "尚无远程屏幕。请在布局编辑器中的显示器旁添加一个。",
+      "screensEmpty": "尚无浏览器屏幕。请在布局编辑器中的显示器旁添加一个。",
       "usedInLayouts": "布局",
       "activeNow": "当前活跃",
       "inactive": "在当前会话中未激活",
@@ -624,6 +680,49 @@
       "title": "配套程序"
     }
   },
+  "connectionsPage": {
+    "sections": {
+      "browserScreens": "浏览器屏幕",
+      "streamChat": "直播聊天",
+      "companionApps": "配套程序"
+    }
+  },
+  "dataPage": {
+    "sections": {
+      "tracks": "已记录的赛道",
+      "strategy": "策略",
+      "statistics": "统计"
+    },
+    "statistics": {
+      "subtitle": "读取自游戏的遥测文件",
+      "folderTitle": "遥测文件夹",
+      "folderDefault": "已在“文档”中自动找到。",
+      "folderChosen": "由你选择。",
+      "folderMissing": "未找到 iRacing 遥测文件夹。请选择 .ibt 文件所在位置。",
+      "change": "更改",
+      "useDefault": "使用默认",
+      "folderRefused": "无法使用此文件夹：{{reason}}",
+      "loggingTitle": "iRacing 遥测记录",
+      "logging": {
+        "on": "开启",
+        "off": "关闭",
+        "unknown": "未知"
+      },
+      "importTitle": "导入",
+      "importIdle": "所有文件已读取",
+      "reimport": "全部重新导入",
+      "reimportDesc": "重新读取文件夹中的所有文件，包括已跳过的。文件已删除的会话仍会保留。",
+      "reimportStarted": "已开始重新导入",
+      "reimportQueued": "关闭游戏后将开始重新导入",
+      "skippedTitle": "已跳过的文件",
+      "skippedNone": "所有文件均已读取。",
+      "skippedFile": "文件",
+      "skippedReason": "原因",
+      "exportCsv": "导出 CSV",
+      "exported": "已导出会话：{{count}}",
+      "exportFailed": "导出失败：{{reason}}"
+    }
+  },
   "bindings": {
     "title": "输入绑定",
     "intro": "按键和设备按钮在整个应用中生效，适用于所有布局。与模拟器自身按键的冲突无法在此检测，请在 iRacing 中确认。",
@@ -631,6 +730,8 @@
     "resetAll": "全部重置",
     "resetConfirm": "将所有绑定恢复为默认值？",
     "noMatches": "没有匹配的操作。",
+    "filteredTo": "仅显示 {{widget}}",
+    "showAll": "显示全部",
     "unbound": "未绑定",
     "addBinding": "添加绑定",
     "removeBinding": "移除绑定",
@@ -703,15 +804,25 @@
     "keyIsFree": "{{key}} 尚未绑定到任何操作。"
   },
   "crewPage": {
-    "title": "车队",
     "sections": {
-      "commands": "命令",
-      "voice": "语音",
+      "overview": "概览",
       "downloads": "下载",
-      "pack": "语言包"
+      "commands": "命令",
+      "phrases": "短语与回复",
+      "packs": "语言包"
     },
-    "notReady": "语音需要引擎、一个声音和一个识别模型——请前往“下载”。",
-    "openDownloads": "打开下载",
+    "notReady": "工程师需要引擎、一个声音和一个识别模型——请前往“概览”。",
+    "openOverview": "打开概览",
+    "status": {
+      "title": "状态",
+      "engineer": "工程师",
+      "ready": "就绪",
+      "off": "已关闭",
+      "notReady": "需要下载",
+      "pushToTalk": "按键通话",
+      "pushToTalkUnbound": "未设置——设置一个按键即可与工程师通话",
+      "change": "更改"
+    },
     "packOutdated": "未保存的修改属于“{{pack}}”语言包，但车队现在使用“{{language}}”。保存或放弃这些修改后才能打开“{{language}}”语言包。",
     "save": "保存",
     "saveBar": {
@@ -731,8 +842,8 @@
       "idle": "按住并说一句话，或在列表中输入",
       "listening": "正在聆听…",
       "draftNote": "同时识别未保存的修改",
-      "voiceOff": "语音已关闭——请在“语音”中开启",
-      "silence": "没有听到声音——请在“语音”中检查麦克风",
+      "voiceOff": "语音已关闭——请在“概览”中开启",
+      "silence": "没有听到声音——请在“概览”中检查麦克风",
       "unknown": "“{{sentence}}”——没有命令能匹配",
       "heard": "“{{sentence}}” → {{action}}{{slots}}",
       "sure": "{{percent}}%",
@@ -1374,6 +1485,105 @@
       "number": "数字",
       "numberNote": "0 到 {{max}} 之间的数字，用文字说出：“四十”、“一百二十”。",
       "carNumberNote": "车号按车身上的写法说：“三十三”、“零七”、“五百一十二”。只识别本场中的车。"
+    }
+  },
+  "homePage": {
+    "title": "首页",
+    "emptyTitle": "还没有会话",
+    "emptyText": "每次上车时，iRacing 都会在 DocumentsiRacing\telemetry 中写入一个遥测文件。Marble Trace 会在游戏关闭时读取这些文件，整理出你的会话、圈数、事故和 iRating。",
+    "emptyKept": "读取的内容会被保留，即使删除了这些文件。",
+    "import": {
+      "reading": "正在读取游戏文件 ·",
+      "paused": "导入已暂停——你正在游戏中",
+      "noFolder": "未找到 iRacing 遥测文件夹"
+    },
+    "categories": {
+      "sportsCar": "跑车",
+      "formulaCar": "方程式",
+      "road": "公路",
+      "oval": "椭圆赛道",
+      "dirtRoad": "泥地公路",
+      "dirtOval": "泥地椭圆"
+    },
+    "ratings": {
+      "title": "执照与 iRating",
+      "byCategory": "按类别",
+      "none": "还没有在线会话",
+      "showInChart": "在 iRating 图表中显示{{category}}",
+      "weekChange": "7 天变化"
+    },
+    "kpi": {
+      "sessions": "7 天内会话",
+      "sessionsSplit": "比赛 {{races}} · 练习 {{practices}}",
+      "laps": "圈数",
+      "incidentsPerLap": "每圈事故",
+      "sevenDays": "最近 7 天"
+    },
+    "irating": {
+      "title": "iRating",
+      "perSession": "按会话",
+      "noneInRange": "此期间没有会话",
+      "range": {
+        "30d": "30 天",
+        "90d": "90 天",
+        "all": "全部"
+      }
+    },
+    "recentSessions": {
+      "title": "最近会话",
+      "date": "日期",
+      "track": "赛道",
+      "car": "赛车",
+      "finish": "名次",
+      "bestLap": "最快圈",
+      "incidents": "事故",
+      "eventType": {
+        "practice": "练习",
+        "test": "测试"
+      }
+    },
+    "calendar": {
+      "title": "驾驶日历",
+      "timeInCar": "驾驶时长",
+      "less": "少",
+      "more": "多"
+    },
+    "tops": {
+      "cars": "常用赛车",
+      "tracks": "常用赛道",
+      "byTime": "驾驶时长"
+    },
+    "duration": {
+      "minutes": "{{minutes}} 分钟",
+      "hoursMinutes": "{{hours}} 小时 {{minutes}} 分钟",
+      "hours": "{{hours}} 小时"
+    },
+    "lastRace": {
+      "title": "上一场比赛",
+      "finish": "名次",
+      "bestLap": "最快圈",
+      "incidents": "事故",
+      "irating": "iRating",
+      "iratingUnknown": "在此类别的下一场会话后显示"
+    },
+    "now": {
+      "title": "当前",
+      "sim": "iRacing",
+      "connected": "已连接",
+      "notRunning": "未运行",
+      "layout": "布局",
+      "noLayout": "无",
+      "openLayouts": "打开布局",
+      "monitors": "显示器",
+      "widgetsOn": "已启用的小组件",
+      "browserScreens": "浏览器屏幕"
+    },
+    "autolog": {
+      "title": "iRacing 没有保存遥测文件",
+      "text": "统计数据来自 iRacing 每次上车时写入的文件，而它的 app.ini 中关闭了此功能。Marble Trace 可以帮你开启。",
+      "enable": "开启",
+      "closeGame": "请先关闭 iRacing",
+      "failed": "未能开启：{{reason}}"
     }
   }
 }

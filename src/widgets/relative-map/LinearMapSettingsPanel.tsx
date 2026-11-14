@@ -23,7 +23,7 @@ export const LinearMapSettingsPanel = observer(() => {
 
   return (
     <>
-      <Card title={t('settingsPanels.linearMap.moduleLayout')}>
+      <Card group="content">
         <div className={styles.fieldGroup}>
           <Row setting="orientation" stacked />
         </div>

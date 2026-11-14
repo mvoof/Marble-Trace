@@ -1,15 +1,10 @@
-import { useEffect, useLayoutEffect, useMemo } from 'react';
+import { useLayoutEffect } from 'react';
 import { reaction, runInAction } from 'mobx';
 
-import { useUnitsStore } from '@entities/app-settings/units-context';
 import { useMainLiveWidgetsStore } from '@entities/layout/main-live-widgets-context';
 import { useSettingsMutationLog } from '@entities/layout/mutation-log-context';
-import { seedInputHistory } from '@features/preview/preview-animator';
-import {
-  usePreviewWorldFactory,
-  type PreviewCoreHandle,
-} from '@features/preview/preview-host-context';
-import { seedScenario } from '@features/preview/scenarios';
+import type { PreviewCoreHandle } from '@features/preview/preview-host-context';
+import { useSeededPreviewWorld } from '@features/preview/use-seeded-preview-world';
 import type { WidgetDefaultConfig } from '@shared/contracts/widget-settings';
 
 import { useTrackRotationBridge } from './use-track-rotation-bridge';
@@ -42,15 +37,8 @@ const mirrorAllWidgets = (
 export const usePreviewWorld = (scenarioId: string) => {
   const liveWidgets = useMainLiveWidgetsStore();
   const settingsMutations = useSettingsMutationLog();
-  const units = useUnitsStore();
-  const createPreviewWorld = usePreviewWorldFactory();
-  const previewWorld = useMemo(
-    () => createPreviewWorld(),
-    [createPreviewWorld]
-  );
+  const previewWorld = useSeededPreviewWorld(scenarioId);
   const previewStore = previewWorld.core;
-
-  useEffect(() => () => previewStore.dispose(), [previewStore]);
 
   // The editor is the overlay in drag mode, seen from the main window, so the
   // widgets show the same in-place controls here — the track map's rotation
@@ -62,20 +50,6 @@ export const usePreviewWorld = (scenarioId: string) => {
   }, [previewStore]);
 
   useTrackRotationBridge(previewStore);
-
-  // The preview store carries its own units; mirror the app's, or the editor
-  // shows metres while the overlay shows feet.
-  useLayoutEffect(() => {
-    previewStore.units.setSystem(units.unitSystem);
-  }, [previewStore, units.unitSystem]);
-
-  useLayoutEffect(() => {
-    seedScenario(previewStore, scenarioId);
-  }, [previewStore, scenarioId]);
-
-  useEffect(() => {
-    seedInputHistory(previewStore);
-  }, [previewStore, scenarioId]);
 
   useLayoutEffect(() => {
     mirrorAllWidgets(liveWidgets.allWidgets, previewStore);

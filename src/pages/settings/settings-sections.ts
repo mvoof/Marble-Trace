@@ -1,56 +1,45 @@
+import {
+  MENU_SEPARATOR,
+  type SectionMenuEntry,
+} from '@shared/ui/SectionedPage/section-menu';
 import { hasDevTools } from './dev-tools';
 
-/**
- * The settings navigation tree. One flat page of eleven cards made everything
- * equally hard to find, so the cards are split into sections and the sections
- * grouped; the nav shows the groups, the pane shows one section.
- */
+/** Every section the Settings page draws. */
 export type SettingsSectionId =
   | 'general'
   | 'updates'
   | 'about'
-  | 'companionApps'
   | 'overlay'
   | 'interaction'
-  | 'bindings'
-  | 'devices'
-  | 'trackMap'
-  | 'sharedValues'
-  | 'streamChat'
-  | 'remoteScreens'
   | 'maintenance'
   | 'telemetryInspector';
 
-export interface SettingsGroup {
-  /** i18n key under `settingsPage.nav.groups`. */
-  id: string;
-  sections: SettingsSectionId[];
-}
+/** The app's own settings, in the order the inner menu lists them. */
+const SETTINGS_SECTIONS = [
+  'general',
+  'overlay',
+  'interaction',
+  'updates',
+  'maintenance',
+  'about',
+] as const satisfies readonly SettingsSectionId[];
 
-export const SETTINGS_GROUPS: SettingsGroup[] = [
-  {
-    id: 'application',
-    sections: ['general', 'companionApps', 'updates', 'about'],
-  },
-  { id: 'overlay', sections: ['overlay', 'interaction'] },
-  { id: 'controls', sections: ['bindings', 'devices'] },
-  // Widget data: what the widgets draw from, and the values several of them
-  // read at once. The chat is not either of those — it is a source of its own,
-  // wired to an account rather than to a session, so it keeps its own group.
-  { id: 'data', sections: ['trackMap', 'sharedValues'] },
-  { id: 'chat', sections: ['streamChat'] },
-  { id: 'remote', sections: ['remoteScreens'] },
-  // The inspector is a developer tool and is left out of a release build.
-  {
-    id: 'maintenance',
-    sections: hasDevTools
-      ? ['maintenance', 'telemetryInspector']
-      : ['maintenance'],
-  },
-];
+/** What the Settings page itself shows; the rest lives on the feature pages. */
+export type SettingsMenuSectionId =
+  | (typeof SETTINGS_SECTIONS)[number]
+  | 'telemetryInspector';
 
-export const DEFAULT_SECTION: SettingsSectionId = 'general';
+/**
+ * The Settings page's inner menu. The telemetry inspector is a developer tool:
+ * set apart below a separator, and left out of a release build.
+ */
+export const settingsMenu = (
+  withDevTools: boolean
+): SectionMenuEntry<SettingsMenuSectionId>[] =>
+  withDevTools
+    ? [...SETTINGS_SECTIONS, MENU_SEPARATOR, 'telemetryInspector']
+    : [...SETTINGS_SECTIONS];
 
-export const groupOfSection = (section: SettingsSectionId): string =>
-  SETTINGS_GROUPS.find((group) => group.sections.includes(section))?.id ??
-  SETTINGS_GROUPS[0].id;
+export const SETTINGS_MENU = settingsMenu(hasDevTools);
+
+export const DEFAULT_SETTINGS_SECTION: SettingsMenuSectionId = 'general';

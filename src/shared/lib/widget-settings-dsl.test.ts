@@ -8,7 +8,9 @@ import {
   isValidDefault,
   nullable,
   num,
+  normalizeOrder,
   numRecord,
+  order,
   type SettingsOf,
 } from './widget-settings-dsl';
 
@@ -126,5 +128,70 @@ describe('isValidDefault', () => {
 
   it('refuses a default outside its own bounds', () => {
     expect(isValidDefault(num(5, { min: 10, max: 20 }))).toBe(false);
+  });
+});
+
+describe('order', () => {
+  const COLUMNS = ['pos', 'name', 'gap', 'tire'] as const;
+  const ORDERED = defineSettings('example', { columnOrder: order(COLUMNS) });
+
+  it('ships the members in their listed order', () => {
+    expect(ORDERED.defaults.columnOrder).toEqual([
+      'pos',
+      'name',
+      'gap',
+      'tire',
+    ]);
+  });
+
+  it('keeps a stored reorder', () => {
+    const parsed = ORDERED.parseOverrides({
+      columnOrder: ['gap', 'pos', 'tire', 'name'],
+    });
+
+    expect(parsed.overrides.columnOrder).toEqual([
+      'gap',
+      'pos',
+      'tire',
+      'name',
+    ]);
+    expect(parsed.rejected).toEqual([]);
+  });
+
+  it('rejects a value that is not a list of names', () => {
+    expect(ORDERED.parseOverrides({ columnOrder: 'gap' }).rejected).toEqual([
+      'columnOrder',
+    ]);
+    expect(ORDERED.parseOverrides({ columnOrder: [1, 2] }).rejected).toEqual([
+      'columnOrder',
+    ]);
+  });
+
+  it('drops names it no longer knows and repeats', () => {
+    expect(
+      normalizeOrder(['gap', 'gone', 'pos', 'gap', 'name', 'tire'], COLUMNS)
+    ).toEqual(['gap', 'pos', 'name', 'tire']);
+  });
+
+  it('puts a member the stored list lacks after its shipped neighbour', () => {
+    expect(normalizeOrder(['tire', 'pos', 'gap'], COLUMNS)).toEqual([
+      'tire',
+      'pos',
+      'name',
+      'gap',
+    ]);
+  });
+
+  it('puts a missing first member first', () => {
+    expect(normalizeOrder(['gap', 'name', 'tire'], COLUMNS)).toEqual([
+      'pos',
+      'gap',
+      'name',
+      'tire',
+    ]);
+  });
+
+  it('accepts its own shipped value', () => {
+    expect(isValidDefault(order(COLUMNS))).toBe(true);
   });
 });

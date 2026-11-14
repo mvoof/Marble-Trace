@@ -1,41 +1,27 @@
-.page {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  min-width: 0;
-}
-
-.header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: rem(16);
-  margin-bottom: rem(16);
-  flex-wrap: wrap;
-  flex-shrink: 0;
-}
-
 .body {
   flex: 1;
   min-height: 0;
 }
 
-.bodyScroll {
-  flex: 1;
-  min-height: 0;
-  overflow-y: auto;
+// The save bar stays in sight at the foot of a long section.
+.stickyBar {
+  position: sticky;
+  bottom: 0;
 }
 
-.column {
-  max-width: rem(1120);
-  margin: 0 auto;
+// The printable sheet as it will print: a paper page inside the card.
+.sheet {
+  display: block;
+  width: 100%;
+  height: rem(640);
+  margin-top: rem(12);
+  border: 1px solid $sys-border-sub;
+  border-radius: rem(4);
+  background: #fff;
 }
 
-.title {
-  font-size: rem(20);
-  font-weight: 600;
-  color: $sys-text-primary;
-  margin: 0;
+.fileAlert {
+  margin-top: rem(12);
 }
 
 .alert {

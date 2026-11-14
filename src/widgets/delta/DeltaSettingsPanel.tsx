@@ -68,8 +68,7 @@ export const DeltaSettingsPanel = observer(() => {
         </div>
       </Card>
 
-      <Card title={t('settingsPanels.delta.visibility')}>
-        <Row setting="hideWhenNoReference" />
+      <Card group="content">
         <Row setting="showGauge" />
       </Card>
 
@@ -90,6 +89,10 @@ export const DeltaSettingsPanel = observer(() => {
             onChange={(value) => update({ flashDuration: value })}
           />
         </DependentBlock>
+      </Card>
+
+      <Card group="behaviour">
+        <Row setting="hideWhenNoReference" />
       </Card>
     </>
   );

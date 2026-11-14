@@ -8,7 +8,7 @@ import {
   saveSettingsFile,
 } from '@shared/api/settings.service';
 import type { UnitSystem } from '@shared/contracts/domain';
-import type { SessionContext } from '@shared/contracts/widget-settings';
+import type { AutoSwitchRule } from '@shared/contracts/widget-settings';
 import type { AppSettings } from '@entities/app-settings/app-settings.store';
 import type { MainRoot } from '@app/roots/main-root';
 import type { BindingMap } from '@shared/contracts/input-bindings';
@@ -46,7 +46,8 @@ export interface Settings {
   widgetTemplates: Record<string, StoredTemplate>;
   layouts: StoredLayout[];
   activeLayoutId: string | null;
-  sessionLayouts?: Record<SessionContext, string | null>;
+  /** Since schema v7; before it, `sessionLayouts` (context → layout id). */
+  autoSwitchRules?: AutoSwitchRule[];
   /**
    * App-level input bindings, and only the ones the user changed — an action
    * absent here takes the registry default. Deliberately outside `layouts`: one
@@ -87,8 +88,8 @@ export const hydrateStores = (
       );
     }
 
-    if (loadedSettings.sessionLayouts) {
-      root.layouts.setSessionLayouts(loadedSettings.sessionLayouts);
+    if (loadedSettings.autoSwitchRules) {
+      root.layouts.setAutoSwitchRules(loadedSettings.autoSwitchRules);
     }
 
     root.bindings.applyBindings(loadedSettings.bindings);
@@ -108,7 +109,7 @@ export const buildSettings = (root: MainRoot): Settings => ({
   widgetTemplates: encodeTemplates(root.widgetDefaults.widgets.values()),
   layouts: root.layouts.layouts.map(encodeLayout),
   activeLayoutId: root.layouts.liveLayoutId,
-  sessionLayouts: root.layouts.sessionLayouts,
+  autoSwitchRules: root.layouts.autoSwitchRules,
   bindings: root.bindings.overrides,
   inputDevices: root.deviceInput.knownDevices,
 });

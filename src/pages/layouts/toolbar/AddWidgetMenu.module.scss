@@ -1,0 +1,138 @@
+.search {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: rem(8);
+  padding: rem(10) rem(12);
+  border-bottom: 1px solid $sys-border-sub;
+  color: $sys-text-muted;
+}
+
+.searchInput {
+  flex: 1 1 auto;
+  min-width: 0;
+  background: transparent;
+  border: 0;
+  outline: none;
+  color: $sys-text-primary;
+  font: inherit;
+  font-size: rem(12.5);
+
+  &::placeholder {
+    color: $sys-text-muted;
+  }
+}
+
+.targets {
+  display: flex;
+  flex: none;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: rem(4);
+  padding: rem(8) rem(12);
+  border-bottom: 1px solid $sys-border-sub;
+}
+
+.targetsLabel {
+  margin-right: rem(2);
+  color: $sys-text-muted;
+  font-size: rem(11);
+}
+
+.target {
+  padding: rem(2) rem(8);
+  background: $sys-bg-raised;
+  border: 1px solid $sys-border-main;
+  border-radius: rem(999);
+  color: $sys-text-secondary;
+  font-size: rem(11);
+  font-family: inherit;
+  cursor: pointer;
+
+  &:hover {
+    color: $sys-text-primary;
+  }
+}
+
+.targetOn {
+  background: $sys-accent;
+  border-color: $sys-accent;
+  color: $sys-bg-main;
+  font-weight: 600;
+
+  &:hover {
+    color: $sys-bg-main;
+  }
+}
+
+.list {
+  flex: 1 1 auto;
+  min-height: 0;
+  padding: rem(4);
+  overflow-y: auto;
+}
+
+.section + .section {
+  margin-top: rem(4);
+}
+
+.sectionTitle {
+  padding: rem(6) rem(8) rem(2);
+  color: $sys-text-muted;
+  font-size: rem(10.5);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: rem(8);
+  width: 100%;
+  height: rem(28);
+  padding: 0 rem(8);
+  background: transparent;
+  border: 0;
+  border-radius: rem(6);
+  color: $sys-text-secondary;
+  font-size: rem(12);
+  text-align: left;
+  cursor: pointer;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: $sys-text-primary;
+  }
+}
+
+// What Enter adds while a search is typed.
+.rowFirst {
+  background: rgba(255, 255, 255, 0.05);
+  color: $sys-text-primary;
+}
+
+.rowLabel {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.onScreen {
+  flex: none;
+  padding: rem(1) rem(6);
+  background: rgba($sys-up, 0.12);
+  border: 1px solid rgba($sys-up, 0.32);
+  border-radius: rem(5);
+  color: $sys-up;
+  font-size: rem(10);
+}
+
+.empty {
+  padding: rem(16) rem(8);
+  color: $sys-text-muted;
+  font-size: rem(12);
+  text-align: center;
+}

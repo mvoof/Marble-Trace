@@ -2,13 +2,15 @@
   width: 100%;
   height: 100%;
   display: flex;
-  align-items: center;
-  justify-content: center;
   overflow: auto;
   padding: sp(xl);
 }
 
+// Centred by auto margins, not by the stage's alignment: a widget bigger than
+// the stage then starts at its top-left edge and scrolls, where centring
+// would push its top (a table's header) and left out of reach.
 .widgetInner {
+  margin: auto;
   position: relative;
   border-radius: rem(6);
   border: 2px solid;

@@ -21,7 +21,7 @@ export const savedSettingsSignal = (root: MainRoot): unknown[] => [
   JSON.stringify(root.appSettings.appSettings),
   root.units.unitSystem,
   root.layouts.liveLayoutId,
-  JSON.stringify(root.layouts.sessionLayouts),
+  JSON.stringify(root.layouts.autoSwitchRules),
   JSON.stringify(root.deviceInput.knownDevices),
 ];
 

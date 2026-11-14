@@ -1,5 +1,4 @@
 import { observer } from 'mobx-react-lite';
-import { useTranslation } from 'react-i18next';
 import styles from '@features/widget-settings/WidgetSettings.module.scss';
 import { Card } from '@features/widget-settings/Card';
 import { schemaRows } from '@features/widget-settings/schema-rows';
@@ -33,10 +32,8 @@ const CELL_TOGGLES = [
 ] as const;
 
 export const EnginePanelSettingsPanel = observer(() => {
-  const { t } = useTranslation('widgets');
-
   return (
-    <Card title={t('settingsPanels.enginePanel.moduleParameters')}>
+    <Card group="content">
       <div className={styles.fieldGroup}>
         <Row setting="highlightChanges" />
       </div>

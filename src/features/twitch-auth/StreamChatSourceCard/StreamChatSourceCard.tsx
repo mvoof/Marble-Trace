@@ -5,10 +5,16 @@ import { Button, Input, Switch, Tag } from 'antd';
 import { useAppSettingsStore } from '@entities/app-settings/app-settings-context';
 import { useTwitchAuthStore } from '@features/twitch-auth/twitch-auth-context';
 
+import { SettingsCard } from '@shared/ui/SettingsCard/SettingsCard';
+
 import styles from './StreamChatSourceCard.module.scss';
 
+// Services' own names: not translated.
+const TWITCH = 'Twitch';
+const YOUTUBE = 'YouTube';
+
 /**
- * Chat source settings. App-wide on purpose: a channel belongs to the account,
+ * Chat source settings, a card per service and one for what the chat shows. App-wide on purpose: a channel belongs to the account,
  * not to a layout, and one connection then serves every layout instead of
  * reconnecting whenever the active layout changes.
  */
@@ -22,10 +28,8 @@ export const StreamChatSourceCard = observer(() => {
   const handleOpenActivate = () => twitchAuth.openActivationPage();
 
   return (
-    <div className={styles.card}>
-      <h3 className={styles.cardTitle}>{t('settingsPage.streamChat.title')}</h3>
-
-      <div className={styles.cardContent}>
+    <>
+      <SettingsCard title={TWITCH}>
         <div className={styles.fieldGroup}>
           <span className={styles.fieldLabel}>
             {t('settingsPage.streamChat.twitchChannel')}
@@ -45,66 +49,6 @@ export const StreamChatSourceCard = observer(() => {
             {t('settingsPage.streamChat.twitchChannelDesc')}
           </span>
         </div>
-
-        <div className={styles.fieldGroup}>
-          <span className={styles.fieldLabel}>
-            {t('settingsPage.streamChat.youtubeTarget')}
-          </span>
-
-          <Input
-            value={settings.streamChatYoutubeTarget}
-            placeholder={t('settingsPage.streamChat.youtubeTargetPlaceholder')}
-            onChange={(event) =>
-              appSettings.update({
-                streamChatYoutubeTarget: event.target.value,
-              })
-            }
-          />
-
-          <span className={styles.fieldDesc}>
-            {t('settingsPage.streamChat.youtubeTargetDesc')}
-          </span>
-        </div>
-
-        <div className={styles.fieldGroup}>
-          <div className={styles.fieldRow}>
-            <div className={styles.fieldTexts}>
-              <div className={styles.fieldTitle}>
-                {t('settingsPage.streamChat.hideCommands')}
-              </div>
-
-              <div className={styles.fieldDesc}>
-                {t('settingsPage.streamChat.hideCommandsDesc')}
-              </div>
-            </div>
-
-            <Switch
-              checked={settings.streamChatHideCommands}
-              onChange={(value) =>
-                appSettings.update({ streamChatHideCommands: value })
-              }
-            />
-          </div>
-        </div>
-
-        <div className={styles.fieldGroup}>
-          <span className={styles.fieldLabel}>
-            {t('settingsPage.streamChat.ignoredBots')}
-          </span>
-
-          <Input
-            value={settings.streamChatIgnoredBots}
-            onChange={(event) =>
-              appSettings.update({ streamChatIgnoredBots: event.target.value })
-            }
-          />
-
-          <span className={styles.fieldDesc}>
-            {t('settingsPage.streamChat.ignoredBotsDesc')}
-          </span>
-        </div>
-
-        <div className={styles.divider} />
 
         <div className={styles.fieldGroup}>
           <span className={styles.fieldLabel}>
@@ -200,7 +144,69 @@ export const StreamChatSourceCard = observer(() => {
             })}
           </span>
         )}
-      </div>
-    </div>
+      </SettingsCard>
+
+      <SettingsCard title={YOUTUBE}>
+        <div className={styles.fieldGroup}>
+          <span className={styles.fieldLabel}>
+            {t('settingsPage.streamChat.youtubeTarget')}
+          </span>
+
+          <Input
+            value={settings.streamChatYoutubeTarget}
+            placeholder={t('settingsPage.streamChat.youtubeTargetPlaceholder')}
+            onChange={(event) =>
+              appSettings.update({
+                streamChatYoutubeTarget: event.target.value,
+              })
+            }
+          />
+
+          <span className={styles.fieldDesc}>
+            {t('settingsPage.streamChat.youtubeTargetDesc')}
+          </span>
+        </div>
+      </SettingsCard>
+
+      <SettingsCard title={t('settingsPage.streamChat.title')}>
+        <div className={styles.fieldGroup}>
+          <div className={styles.fieldRow}>
+            <div className={styles.fieldTexts}>
+              <div className={styles.fieldTitle}>
+                {t('settingsPage.streamChat.hideCommands')}
+              </div>
+
+              <div className={styles.fieldDesc}>
+                {t('settingsPage.streamChat.hideCommandsDesc')}
+              </div>
+            </div>
+
+            <Switch
+              checked={settings.streamChatHideCommands}
+              onChange={(value) =>
+                appSettings.update({ streamChatHideCommands: value })
+              }
+            />
+          </div>
+        </div>
+
+        <div className={styles.fieldGroup}>
+          <span className={styles.fieldLabel}>
+            {t('settingsPage.streamChat.ignoredBots')}
+          </span>
+
+          <Input
+            value={settings.streamChatIgnoredBots}
+            onChange={(event) =>
+              appSettings.update({ streamChatIgnoredBots: event.target.value })
+            }
+          />
+
+          <span className={styles.fieldDesc}>
+            {t('settingsPage.streamChat.ignoredBotsDesc')}
+          </span>
+        </div>
+      </SettingsCard>
+    </>
   );
 });

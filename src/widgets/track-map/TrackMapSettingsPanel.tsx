@@ -71,7 +71,7 @@ export const TrackMapSettingsPanel = observer(() => {
 
   return (
     <>
-      <Card title={t('settingsPanels.trackMap.visualElements')}>
+      <Card group="content">
         <div className={styles.fieldGroup}>
           <Row setting="showSectorsOnMap" />
         </div>
@@ -83,9 +83,7 @@ export const TrackMapSettingsPanel = observer(() => {
         <div className={styles.fieldGroup}>
           <Row setting="classShapes" />
         </div>
-      </Card>
 
-      <Card title={t('settingsPanels.common.qualifying')}>
         <div className={styles.fieldGroup}>
           <Row setting="qualifyingVisibility" stacked />
         </div>
@@ -172,7 +170,7 @@ export const TrackMapSettingsPanel = observer(() => {
         </div>
       </Card>
 
-      <Card title={t('settingsPanels.trackMap.trackStyling')}>
+      <Card group="display">
         <GridRow gutter={[24, 24]}>
           {STYLING_KEYS.map((setting) => (
             <StylingCell key={setting} setting={setting} />

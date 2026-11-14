@@ -1,0 +1,53 @@
+.columns {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: rem(14);
+
+  // The cards sit side by side: their own bottom margin would only add height.
+  > section {
+    margin-bottom: 0;
+  }
+}
+
+.titleAside {
+  font-weight: 400;
+  color: $sys-text-muted;
+}
+
+.entry {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: rem(4) rem(10);
+  font-size: rem(13);
+
+  & + & {
+    margin-top: rem(12);
+  }
+}
+
+.name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: $sys-text-primary;
+}
+
+.time {
+  font-family: $font-mono;
+  font-variant-numeric: tabular-nums;
+  color: $sys-text-secondary;
+}
+
+.track {
+  grid-column: 1 / -1;
+  height: rem(4);
+  border-radius: rem(2);
+  background: $sys-bg-raised;
+}
+
+.bar {
+  display: block;
+  height: 100%;
+  border-radius: rem(2);
+  background: $sys-accent;
+}

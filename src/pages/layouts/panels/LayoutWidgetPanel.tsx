@@ -1,15 +1,19 @@
 import { observer } from 'mobx-react-lite';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Button, Popconfirm, Switch, Tooltip } from 'antd';
 import {
   ChevronDown,
   ChevronRight,
   Copy,
+  Eye,
+  EyeOff,
   Keyboard,
   Monitor,
+  Plus,
+  Search,
   TabletSmartphone,
   Trash2,
+  type LucideIcon,
 } from 'lucide-react';
 import type {
   LayoutMonitor,
@@ -17,38 +21,122 @@ import type {
 } from '@shared/contracts/widget-settings';
 import type { MonitorWidgetRow } from '@entities/layout/live-widgets.store';
 import { isRemoteMonitor } from '@shared/lib/remote-screen';
+import { cx } from '@shared/lib/class-names';
 import { useLayoutsStore } from '@entities/layout/layouts-context';
 import { useMainLiveWidgetsStore } from '@entities/layout/main-live-widgets-context';
 import { useLayoutEditorUiStore } from '@features/layout-editor/layout-editor-ui-context';
 
+import { AddWidgetPanel } from '../toolbar/AddWidgetMenu';
+import { ToolbarPopover } from '../toolbar/ToolbarPopover';
+import {
+  isPanelSearchShown,
+  panelLineCountOf,
+  placedWidgetRowsOf,
+  rowsMatching,
+} from './placed-widget-rows';
 import styles from './LayoutWidgetPanel.module.scss';
 
-/**
- * Whether the widget's hotkeys act on this instance, and a click to change
- * it.
- */
+const ROW_ICON_SIZE = 13;
+const HEADING_ICON_SIZE = 12;
+
+const RowIconButton = ({
+  icon: Icon,
+  title,
+  isOn,
+  isDanger = false,
+  isDisabled = false,
+  isHoverOnly = false,
+  onClick,
+}: {
+  icon: LucideIcon;
+  title: string;
+  isOn?: boolean;
+  isDanger?: boolean;
+  isDisabled?: boolean;
+  /** Shown on the row's hover, focus or selection only. */
+  isHoverOnly?: boolean;
+  onClick: () => void;
+}) => (
+  <button
+    type="button"
+    className={cx(
+      styles.rowButton,
+      isOn && styles.rowButtonOn,
+      isDanger && styles.rowButtonDanger,
+      isHoverOnly && styles.rowButtonHoverOnly
+    )}
+    title={title}
+    aria-label={title}
+    aria-pressed={isOn}
+    disabled={isDisabled}
+    onClick={(event) => {
+      event.stopPropagation();
+      onClick();
+    }}
+  >
+    <Icon size={ROW_ICON_SIZE} />
+  </button>
+);
+
+/** Whether the widget's hotkeys act on this instance, and a click to change it. */
 const HotkeyToggle = observer(({ widgetId }: { widgetId: string }) => {
   const liveWidgets = useMainLiveWidgetsStore();
   const { t } = useTranslation('main-app');
   const isOn = liveWidgets.hotkeysActOnWidget(widgetId);
-  const label = isOn
-    ? t('layoutWidgetPanel.hotkeysOn')
-    : t('layoutWidgetPanel.hotkeysOff');
 
   return (
-    <Tooltip title={label}>
-      <Button
-        size="small"
-        type="text"
-        className={isOn ? styles.hotkeyToggleOn : styles.hotkeyToggle}
-        aria-label={label}
-        aria-pressed={isOn}
-        icon={<Keyboard size={12} />}
-        onClick={() => liveWidgets.setHotkeysActOn(widgetId, !isOn)}
-      />
-    </Tooltip>
+    <RowIconButton
+      icon={Keyboard}
+      title={
+        isOn
+          ? t('layoutWidgetPanel.hotkeysOn')
+          : t('layoutWidgetPanel.hotkeysOff')
+      }
+      isOn={isOn}
+      isHoverOnly
+      onClick={() => liveWidgets.setHotkeysActOn(widgetId, !isOn)}
+    />
   );
 });
+
+/**
+ * One instance's eye. Hiding keeps the row in the list until the editor
+ * closes, so the same eye brings it back.
+ */
+const EyeToggle = observer(
+  ({
+    widget,
+    monitorName,
+    available,
+  }: {
+    widget: WidgetDefaultConfig;
+    monitorName: string;
+    available: boolean;
+  }) => {
+    const liveWidgets = useMainLiveWidgetsStore();
+    const editorUi = useLayoutEditorUiStore();
+    const { t } = useTranslation('main-app');
+    const isShown = widget.userSettings.enabled && available;
+
+    return (
+      <RowIconButton
+        icon={isShown ? Eye : EyeOff}
+        title={
+          isShown ? t('layoutWidgetPanel.hide') : t('layoutWidgetPanel.show')
+        }
+        isOn={isShown}
+        isDisabled={!available}
+        onClick={() => {
+          if (isShown) {
+            editorUi.keepInWidgetList(monitorName, widget.type);
+          }
+
+          liveWidgets.setWidgetEnabled(widget.id, !isShown);
+        }}
+      />
+    );
+  }
+);
 
 const useScrollIntoViewWhen = (isSelected: boolean) => {
   const rowRef = useRef<HTMLDivElement | null>(null);
@@ -63,229 +151,247 @@ const useScrollIntoViewWhen = (isSelected: boolean) => {
 };
 
 /**
- * One more instance of a widget on this monitor, below the widget's own row:
- * its own switch, its own selection, numbered so the user knows which one they
- * are about to hide.
+ * One line of the list: an instance with its eye, its name or copy number,
+ * and on hover its hotkeys and delete.
  */
-const InstanceRow = observer(
+const InstanceLine = observer(
   ({
     widget,
-    ordinal,
-    total,
+    monitorName,
     available,
+    isCopy,
+    children,
+    deleteTitle,
+    onDelete,
   }: {
     widget: WidgetDefaultConfig;
-    ordinal: number;
-    total: number;
+    monitorName: string;
     available: boolean;
+    isCopy: boolean;
+    children: ReactNode;
+    deleteTitle: string;
+    onDelete: () => void;
   }) => {
-    const liveWidgets = useMainLiveWidgetsStore();
     const editorUi = useLayoutEditorUiStore();
-    const { t } = useTranslation('main-app');
     const isSelected = editorUi.selectedWidgetId === widget.id;
     const rowRef = useScrollIntoViewWhen(isSelected);
 
     return (
       <div
         ref={rowRef}
-        className={`${styles.row} ${styles.instanceRow} ${
-          isSelected ? styles.selected : ''
-        } ${!available ? styles.disabled : ''}`}
+        className={cx(
+          styles.row,
+          isCopy && styles.copyRow,
+          isSelected && styles.selected,
+          !available && styles.disabled,
+          !widget.userSettings.enabled && styles.hidden
+        )}
       >
-        <Switch
-          size="small"
-          checked={widget.userSettings.enabled && available}
-          disabled={!available}
-          onChange={(checked) =>
-            liveWidgets.setWidgetEnabled(widget.id, checked)
-          }
+        <EyeToggle
+          widget={widget}
+          monitorName={monitorName}
+          available={available}
         />
 
         <button
           type="button"
           className={styles.label}
-          aria-label={t('layoutWidgetPanel.copyTooltip')}
           onClick={() => editorUi.selectWidget(widget.id)}
         >
-          <Tooltip title={t('layoutWidgetPanel.copyTooltip')}>
-            <span className={styles.copyTag}>
-              <Copy size={10} />
-              {ordinal}/{total}
-            </span>
-          </Tooltip>
+          {children}
         </button>
 
         <HotkeyToggle widgetId={widget.id} />
 
-        <Popconfirm
-          title={t('layoutWidgetPanel.deleteCopyConfirm')}
-          okText={t('layoutWidgetPanel.deleteCopyOk')}
-          okButtonProps={{ danger: true }}
-          cancelText={t('layoutEditor.cancel')}
-          onConfirm={() => {
-            liveWidgets.removeWidgetCopy(widget.id);
-
-            // The copy the selection named is gone.
-            if (isSelected) {
-              editorUi.selectWidget(null);
-            }
-          }}
-        >
-          <Button
-            size="small"
-            type="text"
-            danger
-            aria-label={t('layoutWidgetPanel.deleteCopyConfirm')}
-            icon={<Trash2 size={12} />}
-          />
-        </Popconfirm>
+        <RowIconButton
+          icon={Trash2}
+          title={deleteTitle}
+          isDanger
+          isHoverOnly
+          onClick={onDelete}
+        />
       </div>
     );
   }
 );
 
-/**
- * A widget on one monitor's list. The switch speaks for this monitor only:
- * on puts the widget here — switching an instance already here back on, or
- * making one — and off takes every instance of it off this monitor.
- */
+/** A widget on one monitor's list, its copies there nested under it. */
 const WidgetTypeRow = observer(
   ({ row, monitorName }: { row: MonitorWidgetRow; monitorName: string }) => {
     const liveWidgets = useMainLiveWidgetsStore();
     const editorUi = useLayoutEditorUiStore();
+    const { t } = useTranslation('main-app');
     const { instances, available } = row;
-    const [first] = instances;
-    const isOn = instances.some((widget) => widget.userSettings.enabled);
-    const isSelected =
-      first !== undefined && editorUi.selectedWidgetId === first.id;
-    const rowRef = useScrollIntoViewWhen(isSelected);
+    const [first, ...copies] = instances;
 
-    const handleToggle = (checked: boolean) => {
-      const switchedOn = liveWidgets.setTypeEnabledOnMonitor(
-        row.type,
-        monitorName,
-        checked
-      );
+    if (!first) {
+      return null;
+    }
 
-      if (switchedOn !== null) {
-        editorUi.selectWidget(switchedOn);
+    const handleRemoveType = () => {
+      const selectedId = editorUi.selectedWidgetId;
+
+      liveWidgets.removeTypeFromMonitor(row.type, monitorName);
+      editorUi.forgetInWidgetList(monitorName, row.type);
+
+      // A copy the selection named is gone; the first instance is hidden.
+      if (instances.some((widget) => widget.id === selectedId)) {
+        editorUi.selectWidget(null);
+      }
+    };
+
+    const handleRemoveCopy = (copyId: string) => {
+      liveWidgets.removeWidgetCopy(copyId);
+
+      if (editorUi.selectedWidgetId === copyId) {
+        editorUi.selectWidget(null);
       }
     };
 
     return (
       <>
-        <div
-          ref={rowRef}
-          className={`${styles.row} ${isSelected ? styles.selected : ''} ${
-            !available ? styles.disabled : ''
-          }`}
+        <InstanceLine
+          widget={first}
+          monitorName={monitorName}
+          available={available}
+          isCopy={false}
+          deleteTitle={t('layoutWidgetPanel.removeWidget')}
+          onDelete={handleRemoveType}
         >
-          <Switch
-            size="small"
-            checked={isOn && available}
-            disabled={!available}
-            onChange={handleToggle}
-          />
+          <span className={styles.name}>{row.label}</span>
+        </InstanceLine>
 
-          <button
-            type="button"
-            className={styles.label}
-            disabled={first === undefined}
-            onClick={() => first && editorUi.selectWidget(first.id)}
+        {copies.map((copy, index) => (
+          <InstanceLine
+            key={copy.id}
+            widget={copy}
+            monitorName={monitorName}
+            available={available}
+            isCopy
+            deleteTitle={t('layoutWidgetPanel.deleteCopy')}
+            onDelete={() => handleRemoveCopy(copy.id)}
           >
-            {row.label}
-          </button>
-
-          {first !== undefined && <HotkeyToggle widgetId={first.id} />}
-        </div>
-
-        {instances.length > 1 &&
-          instances
-            .slice(1)
-            .map((widget, index) => (
-              <InstanceRow
-                key={widget.id}
-                widget={widget}
-                ordinal={index + 2}
-                total={instances.length}
-                available={available}
-              />
-            ))}
+            <span
+              className={styles.copyTag}
+              title={t('layoutWidgetPanel.copyTooltip')}
+            >
+              <Copy size={10} />
+              {index + 2}/{instances.length}
+            </span>
+          </InstanceLine>
+        ))}
       </>
     );
   }
 );
 
-const ScreenHeading = observer(
-  ({
-    monitor,
-    isCollapsed,
-    onToggle,
-  }: {
-    monitor: LayoutMonitor;
-    isCollapsed: boolean;
-    onToggle: () => void;
-  }) => {
-    const liveWidgets = useMainLiveWidgetsStore();
-    const Icon = isRemoteMonitor(monitor) ? TabletSmartphone : Monitor;
-    const Chevron = isCollapsed ? ChevronRight : ChevronDown;
-    const switchedOn = liveWidgets.widgetsOnMonitorNamed(monitor.name).length;
+/** "+" or "+ Widget": the widget menu aimed at one monitor. */
+const AddToMonitor = observer(
+  ({ monitorName, label }: { monitorName: string; label?: string }) => {
+    const { t } = useTranslation('main-app');
+    const title = t('layoutWidgetPanel.addTo', { monitor: monitorName });
 
     return (
-      <button
-        type="button"
-        className={styles.screenHeading}
-        aria-expanded={!isCollapsed}
-        onClick={onToggle}
+      <ToolbarPopover
+        isWide
+        isDetached
+        trigger={({ isOpen, toggle }) => (
+          <button
+            type="button"
+            className={cx(
+              label ? styles.addButton : styles.addIcon,
+              isOpen && styles.addOpen
+            )}
+            title={title}
+            aria-label={title}
+            aria-expanded={isOpen}
+            onClick={toggle}
+          >
+            <Plus size={HEADING_ICON_SIZE} />
+            {label}
+          </button>
+        )}
       >
-        <Chevron size={12} />
-
-        <Icon size={12} />
-
-        <span className={styles.screenName}>{monitor.name}</span>
-
-        <span className={styles.screenSize}>
-          {monitor.bounds.width}×{monitor.bounds.height}
-        </span>
-
-        {/* What a folded screen still has to say: how much is on it. */}
-        <span className={styles.screenCount}>{switchedOn}</span>
-      </button>
+        {({ isOpen, close }) =>
+          isOpen && (
+            <AddWidgetPanel targetMonitorName={monitorName} onAdded={close} />
+          )
+        }
+      </ToolbarPopover>
     );
   }
 );
 
-const ScreenGroup = observer(({ monitor }: { monitor: LayoutMonitor }) => {
-  const liveWidgets = useMainLiveWidgetsStore();
-  const [isCollapsed, setIsCollapsed] = useState(false);
+const ScreenGroup = observer(
+  ({
+    monitor,
+    rows,
+    query,
+  }: {
+    monitor: LayoutMonitor;
+    rows: MonitorWidgetRow[];
+    query: string;
+  }) => {
+    const { t } = useTranslation('main-app');
+    const [isCollapsed, setIsCollapsed] = useState(false);
+    const Icon = isRemoteMonitor(monitor) ? TabletSmartphone : Monitor;
+    const Chevron = isCollapsed ? ChevronRight : ChevronDown;
+    const shownRows = rowsMatching(rows, query);
 
-  return (
-    <div className={styles.screenGroup}>
-      <ScreenHeading
-        monitor={monitor}
-        isCollapsed={isCollapsed}
-        onToggle={() => setIsCollapsed((collapsed) => !collapsed)}
-      />
+    return (
+      <div className={styles.screenGroup}>
+        <div className={styles.screenHeading}>
+          <button
+            type="button"
+            className={styles.screenToggle}
+            aria-expanded={!isCollapsed}
+            onClick={() => setIsCollapsed((collapsed) => !collapsed)}
+          >
+            <Chevron size={HEADING_ICON_SIZE} />
 
-      {!isCollapsed &&
-        liveWidgets
-          .monitorWidgetRows(monitor.name)
-          .map((row) => (
+            <Icon size={HEADING_ICON_SIZE} />
+
+            <span className={styles.screenName}>{monitor.name}</span>
+
+            <span className={styles.screenSize}>
+              {monitor.bounds.width}×{monitor.bounds.height}
+            </span>
+
+            {/* What a folded screen still has to say: how much is on it. */}
+            <span className={styles.screenCount}>{panelLineCountOf(rows)}</span>
+          </button>
+
+          <AddToMonitor monitorName={monitor.name} />
+        </div>
+
+        {!isCollapsed && rows.length === 0 && (
+          <div className={styles.empty}>
+            <span>{t('layoutWidgetPanel.empty')}</span>
+
+            <AddToMonitor
+              monitorName={monitor.name}
+              label={t('layoutEditor.addWidget')}
+            />
+          </div>
+        )}
+
+        {!isCollapsed &&
+          shownRows.map((row) => (
             <WidgetTypeRow
               key={row.type}
               row={row}
               monitorName={monitor.name}
             />
           ))}
-    </div>
-  );
-});
+      </div>
+    );
+  }
+);
 
 /**
- * The layout editor's widget list: one list per screen of the layout, each
- * naming every widget the app ships with a switch of its own. Every screen owns
- * its own set — switching a widget on here puts it on this screen, nowhere
- * else.
+ * The layout editor's widget list: the widgets placed on each screen of the
+ * layout — on the screen in focus alone in full size. Adding goes through
+ * the widget menu, from the bar or from a screen's own "+".
  *
  * The list only says what there is and what is selected. Everything that acts
  * on a widget, its settings included, lives in the inspector on the other side
@@ -293,13 +399,65 @@ const ScreenGroup = observer(({ monitor }: { monitor: LayoutMonitor }) => {
  */
 export const LayoutWidgetPanel = observer(() => {
   const layouts = useLayoutsStore();
-  const monitors = layouts.editingLayout?.monitors ?? [];
+  const liveWidgets = useMainLiveWidgetsStore();
+  const editorUi = useLayoutEditorUiStore();
+  const { t } = useTranslation('main-app');
+  const [query, setQuery] = useState('');
+  const allMonitors = layouts.editingLayout?.monitors ?? [];
+  const focused = editorUi.focusedMonitorName;
+  const monitors =
+    focused === null
+      ? allMonitors
+      : allMonitors.filter((monitor) => monitor.name === focused);
+  const groups = monitors.map((monitor) => ({
+    monitor,
+    rows: placedWidgetRowsOf(
+      liveWidgets.monitorWidgetRows(monitor.name),
+      (type) => editorUi.isKeptInWidgetList(monitor.name, type)
+    ),
+  }));
+  const lineCount = groups.reduce(
+    (total, group) => total + panelLineCountOf(group.rows),
+    0
+  );
+  const isSearchShown = isPanelSearchShown(lineCount);
+  const activeQuery = isSearchShown ? query : '';
+  const hasMatch =
+    activeQuery.trim() === '' ||
+    groups.some((group) => rowsMatching(group.rows, activeQuery).length > 0);
+
+  // What was hidden from the list is shown in it only while the editor is open.
+  useEffect(() => () => editorUi.forgetWidgetListKeeps(), [editorUi]);
 
   return (
-    <div className={styles.list}>
-      {monitors.map((monitor) => (
-        <ScreenGroup key={monitor.name} monitor={monitor} />
-      ))}
+    <div className={styles.root}>
+      {isSearchShown && (
+        <div className={styles.search}>
+          <Search size={HEADING_ICON_SIZE} />
+
+          <input
+            className={styles.searchInput}
+            placeholder={t('layoutWidgetPanel.search')}
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+          />
+        </div>
+      )}
+
+      <div className={styles.list}>
+        {groups.map(({ monitor, rows }) => (
+          <ScreenGroup
+            key={monitor.name}
+            monitor={monitor}
+            rows={rows}
+            query={activeQuery}
+          />
+        ))}
+
+        {!hasMatch && (
+          <div className={styles.noMatch}>{t('layoutWidgetPanel.noMatch')}</div>
+        )}
+      </div>
     </div>
   );
 });

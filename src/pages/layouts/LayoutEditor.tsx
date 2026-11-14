@@ -9,6 +9,7 @@ import { cx } from '@shared/lib/class-names';
 
 import { LayoutCanvas } from './canvas/LayoutCanvas';
 import { LayoutList } from './list/LayoutList';
+import { MonitorMap, MonitorMapFolded } from './monitor-map/MonitorMap';
 import { EditorSidePanel } from './panels/EditorSidePanel';
 import { LayoutWidgetPanel } from './panels/LayoutWidgetPanel';
 import { WidgetInspector } from './panels/WidgetInspector';
@@ -72,6 +73,9 @@ export const LayoutEditor = observer(
     useEffect(() => {
       if (activeMode !== 'editor') {
         layoutEditor.setOpen(false);
+        // The next layout opened starts on the overview, not on a screen
+        // this one had in focus.
+        editorUi.showOverview();
 
         return;
       }
@@ -81,7 +85,7 @@ export const LayoutEditor = observer(
       return () => {
         layoutEditor.setOpen(false);
       };
-    }, [activeMode, layoutEditor]);
+    }, [activeMode, layoutEditor, editorUi]);
 
     useEffect(() => {
       const onFullscreenChange = () =>
@@ -93,7 +97,7 @@ export const LayoutEditor = observer(
         document.removeEventListener('fullscreenchange', onFullscreenChange);
     }, [editorUi]);
 
-    const isFullscreen = editorUi.isFullscreen;
+    const isCanvasOnly = editorUi.isCanvasOnly;
     const dialogContainer = () => rootRef.current ?? document.body;
 
     if (activeMode === 'list') {
@@ -103,7 +107,7 @@ export const LayoutEditor = observer(
     return (
       <ConfigProvider getPopupContainer={dialogContainer}>
         <div
-          className={cx(styles.root, isFullscreen && styles.rootFullscreen)}
+          className={cx(styles.root, isCanvasOnly && styles.rootFullscreen)}
           ref={rootRef}
         >
           <EditorToolbar
@@ -114,34 +118,48 @@ export const LayoutEditor = observer(
           />
 
           <div
-            className={cx(styles.body, isFullscreen && styles.bodyFullscreen)}
+            className={cx(
+              styles.workspace,
+              isCanvasOnly && styles.workspaceFullscreen
+            )}
           >
-            <EditorSidePanel
-              side="left"
-              title={t('layoutEditor.widgetsPanelTitle')}
-              isOpen={editorUi.isPanelOpen}
-              onClose={() => editorUi.setPanelOpen(false)}
-            >
-              <LayoutWidgetPanel />
-            </EditorSidePanel>
+            {!isCanvasOnly &&
+              (editorUi.isArrangementShown ? (
+                <MonitorMap />
+              ) : (
+                <MonitorMapFolded />
+              ))}
 
-            <main
-              className={cx(
-                styles.canvas,
-                isFullscreen && styles.canvasFullscreen
-              )}
+            <div
+              className={cx(styles.body, isCanvasOnly && styles.bodyFullscreen)}
             >
-              <LayoutCanvas />
-            </main>
+              <EditorSidePanel
+                side="left"
+                title={t('layoutEditor.widgetsPanelTitle')}
+                isOpen={editorUi.isPanelOpen}
+                onClose={() => editorUi.setPanelOpen(false)}
+              >
+                <LayoutWidgetPanel />
+              </EditorSidePanel>
 
-            <EditorSidePanel
-              side="right"
-              title={t('layoutEditor.inspectorTitle')}
-              isOpen={editorUi.isInspectorOpen}
-              onClose={() => editorUi.setInspectorOpen(false)}
-            >
-              <WidgetInspector />
-            </EditorSidePanel>
+              <main
+                className={cx(
+                  styles.canvas,
+                  isCanvasOnly && styles.canvasFullscreen
+                )}
+              >
+                <LayoutCanvas />
+              </main>
+
+              <EditorSidePanel
+                side="right"
+                title={t('layoutEditor.inspectorTitle')}
+                isOpen={editorUi.isInspectorOpen}
+                onClose={() => editorUi.setInspectorOpen(false)}
+              >
+                <WidgetInspector />
+              </EditorSidePanel>
+            </div>
           </div>
         </div>
       </ConfigProvider>

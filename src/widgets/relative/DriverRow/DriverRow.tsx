@@ -1,3 +1,4 @@
+import { Fragment, type ReactNode } from 'react';
 import { observer } from 'mobx-react-lite';
 
 import { useWidgetSettings } from '@entities/layout/useWidgetSettings';
@@ -6,7 +7,7 @@ import { CarNumberBadge } from '@entities/cars/driver-table/CarNumberBadge';
 import { DriverNameContent } from '@entities/cars/driver-table/DriverNameContent';
 import { driverRowStateOf } from '@entities/cars/driver-table/driver-row-state';
 import { DriverRowShell } from '@entities/cars/driver-table/DriverRowShell';
-import { RatingCells } from '@entities/cars/driver-table/RatingCells';
+import { RatingCell } from '@entities/cars/driver-table/RatingCell';
 import { usePlayerStore } from '@entities/player/player-context';
 import { TowTime } from '@entities/player/TowTime/TowTime';
 import { useSessionStore } from '@entities/session/session-context';
@@ -20,9 +21,12 @@ import {
   writeText,
 } from '@shared/ui/live/live-parts';
 import {
+  buildRelativeBlockEnds,
   buildRelativeGridTemplate,
   resolveRowPosition,
+  visibleRelativeColumns,
 } from '@widgets/relative/relative-utils';
+import type { RelativeColumn } from '@widgets/relative/relative-columns';
 
 import { TrackDistance } from '../TrackDistance/TrackDistance';
 import type { RelativeWidgetSettings } from '../settings-schema';
@@ -118,6 +122,90 @@ export const DriverRow = observer(({ carIdx, index }: DriverRowProps) => {
   });
 
   const position = resolveRowPosition(driver, settings.useLivePositions);
+  const blockEnds = buildRelativeBlockEnds(settings);
+
+  // The cell that closes a group of columns carries the rule after it.
+  const cellWithRule = (column: RelativeColumn, className: string): string =>
+    cx(className, blockEnds.has(column) && styles.blockEnd);
+
+  // One cell per visible column, drawn in the order the settings give.
+  const renderCell = (column: RelativeColumn): ReactNode => {
+    switch (column) {
+      case 'pos':
+        return (
+          <div className={cellWithRule('pos', styles.posBlock)}>
+            <span
+              className={styles.driverPosition}
+              style={
+                driver.isPlayer
+                  ? { color: settings.playerAccentColor }
+                  : undefined
+              }
+            >
+              {position}
+            </span>
+          </div>
+        );
+      case 'carNumber':
+        return (
+          <div className={cellWithRule('carNumber', styles.carNumberCell)}>
+            <CarNumberBadge
+              carNumber={driver.carNumber}
+              classColor={driver.carClassColor}
+            />
+          </div>
+        );
+      case 'countryFlag':
+        return (
+          <div className={cellWithRule('countryFlag', styles.countryFlagCell)}>
+            <CountryFlag flairId={driver.flairId} isAi={driver.isAi} />
+          </div>
+        );
+      case 'name':
+        return (
+          <div className={cellWithRule('name', styles.infoBlock)}>
+            <DriverNameContent
+              driver={driver}
+              state={state}
+              abbreviate={settings.abbreviateNames}
+              showDriverFlags={settings.showDriverFlags}
+              showRadioMark={settings.showRadioMark}
+              showPitIndicator={settings.showPitIndicator}
+              chipDetail={(status) =>
+                status === 'tow' && driver.isPlayer && player.isTowing ? (
+                  <TowTime />
+                ) : undefined
+              }
+              nameRef={parts.ref('name')}
+            />
+          </div>
+        );
+      case 'sr':
+      case 'ir':
+        return (
+          <RatingCell
+            column={column}
+            driver={driver}
+            settings={settings}
+            className={cellWithRule(column, styles.colRating)}
+          />
+        );
+      case 'gap':
+        return (
+          <div className={cellWithRule('gap', styles.f2Block)}>
+            <span ref={gapRef} className={styles.f2Time} />
+          </div>
+        );
+      case 'distance':
+        return (
+          <TrackDistance
+            carIdx={driver.carIdx}
+            isPaceCar={false}
+            className={cellWithRule('distance', '')}
+          />
+        );
+    }
+  };
 
   return (
     <DriverRowShell
@@ -131,68 +219,9 @@ export const DriverRow = observer(({ carIdx, index }: DriverRowProps) => {
       playerRowColor={settings.playerRowColor}
       data-relative-row
     >
-      <div className={styles.posBlock}>
-        <span
-          className={styles.driverPosition}
-          style={
-            driver.isPlayer ? { color: settings.playerAccentColor } : undefined
-          }
-        >
-          {position}
-        </span>
-      </div>
-
-      {settings.showCarNumber && (
-        <div className={styles.carNumberCell}>
-          <CarNumberBadge
-            carNumber={driver.carNumber}
-            classColor={driver.carClassColor}
-          />
-        </div>
-      )}
-
-      {settings.showCountryFlag && (
-        <div className={styles.countryFlagCell}>
-          <CountryFlag flairId={driver.flairId} isAi={driver.isAi} />
-        </div>
-      )}
-
-      <div className={cx(styles.infoBlock, styles.blockEnd)}>
-        <DriverNameContent
-          driver={driver}
-          state={state}
-          abbreviate={settings.abbreviateNames}
-          showDriverFlags={settings.showDriverFlags}
-          showRadioMark={settings.showRadioMark}
-          showPitIndicator={settings.showPitIndicator}
-          chipDetail={(status) =>
-            status === 'tow' && driver.isPlayer && player.isTowing ? (
-              <TowTime />
-            ) : undefined
-          }
-          nameRef={parts.ref('name')}
-        />
-      </div>
-
-      {/* The rule closes the rating group after whichever of the two ends it. */}
-      <RatingCells
-        driver={driver}
-        settings={settings}
-        cellClassName={(column) =>
-          cx(
-            styles.colRating,
-            (column === 'ir' || !settings.showIRating) && styles.blockEnd
-          )
-        }
-      />
-
-      <div className={styles.f2Block}>
-        <span ref={gapRef} className={styles.f2Time} />
-      </div>
-
-      {settings.showDistance && (
-        <TrackDistance carIdx={driver.carIdx} isPaceCar={false} />
-      )}
+      {visibleRelativeColumns(settings).map((column) => (
+        <Fragment key={column}>{renderCell(column)}</Fragment>
+      ))}
     </DriverRowShell>
   );
 });

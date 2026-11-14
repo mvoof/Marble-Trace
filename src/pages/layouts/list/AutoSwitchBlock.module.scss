@@ -1,0 +1,75 @@
+.description {
+  font-size: rem(13);
+  color: $sys-text-secondary;
+  margin: 0 0 rem(8);
+}
+
+.masterSwitch {
+  display: flex;
+  align-items: center;
+  gap: rem(8);
+  font-size: rem(13);
+  color: $sys-text-secondary;
+  cursor: pointer;
+}
+
+.rules {
+  display: flex;
+  flex-direction: column;
+  gap: rem(8);
+}
+
+// A rule as a small card, sized for the side column: session and class side
+// by side, the car under them, then the arrow, the layout it puts on screen
+// and the remove button.
+.rule {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-areas:
+    'context carClass'
+    'car car'
+    'target target';
+  align-items: center;
+  gap: rem(8);
+  padding: rem(10);
+  border: 1px solid $sys-border-sub;
+  border-radius: rem(8);
+}
+
+.context {
+  grid-area: context;
+}
+
+.carClass {
+  grid-area: carClass;
+}
+
+.car {
+  grid-area: car;
+}
+
+.target {
+  grid-area: target;
+  display: grid;
+  grid-template-columns: rem(16) minmax(0, 1fr) auto;
+  align-items: center;
+  gap: rem(8);
+}
+
+.empty {
+  margin: rem(8) 0;
+  font-size: rem(13);
+  color: $sys-text-muted;
+}
+
+.addRule {
+  margin-top: rem(10);
+}
+
+.arrow {
+  color: $sys-text-muted;
+}
+
+.select {
+  width: 100%;
+}

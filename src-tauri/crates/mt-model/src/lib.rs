@@ -98,5 +98,12 @@ pub fn register_types(types: &mut specta::TypeCollection) {
         .register::<app::voice::VoiceDraftCheck>()
         .register::<app::voice::PackFileError>()
         .register::<app::voice::VoiceRecognisedView>()
-        .register::<app::voice::VoiceQuestionPreview>();
+        .register::<app::voice::VoiceQuestionPreview>()
+        .register::<app::stats::StatsImportStatus>()
+        .register::<app::stats::RecentSession>()
+        .register::<app::stats::HomeStats>()
+        .register::<app::stats::AutologState>()
+        .register::<app::stats::StatsFolder>()
+        .register::<app::stats::SkippedFile>()
+        .register::<app::stats::KnownCar>();
 }

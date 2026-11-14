@@ -1,0 +1,42 @@
+.scroll {
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: rem(13);
+  color: $sys-text-primary;
+
+  th {
+    padding: rem(6) rem(10);
+    border-bottom: 1px solid $sys-border-sub;
+    text-align: left;
+    font-size: rem(12);
+    font-weight: 500;
+    color: $sys-text-muted;
+  }
+
+  td {
+    padding: rem(8) rem(10);
+    border-bottom: 1px solid $sys-border-sub;
+    white-space: nowrap;
+  }
+
+  tbody tr:last-child td {
+    border-bottom: 0;
+  }
+}
+
+.secondary {
+  color: $sys-text-secondary;
+}
+
+.muted {
+  color: $sys-text-muted;
+}
+
+.mono {
+  font-family: $font-mono;
+  font-variant-numeric: tabular-nums;
+}

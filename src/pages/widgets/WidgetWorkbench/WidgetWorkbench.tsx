@@ -5,11 +5,14 @@ import { Select } from 'antd';
 import { WidgetPreview } from '../WidgetPreview/WidgetPreview';
 import { WidgetSettings } from '@features/widget-settings/WidgetSettings';
 import { DefaultsEditorProvider } from '@features/widget-settings/WidgetEditorContext';
+import { WidgetBindingsSummary } from '@features/hotkey-bindings/WidgetBindingsSummary';
+import { useMainNavigationStore } from '@features/main-navigation/main-navigation-context';
 import {
   PREVIEW_SCENARIO_BY_ID,
   DEFAULT_PREVIEW_SCENARIO_ID,
 } from '@features/preview/scenarios';
 import { WIDGET_BY_ID } from '@entities/widget/widget-catalog';
+import type { WidgetPreviewPosition } from '@entities/app-settings/app-settings.store';
 import styles from './WidgetWorkbench.module.scss';
 
 const scenarioOption = (scenarioId: string) => {
@@ -62,12 +65,19 @@ const openingScenarioFor = (widgetId: string): string =>
   WIDGET_BY_ID.get(widgetId)?.previewScenarios?.[0] ??
   DEFAULT_PREVIEW_SCENARIO_ID;
 
-// Two-pane widget catalog workspace: live preview column on the left, widget
-// settings panel on the right. The parent owns which widget is active,
-// including the default-to-first fallback.
+// One widget's page: the live preview on top (or to the left), held in view
+// while the settings scroll. The parent owns which widget is active and where
+// the preview goes.
 export const WidgetWorkbench = observer(
-  ({ widgetId }: { widgetId: string | null }) => {
+  ({
+    widgetId,
+    previewPosition,
+  }: {
+    widgetId: string;
+    previewPosition: WidgetPreviewPosition;
+  }) => {
     const { t } = useTranslation('main-app');
+    const navigation = useMainNavigationStore();
     // Pinned to the widget it was picked on: a pick says "show me this state of
     // this widget", and carrying it to the next widget shows another domain's
     // state or, on a widget that cannot draw it, nothing at all.
@@ -75,12 +85,6 @@ export const WidgetWorkbench = observer(
       widgetId: string;
       scenarioId: string;
     } | null>(null);
-
-    if (!widgetId) {
-      return (
-        <div className={styles.empty}>{t('widgetWorkbench.noWidgets')}</div>
-      );
-    }
 
     const scenarioOptions = scenarioOptionsFor(widgetId);
     const isPickedHere =
@@ -92,7 +96,11 @@ export const WidgetWorkbench = observer(
 
     return (
       <DefaultsEditorProvider>
-        <div className={styles.root}>
+        <div
+          className={
+            previewPosition === 'left' ? styles.rootPreviewLeft : styles.root
+          }
+        >
           <div className={styles.previewColumn}>
             {scenarioOptions.length > 0 && (
               <div className={styles.scenarioBar}>
@@ -120,7 +128,19 @@ export const WidgetWorkbench = observer(
           </div>
 
           <div className={styles.settingsPane}>
-            <WidgetSettings widgetId={widgetId} />
+            {/* The page edits the widget's defaults, not a copy: the copy's
+                hotkey mark is set where copies are, in the layout editor. */}
+            <WidgetSettings
+              widgetId={widgetId}
+              hideHeader
+              openCards
+              hotkeys={
+                <WidgetBindingsSummary
+                  widgetType={widgetId}
+                  onOpenHotkeys={() => navigation.openHotkeys(widgetId)}
+                />
+              }
+            />
           </div>
         </div>
       </DefaultsEditorProvider>

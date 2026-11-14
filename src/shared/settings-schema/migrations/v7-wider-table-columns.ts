@@ -50,6 +50,11 @@ import {
  * from the copy that counted until now — see `liftFuelStrategy` — and dropped
  * from every copy and the template. An absent key stays absent: it is on the
  * shipped default.
+ *
+ * Auto-switch grew from one layout per session context into rules that may
+ * also name a car class and a car: `sessionLayouts` (context → layout id or
+ * null) became `autoSwitchRules`, one rule per assigned context, Garage first,
+ * naming any class and any car.
  */
 
 type TableSettings = Record<string, unknown>;
@@ -516,18 +521,48 @@ const liftFuelStrategy = (blob: SettingsBlob): SettingsBlob => {
     : lifted;
 };
 
+// The session contexts of v6, in the order their rules are written, frozen.
+const SESSION_CONTEXTS_V6: readonly string[] = [
+  'Garage',
+  'Practice',
+  'Qualify',
+  'Race',
+];
+
+const sessionLayoutsToRules = (blob: SettingsBlob): SettingsBlob => {
+  if (!('sessionLayouts' in blob)) {
+    return blob;
+  }
+
+  const { sessionLayouts, ...rest } = blob;
+  const assigned = asObject(sessionLayouts) ?? {};
+  const autoSwitchRules = SESSION_CONTEXTS_V6.filter(
+    (context) => typeof assigned[context] === 'string'
+  ).map((context) => ({
+    id: `session-${context.toLowerCase()}`,
+    context,
+    carClass: null,
+    carId: null,
+    layoutId: assigned[context],
+  }));
+
+  return { ...rest, autoSwitchRules };
+};
+
 export const v7WiderTableColumns: Migration = {
   to: 7,
   describe:
-    'Standings and Relative frames widened with their columns; Fuel, Lap Log and Sector Matrix widened to their new design widths; Sector Matrix predicted lap became a visibility choice; fuel strategy moved to app',
+    'Standings and Relative frames widened with their columns; Fuel, Lap Log and Sector Matrix widened to their new design widths; Sector Matrix predicted lap became a visibility choice; fuel strategy moved to app; session layouts became auto-switch rules',
   migrate: (blob: SettingsBlob): SettingsBlob =>
-    liftFuelStrategy(
-      patchStoredWidgetSettings(
-        widenTemplates(
-          mapEveryStoredWidget(blob, (widgets) => widgets.map(widenInstance))
-        ),
-        'sector-matrix',
-        predictedLapVisibility
+    sessionLayoutsToRules(
+      liftFuelStrategy(
+        patchStoredWidgetSettings(
+          widenTemplates(
+            mapEveryStoredWidget(blob, (widgets) => widgets.map(widenInstance))
+          ),
+          'sector-matrix',
+          predictedLapVisibility
+        )
       )
     ),
 };

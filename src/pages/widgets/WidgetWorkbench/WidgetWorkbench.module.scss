@@ -1,60 +1,79 @@
+// Below this the preview always goes on top, whatever the switch says.
+$narrow-window: 1100px;
+
+// The page scrolls as a whole: the preview stays in view while the settings
+// pass under (on top) or beside it (on the left).
 .root {
   display: flex;
+  flex-direction: column;
   width: 100%;
-  height: 100%;
-  min-height: 0;
-  gap: sp(lg);
+  gap: rem(16);
+}
+
+// Modifier declared after its base class.
+.rootPreviewLeft {
+  @extend .root;
+
+  flex-direction: row;
+  align-items: flex-start;
+
+  @media (max-width: $narrow-window) {
+    flex-direction: column;
+    align-items: stretch;
+  }
 }
 
 .previewColumn {
+  position: sticky;
+  // Right under the page's pinned title row.
+  top: 0;
+  z-index: 1;
   display: flex;
-  flex: 1 1 0;
-  min-width: 0;
   flex-direction: column;
-  gap: sp(sm);
+  gap: rem(8);
+  // Opaque, so the settings scrolling under it do not show through.
+  padding: rem(8) 0 rem(12);
+  background: $sys-bg-main;
+
+  .rootPreviewLeft & {
+    // Two thirds for the preview, a third for the settings.
+    width: calc((100% - #{rem(16)}) * 2 / 3);
+    flex: none;
+
+    @media (max-width: $narrow-window) {
+      width: auto;
+    }
+  }
 }
 
 .scenarioBar {
   display: flex;
   align-items: center;
-  gap: sp(sm);
+  gap: rem(8);
   flex: 0 0 auto;
 }
 
 .scenarioLabel {
-  color: #8b8e98;
-  font-family: $font-widget;
-  font-size: fs(sm);
+  color: $sys-text-secondary;
+  font-size: rem(12);
 }
 
+// The stage the widget stands on, like the mockup's: a quiet checkerboard in
+// a framed box, so the widget reads as an overlay over something.
 .previewPane {
-  flex: 1 1 0;
+  height: clamp(rem(220), 42vh, rem(460));
   min-width: 0;
-  border-radius: radius(lg);
+  border-radius: rem(10);
   overflow: hidden;
-  background:
-    radial-gradient(
-      circle at 30% 20%,
-      rgba(80, 90, 120, 0.25),
-      transparent 60%
-    ),
-    linear-gradient(135deg, #1a1c22 0%, #0d0e12 100%);
-  border: 1px solid #2a2c32;
+  background: repeating-conic-gradient(
+    $sys-bg-sunken 0 25%,
+    $sys-bg-main 0 50%
+  );
+  background-size: rem(16) rem(16);
+  border: 1px solid $sys-border-sub;
 }
 
 .settingsPane {
-  flex: 0 0 360px;
+  flex: 1;
   min-width: 0;
-  overflow-y: auto;
-  padding-right: sp(xs);
-}
-
-.empty {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  height: 100%;
-  color: #8b8e98;
-  font-family: $font-widget;
 }

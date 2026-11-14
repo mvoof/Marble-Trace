@@ -259,7 +259,8 @@ One description per setting, in the widget's slice (ADR-0008).
    (with `min` / `max` / `step` — out-of-range values are clamped on load),
    `choice` (string or number members; a choice several widgets share comes
    from `shared/contracts/widget-choices.ts`), `color`, `numRecord`,
-   `nullable(field)`. Export the type as
+   `order` (the order of a fixed list of names — a table's columns; a stored
+   list is made whole on load), `nullable(field)`. Export the type as
    `SettingsOf<typeof <NAME>_SETTINGS.shape>`. Every setting has a default, so
    none is optional and no read needs `?? fallback`.
 2. The `userSettings` block in your manifest — `enabled`, `x`, `y`,
@@ -309,7 +310,10 @@ by node-side tests, none of which should drag a React tree in. It carries `id`,
 step 3, and optionally `resolveLayoutChange`.
 
 The widget's place in every list follows from its `label` — lists are
-alphabetical, so there is no position to pick.
+alphabetical, so there is no position to pick. One exception, and not a
+position either: `tier: 'core'` puts a widget nearly every driver runs
+(Standings, Relative, Input Trace, the radars) in the first run of the Widgets
+page's menu. A new widget leaves it out.
 
 **`mount.ts`** — `{ id, component }`, four lines. A second file rather than a
 manifest field because the two change for unrelated reasons: the manifest when

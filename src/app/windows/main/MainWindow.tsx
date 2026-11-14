@@ -1,51 +1,33 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { Layout, ConfigProvider, theme, App as AntdApp } from 'antd';
 import { observer } from 'mobx-react-lite';
-import { useTranslation } from 'react-i18next';
 import { initMainSync } from '@app/sync/main/main-sync';
-import { WidgetList } from '@pages/widgets/WidgetList/WidgetList';
-import { WidgetWorkbench } from '@pages/widgets/WidgetWorkbench/WidgetWorkbench';
+import { WidgetsPage } from '@pages/widgets/WidgetsPage';
 import { LayoutEditor } from '@pages/layouts/LayoutEditor';
 import { SettingsPage } from '@pages/settings/SettingsPage';
 import { CrewPage } from '@pages/crew/CrewPage';
+import { HomePage } from '@pages/home/HomePage';
+import { HotkeysPage } from '@pages/hotkeys/HotkeysPage';
+import { ConnectionsPage } from '@pages/connections/ConnectionsPage';
+import { DataPage } from '@pages/data/DataPage';
 import { CrewLeaveDialog } from '@pages/crew/CrewLeaveDialog';
-import { useVoiceCrewStore } from '@features/voice-crew/voice-crew-context';
-import { AppHeader, type AppSection } from './AppHeader/AppHeader';
-import { AppFooter } from './AppFooter/AppFooter';
+import { useMainNavigationStore } from '@features/main-navigation/main-navigation-context';
+import { AppHeader } from './AppHeader/AppHeader';
 import { UpdateBanner } from './UpdateBanner/UpdateBanner';
 import { SettingsLockBanner } from './SettingsLockBanner/SettingsLockBanner';
 import styles from './MainWindow.module.scss';
 import { useSimStore } from '@entities/sim/sim-context';
 import { useMainRoot } from '@app/roots/main-root-context';
+import { useAutoHideScrollbars } from './use-auto-hide-scrollbars';
 
 const { Content } = Layout;
 
 export const MainWindow = observer(() => {
   const simStore = useSimStore();
   const root = useMainRoot();
-  const crew = useVoiceCrewStore();
-  const { t } = useTranslation('main-app');
+  const navigation = useMainNavigationStore();
 
-  const [activeSection, setActiveSection] = useState<AppSection>('layouts');
-  const [selectedWidgetId, setSelectedWidgetId] = useState<string | null>(null);
-  const [layoutsMode, setLayoutsMode] = useState<'list' | 'editor'>('list');
-  const [leavingFor, setLeavingFor] = useState<AppSection | null>(null);
-
-  // The crew's unsaved edits are saved or dropped before another section opens.
-  const changeSection = (next: AppSection) => {
-    if (activeSection === 'crew' && next !== 'crew' && crew.dirty) {
-      setLeavingFor(next);
-
-      return;
-    }
-
-    setActiveSection(next);
-  };
-
-  // Nothing selected yet falls back to the first widget in the catalog, so the
-  // workbench never has to report a default choice back up here.
-  const activeWidgetId =
-    selectedWidgetId ?? root.widgetDefaults.catalogWidgets[0]?.id ?? null;
+  useAutoHideScrollbars();
 
   useEffect(() => {
     void simStore.startStream();
@@ -108,12 +90,17 @@ export const MainWindow = observer(() => {
             colorTextQuaternary: '#15161a',
             handleBg: '#5e626d',
           },
+          // The mockup's switch: a sunken box, the chosen item raised in it.
           Segmented: {
-            itemSelectedBg: '#2a2c32',
-            itemSelectedColor: '#ffffff',
+            itemSelectedBg: '#1c1d22',
+            itemSelectedColor: '#e0e0e0',
             itemColor: '#8b8e98',
             itemHoverColor: '#e0e0e0',
-            trackBg: '#0d0e12',
+            itemHoverBg: 'transparent',
+            trackBg: '#0a0b0e',
+            trackPadding: 3,
+            borderRadius: 8,
+            borderRadiusSM: 6,
           },
           Input: {
             colorBgContainer: '#0d0e12',
@@ -133,21 +120,12 @@ export const MainWindow = observer(() => {
     >
       <AntdApp style={{ height: '100%' }}>
         <Layout className={styles.layout}>
-          <AppHeader
-            activeSection={activeSection}
-            onSectionChange={changeSection}
-          />
+          <AppHeader />
 
           <CrewLeaveDialog
-            open={leavingFor !== null}
-            onStay={() => setLeavingFor(null)}
-            onLeave={() => {
-              if (leavingFor !== null) {
-                setActiveSection(leavingFor);
-              }
-
-              setLeavingFor(null);
-            }}
+            open={navigation.isAskingToLeave}
+            onStay={() => navigation.stay()}
+            onLeave={() => navigation.leave()}
           />
 
           <SettingsLockBanner />
@@ -155,62 +133,83 @@ export const MainWindow = observer(() => {
           <UpdateBanner />
 
           <Content className={styles.content}>
-            {activeSection === 'settings' && (
-              <div className={styles.scrollContainer} key="settings">
+            {navigation.section === 'home' && (
+              <div className={styles.scrollContainer} key="home">
                 <div
                   className={`${styles.contentInner} ${styles.animateFadeIn}`}
                 >
-                  <SettingsPage />
+                  <HomePage />
                 </div>
               </div>
             )}
 
-            {activeSection === 'crew' && (
+            {navigation.section === 'data' && (
               <div
-                className={`${styles.sectionContainer} ${styles.animateFadeIn}`}
+                className={`${styles.pageContainer} ${styles.animateFadeIn}`}
+                key="data"
+              >
+                <DataPage />
+              </div>
+            )}
+
+            {navigation.section === 'connections' && (
+              <div
+                className={`${styles.pageContainer} ${styles.animateFadeIn}`}
+                key="connections"
+              >
+                <ConnectionsPage />
+              </div>
+            )}
+
+            {navigation.section === 'hotkeys' && (
+              <div className={styles.scrollContainer} key="hotkeys">
+                <div
+                  className={`${styles.contentInner} ${styles.animateFadeIn}`}
+                >
+                  <HotkeysPage />
+                </div>
+              </div>
+            )}
+
+            {navigation.section === 'settings' && (
+              <div
+                className={`${styles.pageContainer} ${styles.animateFadeIn}`}
+                key="settings"
+              >
+                <SettingsPage />
+              </div>
+            )}
+
+            {navigation.section === 'crew' && (
+              <div
+                className={`${styles.pageContainer} ${styles.animateFadeIn}`}
                 key="crew"
               >
                 <CrewPage />
               </div>
             )}
 
-            {activeSection === 'layouts' && (
+            {navigation.section === 'layouts' && (
               <div
                 className={`${styles.sectionContainer} ${styles.animateFadeIn}`}
                 key="layouts"
               >
                 <LayoutEditor
-                  mode={layoutsMode}
-                  onModeChange={setLayoutsMode}
+                  mode={navigation.layoutsMode}
+                  onModeChange={(mode) => navigation.setLayoutsMode(mode)}
                 />
               </div>
             )}
 
-            {activeSection === 'widgets' && (
+            {navigation.section === 'widgets' && (
               <div
-                className={`${styles.sectionContainer} ${styles.animateFadeIn}`}
+                className={`${styles.pageContainer} ${styles.animateFadeIn}`}
                 key="widgets"
               >
-                <div className={styles.widgetsSection}>
-                  <div className={styles.widgetCatalog}>
-                    <div className={styles.catalogTitle}>
-                      {t('mainWindow.widgetModules')}
-                    </div>
-                    <WidgetList
-                      selectedId={activeWidgetId}
-                      onSelect={setSelectedWidgetId}
-                    />
-                  </div>
-
-                  <div className={styles.widgetWorkbench}>
-                    <WidgetWorkbench widgetId={activeWidgetId} />
-                  </div>
-                </div>
+                <WidgetsPage />
               </div>
             )}
           </Content>
-
-          <AppFooter />
         </Layout>
       </AntdApp>
     </ConfigProvider>

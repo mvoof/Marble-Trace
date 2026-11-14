@@ -1,25 +1,47 @@
 {
-  "mainWindow": {
-    "widgetModules": "Модули виджетов"
+  "widgetsPage": {
+    "allWidgets": "Все виджеты",
+    "unavailable": "недоступен для этого симулятора",
+    "sort": {
+      "tier": "По важности",
+      "az": "А–Я"
+    },
+    "widgetsCount_one": "{{count}} виджет",
+    "widgetsCount_few": "{{count}} виджета",
+    "widgetsCount_many": "{{count}} виджетов",
+    "widgetsCount_other": "{{count}} виджета",
+    "previewTop": "Превью над настройками",
+    "previewLeft": "Превью рядом с настройками",
+    "addToLayout": "Добавить в раскладку",
+    "onScreen": "На экране",
+    "addToLayoutHint": "Ставит виджет на первый монитор раскладки, которая сейчас на экране"
   },
   "appHeader": {
     "sections": {
-      "layouts": "Раскладки",
+      "home": "Главная",
       "widgets": "Виджеты",
+      "layouts": "Раскладки",
       "crew": "Экипаж",
+      "connections": "Подключения",
+      "data": "Данные",
+      "hotkeys": "Горячие клавиши",
       "settings": "Настройки"
+    },
+    "websiteTitle": "Открыть marbletrace.com",
+    "releasesTitle": "Что нового — релизы на GitHub",
+    "discordTitle": "Discord — сообщество",
+    "window": {
+      "minimise": "Свернуть",
+      "maximise": "Развернуть",
+      "close": "Закрыть"
     }
   },
   "appStatus": {
-    "connectedTo": "ПОДКЛЮЧЕНО К {{sim}}",
-    "replaying": "ЗАПИСЬ: {{tape}}",
-    "waitingForTelemetry": "ОЖИДАНИЕ ТЕЛЕМЕТРИИ",
-    "systemError": "СИСТЕМНАЯ ОШИБКА",
-    "waitingForGame": "ОЖИДАНИЕ ЗАПУСКА ИГРЫ"
-  },
-  "widgetList": {
-    "unavailable": "Недоступно",
-    "defaultDescription": "Настройка параметров виджета."
+    "connectedTo": "{{sim}} · подключено",
+    "replaying": "Запись · {{tape}}",
+    "waitingForTelemetry": "{{sim}} · ждём телеметрию",
+    "systemError": "Системная ошибка",
+    "waitingForGame": "{{sim}} не запущен"
   },
   "releaseNotes": {
     "whatsNew": "Что нового",
@@ -59,13 +81,8 @@
   "layoutEditor": {
     "backToLayouts": "Назад к раскладкам",
     "toggleWidgetPanel": "Показать/скрыть панель виджетов",
-    "newLayoutNamePlaceholder": "Название новой раскладки",
     "create": "Создать",
     "cancel": "Отмена",
-    "saveName": "Сохранить имя",
-    "selectLayoutPlaceholder": "Выберите раскладку…",
-    "newLayout": "Новая раскладка",
-    "rename": "Переименовать",
     "deleteLayoutConfirm": "Удалить эту раскладку?",
     "delete": "Удалить",
     "active": "Активна",
@@ -88,8 +105,12 @@
     "toggleGridTooltip": "Показать/скрыть сетку выравнивания",
     "gridSizeTooltip": "Размер сетки",
     "snapToGridTooltip": "Привязка к сетке",
-    "exitFullscreen": "Выйти из полноэкранного режима",
-    "fullscreenPreview": "Полноэкранный просмотр",
+    "viewOverview": "Все мониторы",
+    "viewOverviewTooltip": "Все экраны раскладки сразу",
+    "viewFullSize": "Полный размер",
+    "viewFullSizeTooltip": "Один экран на всё окно приложения",
+    "viewFullscreen": "На мониторе",
+    "viewFullscreenTooltip": "Один экран на весь настоящий монитор",
     "setBackgroundTooltip": "Задать фон редактора (например, вид из кабины)",
     "clearBackgroundTooltip": "Очистить фон",
     "widgetsPanelTitle": "Виджеты",
@@ -109,10 +130,10 @@
     "addRemoteScreenTooltip": "Добавить виртуальный экран — не монитор компьютера, а страницу, которую по ссылке откроет браузер: планшет, телефон или Browser Source в OBS",
     "addRemoteScreenConfirm": "Добавить экран для браузера",
     "remoteScreenNamePlaceholder": "Название экрана, например «Планшет на руле»",
-    "remoteScreenDefaultName": "Внешний экран",
-    "remoteScreenTag": "внешний",
-    "arrangeRemoteScreens": "Разложить внешние экраны",
-    "arrangeRemoteScreensTooltip": "Разложить внешние экраны рядами под рабочим столом вместе с их виджетами",
+    "remoteScreenDefaultName": "Экран для браузера",
+    "remoteScreenTag": "браузер",
+    "arrangeRemoteScreens": "Разложить экраны для браузера",
+    "arrangeRemoteScreensTooltip": "Разложить экраны для браузера рядами под рабочим столом вместе с их виджетами",
     "addRemoteScreenHint": "Экран рисует всё, что откроет ссылку: планшет в вашей сети или Browser Source в OBS. Для OBS сделайте фон прозрачным и задайте источнику тот же размер — первый подключившийся сообщает свой, и подгонка под него сдвинет все виджеты экрана.",
     "remoteScreenTransparent": "Прозрачный фон (для OBS)",
     "remoteScreenTransparentSuffix": "прозрачный",
@@ -140,40 +161,46 @@
     "resetSettingsOk": "Сбросить",
     "reset": "Сбросить",
     "hotkeysActOn": "Хоткеи действуют на этот виджет",
-    "hotkeysActOnDesc": "Хоткеи виджета показывают, скрывают и переключают этот экземпляр. Если отмечено несколько — меняются все вместе. Экран для браузера тоже следует за ними — стрим показывает то, что вы переключили."
+    "hotkeysActOnDesc": "Хоткеи виджета показывают, скрывают и переключают этот экземпляр. Если отмечено несколько — меняются все вместе. Экран для браузера тоже следует за ними — стрим показывает то, что вы переключили.",
+    "layouts": "Раскладки",
+    "addWidget": "Виджет",
+    "addWidgetTooltip": "Добавить виджет",
+    "addWidgetSearch": "Найти виджет…",
+    "addWidgetCore": "Основные",
+    "addWidgetAll": "Все",
+    "addWidgetOnScreen": "на экране",
+    "addWidgetTarget": "На монитор:",
+    "addWidgetEmpty": "Ничего не найдено",
+    "moreTools": "Ещё",
+    "grid": "Сетка",
+    "background": "Фон",
+    "screens": "Экраны",
+    "hideArrangement": "Скрыть схему мониторов",
+    "showArrangement": "Показать схему мониторов",
+    "scenarioTooltip": "Сценарий превью",
+    "dragToolbar": "Перетащить панель"
+  },
+  "monitorMap": {
+    "primary": "основной",
+    "notConnected": "не подключён",
+    "notInLayout": "Не в раскладке — нажмите, чтобы добавить",
+    "addToLayout": "Добавить монитор в раскладку",
+    "browserScreens": "Экраны в браузере",
+    "identify": "Определить",
+    "identifyTooltip": "Показать номер каждого монитора на нём самом",
+    "title": "Расположение мониторов и экраны в браузере",
+    "hide": "Скрыть",
+    "show": "Показать"
   },
   "layoutList": {
-    "moduleLabel": "Раскладки",
-    "title": "Управление раскладками виджетов",
-    "subtitleAutoSwitch": "Автопереключение активно. Раскладки будут загружаться автоматически в зависимости от вашей игровой сессии.",
-    "subtitleManual": "Выберите раскладку, чтобы увидеть детали. Дважды щёлкните карточку, чтобы открыть её в редакторе.",
-    "toggleAutoSwitchTooltip": "Вручную: один лейаут везде. Авто по сессиям: лейауты переключаются автоматически по типу сессии.",
-    "modeManual": "Один лейаут везде",
-    "modeAuto": "Авто по сессиям",
     "newLayout": "Новая раскладка",
     "emptyLayout": "Пустая раскладка",
-    "active": "Активна",
-    "assignedTo": "Назначена для {{session}}",
-    "manualActivationOnly": "Только ручная активация",
-    "manual": "Вручную",
     "widgetsCount_one": "{{count}} виджет",
     "widgetsCount_few": "{{count}} виджета",
     "widgetsCount_many": "{{count}} виджетов",
     "widgetsCount_other": "{{count}} виджета",
-    "created": "Создана:",
-    "autoSwitchAssignment": "Назначение автопереключения",
-    "activeMonitor": "Активный монитор",
-    "none": "Нет",
-    "resolution": "Разрешение",
-    "activeWidgets": "Активные виджеты",
-    "activateLayout": "Активировать раскладку",
-    "activateDisabledAutoSwitch": "Включено автопереключение — раскладки переключаются автоматически по типу сессии. Отключите его, чтобы активировать вручную.",
-    "openEditor": "Открыть редактор",
-    "duplicateLayout": "Дублировать раскладку",
     "deleteLayoutConfirmTitle": "Удалить эту раскладку?",
     "deleteLayoutConfirmDescription": "Это действие нельзя отменить.",
-    "deleteLayout": "Удалить раскладку",
-    "emptySelection": "Выберите раскладку, чтобы увидеть детали и действия",
     "createNewLayout": "Создать новую раскладку",
     "enterLayoutName": "Введите название раскладки...",
     "sessions": {
@@ -187,26 +214,60 @@
     "monitorsCount_many": "{{count}} мониторов",
     "monitorsCount_other": "{{count}} монитора",
     "noMonitors": "Нет мониторов",
-    "monitors": "Мониторы",
-    "removeMonitor": "Убрать монитор из лейаута",
-    "monitorOffline": "не найден",
-    "totalWidgets": "Всего виджетов",
-    "remoteNoDevice": "нет устройства",
-    "removeMonitorWithWidgets": "Убрать монитор вместе с его виджетами ({{count}})?"
+    "removeMonitorWithWidgets": "Убрать монитор вместе с его виджетами ({{count}})?",
+    "layoutsCount_one": "{{count}} раскладка",
+    "layoutsCount_few": "{{count}} раскладки",
+    "layoutsCount_many": "{{count}} раскладок",
+    "layoutsCount_other": "{{count}} раскладки",
+    "open": "Открыть",
+    "onScreen": "На экране",
+    "putOnScreen": "Вывести на экран",
+    "duplicate": "Дублировать",
+    "rename": "Переименовать",
+    "export": "Экспорт в файл",
+    "delete": "Удалить",
+    "notAutoSwitched": "Без автопереключения",
+    "autoSwitch": {
+      "title": "Автопереключение",
+      "description": "Выводит раскладку на экран, когда меняется ситуация в симуляторе. Правило называет сессию, класс и машину, любое из них может быть «любым»; побеждает самое точное подходящее правило: машина важнее класса, класс важнее сессии. Раскладки назначаются только здесь.",
+      "enabled": "Вкл.",
+      "anySession": "Любая сессия",
+      "anyClass": "Любой класс",
+      "anyCar": "Любая машина",
+      "anySituation": "Любая ситуация",
+      "session": "Сессия",
+      "carClass": "Класс",
+      "car": "Машина",
+      "layout": "Раскладка",
+      "carById": "Машина {{id}}",
+      "addRule": "Добавить правило",
+      "removeRule": "Удалить правило",
+      "noRules": "Правил пока нет. Добавьте правило, чтобы выводить раскладку по сессии, классу или машине."
+    },
+    "exported": "Раскладка сохранена в {{path}}",
+    "exportFailed": "Не удалось сохранить файл раскладки",
+    "import": "Импорт",
+    "imported": "Раскладка «{{name}}» добавлена",
+    "importFailed": "В этом файле нет раскладки Marble Trace"
   },
   "layoutWidgetPanel": {
     "onMonitor": "на {{monitor}}",
     "offScreen": "Вне экранов",
     "copyTooltip": "Копия — со своими настройками, местом и переключателем",
     "originalTooltip": "Первый экземпляр на этом экране; остальные здесь — его копии",
-    "deleteCopyConfirm": "Удалить эту копию?",
-    "deleteCopyOk": "Удалить",
+    "deleteCopy": "Удалить эту копию",
+    "removeWidget": "Убрать с этого монитора",
+    "hide": "Скрыть",
+    "show": "Показать",
+    "addTo": "Добавить виджет на {{monitor}}",
+    "empty": "На этом мониторе нет виджетов",
+    "search": "Найти виджет…",
+    "noMatch": "Ничего не найдено",
     "hotkeysOn": "Хоткеи действуют на этот виджет — нажмите, чтобы исключить",
     "hotkeysOff": "Хоткеи этот виджет пропускают — нажмите, чтобы включить"
   },
   "widgetWorkbench": {
-    "scenario": "Сценарий",
-    "noWidgets": "Нет доступных виджетов."
+    "scenario": "Сценарий"
   },
   "layoutCanvas": {
     "move": "Перемещение",
@@ -241,7 +302,15 @@
     "selectToConfigure": "Выберите виджет для настройки",
     "notFound": "Виджет не найден",
     "moduleConfig": "Настройка модуля",
-    "layoutAndDimensions": "Расположение и размеры",
+    "groups": {
+      "columns": "Колонки",
+      "content": "Содержимое",
+      "display": "Отображение",
+      "size": "Размер",
+      "background": "Фон",
+      "behaviour": "Поведение",
+      "hotkeys": "Хоткеи"
+    },
     "positionX": "Позиция X",
     "positionY": "Позиция Y",
     "width": "Ширина (px)",
@@ -249,13 +318,15 @@
     "layerDepth": "Глубина слоя (Z-Index)",
     "fontScale": "Размер текста",
     "fontScaleDesc": "Масштабирует только текст, независимо от ширины/высоты виджета",
-    "aesthetics": "Фон и рамка",
     "background": "Фон",
-    "border": "Рамка"
+    "border": "Рамка",
+    "columns": {
+      "move": "Перетащите, чтобы изменить порядок"
+    },
+    "hotkeysShared": "Общие для всех копий этого виджета",
+    "hotkeysChange": "Изменить"
   },
   "settingsPage": {
-    "moduleLabel": "Конфигурация",
-    "title": "Глобальные настройки приложения",
     "language": {
       "title": "Язык",
       "fieldLabel": "Язык приложения",
@@ -270,6 +341,11 @@
       "title": "Поведение при запуске",
       "launchMinimizedTitle": "Запуск свёрнутым",
       "launchMinimizedDesc": "Запускать приложение свёрнутым в трей."
+    },
+    "appearance": {
+      "title": "Внешний вид",
+      "headerAnimationTitle": "Фоновая анимация",
+      "headerAnimationDesc": "Спокойная волна за шапкой окна. Замирает, когда окно свёрнуто или не в фокусе."
     },
     "interactionMode": {
       "title": "Режим взаимодействия",
@@ -363,7 +439,9 @@
       "title": "О Marble Trace",
       "tagline": "Телеметрический оверлей для iRacing. Бесплатный, с открытым кодом под GPL-3.0.",
       "trademarks": "Marble Trace™ и логотип Marble Trace являются товарными знаками voof. iRacing — товарный знак iRacing.com Motorsport Simulations, LLC. TAURI — товарный знак The Tauri Programme within the Commons Conservancy. Windows — товарный знак группы компаний Microsoft. Twitch — товарный знак Twitch Interactive, Inc. YouTube — товарный знак Google LLC. Все прочие названия принадлежат их владельцам.",
-      "independence": "Marble Trace — независимый проект с открытым кодом. Он не создан iRacing, никак не связан с iRacing.com Motorsport Simulations, LLC, не аффилирован с ней и с другими перечисленными ниже компаниями, не спонсируется и не одобрен ими."
+      "independence": "Marble Trace — независимый проект с открытым кодом. Он не создан iRacing, никак не связан с iRacing.com Motorsport Simulations, LLC, не аффилирован с ней и с другими перечисленными ниже компаниями, не спонсируется и не одобрен ими.",
+      "links": "Ссылки",
+      "website": "Сайт"
     },
     "trackMap": {
       "title": "Карта трассы",
@@ -539,34 +617,18 @@
       }
     },
     "nav": {
-      "groups": {
-        "application": "Приложение",
-        "overlay": "Оверлей",
-        "controls": "Управление",
-        "data": "Данные",
-        "chat": "Чат",
-        "maintenance": "Обслуживание",
-        "remote": "Внешние экраны"
-      },
       "sections": {
         "general": "Общие",
-        "companionApps": "Сопутствующие программы",
         "updates": "Обновления",
         "about": "О программе",
         "overlay": "Показ виджетов",
         "interaction": "Режимы взаимодействия",
-        "bindings": "Привязки управления",
-        "devices": "Устройства",
-        "trackMap": "Данные трассы",
-        "sharedValues": "Общие значения",
-        "streamChat": "Чат стрима",
         "maintenance": "Сброс и диагностика",
-        "telemetryInspector": "Инспектор телеметрии",
-        "remoteScreens": "Внешние экраны"
+        "telemetryInspector": "Инспектор телеметрии"
       }
     },
     "remote": {
-      "title": "Внешние экраны",
+      "title": "Экраны для браузера",
       "enableTitle": "Отдавать раскладки на другие устройства",
       "enableDesc": "Поднимает небольшой веб-сервер, чтобы телефон или планшет в той же сети открыл экран активной раскладки в браузере. Устройства только смотрят — изменить ничего нельзя.",
       "running": "Работает на {{ip}}:{{port}}",
@@ -581,9 +643,9 @@
       "tokenDesc": "Без этого токена устройство не откроет экран. В ссылках и QR-кодах ниже он уже подставлен.",
       "lanLabel": "Доступен из локальной сети",
       "regenerateToken": "Новый токен",
-      "screensTitle": "Внешние экраны",
+      "screensTitle": "Экраны для браузера",
       "screensDesc": "Откройте адрес на устройстве. Если добавить страницу на домашний экран, адресная строка исчезнет и раскладка займёт весь экран.",
-      "screensEmpty": "Внешних экранов пока нет. Добавьте экран в редакторе раскладок, рядом с мониторами.",
+      "screensEmpty": "Экранов для браузера пока нет. Добавьте экран в редакторе раскладок, рядом с мониторами.",
       "usedInLayouts": "Лейауты",
       "activeNow": "Активен сейчас",
       "inactive": "Не активен в текущей сессии",
@@ -630,6 +692,49 @@
       "title": "Сопутствующие программы"
     }
   },
+  "connectionsPage": {
+    "sections": {
+      "browserScreens": "Экраны для браузера",
+      "streamChat": "Чат стрима",
+      "companionApps": "Сопутствующие программы"
+    }
+  },
+  "dataPage": {
+    "sections": {
+      "tracks": "Записанные трассы",
+      "strategy": "Стратегия",
+      "statistics": "Статистика"
+    },
+    "statistics": {
+      "subtitle": "из файлов телеметрии игры",
+      "folderTitle": "Папка телеметрии",
+      "folderDefault": "Найдена автоматически в «Документах».",
+      "folderChosen": "Выбрана вами.",
+      "folderMissing": "Папка телеметрии iRacing не найдена. Укажите, где лежат ваши файлы .ibt.",
+      "change": "Изменить",
+      "useDefault": "По умолчанию",
+      "folderRefused": "Эту папку нельзя использовать: {{reason}}",
+      "loggingTitle": "Запись телеметрии в iRacing",
+      "logging": {
+        "on": "Вкл",
+        "off": "Выкл",
+        "unknown": "Неизвестно"
+      },
+      "importTitle": "Импорт",
+      "importIdle": "Все файлы прочитаны",
+      "reimport": "Импортировать всё заново",
+      "reimportDesc": "Заново читает все файлы папки, пропущенные тоже. Сессии, чьих файлов уже нет, остаются.",
+      "reimportStarted": "Повторный импорт запущен",
+      "reimportQueued": "Повторный импорт начнётся, когда вы закроете игру",
+      "skippedTitle": "Пропущенные файлы",
+      "skippedNone": "Все файлы прочитаны.",
+      "skippedFile": "Файл",
+      "skippedReason": "Причина",
+      "exportCsv": "Экспорт CSV",
+      "exported": "Экспортировано сессий: {{count}}",
+      "exportFailed": "Экспорт не удался: {{reason}}"
+    }
+  },
   "bindings": {
     "title": "Привязки управления",
     "intro": "Клавиши и кнопки устройств работают во всём приложении, в любом макете. Конфликты с настройками самого симулятора здесь не видны — проверьте их в iRacing.",
@@ -637,6 +742,8 @@
     "resetAll": "Сбросить всё",
     "resetConfirm": "Вернуть все привязки к значениям по умолчанию?",
     "noMatches": "Ничего не найдено.",
+    "filteredTo": "Только {{widget}}",
+    "showAll": "Показать все",
     "unbound": "Не назначено",
     "addBinding": "Добавить привязку",
     "removeBinding": "Удалить привязку",
@@ -709,15 +816,25 @@
     "keyIsFree": "{{key}} нигде не назначена."
   },
   "crewPage": {
-    "title": "Экипаж",
     "sections": {
-      "commands": "Команды",
-      "voice": "Голос",
+      "overview": "Обзор",
       "downloads": "Загрузки",
-      "pack": "Пакет"
+      "commands": "Команды",
+      "phrases": "Фразы и ответы",
+      "packs": "Пакеты"
     },
-    "notReady": "Голосу нужны движки, голос и модель распознавания — раздел «Загрузки».",
-    "openDownloads": "Открыть загрузки",
+    "notReady": "Инженеру нужны движки, голос и модель распознавания — раздел «Обзор».",
+    "openOverview": "Открыть обзор",
+    "status": {
+      "title": "Состояние",
+      "engineer": "Инженер",
+      "ready": "Готов",
+      "off": "Выключен",
+      "notReady": "Нужны загрузки",
+      "pushToTalk": "Кнопка рации",
+      "pushToTalkUnbound": "Не назначена — назначь её, чтобы говорить с инженером",
+      "change": "Изменить"
+    },
     "packOutdated": "Несохранённые изменения относятся к пакету «{{pack}}», а экипаж уже говорит на «{{language}}». Сохрани или отмени их, чтобы открыть пакет «{{language}}».",
     "save": "Сохранить",
     "saveBar": {
@@ -740,8 +857,8 @@
       "idle": "Удерживай и скажи фразу — или напиши её в списке",
       "listening": "Слушаю…",
       "draftNote": "слушаю и несохранённые изменения",
-      "voiceOff": "Голос выключен — включи его в разделе «Голос»",
-      "silence": "Ничего не услышано — проверь микрофон в разделе «Голос»",
+      "voiceOff": "Голос выключен — включи его в разделе «Обзор»",
+      "silence": "Ничего не услышано — проверь микрофон в разделе «Обзор»",
       "unknown": "«{{sentence}}» — ни одна команда не подходит",
       "heard": "«{{sentence}}» → {{action}}{{slots}}",
       "sure": "{{percent}}%",
@@ -1386,6 +1503,105 @@
       "number": "число",
       "numberNote": "Число от 0 до {{max}}, сказанное словами: «сорок», «сто двадцать».",
       "carNumberNote": "Номер машины говорится так, как он написан: «тридцать три», «ноль семь», «пятьсот двенадцать». Слышны только машины текущей сессии."
+    }
+  },
+  "homePage": {
+    "title": "Главная",
+    "emptyTitle": "Сессий пока нет",
+    "emptyText": "Каждый раз, когда вы садитесь в машину, iRacing пишет файл телеметрии в DocumentsiRacing\telemetry. Marble Trace читает эти файлы, пока игра закрыта, и собирает из них ваши сессии, круги, инциденты и iRating.",
+    "emptyKept": "Прочитанное сохраняется, даже если удалить файлы.",
+    "import": {
+      "reading": "Чтение файлов игры ·",
+      "paused": "Импорт на паузе — вы в игре",
+      "noFolder": "Папка телеметрии iRacing не найдена"
+    },
+    "categories": {
+      "sportsCar": "Спорткары",
+      "formulaCar": "Формулы",
+      "road": "Шоссе",
+      "oval": "Овал",
+      "dirtRoad": "Грунт",
+      "dirtOval": "Грунтовый овал"
+    },
+    "ratings": {
+      "title": "Лицензия и iRating",
+      "byCategory": "по категориям",
+      "none": "Онлайн-сессий пока нет",
+      "showInChart": "Показать {{category}} на графике iRating",
+      "weekChange": "Изменение за 7 дней"
+    },
+    "kpi": {
+      "sessions": "Сессии за 7 дней",
+      "sessionsSplit": "гонки {{races}} · тренировки {{practices}}",
+      "laps": "Круги",
+      "incidentsPerLap": "Инциденты / круг",
+      "sevenDays": "за 7 дней"
+    },
+    "irating": {
+      "title": "iRating",
+      "perSession": "по сессиям",
+      "noneInRange": "За этот период сессий нет",
+      "range": {
+        "30d": "30 дн",
+        "90d": "90 дн",
+        "all": "Всё"
+      }
+    },
+    "recentSessions": {
+      "title": "Последние сессии",
+      "date": "Дата",
+      "track": "Трасса",
+      "car": "Машина",
+      "finish": "Финиш",
+      "bestLap": "Лучший круг",
+      "incidents": "Инц.",
+      "eventType": {
+        "practice": "Тренировка",
+        "test": "Тест"
+      }
+    },
+    "calendar": {
+      "title": "Дни за рулём",
+      "timeInCar": "время в машине",
+      "less": "меньше",
+      "more": "больше"
+    },
+    "tops": {
+      "cars": "Топ машин",
+      "tracks": "Топ трасс",
+      "byTime": "время в машине"
+    },
+    "duration": {
+      "minutes": "{{minutes}} мин",
+      "hoursMinutes": "{{hours}} ч {{minutes}} мин",
+      "hours": "{{hours}} ч"
+    },
+    "lastRace": {
+      "title": "Последняя гонка",
+      "finish": "Финиш",
+      "bestLap": "Лучший круг",
+      "incidents": "Инц.",
+      "irating": "iRating",
+      "iratingUnknown": "Появится после следующей сессии в этой категории"
+    },
+    "now": {
+      "title": "Сейчас",
+      "sim": "iRacing",
+      "connected": "Подключён",
+      "notRunning": "Не запущен",
+      "layout": "Раскладка",
+      "noLayout": "Нет",
+      "openLayouts": "Открыть раскладки",
+      "monitors": "Мониторы",
+      "widgetsOn": "Виджетов включено",
+      "browserScreens": "Экраны в браузере"
+    },
+    "autolog": {
+      "title": "iRacing не сохраняет файлы телеметрии",
+      "text": "Статистика берётся из файлов, которые iRacing пишет каждый раз, когда вы садитесь в машину, а в его app.ini это выключено. Marble Trace может включить это за вас.",
+      "enable": "Включить",
+      "closeGame": "Сначала закройте iRacing",
+      "failed": "Не включено: {{reason}}"
     }
   }
 }

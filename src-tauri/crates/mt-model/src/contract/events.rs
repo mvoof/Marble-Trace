@@ -89,6 +89,10 @@ ts_values! {
     /// A voice download's progress, for the Crew tab.
     pub const EVENT_CREW_DOWNLOAD: &str = "crew://download" => CREW_DOWNLOAD_EVENT;
 
+    /// The stats import's phase and progress, on every change: a file read,
+    /// a pause for the sim, the end of a pass.
+    pub const EVENT_STATS_IMPORT: &str = "stats://import" => STATS_IMPORT_EVENT;
+
     /// The set of attached game controllers changed.
     pub const INPUT_DEVICES_EVENT: &str = "input://devices" => INPUT_DEVICES_EVENT;
 

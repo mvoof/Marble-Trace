@@ -6,7 +6,10 @@ import {
   type UnlistenFn,
 } from '@tauri-apps/api/event';
 
-import { listOverlayWindowLabels } from '@shared/api/overlay-labels';
+import {
+  listOverlayWindowLabels,
+  monitorLabel,
+} from '@shared/api/overlay-labels';
 import type {
   RemoteControlKind,
   RemoteDevice,
@@ -125,6 +128,32 @@ export const emitTrackRotation = (payload: TrackRotationPayload) =>
 
 export const emitLayoutActivated = (layoutName: string) =>
   broadcastControl('layout-activated', layoutName);
+
+const MONITOR_IDENTIFY_EVENT = 'monitor://identify';
+
+/**
+ * Identify: each open overlay window is sent the number its monitor goes by.
+ * A monitor with no overlay window (not in the layout on screen) has nobody
+ * to show it and is skipped.
+ */
+export const emitMonitorIdentify = async (
+  numbers: ReadonlyMap<string, number>
+) => {
+  const openLabels = new Set(await listOverlayWindowLabels());
+
+  for (const [monitorName, monitorNumber] of numbers) {
+    const label = monitorLabel(monitorName);
+
+    if (openLabels.has(label)) {
+      await emitTo(label, MONITOR_IDENTIFY_EVENT, monitorNumber);
+    }
+  }
+};
+
+export const listenMonitorIdentify = (
+  handler: (monitorNumber: number) => void
+) =>
+  listenTo<number>(MONITOR_IDENTIFY_EVENT, (event) => handler(event.payload));
 
 /** A device showing a remote screen connected, resized or went away. */
 export const listenRemoteDevice = (handler: (device: RemoteDevice) => void) =>
