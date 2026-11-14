@@ -93,6 +93,7 @@ type WidgetSettingsWrite =
   | 'addWidgetAtCentre'
   | 'duplicateWidget'
   | 'removeWidgetCopy'
+  | 'removeTypeFromMonitor'
   | 'copySettingsFrom'
   | 'resetSettings'
   | 'bringToFront'
@@ -551,6 +552,31 @@ export class LiveWidgetsStore implements WidgetMap {
     this.pushUndo();
 
     layout.widgets = layout.widgets.filter((entry) => entry.id !== id);
+    this.bumpMutation();
+  }
+
+  /**
+   * Takes a widget off one monitor in one undo step: its copies there go for
+   * good, the first instance is switched off and keeps its settings for the
+   * next time it is added. Other monitors are left alone.
+   */
+  removeTypeFromMonitor(type: string, monitorName: string) {
+    const layout = this.widgetOwner;
+    const [first, ...copies] = widgetsOnMonitor(
+      this.allWidgets,
+      monitorName
+    ).filter((widget) => widget.type === type);
+
+    if (!layout || !first) {
+      return;
+    }
+
+    this.pushUndo();
+
+    const copyIds = new Set(copies.map((copy) => copy.id));
+
+    first.userSettings.enabled = false;
+    layout.widgets = layout.widgets.filter((entry) => !copyIds.has(entry.id));
     this.bumpMutation();
   }
 

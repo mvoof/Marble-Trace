@@ -48,6 +48,31 @@ const makeStore = () => {
 };
 
 describe('LayoutEditorUiStore', () => {
+  it('keeps a hidden widget in the list until forgotten or another layout opens', () => {
+    const { layouts, store } = makeStore();
+
+    store.keepInWidgetList('LEFT', 'fuel');
+
+    expect(store.isKeptInWidgetList('LEFT', 'fuel')).toBe(true);
+    expect(store.isKeptInWidgetList('RIGHT', 'fuel')).toBe(false);
+
+    store.keepInWidgetList('LEFT', 'weather');
+    store.forgetInWidgetList('LEFT', 'fuel');
+    expect(store.isKeptInWidgetList('LEFT', 'fuel')).toBe(false);
+    expect(store.isKeptInWidgetList('LEFT', 'weather')).toBe(true);
+
+    store.forgetWidgetListKeeps();
+    expect(store.isKeptInWidgetList('LEFT', 'weather')).toBe(false);
+
+    store.keepInWidgetList('LEFT', 'fuel');
+    runInAction(() => {
+      layouts.editingLayoutId = 'practice';
+    });
+
+    expect(store.isKeptInWidgetList('LEFT', 'fuel')).toBe(false);
+    store.dispose();
+  });
+
   it('drops the selection when another layout is opened', () => {
     const { layouts, store } = makeStore();
 

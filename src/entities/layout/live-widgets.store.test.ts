@@ -640,6 +640,27 @@ describe('several copies of one widget in a layout', () => {
     expect(store.getWidget(copyId)).toBeUndefined();
   });
 
+  // The editor's delete on a widget's row: the widget leaves this screen —
+  // its copies here for good, the first instance switched off with its
+  // settings kept — and one undo brings all of it back.
+  it('takes a widget off one monitor in one undo step', () => {
+    const store = rootStore.liveWidgets;
+    const monitorName = store.getWidget('standings')!.monitor!;
+
+    store.setWidgetEnabled('standings', true);
+    const copyId = store.duplicateWidget('standings')!;
+
+    store.removeTypeFromMonitor('standings', monitorName);
+
+    expect(store.getWidget(copyId)).toBeUndefined();
+    expect(store.getWidget('standings')?.userSettings.enabled).toBe(false);
+
+    store.undo();
+
+    expect(store.getWidget(copyId)).toBeDefined();
+    expect(store.getWidget('standings')?.userSettings.enabled).toBe(true);
+  });
+
   it('numbers instances per monitor, not across the layout', () => {
     const store = rootStore.liveWidgets;
 
@@ -857,6 +878,11 @@ describe('every settings write leaves its mark', () => {
 
         store.removeWidgetCopy(copy.id);
       },
+      expected: { changes: true },
+    },
+    {
+      name: 'removeTypeFromMonitor',
+      run: (store) => store.removeTypeFromMonitor('fuel', DISPLAY.name),
       expected: { changes: true },
     },
     {

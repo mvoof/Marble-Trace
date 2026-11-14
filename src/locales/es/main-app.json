@@ -187,7 +187,8 @@
     "identify": "Identificar",
     "identifyTooltip": "Mostrar el número de cada monitor en el propio monitor",
     "title": "Disposición de monitores y pantallas de navegador",
-    "hide": "Ocultar"
+    "hide": "Ocultar",
+    "show": "Mostrar"
   },
   "layoutList": {
     "newLayout": "Nuevo diseño",
@@ -246,8 +247,14 @@
     "offScreen": "Fuera de las pantallas",
     "copyTooltip": "Una copia: con sus propios ajustes, lugar e interruptor",
     "originalTooltip": "La primera instancia en esta pantalla; las demás aquí son sus copias",
-    "deleteCopyConfirm": "¿Eliminar esta copia?",
-    "deleteCopyOk": "Eliminar",
+    "deleteCopy": "Eliminar esta copia",
+    "removeWidget": "Quitar de este monitor",
+    "hide": "Ocultar",
+    "show": "Mostrar",
+    "addTo": "Añadir un widget a {{monitor}}",
+    "empty": "No hay widgets en este monitor",
+    "search": "Buscar un widget…",
+    "noMatch": "Ningún widget coincide",
     "hotkeysOn": "Los atajos actúan sobre este widget — pulsa para excluirlo",
     "hotkeysOff": "Los atajos omiten este widget — pulsa para incluirlo"
   },

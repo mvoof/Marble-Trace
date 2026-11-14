@@ -8,6 +8,9 @@ import type { LayoutsStore } from '@entities/layout/layouts.store';
 
 const DEFAULT_IMAGE_EXTENSION = 'png';
 
+const widgetListKeyOf = (monitorName: string, type: string): string =>
+  JSON.stringify([monitorName, type]);
+
 /**
  * The editor's three views: every screen at once on the page, one screen
  * filling the app window, or one filling the real monitor.
@@ -55,6 +58,12 @@ export class LayoutEditorUiStore {
   isArrangementShown = true;
   /** Widgets whose resize keeps their shape, by id. */
   private lockedRatios = new Set<string>();
+  /**
+   * Widgets hidden from the widget list itself, by monitor and type: the
+   * list goes on showing them so their eye can bring them back. Forgotten
+   * when the editor closes or another layout opens.
+   */
+  private widgetListKeeps = new Set<string>();
 
   private readonly stopFollowingLayout: () => void;
 
@@ -73,7 +82,10 @@ export class LayoutEditorUiStore {
     // A selection belongs to the layout it was made in.
     this.stopFollowingLayout = reaction(
       () => layouts.editingLayoutId,
-      () => this.selectWidget(null)
+      () => {
+        this.selectWidget(null);
+        this.forgetWidgetListKeeps();
+      }
     );
   }
 
@@ -181,6 +193,23 @@ export class LayoutEditorUiStore {
     } else {
       this.lockedRatios.add(widgetId);
     }
+  }
+
+  keepInWidgetList(monitorName: string, type: string) {
+    this.widgetListKeeps.add(widgetListKeyOf(monitorName, type));
+  }
+
+  /** A widget taken off the monitor: its row goes, hidden or not. */
+  forgetInWidgetList(monitorName: string, type: string) {
+    this.widgetListKeeps.delete(widgetListKeyOf(monitorName, type));
+  }
+
+  isKeptInWidgetList(monitorName: string, type: string): boolean {
+    return this.widgetListKeeps.has(widgetListKeyOf(monitorName, type));
+  }
+
+  forgetWidgetListKeeps() {
+    this.widgetListKeeps.clear();
   }
 
   /** Whether the selected widget's resize keeps its shape. */

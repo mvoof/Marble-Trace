@@ -186,7 +186,8 @@
     "identify": "识别",
     "identifyTooltip": "在每台显示器上显示其编号",
     "title": "显示器排列与浏览器屏幕",
-    "hide": "隐藏"
+    "hide": "隐藏",
+    "show": "显示"
   },
   "layoutList": {
     "newLayout": "新建布局",
@@ -242,8 +243,14 @@
     "offScreen": "不在任何屏幕上",
     "copyTooltip": "副本——拥有自己的设置、位置和开关",
     "originalTooltip": "此屏幕上的第一个实例；此处其余的都是它的副本",
-    "deleteCopyConfirm": "删除此副本？",
-    "deleteCopyOk": "删除",
+    "deleteCopy": "删除此副本",
+    "removeWidget": "从此显示器移除",
+    "hide": "隐藏",
+    "show": "显示",
+    "addTo": "向 {{monitor}} 添加组件",
+    "empty": "此显示器上没有组件",
+    "search": "查找组件…",
+    "noMatch": "没有匹配的组件",
     "hotkeysOn": "快捷键作用于此小组件 — 点击排除",
     "hotkeysOff": "快捷键跳过此小组件 — 点击加入"
   },

@@ -187,7 +187,8 @@
     "identify": "Identify",
     "identifyTooltip": "Show each monitor’s number on the monitor itself",
     "title": "Monitor arrangement and browser screens",
-    "hide": "Hide"
+    "hide": "Hide",
+    "show": "Show"
   },
   "layoutList": {
     "newLayout": "New Layout",
@@ -246,8 +247,14 @@
     "offScreen": "Off every screen",
     "copyTooltip": "A copy — its own settings, place and switch",
     "originalTooltip": "The first instance on this screen; the others here are its copies",
-    "deleteCopyConfirm": "Delete this copy?",
-    "deleteCopyOk": "Delete",
+    "deleteCopy": "Delete this copy",
+    "removeWidget": "Remove from this monitor",
+    "hide": "Hide",
+    "show": "Show",
+    "addTo": "Add a widget to {{monitor}}",
+    "empty": "No widgets on this monitor",
+    "search": "Find a widget…",
+    "noMatch": "No widget matches",
     "hotkeysOn": "Hotkeys act on this widget — click to exclude it",
     "hotkeysOff": "Hotkeys skip this widget — click to include it"
   },
