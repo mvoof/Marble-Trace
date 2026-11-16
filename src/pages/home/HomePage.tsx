@@ -6,11 +6,10 @@ import { ImportNote } from '@features/statistics/ImportNote/ImportNote';
 import { useStatisticsStore } from '@features/statistics/statistics-context';
 import { PageTitle } from '@shared/ui/PageTitle/PageTitle';
 import { AutologHint } from './AutologHint';
-import { DaysDrivenCard } from './DaysDrivenCard';
+import { CalendarRow } from './CalendarRow';
 import { HomeKpis } from './HomeKpis';
 import { NowStrip } from './NowStrip';
 import { RecentSessionsTable } from './RecentSessionsTable';
-import { TopByTime } from './TopByTime';
 import styles from './HomePage.module.scss';
 
 const EMPTY_ICON_SIZE = 28;
@@ -32,11 +31,9 @@ export const HomePage = observer(() => {
         <>
           <HomeKpis />
 
-          <DaysDrivenCard />
+          <CalendarRow />
 
           <RecentSessionsTable />
-
-          <TopByTime />
         </>
       ) : (
         <div className={styles.empty}>

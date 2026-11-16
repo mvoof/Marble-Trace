@@ -14,8 +14,8 @@ use crate::db::{to_message, StatsDb, RACE_RUN_TYPE, STATUS_READ};
 const DAY_S: i64 = 24 * 60 * 60;
 const WEEK_S: i64 = 7 * DAY_S;
 const METRES_PER_KM: f64 = 1000.0;
-/// The calendar's span: 53 weeks, so its first column is always whole.
-const CALENDAR_DAYS: i64 = 53 * 7;
+/// The calendar's span: 26 weeks, so its first column is always whole.
+const CALENDAR_DAYS: i64 = 26 * 7;
 /// Entries of each top list.
 const TOP_LIMIT: usize = 5;
 

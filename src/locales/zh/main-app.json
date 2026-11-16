@@ -1521,14 +1521,14 @@
     },
     "calendar": {
       "title": "驾驶日历",
-      "timeInCar": "驾驶时长",
+      "span": "6 个月",
+      "summary": "驾驶 {{days}} 天 · {{time}}",
       "less": "少",
       "more": "多"
     },
     "tops": {
       "cars": "常用赛车",
-      "tracks": "常用赛道",
-      "byTime": "驾驶时长"
+      "tracks": "常用赛道"
     },
     "duration": {
       "minutes": "{{minutes}} 分钟",

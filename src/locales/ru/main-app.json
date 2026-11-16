@@ -1539,14 +1539,14 @@
     },
     "calendar": {
       "title": "Дни за рулём",
-      "timeInCar": "время в машине",
+      "span": "6 месяцев",
+      "summary": "Дней за рулём: {{days}} · {{time}}",
       "less": "меньше",
       "more": "больше"
     },
     "tops": {
       "cars": "Топ машин",
-      "tracks": "Топ трасс",
-      "byTime": "время в машине"
+      "tracks": "Топ трасс"
     },
     "duration": {
       "minutes": "{{minutes}} мин",

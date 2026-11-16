@@ -1,7 +1,7 @@
 import type { DrivenSession } from '@shared/contracts/generated/bindings';
 
-/** Columns of the calendar: the backend sends 53 weeks of sessions. */
-export const CALENDAR_WEEKS = 53;
+/** Columns of the calendar, about six months: the backend sends 26 weeks of sessions. */
+export const CALENDAR_WEEKS = 26;
 
 const DAYS_PER_WEEK = 7;
 const MS_PER_SECOND = 1000;
@@ -80,6 +80,46 @@ export const drivenWeeks = (
   }
 
   return weeks;
+};
+
+/** A month's label over the calendar: the column of its first week. */
+export interface MonthStart {
+  column: number;
+  /** The Monday of that week, local midnight, unix seconds. */
+  mondayS: number;
+}
+
+const monthOf = (dayStartS: number) => {
+  const date = new Date(dayStartS * MS_PER_SECOND);
+
+  return date.getFullYear() * 12 + date.getMonth();
+};
+
+/**
+ * The columns whose Monday is the first Monday of its month. The first column
+ * counts only when its Monday is: a month begun before the calendar has no
+ * label of its own.
+ */
+export const monthStarts = (weeks: DrivenDay[][]): MonthStart[] =>
+  weeks.flatMap((week, column) => {
+    const mondayS = week[0].dayStartS;
+    const isFirstMonday =
+      new Date(mondayS * MS_PER_SECOND).getDate() <= DAYS_PER_WEEK;
+    const monthChanged =
+      column === 0 ||
+      monthOf(weeks[column - 1][0].dayStartS) !== monthOf(mondayS);
+
+    return isFirstMonday && monthChanged ? [{ column, mondayS }] : [];
+  });
+
+/** The days of the calendar with time in the car, and that time together. */
+export const drivenTotals = (weeks: DrivenDay[][]) => {
+  const days = weeks.flat().filter((day) => day.timeInCarS > 0);
+
+  return {
+    days: days.length,
+    timeInCarS: days.reduce((total, day) => total + day.timeInCarS, 0),
+  };
 };
 
 /** A day's shade: its time against the longest day's, in four steps. */

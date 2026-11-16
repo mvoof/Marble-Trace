@@ -1527,14 +1527,14 @@
     },
     "calendar": {
       "title": "Días al volante",
-      "timeInCar": "tiempo en el coche",
+      "span": "6 meses",
+      "summary": "{{days}} días al volante · {{time}}",
       "less": "menos",
       "more": "más"
     },
     "tops": {
       "cars": "Coches principales",
-      "tracks": "Circuitos principales",
-      "byTime": "tiempo en el coche"
+      "tracks": "Circuitos principales"
     },
     "duration": {
       "minutes": "{{minutes}} min",

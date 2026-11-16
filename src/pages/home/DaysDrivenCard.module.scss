@@ -1,33 +1,62 @@
 $cell-size: rem(11);
 $cell-gap: rem(3);
+$weekday-width: rem(22);
 
-.titleAside {
-  font-weight: 400;
-  color: $sys-text-muted;
+.card {
+  min-width: 0;
+  padding: rem(14) rem(16);
+  background: $sys-bg-card;
+  border: 1px solid $sys-border-sub;
+  border-radius: rem(10);
 }
 
-.legend {
+.head {
   display: flex;
   align-items: center;
-  gap: $cell-gap;
+  gap: rem(6);
+  margin-bottom: rem(10);
   font-size: rem(12);
   color: $sys-text-muted;
-
-  .cell {
-    margin: 0 rem(1);
-  }
 }
 
-// Flex end: what does not fit overflows to the left, the oldest weeks.
-.viewport {
-  display: flex;
-  justify-content: flex-end;
-  overflow: hidden;
+.span {
+  margin-left: auto;
+}
+
+// Weekday labels in the first column, month labels over the cells.
+.calendar {
+  display: grid;
+  grid-template-columns: $weekday-width auto;
+  gap: $cell-gap rem(6);
+  justify-content: start;
+}
+
+.months {
+  display: grid;
+  grid-column: 2;
+  grid-auto-columns: $cell-size;
+  gap: $cell-gap;
+  height: rem(13);
+  font-size: rem(10);
+  color: $sys-text-muted;
+}
+
+// A label may run past its own column, over the next ones.
+.month {
+  white-space: nowrap;
+}
+
+.weekdays {
+  display: grid;
+  grid-template-rows: repeat(7, $cell-size);
+  gap: $cell-gap;
+  font-size: rem(9);
+  line-height: $cell-size;
+  color: $sys-text-muted;
 }
 
 .grid {
   display: grid;
-  flex: none;
   grid-auto-flow: column;
   grid-template-rows: repeat(7, $cell-size);
   grid-auto-columns: $cell-size;
@@ -42,24 +71,45 @@ $cell-gap: rem(3);
   border-radius: rem(2);
 }
 
-// Shades of the accent, from a day not driven to the longest one.
+// Shades of the up colour, from a day not driven to the longest one.
 .cell {
   background: $sys-bg-raised;
 
   &[data-level='1'] {
-    background: color-mix(in srgb, $sys-accent 18%, $sys-bg-raised);
+    background: color-mix(in srgb, $sys-up 22%, $sys-bg-raised);
   }
 
   &[data-level='2'] {
-    background: color-mix(in srgb, $sys-accent 40%, $sys-bg-raised);
+    background: color-mix(in srgb, $sys-up 45%, $sys-bg-raised);
   }
 
   &[data-level='3'] {
-    background: color-mix(in srgb, $sys-accent 68%, $sys-bg-raised);
+    background: color-mix(in srgb, $sys-up 72%, $sys-bg-raised);
   }
 
   &[data-level='4'] {
-    background: $sys-accent;
+    background: $sys-up;
+  }
+}
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: rem(6) rem(16);
+  margin-top: rem(8);
+  font-size: rem(11);
+  color: $sys-text-muted;
+}
+
+.scale {
+  display: flex;
+  align-items: center;
+  gap: $cell-gap;
+
+  .cell {
+    width: rem(10);
+    height: rem(10);
   }
 }
 

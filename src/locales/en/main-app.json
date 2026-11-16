@@ -1527,14 +1527,14 @@
     },
     "calendar": {
       "title": "Days driven",
-      "timeInCar": "time in car",
+      "span": "6 months",
+      "summary": "{{days}} days driven · {{time}}",
       "less": "less",
       "more": "more"
     },
     "tops": {
       "cars": "Top cars",
-      "tracks": "Top tracks",
-      "byTime": "time in car"
+      "tracks": "Top tracks"
     },
     "duration": {
       "minutes": "{{minutes}} min",

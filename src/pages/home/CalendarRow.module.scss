@@ -1,0 +1,17 @@
+$narrow-window: 1100px;
+
+// The calendar at its own width, the two tops sharing the rest; on a narrow
+// window the tops wrap under it.
+.row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) minmax(0, 1fr);
+  gap: rem(12);
+
+  @media (max-width: $narrow-window) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+
+    > :first-child {
+      grid-column: 1 / -1;
+    }
+  }
+}

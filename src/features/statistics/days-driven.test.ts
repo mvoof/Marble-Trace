@@ -1,7 +1,13 @@
 import { describe, expect, it } from 'vitest';
 
 import type { DrivenSession } from '@shared/contracts/generated/bindings';
-import { CALENDAR_WEEKS, drivenWeeks, intensityLevel } from './days-driven';
+import {
+  CALENDAR_WEEKS,
+  drivenTotals,
+  drivenWeeks,
+  intensityLevel,
+  monthStarts,
+} from './days-driven';
 
 const MS_PER_SECOND = 1000;
 const DAYS_PER_WEEK = 7;
@@ -72,5 +78,37 @@ describe('intensityLevel', () => {
         intensityLevel(seconds, 1_000)
       )
     ).toEqual([0, 1, 1, 2, 2, 3, 4, 4]);
+  });
+});
+
+describe('monthStarts', () => {
+  it('labels the column of each month’s first Monday, not a month begun before', () => {
+    const weeks = drivenWeeks([], NOW_S);
+    const labels = monthStarts(weeks).map(({ column, mondayS }) => {
+      const monday = new Date(mondayS * MS_PER_SECOND);
+
+      return [column, monday.getMonth(), monday.getDate()];
+    });
+
+    // 26 weeks back from Monday 9 November 2026 is Monday 18 May: May began
+    // before the calendar, so June is the first label.
+    expect(labels[0]).toEqual([2, 5, 1]);
+    expect(labels.at(-1)).toEqual([24, 10, 2]);
+    expect(labels).toHaveLength(6);
+  });
+});
+
+describe('drivenTotals', () => {
+  it('counts the days with time in the car and adds their time', () => {
+    const weeks = drivenWeeks(
+      [
+        driven(at(10, 12, 9), 1_200),
+        driven(at(10, 12, 20), 600),
+        driven(at(10, 10, 9), 300),
+      ],
+      NOW_S
+    );
+
+    expect(drivenTotals(weeks)).toEqual({ days: 2, timeInCarS: 2_100 });
   });
 });
