@@ -3,7 +3,9 @@ import { describe, expect, it } from 'vitest';
 import {
   boundsOf,
   headingDegreesAt,
+  joinDegrees,
   nearestPoint,
+  noseDegreesAt,
   originOf,
   projectPath,
   svgPathOf,
@@ -22,6 +24,33 @@ describe('projectPath', () => {
     expect(path.fixed).toEqual(new Uint8Array([0, 1, 1, 1]));
     expect(path.xs[3]).toBeCloseTo(111.32, 1);
     expect(path.ys[2]).toBeCloseTo(-110.54, 1);
+  });
+});
+
+describe('joinDegrees', () => {
+  it('adds back the rest a f32 lost', () => {
+    const degrees = 41.570_123_456_789;
+    const narrowed = Math.fround(degrees);
+    const joined = joinDegrees(
+      new Float32Array([narrowed]),
+      new Float32Array([degrees - narrowed])
+    );
+
+    expect(Math.abs(joined[0] - degrees)).toBeLessThan(1e-10);
+    expect(joinDegrees(new Float32Array([narrowed]), null)[0]).toBe(narrowed);
+  });
+});
+
+describe('noseDegreesAt', () => {
+  it('turns a heading from north into a rotation from east', () => {
+    const path = {
+      ...projectPath(lat, lon, [0, 0]),
+      headings: new Float32Array([0, Math.PI / 2, Math.PI, 0]),
+    };
+
+    expect(noseDegreesAt(path, 0)).toBeCloseTo(-90);
+    expect(noseDegreesAt(path, 1)).toBeCloseTo(0);
+    expect(noseDegreesAt(path, 2)).toBeCloseTo(90);
   });
 });
 

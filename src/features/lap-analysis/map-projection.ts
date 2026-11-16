@@ -9,7 +9,19 @@ export interface ProjectedPath {
   ys: Float32Array;
   /** False where the sim had no position fix. */
   fixed: Uint8Array;
+  /** Where the car's nose pointed: radians from north, clockwise. */
+  headings?: Float32Array;
 }
+
+/**
+ * A position channel as the sim wrote it: the f32 the grid carries plus the
+ * rest it lost (`LatRest`). Without the rest the line steps by half a metre.
+ */
+export const joinDegrees = (
+  value: Float32Array,
+  rest: Float32Array | null
+): Float64Array =>
+  Float64Array.from(value, (degrees, index) => degrees + (rest?.[index] ?? 0));
 
 export interface MapBounds {
   minX: number;
@@ -23,8 +35,8 @@ const hasFix = (lat: number, lon: number) => lat !== 0 || lon !== 0;
 
 /** The first fixed point of a path: where the projection is centred. */
 export const originOf = (
-  lat: Float32Array,
-  lon: Float32Array
+  lat: ArrayLike<number>,
+  lon: ArrayLike<number>
 ): [number, number] | null => {
   for (let index = 0; index < lat.length; index++) {
     if (hasFix(lat[index], lon[index])) {
@@ -37,9 +49,10 @@ export const originOf = (
 
 /** Projects a lap's positions onto a flat map, north up, y down. */
 export const projectPath = (
-  lat: Float32Array,
-  lon: Float32Array,
-  origin: [number, number]
+  lat: ArrayLike<number>,
+  lon: ArrayLike<number>,
+  origin: [number, number],
+  headings?: Float32Array
 ): ProjectedPath => {
   const [originLat, originLon] = origin;
   const lonScale =
@@ -58,7 +71,7 @@ export const projectPath = (
     fixed[index] = 1;
   }
 
-  return { xs, ys, fixed };
+  return { xs, ys, fixed, headings };
 };
 
 /** The box around the fixed points from `from` to `to` (indexes, inclusive). */
@@ -176,3 +189,15 @@ export const headingDegreesAt = (
 
   return Math.atan2(dy, dx) * RADIANS_TO_DEGREES;
 };
+
+/** A quarter turn: SVG rotation counts from east, a heading from north. */
+const NORTH_TO_EAST_DEGREES = 90;
+
+/**
+ * Where the car's nose pointed at `index` as an SVG rotation; the direction
+ * of travel when the lap has no headings.
+ */
+export const noseDegreesAt = (path: ProjectedPath, index: number): number =>
+  path.headings === undefined
+    ? headingDegreesAt(path, index)
+    : path.headings[index] * RADIANS_TO_DEGREES - NORTH_TO_EAST_DEGREES;

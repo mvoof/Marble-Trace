@@ -13,7 +13,7 @@ use std::io::{BufReader, Read};
 use std::path::Path;
 
 use mt_model::app::lap_telemetry::{
-    FileTelemetry, LapChannel, LapKey, LapTelemetry, ELAPSED_CHANNEL,
+    rest_channel, FileTelemetry, LapChannel, LapKey, LapTelemetry, ELAPSED_CHANNEL,
 };
 
 use super::samples::{is_stepped, number_at, value_size};
@@ -36,6 +36,39 @@ const MAX_TRACK_LENGTH_M: f64 = 40_000.0;
 const MAX_LAP_ROWS: usize = 216_000;
 /// Below this a car is not moving: the time back to the line is not guessed.
 const MIN_SPEED_M_S: f64 = 1.0;
+/// Degrees the sim writes as doubles: a f32 rounds them to half a metre, so
+/// each is kept with the rest a f32 loses (`rest_channel`).
+const POSITION_CHANNELS: &[&str] = &["Lat", "Lon"];
+/// Headings in radians that wrap at a full turn: read across the wrap the
+/// short way round.
+const ANGLE_CHANNELS: &[&str] = &["YawNorth", "WindDir"];
+const FULL_TURN: f64 = std::f64::consts::TAU;
+const REST_DESCRIPTION: &str = "What a f32 loses of";
+
+/// How a channel is read between two rows.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum ChannelKind {
+    Float,
+    /// A gear, a flag: held until the next row.
+    Stepped,
+    Angle,
+    /// A float kept with its rest.
+    Position,
+}
+
+impl ChannelKind {
+    fn of(var: &VarHeader) -> Self {
+        if is_stepped(var.var_type) {
+            Self::Stepped
+        } else if ANGLE_CHANNELS.contains(&var.name.as_str()) {
+            Self::Angle
+        } else if POSITION_CHANNELS.contains(&var.name.as_str()) {
+            Self::Position
+        } else {
+            Self::Float
+        }
+    }
+}
 
 /// One row of a lap: where it was, and the value of each kept channel.
 struct LapRow {
@@ -175,7 +208,7 @@ pub fn read_stored_lap_telemetry(path: &Path, laps: &[LapKey]) -> Result<FileTel
         });
     }
 
-    let stepped: Vec<bool> = kept.iter().map(|var| is_stepped(var.var_type)).collect();
+    let kinds: Vec<ChannelKind> = kept.iter().map(|var| ChannelKind::of(var)).collect();
     let mut channels: Vec<LapChannel> = kept
         .iter()
         .map(|var| LapChannel {
@@ -184,6 +217,16 @@ pub fn read_stored_lap_telemetry(path: &Path, laps: &[LapKey]) -> Result<FileTel
             description: var.description.clone(),
         })
         .collect();
+    channels.extend(
+        kept.iter()
+            .zip(&kinds)
+            .filter(|(_, kind)| **kind == ChannelKind::Position)
+            .map(|(var, _)| LapChannel {
+                name: rest_channel(&var.name),
+                unit: var.unit.clone(),
+                description: format!("{REST_DESCRIPTION} {}", var.name),
+            }),
+    );
     channels.push(LapChannel {
         name: ELAPSED_CHANNEL.into(),
         unit: ELAPSED_UNIT.into(),
@@ -197,7 +240,7 @@ pub fn read_stored_lap_telemetry(path: &Path, laps: &[LapKey]) -> Result<FileTel
 
             (!rows.is_empty()).then(|| LapTelemetry {
                 lap: *lap,
-                values: resample_lap(&forward_rows(rows), &stepped, points),
+                values: resample_lap(&forward_rows(rows), &kinds, points),
             })
         })
         .collect();
@@ -254,9 +297,9 @@ fn forward_rows(rows: Vec<LapRow>) -> Vec<LapRow> {
     kept
 }
 
-/// Each channel on the grid, then the time since the line. `rows` is not
-/// empty and moves forward.
-fn resample_lap(rows: &[LapRow], stepped: &[bool], points: usize) -> Vec<Vec<f32>> {
+/// Each channel on the grid, then the rest of each position channel, then
+/// the time since the line. `rows` is not empty and moves forward.
+fn resample_lap(rows: &[LapRow], kinds: &[ChannelKind], points: usize) -> Vec<Vec<f32>> {
     let first = &rows[0];
     // The first row is a little past the line: back to it at the speed then.
     let line_time = if first.speed_m_s >= MIN_SPEED_M_S {
@@ -264,7 +307,13 @@ fn resample_lap(rows: &[LapRow], stepped: &[bool], points: usize) -> Vec<Vec<f32
     } else {
         first.session_time
     };
-    let mut values: Vec<Vec<f32>> = (0..stepped.len())
+    let positions: Vec<usize> = kinds
+        .iter()
+        .enumerate()
+        .filter(|(_, kind)| **kind == ChannelKind::Position)
+        .map(|(channel, _)| channel)
+        .collect();
+    let mut values: Vec<Vec<f32>> = (0..kinds.len() + positions.len())
         .map(|_| Vec::with_capacity(points))
         .collect();
     let mut elapsed = Vec::with_capacity(points);
@@ -286,14 +335,21 @@ fn resample_lap(rows: &[LapRow], stepped: &[bool], points: usize) -> Vec<Vec<f32
             0.0
         };
 
-        for (channel, is_stepped) in stepped.iter().enumerate() {
-            let value = if *is_stepped {
-                before.values[channel]
-            } else {
-                lerp(before.values[channel], after.values[channel], fraction)
+        for (channel, kind) in kinds.iter().enumerate() {
+            let from = before.values[channel];
+            let to = after.values[channel];
+            let value = match kind {
+                ChannelKind::Stepped => from,
+                ChannelKind::Angle => lerp_angle(from, to, fraction),
+                ChannelKind::Float | ChannelKind::Position => lerp(from, to, fraction),
             };
+            let narrowed = value as f32;
 
-            values[channel].push(value as f32);
+            values[channel].push(narrowed);
+
+            if let Some(rest) = positions.iter().position(|index| *index == channel) {
+                values[kinds.len() + rest].push((value - f64::from(narrowed)) as f32);
+            }
         }
 
         let time = if distance_m < first.distance_m && first.distance_m > 0.0 {
@@ -314,6 +370,14 @@ fn lerp(from: f64, to: f64, fraction: f64) -> f64 {
     from + (to - from) * fraction
 }
 
+/// Between two headings the short way round, in `[0, FULL_TURN)`.
+fn lerp_angle(from: f64, to: f64, fraction: f64) -> f64 {
+    let half_turn = FULL_TURN / 2.0;
+    let step = (to - from + half_turn).rem_euclid(FULL_TURN) - half_turn;
+
+    (from + step * fraction).rem_euclid(FULL_TURN)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -331,7 +395,7 @@ mod tests {
     fn a_float_is_interpolated_a_stepped_value_held() {
         let rows = vec![row(0.5, 10.05, 0.0, 2.0), row(2.5, 10.25, 20.0, 3.0)];
 
-        let values = resample_lap(&rows, &[false, true], 4);
+        let values = resample_lap(&rows, &[ChannelKind::Float, ChannelKind::Stepped], 4);
 
         assert_eq!(values[0], vec![0.0, 5.0, 15.0, 20.0]);
         assert_eq!(values[1], vec![2.0, 2.0, 2.0, 3.0]);
@@ -342,13 +406,37 @@ mod tests {
         // 0.5 m past the line at 10 m/s: the line was 0.05 s earlier.
         let rows = vec![row(0.5, 10.05, 0.0, 2.0), row(2.5, 10.25, 20.0, 3.0)];
 
-        let elapsed = &resample_lap(&rows, &[false, true], 4)[2];
+        let elapsed = &resample_lap(&rows, &[ChannelKind::Float, ChannelKind::Stepped], 4)[2];
 
         let rounded: Vec<f32> = elapsed
             .iter()
             .map(|time| (time * 1000.0).round() / 1000.0)
             .collect();
         assert_eq!(rounded, vec![0.0, 0.1, 0.2, 0.25]);
+    }
+
+    #[test]
+    fn a_heading_is_read_across_north_the_short_way() {
+        let near_north = FULL_TURN - 0.1;
+        let rows = vec![row(0.0, 0.0, near_north, 1.0), row(2.0, 0.2, 0.1, 1.0)];
+
+        let values = resample_lap(&rows, &[ChannelKind::Angle, ChannelKind::Stepped], 3);
+
+        assert!((values[0][0] - near_north as f32).abs() < 1e-5);
+        assert!(values[0][1].abs() < 1e-5 || (values[0][1] - FULL_TURN as f32).abs() < 1e-5);
+        assert!((values[0][2] - 0.1).abs() < 1e-5);
+    }
+
+    #[test]
+    fn a_position_keeps_the_rest_a_f32_loses() {
+        let latitude = 41.570_123_456_789;
+        let rows = vec![row(0.0, 0.0, latitude, 1.0), row(1.0, 0.1, latitude, 1.0)];
+
+        let values = resample_lap(&rows, &[ChannelKind::Position, ChannelKind::Stepped], 2);
+        let joined = f64::from(values[0][0]) + f64::from(values[2][0]);
+
+        assert!((joined - latitude).abs() < 1e-11);
+        assert_eq!(values.len(), 4, "value, stepped, rest, elapsed");
     }
 
     #[test]
@@ -373,7 +461,7 @@ mod tests {
     fn past_the_last_row_the_values_hold() {
         let rows = vec![row(0.0, 0.0, 1.0, 1.0), row(1.0, 0.1, 2.0, 4.0)];
 
-        let values = resample_lap(&rows, &[false, true], 4);
+        let values = resample_lap(&rows, &[ChannelKind::Float, ChannelKind::Stepped], 4);
 
         assert_eq!(values[0], vec![1.0, 2.0, 2.0, 2.0]);
         assert_eq!(values[1], vec![1.0, 4.0, 4.0, 4.0]);

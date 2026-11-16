@@ -2,7 +2,12 @@ import { makeAutoObservable, runInAction } from 'mobx';
 
 import type { LapChannelData } from '@shared/api/lap-analysis.service';
 import { ChartViewport } from '@shared/lib/chart-viewport';
-import { originOf, projectPath, type ProjectedPath } from './map-projection';
+import {
+  joinDegrees,
+  originOf,
+  projectPath,
+  type ProjectedPath,
+} from './map-projection';
 import { DELTA_CHANNEL, ELAPSED_CHANNEL, deltaValues } from './channel-looks';
 
 import type {
@@ -44,8 +49,25 @@ export interface ChartData {
   byChannel: Map<string, Float32Array[]>;
 }
 
-/** Where on the earth each point was: the map draws the laps from them. */
-export const MAP_CHANNELS = ['Lat', 'Lon'];
+const LAT_CHANNEL = 'Lat';
+const LON_CHANNEL = 'Lon';
+/** What the f32 grid loses of `Lat` and `Lon`, kept beside them. */
+const LAT_REST_CHANNEL = 'LatRest';
+const LON_REST_CHANNEL = 'LonRest';
+/** Where the car's nose pointed, radians from north. */
+const HEADING_CHANNEL = 'YawNorth';
+
+/** Where on the earth each point was and where the car faced: the map. */
+export const MAP_CHANNELS = [
+  LAT_CHANNEL,
+  LAT_REST_CHANNEL,
+  LON_CHANNEL,
+  LON_REST_CHANNEL,
+  HEADING_CHANNEL,
+];
+
+/** Channels the map reads that "+ Channel" does not offer. */
+export const HIDDEN_CHANNELS = [LAT_REST_CHANNEL, LON_REST_CHANNEL];
 
 /**
  * The file channels the charts and the map need: the delta reads the time
@@ -205,12 +227,26 @@ export class LapAnalysisStore {
    * reference lap's first fix; `null` before the positions are fetched.
    */
   get mapPaths(): { laps: (ProjectedPath | null)[]; reference: number } | null {
-    const lats = this.chartValues('Lat');
-    const lons = this.chartValues('Lon');
+    const latValues = this.chartValues(LAT_CHANNEL);
+    const lonValues = this.chartValues(LON_CHANNEL);
 
-    if (lats === null || lons === null) {
+    if (latValues === null || lonValues === null) {
       return null;
     }
+
+    const latRests = this.chartValues(LAT_REST_CHANNEL);
+    const lonRests = this.chartValues(LON_REST_CHANNEL);
+    const hasHeadings =
+      this.loaded?.channels.some(
+        (channel) => channel.name === HEADING_CHANNEL
+      ) ?? false;
+    const headings = hasHeadings ? this.chartValues(HEADING_CHANNEL) : null;
+    const lats = latValues.map((lat, index) =>
+      joinDegrees(lat, latRests?.[index] ?? null)
+    );
+    const lons = lonValues.map((lon, index) =>
+      joinDegrees(lon, lonRests?.[index] ?? null)
+    );
 
     const reference = Math.max(
       this.set.laps.findIndex((lap) => lap.reference),
@@ -227,7 +263,7 @@ export class LapAnalysisStore {
       laps: lats.map((lat, index) =>
         this.isMissing(this.set.laps[index].lap)
           ? null
-          : projectPath(lat, lons[index], origin)
+          : projectPath(lat, lons[index], origin, headings?.[index])
       ),
     };
   }

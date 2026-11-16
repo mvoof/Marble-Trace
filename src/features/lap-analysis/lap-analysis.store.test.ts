@@ -11,6 +11,7 @@ import {
   LapAnalysisStore,
   holdsTelemetry,
   isAnalysable,
+  MAP_CHANNELS,
   type LapAnalysisApi,
 } from './lap-analysis.store';
 
@@ -294,7 +295,7 @@ describe('LapAnalysisStore charts', () => {
 
     expect(api.getLapChannels).toHaveBeenLastCalledWith(
       [ref(2), ref(3)],
-      ['Speed', 'ElapsedTime', 'Lat', 'Lon']
+      ['Speed', 'ElapsedTime', ...MAP_CHANNELS]
     );
     expect(
       store.chartValues('deltaToReference')?.map((lap) => Array.from(lap))

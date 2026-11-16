@@ -12,6 +12,7 @@ import {
   channelLook,
   formatChannelValue,
 } from '@features/lap-analysis/channel-looks';
+import { HIDDEN_CHANNELS } from '@features/lap-analysis/lap-analysis.store';
 import { LapChart, type ChartSeries } from '@shared/ui/LapChart/LapChart';
 import { GestureHint } from './GestureHint';
 import styles from './AnalysisCharts.module.scss';
@@ -140,7 +141,9 @@ const AddChannel = observer(() => {
   const options = [
     { name: DELTA_CHANNEL, description: t('dataPage.analysis.delta') },
     ...(analysis.loaded?.channels ?? []).filter(
-      (channel) => channel.name !== ELAPSED_CHANNEL
+      (channel) =>
+        channel.name !== ELAPSED_CHANNEL &&
+        !HIDDEN_CHANNELS.includes(channel.name)
     ),
   ]
     .filter((channel) => !shown.includes(channel.name))

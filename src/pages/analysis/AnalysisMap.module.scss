@@ -97,9 +97,18 @@
   fill: $sys-bg-main;
 }
 
-.marker {
+// The cursor: a dot where the car was, a chevron where its nose pointed.
+.dot {
   stroke: $sys-bg-main;
   stroke-width: 1.5px;
+  vector-effect: non-scaling-stroke;
+}
+
+.chevron {
+  fill: none;
+  stroke-width: 2px;
+  stroke-linecap: round;
+  stroke-linejoin: round;
   vector-effect: non-scaling-stroke;
 }
 

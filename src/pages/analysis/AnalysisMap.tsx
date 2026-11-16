@@ -13,9 +13,10 @@ import {
 } from '@features/lap-analysis/map-projection';
 import type { ChartViewport } from '@shared/lib/chart-viewport';
 import {
-  ARROW_PATH,
   attachMapGestures,
   LABEL_SCALE,
+  MARKER_CHEVRON_PATH,
+  MARKER_DOT_RADIUS_PX,
   paddedBox,
   type ViewBox,
 } from './map-gestures';
@@ -68,7 +69,7 @@ const MapView = observer(
     const { t } = useTranslation('main-app');
     const svgRef = useRef<SVGSVGElement>(null);
     const brightRefs = useRef<(SVGPathElement | null)[]>([]);
-    const markerRefs = useRef<(SVGPathElement | null)[]>([]);
+    const markerRefs = useRef<(SVGGElement | null)[]>([]);
     const labelRefs = useRef<(SVGTextElement | null)[]>([]);
     const selectRef = useRef<SVGRectElement>(null);
     const referencePath = paths[reference];
@@ -116,7 +117,7 @@ const MapView = observer(
       return { index, x, y, normalX, normalY };
     });
     const startBox = box.current ?? paddedBox(fullBounds);
-    // The reference lap's arrow is drawn last, over the others.
+    // The reference lap's marker is drawn last, over the others.
     const markerOrder = [
       ...paths
         .map((_path, index) => index)
@@ -261,16 +262,24 @@ const MapView = observer(
 
           {markerOrder.map((index) =>
             paths[index] === null || !visible[index] ? null : (
-              <path
+              <g
                 key={`marker-${index}`}
                 ref={(element) => {
                   markerRefs.current[index] = element;
                 }}
-                className={styles.marker}
-                d={ARROW_PATH}
-                fill={colors[index]}
                 visibility="hidden"
-              />
+              >
+                <path
+                  className={styles.chevron}
+                  d={MARKER_CHEVRON_PATH}
+                  stroke={colors[index]}
+                />
+                <circle
+                  className={styles.dot}
+                  r={MARKER_DOT_RADIUS_PX}
+                  fill={colors[index]}
+                />
+              </g>
             )
           )}
 

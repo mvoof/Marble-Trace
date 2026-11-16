@@ -9,6 +9,15 @@ use crate::app::stats::LapRef;
 /// two laps is the difference of theirs.
 pub const ELAPSED_CHANNEL: &str = "ElapsedTime";
 
+/// Ends the channel that keeps what a f32 loses of a double position:
+/// `Lat` + `LatRest` is the sim's degree.
+const REST_SUFFIX: &str = "Rest";
+
+/// The channel holding the rest of position channel `name`.
+pub fn rest_channel(name: &str) -> String {
+    format!("{name}{REST_SUFFIX}")
+}
+
 /// A channel a file holds, as "+ Channel" offers it.
 #[cfg_attr(feature = "dev", derive(specta::Type))]
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]

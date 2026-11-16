@@ -1,7 +1,7 @@
 import {
   boundsOf,
-  headingDegreesAt,
   nearestPoint,
+  noseDegreesAt,
   svgPathOf,
   type MapBounds,
   type ProjectedPath,
@@ -16,12 +16,13 @@ const WHEEL_ZOOM_IN = 0.85;
 const WHEEL_ZOOM_OUT = 1 / WHEEL_ZOOM_IN;
 /** Label size against the view's width. */
 export const LABEL_SCALE = 0.048;
-/** The cursor arrows' length on screen, pixels, whatever the zoom. */
-const ARROW_LENGTH_PX = 22;
-/** A lap's cursor arrow, a dart pointing east: written rotated to the heading. */
-export const ARROW_PATH = 'M 12 0 L -9 8 L -4 0 L -9 -8 Z';
-/** `ARROW_PATH`'s length, tip to tail. */
-const ARROW_PATH_LENGTH = 21;
+/**
+ * A lap's cursor marker, in screen pixels whatever the zoom: a dot where the
+ * car was and, ahead of it, a chevron the way its nose pointed. Drawn facing
+ * east, written rotated.
+ */
+export const MARKER_DOT_RADIUS_PX = 4.5;
+export const MARKER_CHEVRON_PATH = 'M 19 -5 L 26 0 L 19 5';
 /** The hover reaches the track within this share of the view's width. */
 const HOVER_REACH = 0.04;
 /** A view this close to the whole box counts as the whole lap. */
@@ -71,7 +72,7 @@ export interface MapElements {
   svg: SVGSVGElement;
   tools: Element | null;
   brights: (SVGPathElement | null)[];
-  markers: (SVGPathElement | null)[];
+  markers: (SVGGElement | null)[];
   labels: (SVGTextElement | null)[];
   select: SVGRectElement | null;
 }
@@ -142,7 +143,7 @@ export const attachMapGestures = ({
   };
 
   const writeMarkers = (metres: number | null) => {
-    const arrowScale = (unitsPerPixel() * ARROW_LENGTH_PX) / ARROW_PATH_LENGTH;
+    const pixelScale = unitsPerPixel();
 
     paths.forEach((path, index) => {
       const marker = elements.markers[index];
@@ -166,7 +167,7 @@ export const attachMapGestures = ({
 
       marker.setAttribute(
         'transform',
-        `translate(${path.xs[point]} ${path.ys[point]}) rotate(${headingDegreesAt(path, point)}) scale(${arrowScale})`
+        `translate(${path.xs[point]} ${path.ys[point]}) rotate(${noseDegreesAt(path, point)}) scale(${pixelScale})`
       );
       marker.setAttribute('visibility', 'visible');
     });
