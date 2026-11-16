@@ -1,20 +1,8 @@
-$narrow-window: 1100px;
-
+// One column, top to bottom.
 .page {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) rem(240);
-  gap: rem(20);
-  align-items: start;
-
-  @media (max-width: $narrow-window) {
-    grid-template-columns: minmax(0, 1fr);
-  }
-}
-
-.main {
   display: flex;
   flex-direction: column;
-  gap: rem(24);
+  gap: rem(16);
   min-width: 0;
 }
 

@@ -9,7 +9,7 @@ import { AutologHint } from './AutologHint';
 import { DaysDrivenCard } from './DaysDrivenCard';
 import { HomeKpis } from './HomeKpis';
 import { LastRaceCard } from './LastRaceCard';
-import { NowColumn } from './NowColumn';
+import { NowStrip } from './NowStrip';
 import { RecentSessionsTable } from './RecentSessionsTable';
 import { TopByTime } from './TopByTime';
 import styles from './HomePage.module.scss';
@@ -23,37 +23,35 @@ export const HomePage = observer(() => {
 
   return (
     <div className={styles.page}>
-      <div className={styles.main}>
-        <PageTitle title={t('homePage.title')} actions={<ImportNote />} />
+      <PageTitle title={t('homePage.title')} actions={<ImportNote />} />
 
-        <AutologHint />
+      <NowStrip />
 
-        {statistics.hasSessions ? (
-          <>
-            <HomeKpis />
+      <AutologHint />
 
-            <DaysDrivenCard />
+      {statistics.hasSessions ? (
+        <>
+          <HomeKpis />
 
-            <LastRaceCard />
+          <DaysDrivenCard />
 
-            <RecentSessionsTable />
+          <LastRaceCard />
 
-            <TopByTime />
-          </>
-        ) : (
-          <div className={styles.empty}>
-            <FolderSearch size={EMPTY_ICON_SIZE} className={styles.emptyIcon} />
+          <RecentSessionsTable />
 
-            <p className={styles.emptyTitle}>{t('homePage.emptyTitle')}</p>
+          <TopByTime />
+        </>
+      ) : (
+        <div className={styles.empty}>
+          <FolderSearch size={EMPTY_ICON_SIZE} className={styles.emptyIcon} />
 
-            <p className={styles.emptyText}>{t('homePage.emptyText')}</p>
+          <p className={styles.emptyTitle}>{t('homePage.emptyTitle')}</p>
 
-            <p className={styles.emptyText}>{t('homePage.emptyKept')}</p>
-          </div>
-        )}
-      </div>
+          <p className={styles.emptyText}>{t('homePage.emptyText')}</p>
 
-      <NowColumn />
+          <p className={styles.emptyText}>{t('homePage.emptyKept')}</p>
+        </div>
+      )}
     </div>
   );
 });
