@@ -702,6 +702,7 @@
   "dataPage": {
     "sections": {
       "tracks": "Записанные трассы",
+      "analysis": "Анализ",
       "strategy": "Стратегия",
       "statistics": "Статистика"
     },
@@ -733,6 +734,18 @@
       "exportCsv": "Экспорт CSV",
       "exported": "Экспортировано сессий: {{count}}",
       "exportFailed": "Экспорт не удался: {{reason}}"
+    },
+    "analysis": {
+      "empty": "Кругов пока нет. Откройте сессию на главной и добавьте круги в анализ.",
+      "laps": "Круги",
+      "referenceHint": "☆ — эталон для дельты",
+      "lap": "Круг {{number}}",
+      "color": "Цвет круга",
+      "hide": "Скрыть",
+      "show": "Показать",
+      "reference": "Эталон для дельты",
+      "remove": "Убрать из анализа",
+      "fileDeleted": "Файл сессии удалён"
     }
   },
   "bindings": {
@@ -1593,6 +1606,23 @@
       "enable": "Включить",
       "closeGame": "Сначала закройте iRacing",
       "failed": "Не включено: {{reason}}"
+    },
+    "sessionLaps": {
+      "title": "Круги сессии",
+      "lap": "Круг",
+      "time": "Время",
+      "delta": "Дельта к лучшему",
+      "incidents": "Инц.",
+      "best": "лучший",
+      "pit": "пит",
+      "partial": "неполный",
+      "toAnalysis": "В анализ",
+      "inAnalysis": "В анализе",
+      "fileDeleted": "файл удалён",
+      "allToAnalysis": "Все круги в анализ",
+      "added": "Анализ: {{track}}, {{date}} — кругов: {{count}}",
+      "openAnalysis": "Открыть анализ",
+      "incidentsCount": "{{count}}x"
     }
   }
 }

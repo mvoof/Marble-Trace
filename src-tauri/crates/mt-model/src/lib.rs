@@ -103,6 +103,8 @@ pub fn register_types(types: &mut specta::TypeCollection) {
         .register::<app::stats::RecentSession>()
         .register::<app::stats::SessionFilter>()
         .register::<app::stats::SessionPage>()
+        .register::<app::stats::SessionLaps>()
+        .register::<app::stats::AnalysisSet>()
         .register::<app::stats::HomeStats>()
         .register::<app::stats::AutologState>()
         .register::<app::stats::StatsFolder>()

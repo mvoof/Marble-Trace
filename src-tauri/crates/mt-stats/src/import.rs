@@ -13,8 +13,8 @@ use std::thread;
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
 use mt_model::app::stats::{
-    HomeStats, KnownCar, RecentSession, SessionFile, SessionFilter, SessionPage, SkippedFile,
-    StatsFolder, StatsImportPhase, StatsImportStatus,
+    AnalysisSet, HomeStats, KnownCar, RecentSession, SessionFile, SessionFilter, SessionLaps,
+    SessionPage, SkippedFile, StatsFolder, StatsImportPhase, StatsImportStatus,
 };
 use mt_model::contract::event_sink::EventSink;
 use mt_model::contract::events::EVENT_STATS_IMPORT;
@@ -194,6 +194,40 @@ impl StatsService {
 
     pub fn sessions_page(&self, filter: &SessionFilter, page: u32) -> Result<SessionPage, String> {
         lock_or_recover(&self.db).sessions_page(filter, page)
+    }
+
+    /// A session's laps, each saying whether its file is still on disk.
+    pub fn session_laps(&self, key: &str) -> Result<Option<SessionLaps>, String> {
+        let laps = lock_or_recover(&self.db).session_laps(key)?;
+
+        Ok(laps.map(|mut laps| {
+            for lap in &mut laps.laps {
+                lap.file_present = Path::new(&lap.lap.path).is_file();
+            }
+
+            laps
+        }))
+    }
+
+    /// The analysis lap set, each lap saying whether its file is on disk.
+    pub fn analysis_set(&self) -> Result<AnalysisSet, String> {
+        let mut set = lock_or_recover(&self.db).analysis_set()?;
+
+        for lap in &mut set.laps {
+            lap.file_present = Path::new(&lap.lap.path).is_file();
+        }
+
+        Ok(set)
+    }
+
+    /// Runs `change` on the database, then answers the set as it now stands.
+    pub fn change_analysis(
+        &self,
+        change: impl FnOnce(&mut StatsDb) -> Result<(), String>,
+    ) -> Result<AnalysisSet, String> {
+        change(&mut lock_or_recover(&self.db))?;
+
+        self.analysis_set()
     }
 
     pub fn home_stats(&self) -> Result<HomeStats, String> {

@@ -694,6 +694,7 @@
   "dataPage": {
     "sections": {
       "tracks": "Recorded tracks",
+      "analysis": "Analysis",
       "strategy": "Strategy",
       "statistics": "Statistics"
     },
@@ -725,6 +726,18 @@
       "exportCsv": "Export CSV",
       "exported": "Sessions exported: {{count}}",
       "exportFailed": "Export failed: {{reason}}"
+    },
+    "analysis": {
+      "empty": "No laps yet. Open a session on Home and add laps to the analysis.",
+      "laps": "Laps",
+      "referenceHint": "☆ — reference for the delta",
+      "lap": "Lap {{number}}",
+      "color": "Lap colour",
+      "hide": "Hide",
+      "show": "Show",
+      "reference": "Reference for the delta",
+      "remove": "Remove from the analysis",
+      "fileDeleted": "The session file was deleted"
     }
   },
   "bindings": {
@@ -1581,6 +1594,23 @@
       "enable": "Switch on",
       "closeGame": "Close iRacing first",
       "failed": "Not switched on: {{reason}}"
+    },
+    "sessionLaps": {
+      "title": "Laps of the session",
+      "lap": "Lap",
+      "time": "Time",
+      "delta": "Delta to best",
+      "incidents": "Inc.",
+      "best": "best",
+      "pit": "pit",
+      "partial": "partial",
+      "toAnalysis": "To analysis",
+      "inAnalysis": "In analysis",
+      "fileDeleted": "file deleted",
+      "allToAnalysis": "All laps to analysis",
+      "added": "Analysis: {{track}}, {{date}} — {{count}} laps",
+      "openAnalysis": "Open analysis",
+      "incidentsCount": "{{count}}x"
     }
   }
 }

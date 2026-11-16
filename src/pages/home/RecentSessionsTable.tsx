@@ -5,6 +5,7 @@ import dayjs, { type Dayjs } from 'dayjs';
 import { List, Search } from 'lucide-react';
 
 import { useStatisticsStore } from '@features/statistics/statistics-context';
+import { useLapAnalysisStore } from '@features/lap-analysis/lap-analysis-context';
 import {
   SESSION_KINDS,
   SESSION_PERIODS,
@@ -13,6 +14,7 @@ import {
 import { formatLapTimeOrDash } from '@shared/lib/telemetry-format';
 import type { RecentSession } from '@shared/contracts/generated/bindings';
 import { finishText } from './recent-session-format';
+import { SessionLapsModal } from './SessionLapsModal';
 import styles from './RecentSessionsTable.module.scss';
 
 const MS_PER_SECOND = 1000;
@@ -95,6 +97,7 @@ const SessionFilters = observer(({ table }: { table: SessionsTableStore }) => {
 
 const SessionRow = observer(({ session }: { session: RecentSession }) => {
   const { t, i18n } = useTranslation('main-app');
+  const analysis = useLapAnalysisStore();
   const dateFormat = new Intl.DateTimeFormat(i18n.language, {
     month: 'short',
     day: 'numeric',
@@ -102,7 +105,10 @@ const SessionRow = observer(({ session }: { session: RecentSession }) => {
   const finish = finishText(session);
 
   return (
-    <tr>
+    <tr
+      className={styles.row}
+      onClick={() => void analysis.openSession(session.key)}
+    >
       <td className={styles.secondary}>
         {dateFormat.format(new Date(session.startedAt * MS_PER_SECOND))}
       </td>
@@ -196,6 +202,8 @@ export const RecentSessionsTable = observer(() => {
           />
         </div>
       )}
+
+      <SessionLapsModal />
     </section>
   );
 });

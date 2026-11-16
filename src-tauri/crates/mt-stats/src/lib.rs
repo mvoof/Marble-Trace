@@ -2,6 +2,7 @@
 //! a sim's session files into them (ADR-0014). Knows no sim: the app hands it
 //! the reader.
 
+pub mod analysis;
 pub mod db;
 pub mod export;
 pub mod home;

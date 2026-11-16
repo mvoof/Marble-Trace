@@ -1,26 +1,31 @@
-import { useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
-import { BarChart3, Fuel, Route, type LucideIcon } from 'lucide-react';
+import {
+  Activity,
+  BarChart3,
+  Fuel,
+  Route,
+  type LucideIcon,
+} from 'lucide-react';
+import { useMainNavigationStore } from '@features/main-navigation/main-navigation-context';
 import { SectionedPage } from '@shared/ui/SectionedPage/SectionedPage';
 import { TrackMapSection } from './TrackMapSection';
 import { SharedValuesSection } from './SharedValuesSection';
 import { StatisticsSection } from './StatisticsSection';
+import { AnalysisSection } from './analysis/AnalysisSection';
 import { ExportCsvButton } from './ExportCsvButton';
-import {
-  DATA_MENU,
-  DEFAULT_DATA_SECTION,
-  type DataSectionId,
-} from './data-sections';
+import { DATA_MENU, dataSectionOf, type DataSectionId } from './data-sections';
 
 const SECTION_ICONS: Record<DataSectionId, LucideIcon> = {
   tracks: Route,
+  analysis: Activity,
   strategy: Fuel,
   statistics: BarChart3,
 };
 
 const SECTION_COMPONENTS: Record<DataSectionId, () => React.ReactElement> = {
   tracks: TrackMapSection,
+  analysis: AnalysisSection,
   strategy: SharedValuesSection,
   statistics: StatisticsSection,
 };
@@ -29,8 +34,8 @@ const SECTION_COMPONENTS: Record<DataSectionId, () => React.ReactElement> = {
 export const DataPage = observer(() => {
   const { t } = useTranslation('main-app');
 
-  const [activeSection, setActiveSection] =
-    useState<DataSectionId>(DEFAULT_DATA_SECTION);
+  const navigation = useMainNavigationStore();
+  const activeSection = dataSectionOf(navigation.dataSection);
 
   const menu = DATA_MENU.map((sectionId) => ({
     id: sectionId,
@@ -45,7 +50,9 @@ export const DataPage = observer(() => {
     <SectionedPage
       menu={menu}
       active={activeSection}
-      onSelect={setActiveSection}
+      onSelect={(section: DataSectionId) =>
+        navigation.selectDataSection(section)
+      }
       subtitle={isStatistics ? t('dataPage.statistics.subtitle') : undefined}
       titleActions={isStatistics ? <ExportCsvButton /> : undefined}
     >

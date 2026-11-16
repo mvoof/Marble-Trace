@@ -6,11 +6,12 @@ use std::sync::Arc;
 use tauri::{AppHandle, Manager, State};
 
 use mt_model::app::stats::{
-    AutologState, HomeStats, KnownCar, RecentSession, SessionFilter, SessionPage, SkippedFile,
-    StatsFolder, StatsImportStatus, TrackOutline,
+    AnalysisSet, AutologState, HomeStats, KnownCar, LapRef, RecentSession, SessionFilter,
+    SessionLaps, SessionPage, SkippedFile, StatsFolder, StatsImportStatus, TrackOutline,
 };
 use mt_sim_iracing::app_ini;
 use mt_sim_iracing::car_badges::badge_for_car;
+use mt_stats::db::StatsDb;
 use mt_stats::import::{PassScope, StatsService};
 use mt_telemetry::state::TelemetryState;
 use mt_telemetry::storage::load_cached_track_shape;
@@ -181,4 +182,82 @@ pub async fn get_sessions_page(
     tauri::async_runtime::spawn_blocking(move || service.sessions_page(&filter, page))
         .await
         .map_err(|error| error.to_string())?
+}
+
+/// A session's laps for the session modal; `None` when it is not read.
+#[tauri::command]
+pub async fn get_session_laps(
+    state: State<'_, Arc<StatsService>>,
+    key: String,
+) -> Result<Option<SessionLaps>, String> {
+    let service = Arc::clone(&state);
+
+    tauri::async_runtime::spawn_blocking(move || service.session_laps(&key))
+        .await
+        .map_err(|error| error.to_string())?
+}
+
+#[tauri::command]
+pub async fn get_analysis_set(state: State<'_, Arc<StatsService>>) -> Result<AnalysisSet, String> {
+    let service = Arc::clone(&state);
+
+    tauri::async_runtime::spawn_blocking(move || service.analysis_set())
+        .await
+        .map_err(|error| error.to_string())?
+}
+
+/// The analysis set after `change`, run off the async runtime.
+async fn change_analysis(
+    state: State<'_, Arc<StatsService>>,
+    change: impl FnOnce(&mut StatsDb) -> Result<(), String> + Send + 'static,
+) -> Result<AnalysisSet, String> {
+    let service = Arc::clone(&state);
+
+    tauri::async_runtime::spawn_blocking(move || service.change_analysis(change))
+        .await
+        .map_err(|error| error.to_string())?
+}
+
+/// Laps of another session than the set's replace it.
+#[tauri::command]
+pub async fn add_analysis_laps(
+    state: State<'_, Arc<StatsService>>,
+    key: String,
+    laps: Vec<LapRef>,
+) -> Result<AnalysisSet, String> {
+    change_analysis(state, move |db| db.add_analysis_laps(&key, &laps)).await
+}
+
+#[tauri::command]
+pub async fn remove_analysis_lap(
+    state: State<'_, Arc<StatsService>>,
+    lap: LapRef,
+) -> Result<AnalysisSet, String> {
+    change_analysis(state, move |db| db.remove_analysis_lap(&lap)).await
+}
+
+#[tauri::command]
+pub async fn set_analysis_lap_color(
+    state: State<'_, Arc<StatsService>>,
+    lap: LapRef,
+    color: String,
+) -> Result<AnalysisSet, String> {
+    change_analysis(state, move |db| db.set_analysis_lap_color(&lap, &color)).await
+}
+
+#[tauri::command]
+pub async fn set_analysis_lap_visible(
+    state: State<'_, Arc<StatsService>>,
+    lap: LapRef,
+    visible: bool,
+) -> Result<AnalysisSet, String> {
+    change_analysis(state, move |db| db.set_analysis_lap_visible(&lap, visible)).await
+}
+
+#[tauri::command]
+pub async fn set_analysis_reference(
+    state: State<'_, Arc<StatsService>>,
+    lap: LapRef,
+) -> Result<AnalysisSet, String> {
+    change_analysis(state, move |db| db.set_analysis_reference(&lap)).await
 }

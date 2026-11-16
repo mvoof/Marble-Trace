@@ -22,6 +22,8 @@ type Destination = {
   widgetId?: string | null;
   /** On the Hotkeys page: the one widget type to show bindings for. */
   hotkeysWidget?: string;
+  /** On the Data page: the section to show. */
+  dataSection?: string;
 };
 
 type MainNavigationDeps = {
@@ -44,6 +46,9 @@ export class MainNavigationStore {
 
   /** The widget the Widgets page shows; null shows all widgets. */
   activeWidgetId: string | null = null;
+
+  /** The Data page's section; null is the page's first. The page knows its sections. */
+  dataSection: string | null = null;
 
   /** Where the user asked to go while the crew still holds unsaved edits. */
   private heldDestination: Destination | null = null;
@@ -74,6 +79,16 @@ export class MainNavigationStore {
   /** The Hotkeys page, showing only this widget type's bindings. */
   openHotkeys(widgetType: string) {
     this.goTo({ section: 'hotkeys', hotkeysWidget: widgetType });
+  }
+
+  /** The Data page, on this section. */
+  openDataSection(section: string) {
+    this.goTo({ section: 'data', dataSection: section });
+  }
+
+  /** The Data page's menu picked a section. */
+  selectDataSection(section: string) {
+    this.dataSection = section;
   }
 
   /** The Hotkeys page drops its widget filter. */
@@ -119,6 +134,10 @@ export class MainNavigationStore {
   private arrive(destination: Destination) {
     if (destination.widgetId !== undefined) {
       this.activeWidgetId = destination.widgetId;
+    }
+
+    if (destination.dataSection !== undefined) {
+      this.dataSection = destination.dataSection;
     }
 
     if (destination.section === 'hotkeys') {

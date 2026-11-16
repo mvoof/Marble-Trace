@@ -204,6 +204,74 @@ pub struct RecentSession {
     pub incidents: u32,
 }
 
+/// What a lap is known by: the file, the run in it, the lap number.
+#[cfg_attr(feature = "dev", derive(specta::Type))]
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq, Hash)]
+#[serde(rename_all = "camelCase")]
+pub struct LapRef {
+    pub path: String,
+    pub session_num: i32,
+    pub lap_num: i32,
+}
+
+/// One lap of the session modal.
+#[cfg_attr(feature = "dev", derive(specta::Type))]
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
+#[serde(rename_all = "camelCase")]
+pub struct SessionLap {
+    pub lap: LapRef,
+    /// The sim's run type, e.g. `Race`.
+    pub run_type: String,
+    pub time_s: Option<f64>,
+    /// Against the session's best lap; `None` for a partial or pit lap and
+    /// for one without a time.
+    pub delta_s: Option<f64>,
+    pub incidents: u32,
+    pub in_pit: bool,
+    pub partial: bool,
+    /// The session's best lap: the sim's own, else its fastest full lap off
+    /// pit road.
+    pub is_best: bool,
+    /// Its `.ibt` is still on disk: its telemetry can be analysed.
+    pub file_present: bool,
+}
+
+/// A session's laps, oldest run first.
+#[cfg_attr(feature = "dev", derive(specta::Type))]
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
+#[serde(rename_all = "camelCase")]
+pub struct SessionLaps {
+    pub session: RecentSession,
+    pub laps: Vec<SessionLap>,
+}
+
+/// A lap in the analysis, as it is drawn.
+#[cfg_attr(feature = "dev", derive(specta::Type))]
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
+#[serde(rename_all = "camelCase")]
+pub struct AnalysisLap {
+    pub lap: LapRef,
+    pub run_type: String,
+    pub time_s: Option<f64>,
+    pub is_best: bool,
+    /// CSS colour, `#rrggbb`.
+    pub color: String,
+    pub visible: bool,
+    /// The lap the delta is counted against.
+    pub reference: bool,
+    pub file_present: bool,
+}
+
+/// The laps in the analysis, all of one session, in the order added.
+#[cfg_attr(feature = "dev", derive(specta::Type))]
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct AnalysisSet {
+    /// `None` while the set is empty.
+    pub session: Option<RecentSession>,
+    pub laps: Vec<AnalysisLap>,
+}
+
 /// What Home shows above the recent sessions: the last seven days next to the
 /// seven before, the calendar, the top lists and the last race.
 #[cfg_attr(feature = "dev", derive(specta::Type))]

@@ -694,6 +694,7 @@
   "dataPage": {
     "sections": {
       "tracks": "Circuitos grabados",
+      "analysis": "Análisis",
       "strategy": "Estrategia",
       "statistics": "Estadísticas"
     },
@@ -725,6 +726,18 @@
       "exportCsv": "Exportar CSV",
       "exported": "Sesiones exportadas: {{count}}",
       "exportFailed": "La exportación falló: {{reason}}"
+    },
+    "analysis": {
+      "empty": "Aún no hay vueltas. Abre una sesión en Inicio y añade vueltas al análisis.",
+      "laps": "Vueltas",
+      "referenceHint": "☆ — referencia del delta",
+      "lap": "Vuelta {{number}}",
+      "color": "Color de la vuelta",
+      "hide": "Ocultar",
+      "show": "Mostrar",
+      "reference": "Referencia del delta",
+      "remove": "Quitar del análisis",
+      "fileDeleted": "El archivo de la sesión se borró"
     }
   },
   "bindings": {
@@ -1581,6 +1594,23 @@
       "enable": "Activar",
       "closeGame": "Cierra iRacing primero",
       "failed": "No activado: {{reason}}"
+    },
+    "sessionLaps": {
+      "title": "Vueltas de la sesión",
+      "lap": "Vuelta",
+      "time": "Tiempo",
+      "delta": "Delta a la mejor",
+      "incidents": "Inc.",
+      "best": "mejor",
+      "pit": "boxes",
+      "partial": "parcial",
+      "toAnalysis": "Al análisis",
+      "inAnalysis": "En el análisis",
+      "fileDeleted": "archivo borrado",
+      "allToAnalysis": "Todas al análisis",
+      "added": "Análisis: {{track}}, {{date}} — {{count}} vueltas",
+      "openAnalysis": "Abrir análisis",
+      "incidentsCount": "{{count}}x"
     }
   }
 }

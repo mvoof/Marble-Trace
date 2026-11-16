@@ -25,6 +25,8 @@ import { MainNavigationStore } from '@features/main-navigation/main-navigation.s
 import { AppLinksStore } from '@features/app-links/app-links.store';
 import { LayoutFilesStore } from '@features/layout-files/layout-files.store';
 import { StatisticsStore } from '@features/statistics/statistics.store';
+import { LapAnalysisStore } from '@features/lap-analysis/lap-analysis.store';
+import * as lapAnalysisApi from '@shared/api/lap-analysis.service';
 import { decodeLayout, encodeLayout } from '@app/sync/main/settings-file';
 
 /**
@@ -56,6 +58,7 @@ export class MainRoot extends RendererCore implements AppWindowStores {
   navigation: MainNavigationStore;
   appLinks: AppLinksStore;
   statistics: StatisticsStore;
+  lapAnalysis: LapAnalysisStore;
 
   constructor(options?: { skipInit?: boolean }) {
     super(options);
@@ -89,11 +92,13 @@ export class MainRoot extends RendererCore implements AppWindowStores {
     this.navigation = new MainNavigationStore(this);
     this.appLinks = new AppLinksStore(this);
     this.statistics = new StatisticsStore(this);
+    this.lapAnalysis = new LapAnalysisStore(lapAnalysisApi);
 
     if (!options?.skipInit) {
       void this.twitchAuth.init();
       this.appUpdate.init();
       void this.statistics.start();
+      void this.lapAnalysis.load();
     }
   }
 

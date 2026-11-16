@@ -690,6 +690,7 @@
   "dataPage": {
     "sections": {
       "tracks": "已记录的赛道",
+      "analysis": "分析",
       "strategy": "策略",
       "statistics": "统计"
     },
@@ -721,6 +722,18 @@
       "exportCsv": "导出 CSV",
       "exported": "已导出会话：{{count}}",
       "exportFailed": "导出失败：{{reason}}"
+    },
+    "analysis": {
+      "empty": "还没有圈。在首页打开一个会话并把圈加入分析。",
+      "laps": "圈",
+      "referenceHint": "☆ — 差值参考",
+      "lap": "第 {{number}} 圈",
+      "color": "圈的颜色",
+      "hide": "隐藏",
+      "show": "显示",
+      "reference": "差值参考",
+      "remove": "从分析中移除",
+      "fileDeleted": "会话文件已删除"
     }
   },
   "bindings": {
@@ -1575,6 +1588,23 @@
       "enable": "开启",
       "closeGame": "请先关闭 iRacing",
       "failed": "未能开启：{{reason}}"
+    },
+    "sessionLaps": {
+      "title": "会话圈速",
+      "lap": "圈",
+      "time": "时间",
+      "delta": "与最佳之差",
+      "incidents": "事故",
+      "best": "最佳",
+      "pit": "进站",
+      "partial": "不完整",
+      "toAnalysis": "加入分析",
+      "inAnalysis": "已在分析中",
+      "fileDeleted": "文件已删除",
+      "allToAnalysis": "全部加入分析",
+      "added": "分析：{{track}}，{{date}} — {{count}} 圈",
+      "openAnalysis": "打开分析",
+      "incidentsCount": "{{count}}x"
     }
   }
 }

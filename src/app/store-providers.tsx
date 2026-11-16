@@ -47,6 +47,7 @@ import { AppUpdateContext } from '@features/app-update/app-update-context';
 import { CompanionAppsContext } from '@features/companion-apps/companion-apps-context';
 import { VoiceCrewContext } from '@features/voice-crew/voice-crew-context';
 import { StatisticsContext } from '@features/statistics/statistics-context';
+import { LapAnalysisContext } from '@features/lap-analysis/lap-analysis-context';
 import { RemoteDevicesContext } from '@features/remote-screens/remote-devices-context';
 import { WidgetHostContext } from '@widgets/widget-host-context';
 import {
@@ -118,6 +119,7 @@ const mainStores = (root: MainRoot): ProvidedStore[] => [
   provide(CompanionAppsContext, root.companionApps),
   provide(VoiceCrewContext, root.voiceCrew),
   provide(StatisticsContext, root.statistics),
+  provide(LapAnalysisContext, root.lapAnalysis),
   provide(TwitchAuthContext, root.twitchAuth),
   provide(DeviceInputContext, root.deviceInput),
   provide(BindingsUiContext, root.bindingsUi),

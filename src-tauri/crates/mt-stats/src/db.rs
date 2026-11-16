@@ -13,7 +13,7 @@ use rusqlite::{params, Connection, OptionalExtension, Transaction};
 use mt_model::app::stats::{KnownCar, RecentSession, SessionFile, SkippedFile, TrackOutline};
 
 /// Bumped with every schema step; `migrate` runs the steps above the file's.
-const SCHEMA_VERSION: i64 = 5;
+const SCHEMA_VERSION: i64 = 6;
 
 const SCHEMA_V1: &str = "
 CREATE TABLE session (
@@ -114,6 +114,22 @@ CREATE TABLE track_sectors (
   start_pcts  TEXT NOT NULL
 );
 UPDATE ibt_file SET size = -1;
+";
+
+/// The analysis lap set: laps of one session, kept across restarts. No key
+/// to `lap`: a file read again replaces its laps, and the set must outlive it.
+const SCHEMA_V6: &str = "
+CREATE TABLE analysis_lap (
+  position     INTEGER PRIMARY KEY,
+  session_key  TEXT NOT NULL,
+  path         TEXT NOT NULL,
+  session_num  INTEGER NOT NULL,
+  lap_num      INTEGER NOT NULL,
+  color        TEXT NOT NULL,
+  visible      INTEGER NOT NULL DEFAULT 1,
+  reference    INTEGER NOT NULL DEFAULT 0,
+  UNIQUE (path, session_num, lap_num)
+);
 ";
 
 /// Between the sector starts in `track_sectors.start_pcts`.
@@ -360,15 +376,7 @@ impl StatsDb {
     }
 
     pub(crate) fn with_results(&self, session: RecentSession) -> Result<RecentSession, String> {
-        let best_lap_s = self
-            .connection
-            .query_row(
-                "SELECT MIN(time_s) FROM lap
-                 WHERE session_key = ?1 AND time_s IS NOT NULL AND in_pit = 0 AND partial = 0",
-                params![session.key],
-                |row| row.get(0),
-            )
-            .map_err(to_message)?;
+        let best_lap_s = self.session_best(&session.key)?.map(|best| best.time_s);
         let incidents = self.session_incidents(&session.key)?;
         // The last race of the session, as its latest file saw the flag. The
         // field size comes from the latest file whose results list the race:
@@ -473,6 +481,10 @@ fn migrate(connection: &Connection) -> Result<Option<String>, String> {
 
     if version < 5 {
         connection.execute_batch(SCHEMA_V5).map_err(to_message)?;
+    }
+
+    if version < 6 {
+        connection.execute_batch(SCHEMA_V6).map_err(to_message)?;
     }
 
     connection
