@@ -13,7 +13,7 @@ use rusqlite::{params, Connection, OptionalExtension, Transaction};
 use mt_model::app::stats::{KnownCar, RecentSession, SessionFile, SkippedFile, TrackOutline};
 
 /// Bumped with every schema step; `migrate` runs the steps above the file's.
-const SCHEMA_VERSION: i64 = 3;
+const SCHEMA_VERSION: i64 = 4;
 
 const SCHEMA_V1: &str = "
 CREATE TABLE session (
@@ -81,7 +81,7 @@ CREATE TABLE lap (
 CREATE INDEX lap_session ON lap(session_key);
 ";
 
-/// The statistics' own choices, which live with the records they shape.
+/// The statistics' own choices; step 4 hands its one row to `settings.json`.
 const SCHEMA_V2: &str = "
 CREATE TABLE setting (
   key    TEXT PRIMARY KEY,
@@ -98,7 +98,11 @@ CREATE TABLE track_outline (
 );
 ";
 
-const SETTING_FOLDER: &str = "folder";
+/// Settings live in `settings.json`, data here (ADR-0015): the folder row
+/// leaves with its table, and `StatsDb::take_legacy_folder` hands it over.
+const SCHEMA_V4: &str = "DROP TABLE IF EXISTS setting;";
+
+const LEGACY_SETTING_FOLDER: &str = "folder";
 
 pub(crate) const STATUS_READ: &str = "read";
 const STATUS_BROKEN: &str = "broken";
@@ -116,6 +120,8 @@ pub struct FileStamp {
 
 pub struct StatsDb {
     pub(crate) connection: Connection,
+    /// The `.ibt` folder a database before step 4 held, until main takes it.
+    legacy_folder: Option<String>,
 }
 
 impl StatsDb {
@@ -131,9 +137,12 @@ impl StatsDb {
         connection
             .pragma_update(None, "foreign_keys", true)
             .map_err(to_message)?;
-        migrate(&connection)?;
+        let legacy_folder = migrate(&connection)?;
 
-        Ok(Self { connection })
+        Ok(Self {
+            connection,
+            legacy_folder,
+        })
     }
 
     /// Every file seen, read or broken, with the stamp it had then.
@@ -306,32 +315,10 @@ impl StatsDb {
         transaction.commit().map_err(to_message)
     }
 
-    /// The folder the driver chose; `None` reads the sim's own.
-    pub fn folder_override(&self) -> Result<Option<String>, String> {
-        self.connection
-            .query_row(
-                "SELECT value FROM setting WHERE key = ?1",
-                params![SETTING_FOLDER],
-                |row| row.get(0),
-            )
-            .optional()
-            .map_err(to_message)
-    }
-
-    pub fn set_folder_override(&mut self, folder: Option<&str>) -> Result<(), String> {
-        match folder {
-            Some(folder) => self.connection.execute(
-                "INSERT INTO setting (key, value) VALUES (?1, ?2)
-                 ON CONFLICT(key) DO UPDATE SET value = excluded.value",
-                params![SETTING_FOLDER, folder],
-            ),
-            None => self.connection.execute(
-                "DELETE FROM setting WHERE key = ?1",
-                params![SETTING_FOLDER],
-            ),
-        }
-        .map(|_| ())
-        .map_err(to_message)
+    /// The `.ibt` folder the dropped `setting` table held, once: main moves
+    /// it into `settings.json`.
+    pub fn take_legacy_folder(&mut self) -> Option<String> {
+        self.legacy_folder.take()
     }
 
     /// The latest sessions first, each merged from all its files.
@@ -453,10 +440,13 @@ fn session_key(file: &SessionFile) -> String {
     }
 }
 
-fn migrate(connection: &Connection) -> Result<(), String> {
+/// Runs the steps above the file's version. Returns the folder row step 4
+/// dropped, if there was one.
+fn migrate(connection: &Connection) -> Result<Option<String>, String> {
     let version: i64 = connection
         .pragma_query_value(None, "user_version", |row| row.get(0))
         .map_err(to_message)?;
+    let mut legacy_folder = None;
 
     if version < 1 {
         connection.execute_batch(SCHEMA_V1).map_err(to_message)?;
@@ -470,9 +460,23 @@ fn migrate(connection: &Connection) -> Result<(), String> {
         connection.execute_batch(SCHEMA_V3).map_err(to_message)?;
     }
 
+    if version < 4 {
+        legacy_folder = connection
+            .query_row(
+                "SELECT value FROM setting WHERE key = ?1",
+                params![LEGACY_SETTING_FOLDER],
+                |row| row.get(0),
+            )
+            .optional()
+            .map_err(to_message)?;
+        connection.execute_batch(SCHEMA_V4).map_err(to_message)?;
+    }
+
     connection
         .pragma_update(None, "user_version", SCHEMA_VERSION)
-        .map_err(to_message)
+        .map_err(to_message)?;
+
+    Ok(legacy_folder)
 }
 
 /// The first file of a session writes its row; later ones leave it.
@@ -886,26 +890,56 @@ mod tests {
     }
 
     #[test]
-    fn the_folder_choice_is_kept_and_cleared() {
+    fn a_new_database_has_no_legacy_folder_and_no_setting_table() {
         let mut db = StatsDb::open_in_memory().unwrap();
-        assert_eq!(db.folder_override().unwrap(), None);
 
-        db.set_folder_override(Some("E:/ibt")).unwrap();
-        assert_eq!(db.folder_override().unwrap().as_deref(), Some("E:/ibt"));
-
-        db.set_folder_override(None).unwrap();
-        assert_eq!(db.folder_override().unwrap(), None);
+        assert_eq!(db.take_legacy_folder(), None);
+        assert!(!has_table(&db.connection, "setting"));
     }
 
     #[test]
-    fn a_version_one_database_gains_the_setting_table() {
+    fn a_version_three_database_hands_its_folder_over_once_and_drops_the_table() {
         let connection = Connection::open_in_memory().unwrap();
-        connection.execute_batch(SCHEMA_V1).unwrap();
-        connection.pragma_update(None, "user_version", 1).unwrap();
+        connection
+            .execute_batch(&format!("{SCHEMA_V1}{SCHEMA_V2}{SCHEMA_V3}"))
+            .unwrap();
+        connection
+            .execute(
+                "INSERT INTO setting (key, value) VALUES ('folder', 'E:/ibt')",
+                [],
+            )
+            .unwrap();
+        connection.pragma_update(None, "user_version", 3).unwrap();
 
         let mut db = StatsDb::prepared(connection).unwrap();
 
-        db.set_folder_override(Some("E:/ibt")).unwrap();
-        assert_eq!(db.folder_override().unwrap().as_deref(), Some("E:/ibt"));
+        assert_eq!(db.take_legacy_folder().as_deref(), Some("E:/ibt"));
+        assert_eq!(db.take_legacy_folder(), None);
+        assert!(!has_table(&db.connection, "setting"));
+    }
+
+    #[test]
+    fn a_version_three_database_without_a_folder_row_hands_nothing() {
+        let connection = Connection::open_in_memory().unwrap();
+        connection
+            .execute_batch(&format!("{SCHEMA_V1}{SCHEMA_V2}{SCHEMA_V3}"))
+            .unwrap();
+        connection.pragma_update(None, "user_version", 3).unwrap();
+
+        let mut db = StatsDb::prepared(connection).unwrap();
+
+        assert_eq!(db.take_legacy_folder(), None);
+        assert!(!has_table(&db.connection, "setting"));
+    }
+
+    fn has_table(connection: &Connection, name: &str) -> bool {
+        connection
+            .query_row(
+                "SELECT COUNT(*) FROM sqlite_master WHERE type = 'table' AND name = ?1",
+                params![name],
+                |row| row.get::<_, i64>(0),
+            )
+            .unwrap()
+            > 0
     }
 }

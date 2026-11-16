@@ -9,13 +9,11 @@ import {
   getKnownCars,
   getRecentSessions,
   getSkippedFiles,
-  getStatsFolder,
   getStatsImportStatus,
   listenStatsImport,
   pickSessionsCsvTarget,
   pickStatsFolder,
   reimportStats,
-  setStatsFolder,
 } from '@shared/api/stats.service';
 import type {
   AutologState,
@@ -35,6 +33,11 @@ import { iratingSteps, type IratingRange } from './home-stats';
 /** Rows of the recent sessions table on Home. */
 const RECENT_SESSIONS_LIMIT = 10;
 const MS_PER_SECOND = 1000;
+
+/** What the store writes the folder choice into: the settings, main's own. */
+type StatisticsDeps = {
+  appSettings: { update(patch: { statsFolder: string | null }): void };
+};
 
 /** A CSV export written: where, and how many sessions it holds. */
 export interface CsvExport {
@@ -70,7 +73,8 @@ export class StatisticsStore {
   enablingAutolog = false;
   /** Why turning logging on failed, as the backend said it. */
   autologError: string | null = null;
-  /** Where the import reads from; `null` until asked. */
+  /** Where the import reads from, as the backend took it; `null` until main
+   *  has sent the settings' folder. */
   folder: StatsFolder | null = null;
   /** The files the import could not read, the latest tried first. */
   skippedFiles: SkippedFile[] = [];
@@ -80,11 +84,15 @@ export class StatisticsStore {
   private unlisten: (() => void) | null = null;
   private disposed = false;
 
-  constructor() {
-    makeAutoObservable<StatisticsStore, 'unlisten' | 'disposed'>(this, {
-      unlisten: false,
-      disposed: false,
-    });
+  constructor(private deps: StatisticsDeps) {
+    makeAutoObservable<StatisticsStore, 'unlisten' | 'disposed' | 'deps'>(
+      this,
+      {
+        unlisten: false,
+        disposed: false,
+        deps: false,
+      }
+    );
   }
 
   get hasSessions() {
@@ -165,14 +173,13 @@ export class StatisticsStore {
     await Promise.all([
       this.loadSessions(),
       this.loadAutolog(),
-      this.loadFolder(),
       this.loadSkippedFiles(),
     ]);
   }
 
   /**
-   * Asks for a folder; a closed picker changes nothing. Rejects with the
-   * backend's reason when the folder is refused.
+   * Asks for a folder and writes it into the settings; a closed picker
+   * changes nothing. Main sends the new folder to the import.
    */
   async chooseFolder() {
     const picked = await pickStatsFolder(this.folder?.path ?? null);
@@ -181,20 +188,17 @@ export class StatisticsStore {
       return;
     }
 
-    const folder = await setStatsFolder(picked);
-
-    runInAction(() => {
-      this.folder = folder;
-    });
+    this.deps.appSettings.update({ statsFolder: picked });
   }
 
   /** Back to the game's own folder. */
-  async useDefaultFolder() {
-    const folder = await setStatsFolder(null);
+  useDefaultFolder() {
+    this.deps.appSettings.update({ statsFolder: null });
+  }
 
-    runInAction(() => {
-      this.folder = folder;
-    });
+  /** The folder the backend took, as it answered main's push. */
+  applyFolder(folder: StatsFolder) {
+    this.folder = folder;
   }
 
   /** Reads every file in the folder again, the skipped ones too. */
@@ -267,18 +271,6 @@ export class StatisticsStore {
     // A pass ends when the game closes, and the game writes its settings then.
     if (passEnded) {
       void this.loadAutolog();
-    }
-  }
-
-  private async loadFolder() {
-    try {
-      const folder = await getStatsFolder();
-
-      runInAction(() => {
-        this.folder = folder;
-      });
-    } catch (error) {
-      console.error('Stats folder not read', error);
     }
   }
 

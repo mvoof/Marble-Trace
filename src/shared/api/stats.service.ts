@@ -27,11 +27,13 @@ export const getAutologState = () => invoke<AutologState>('get_autolog_state');
 
 export const enableAutolog = () => invoke<AutologState>('enable_autolog');
 
-export const getStatsFolder = () => invoke<StatsFolder>('get_stats_folder');
-
-/** `null` goes back to the game's own folder. */
+/** The folder `settings.json` names; `null` is the game's own. */
 export const setStatsFolder = (path: string | null) =>
   invoke<StatsFolder>('set_stats_folder', { path });
+
+/** The folder an older stats database held, once; `null` when none. */
+export const takeLegacyStatsFolder = () =>
+  invoke<string | null>('take_legacy_stats_folder');
 
 /** Reads every file in the folder again, the skipped ones too. */
 export const reimportStats = () => invoke<void>('reimport_stats');

@@ -91,26 +91,28 @@ pub async fn enable_autolog(
     app_ini::enable_autolog(&path)
 }
 
-#[tauri::command]
-pub async fn get_stats_folder(state: State<'_, Arc<StatsService>>) -> Result<StatsFolder, String> {
-    let service = Arc::clone(&state);
-
-    tauri::async_runtime::spawn_blocking(move || service.folder())
-        .await
-        .map_err(|error| error.to_string())
-}
-
-/// `None` goes back to the sim's own folder. The import looks at it at once.
+/// The folder `settings.json` names; `None` is the sim's own. Main sends it
+/// after loading the settings and on every change; the import waits for the
+/// first one and looks at each at once.
 #[tauri::command]
 pub async fn set_stats_folder(
     state: State<'_, Arc<StatsService>>,
     path: Option<String>,
 ) -> Result<StatsFolder, String> {
+    Ok(state.set_folder(path.as_deref()))
+}
+
+/// The folder an older `stats.db` held, once: main moves it into
+/// `settings.json` when the settings name none.
+#[tauri::command]
+pub async fn take_legacy_stats_folder(
+    state: State<'_, Arc<StatsService>>,
+) -> Result<Option<String>, String> {
     let service = Arc::clone(&state);
 
-    tauri::async_runtime::spawn_blocking(move || service.set_folder(path.as_deref()))
+    tauri::async_runtime::spawn_blocking(move || service.take_legacy_folder())
         .await
-        .map_err(|error| error.to_string())?
+        .map_err(|error| error.to_string())
 }
 
 /// Reads every file in the folder again, the skipped ones too.

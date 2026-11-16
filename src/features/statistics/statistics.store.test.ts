@@ -57,10 +57,6 @@ const api = vi.hoisted(() => ({
   enableAutolog: vi.fn(async (): Promise<AutologState> => 'on'),
   onStatus: null as ((status: StatsImportStatus) => void) | null,
   unlisten: vi.fn(),
-  folder: {
-    path: 'D:/Documents/iRacing/telemetry',
-    isDefault: true,
-  } as StatsFolder,
   skipped: [] as SkippedFile[],
   pickedFolder: null as string | null,
   csvTarget: null as string | null,
@@ -78,7 +74,6 @@ vi.mock('@shared/api/stats.service', () => ({
   getHomeStats: vi.fn(async () => api.home),
   getAutologState: vi.fn(async () => api.autolog),
   enableAutolog: api.enableAutolog,
-  getStatsFolder: vi.fn(async () => api.folder),
   setStatsFolder: api.setStatsFolder,
   reimportStats: api.reimportStats,
   getSkippedFiles: vi.fn(async () => api.skipped),
@@ -97,6 +92,8 @@ vi.mock('@shared/api/stats.service', () => ({
 
 const { StatisticsStore } = await import('./statistics.store');
 
+const deps = () => ({ appSettings: { update: vi.fn() } });
+
 const flush = () => new Promise((resolve) => setTimeout(resolve, 0));
 
 describe('StatisticsStore', () => {
@@ -113,7 +110,7 @@ describe('StatisticsStore', () => {
   it('loads the import status and the recent sessions on start', async () => {
     api.status = { phase: 'reading', done: 2, total: 9, broken: 0 };
     api.sessions = [SESSION];
-    const store = new StatisticsStore();
+    const store = new StatisticsStore(deps());
 
     await store.start();
 
@@ -123,7 +120,7 @@ describe('StatisticsStore', () => {
   });
 
   it('follows the import and picks up the sessions each file adds', async () => {
-    const store = new StatisticsStore();
+    const store = new StatisticsStore(deps());
     await store.start();
 
     api.sessions = [SESSION];
@@ -135,7 +132,7 @@ describe('StatisticsStore', () => {
   });
 
   it('a pause alone does not reload the sessions', async () => {
-    const store = new StatisticsStore();
+    const store = new StatisticsStore(deps());
     await store.start();
 
     api.sessions = [SESSION];
@@ -147,7 +144,7 @@ describe('StatisticsStore', () => {
   });
 
   it('stops listening on dispose', async () => {
-    const store = new StatisticsStore();
+    const store = new StatisticsStore(deps());
     await store.start();
 
     store.dispose();
@@ -167,7 +164,7 @@ describe('StatisticsStore iRating chart', () => {
   });
 
   it('shows the latest session’s category until another is picked', async () => {
-    const store = new StatisticsStore();
+    const store = new StatisticsStore(deps());
     await store.start();
 
     expect(store.chartRating?.category).toBe('Sports Car');
@@ -178,7 +175,7 @@ describe('StatisticsStore iRating chart', () => {
   });
 
   it('falls back to the latest category when the picked one is gone', async () => {
-    const store = new StatisticsStore();
+    const store = new StatisticsStore(deps());
     store.selectChartCategory('Dirt Oval');
     await store.start();
 
@@ -186,7 +183,7 @@ describe('StatisticsStore iRating chart', () => {
   });
 
   it('charts the whole history of the category on All', async () => {
-    const store = new StatisticsStore();
+    const store = new StatisticsStore(deps());
     await store.start();
 
     store.setIratingRange('all');
@@ -213,21 +210,21 @@ describe('StatisticsStore last race and autolog', () => {
       outline: { svgPath: 'M 0 0 L 1 1 Z', viewBox: '0 0 1 1' },
     };
     api.home = { ...EMPTY_HOME, lastRace };
-    const store = new StatisticsStore();
+    const store = new StatisticsStore(deps());
     await store.start();
 
     expect(store.lastRace).toEqual(lastRace);
   });
 
   it('reads whether the game logs telemetry on start', async () => {
-    const store = new StatisticsStore();
+    const store = new StatisticsStore(deps());
     await store.start();
 
     expect(store.autolog).toBe('off');
   });
 
   it('reads it again once a pass ends: the game may have changed it', async () => {
-    const store = new StatisticsStore();
+    const store = new StatisticsStore(deps());
     await store.start();
 
     api.autolog = 'on';
@@ -240,7 +237,7 @@ describe('StatisticsStore last race and autolog', () => {
 
   it('turns logging on and keeps what the file says after', async () => {
     api.enableAutolog.mockResolvedValue('on');
-    const store = new StatisticsStore();
+    const store = new StatisticsStore(deps());
     await store.start();
 
     await store.enableAutolog();
@@ -251,7 +248,7 @@ describe('StatisticsStore last race and autolog', () => {
 
   it('keeps the state and the reason when the file is not written', async () => {
     api.enableAutolog.mockRejectedValue('Close iRacing first');
-    const store = new StatisticsStore();
+    const store = new StatisticsStore(deps());
     await store.start();
 
     await store.enableAutolog();
@@ -281,37 +278,41 @@ describe('StatisticsStore data section', () => {
     api.exportSessionsCsv.mockClear();
   });
 
-  it('loads the folder and the skipped files on start', async () => {
+  it('loads the skipped files on start, and no folder before main sends one', async () => {
     api.skipped = [SKIPPED];
-    const store = new StatisticsStore();
+    const store = new StatisticsStore(deps());
 
     await store.start();
 
-    expect(store.folder).toEqual(api.folder);
+    expect(store.folder).toBeNull();
     expect(store.skippedFiles).toEqual([SKIPPED]);
   });
 
-  it('keeps the folder picked, and leaves it when the picker is closed', async () => {
-    const store = new StatisticsStore();
+  it('writes the folder picked into the settings, nothing when the picker is closed', async () => {
+    const storeDeps = deps();
+    const store = new StatisticsStore(storeDeps);
     await store.start();
 
     await store.chooseFolder();
-    expect(api.setStatsFolder).not.toHaveBeenCalled();
+    expect(storeDeps.appSettings.update).not.toHaveBeenCalled();
 
     api.pickedFolder = 'E:/ibt';
     await store.chooseFolder();
 
-    expect(api.setStatsFolder).toHaveBeenCalledWith('E:/ibt');
-    expect(store.folder).toEqual({ path: 'E:/ibt', isDefault: false });
+    expect(storeDeps.appSettings.update).toHaveBeenCalledWith({
+      statsFolder: 'E:/ibt',
+    });
 
-    await store.useDefaultFolder();
+    store.useDefaultFolder();
 
-    expect(api.setStatsFolder).toHaveBeenLastCalledWith(null);
-    expect(store.folder?.isDefault).toBe(true);
+    expect(storeDeps.appSettings.update).toHaveBeenLastCalledWith({
+      statsFolder: null,
+    });
+    expect(api.setStatsFolder).not.toHaveBeenCalled();
   });
 
   it('reloads the skipped files when the count of them changes', async () => {
-    const store = new StatisticsStore();
+    const store = new StatisticsStore(deps());
     await store.start();
 
     api.skipped = [SKIPPED];
@@ -322,7 +323,7 @@ describe('StatisticsStore data section', () => {
   });
 
   it('asks for a full pass on re-import', async () => {
-    const store = new StatisticsStore();
+    const store = new StatisticsStore(deps());
 
     await store.reimport();
 
@@ -330,7 +331,7 @@ describe('StatisticsStore data section', () => {
   });
 
   it('exports to the file picked and answers how many sessions', async () => {
-    const store = new StatisticsStore();
+    const store = new StatisticsStore(deps());
 
     expect(await store.exportCsv()).toBeNull();
     expect(api.exportSessionsCsv).not.toHaveBeenCalled();

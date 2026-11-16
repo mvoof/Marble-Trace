@@ -33,6 +33,11 @@ the rest of the process, so a save still pending when the file is deleted
 cannot write it back before the relaunch. Nothing writes the file on exit: a
 locked file is left exactly as it was found.
 
+Settings only: data read from the sim's `.ibt` files lives in `stats.db`
+(ADR-0014), and nothing the user chooses lives there (ADR-0015). The folder
+statistics read (`statsFolder`) is an app setting main sends to the backend
+on load and on every change; the lap analysis' options are app settings too.
+
 `track-settings.json` (track map rotations) goes through `read_track_rotations`
 and `write_track_rotations` the same way. An unreadable one is an error, not an
 empty map, so the track map never writes its own few angles over the ones it

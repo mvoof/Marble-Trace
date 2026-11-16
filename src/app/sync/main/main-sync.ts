@@ -17,6 +17,11 @@ import { registerSaveReaction } from './save-sync';
 import { registerTelemetrySettingsReaction } from './telemetry-settings-sync';
 import { registerPitServiceMainReactions } from './pit-service-sync';
 import { registerVoiceMainReactions } from './voice-sync';
+import {
+  adoptLegacyStatsFolder,
+  pushDefaultStatsFolder,
+  registerStatsFolderReaction,
+} from './stats-folder-sync';
 import { overlayMonitorNames, syncOverlayWindows } from './overlay-windows';
 import { registerRemotePublishing } from './remote-publish';
 import { registerClientPublishing } from './client-publish';
@@ -155,6 +160,7 @@ export const initMainSync = async (root: MainRoot) => {
       // the exact loss the check exists to prevent.
       if (root.appSettings.settingsLocked) {
         await offerLastGoodSettings(root);
+        void pushDefaultStatsFolder(root);
 
         return () => {
           mainSyncInitPromise = null;
@@ -252,6 +258,8 @@ export const initMainSync = async (root: MainRoot) => {
         }),
       ]);
 
+      await adoptLegacyStatsFolder(root);
+
       // Registration order matches the original single list: the
       // `fireImmediately` reactions (layout auto-switch, device polling, chat
       // connect, sim-armed pit order) run in this sequence at startup.
@@ -265,6 +273,7 @@ export const initMainSync = async (root: MainRoot) => {
         ...registerChatReactions(root),
         ...registerPitServiceMainReactions(root),
         ...registerVoiceMainReactions(root),
+        registerStatsFolderReaction(root),
       ];
 
       // Owns the remote server's lifetime, so it is torn down with the rest.

@@ -88,7 +88,7 @@ export class MainRoot extends RendererCore implements AppWindowStores {
     this.voiceCrew = new VoiceCrewStore(this);
     this.navigation = new MainNavigationStore(this);
     this.appLinks = new AppLinksStore(this);
-    this.statistics = new StatisticsStore();
+    this.statistics = new StatisticsStore(this);
 
     if (!options?.skipInit) {
       void this.twitchAuth.init();

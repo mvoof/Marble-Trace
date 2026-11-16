@@ -48,6 +48,18 @@ export type WidgetMenuSort = 'tier' | 'az';
 /** Where a widget's page puts its preview: above the settings, or beside them. */
 export type WidgetPreviewPosition = 'top' | 'left';
 
+/** The lap analysis' charts, top to bottom: `deltaToReference` (time to the
+ *  reference lap), then channels by the name the session file gives them. */
+export const DEFAULT_ANALYSIS_CHANNELS = [
+  'deltaToReference',
+  'Speed',
+  'Throttle',
+  'Brake',
+  'Gear',
+  'SteeringWheelAngle',
+  'RPM',
+];
+
 export const DEFAULT_APP_SETTINGS = {
   // Interact mode: mouse events reach the overlay without unlocking widget
   // dragging. Whether its binding toggles or is held is a property of the
@@ -166,6 +178,14 @@ export const DEFAULT_APP_SETTINGS = {
   voiceConfidence: 0.6,
   /** Where the voice downloads, packs and cache live; empty is the app's own. */
   voiceFolder: '',
+  /** The folder statistics read session files from; `null` is the game's own.
+   *  A setting like any other (ADR-0015), sent to the backend by main. */
+  statsFolder: null as string | null,
+  /** Keep the lap analysis' telemetry while the game runs and the main window
+   *  is in the background. Off: it takes up to ~150 MB the game may want. */
+  analysisKeepWhileGameRuns: false,
+  /** The lap analysis' charts, top to bottom. */
+  analysisChannels: [...DEFAULT_ANALYSIS_CHANNELS],
 };
 
 export type AppSettings = typeof DEFAULT_APP_SETTINGS;
@@ -228,12 +248,13 @@ export const voiceCrewSettingsOf = (
 };
 
 export class AppSettingsStore {
-  // The spread is shallow, so the one array among the defaults has to be copied
-  // by hand — a store that pushed into it would be editing the defaults, and
+  // The spread is shallow, so the arrays among the defaults have to be copied
+  // by hand — a store that pushed into one would be editing the defaults, and
   // every other store built from them.
   appSettings: AppSettings = {
     ...DEFAULT_APP_SETTINGS,
     companionApps: [...DEFAULT_APP_SETTINGS.companionApps],
+    analysisChannels: [...DEFAULT_APP_SETTINGS.analysisChannels],
   };
 
   /**

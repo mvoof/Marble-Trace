@@ -76,9 +76,7 @@ export const StatisticsSection = observer(() => {
               {folder !== null && !folder.isDefault && (
                 <Button
                   size="small"
-                  onClick={() =>
-                    void changeFolder(() => statistics.useDefaultFolder())
-                  }
+                  onClick={() => statistics.useDefaultFolder()}
                 >
                   {t('dataPage.statistics.useDefault')}
                 </Button>

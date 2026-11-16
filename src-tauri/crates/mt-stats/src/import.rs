@@ -2,9 +2,10 @@
 //! session records, one file at a time on a thread of its own, paused while
 //! the sim is connected — the sim writes those files and wants the disk.
 //!
-//! After a pass it waits for the sim to come and go, then looks again for the
-//! files that session wrote — or sooner, when the main window changes the
-//! folder or asks to read every file again.
+//! The first pass waits for the main window to say which folder its settings
+//! name (ADR-0015). After a pass it waits for the sim to come and go, then
+//! looks again for the files that session wrote — or sooner, when the main
+//! window changes the folder or asks to read every file again.
 
 use std::path::{Path, PathBuf};
 use std::sync::{Arc, Condvar, Mutex};
@@ -69,6 +70,9 @@ pub struct StatsService {
     status: Mutex<StatsImportStatus>,
     /// The sim's own session file folder; `None` when it was not found.
     default_folder: Option<PathBuf>,
+    /// The folder `settings.json` names: `None` until main says,
+    /// `Some(None)` for the sim's own.
+    chosen_folder: Mutex<Option<Option<String>>>,
     /// A pass the main window asked for, run once the current one ends.
     requested: Mutex<Option<PassScope>>,
     request_made: Condvar,
@@ -85,6 +89,7 @@ impl StatsService {
                 ..StatsImportStatus::default()
             }),
             default_folder,
+            chosen_folder: Mutex::new(None),
             requested: Mutex::new(None),
             request_made: Condvar::new(),
         }
@@ -96,12 +101,7 @@ impl StatsService {
 
     /// The folder the driver chose, else the sim's own.
     pub fn folder(&self) -> StatsFolder {
-        let chosen = lock_or_recover(&self.db)
-            .folder_override()
-            .unwrap_or_else(|error| {
-                tracing::warn!(%error, "stats folder choice not read");
-                None
-            });
+        let chosen = lock_or_recover(&self.chosen_folder).clone().flatten();
 
         match chosen {
             Some(path) => StatsFolder {
@@ -118,19 +118,24 @@ impl StatsService {
         }
     }
 
-    /// Reads from `folder` from now on; `None` goes back to the sim's own.
-    /// The next pass looks at the new folder.
-    pub fn set_folder(&self, folder: Option<&str>) -> Result<StatsFolder, String> {
-        if let Some(folder) = folder {
-            if !Path::new(folder).is_dir() {
-                return Err(format!("Not a folder: {folder}"));
-            }
-        }
-
-        lock_or_recover(&self.db).set_folder_override(folder)?;
+    /// Reads from the folder `settings.json` names from now on; `None` is the
+    /// sim's own. A folder missing on disk is taken too, and reported by the
+    /// next pass. The next pass looks at it at once.
+    pub fn set_folder(&self, folder: Option<&str>) -> StatsFolder {
+        *lock_or_recover(&self.chosen_folder) = Some(folder.map(str::to_owned));
         self.request_pass(PassScope::Unread);
 
-        Ok(self.folder())
+        self.folder()
+    }
+
+    /// Whether main has said which folder to read.
+    fn folder_known(&self) -> bool {
+        lock_or_recover(&self.chosen_folder).is_some()
+    }
+
+    /// The folder an older `stats.db` held, once, for `settings.json`.
+    pub fn take_legacy_folder(&self) -> Option<String> {
+        lock_or_recover(&self.db).take_legacy_folder()
     }
 
     /// Asks for a pass; `All` wins over `Unread` while both wait.
@@ -212,7 +217,11 @@ pub fn start(service: Arc<StatsService>, host: StatsHost) {
 }
 
 fn run(service: &StatsService, host: &StatsHost) {
-    let mut scope = PassScope::Unread;
+    while !service.folder_known() {
+        service.wait_for_request(host.poll);
+    }
+
+    let mut scope = service.take_request().unwrap_or(PassScope::Unread);
 
     loop {
         let met_the_sim = run_pass(service, host, scope);
@@ -471,7 +480,7 @@ mod tests {
         let service = service(Some(own.clone()));
         let chosen_path = chosen.to_string_lossy().into_owned();
 
-        let folder = service.set_folder(Some(&chosen_path)).unwrap();
+        let folder = service.set_folder(Some(&chosen_path));
         run_pass(&service, &host, PassScope::Unread);
 
         assert_eq!(folder.path.as_deref(), Some(chosen_path.as_str()));
@@ -479,7 +488,7 @@ mod tests {
         assert_eq!(service.status().total, 2);
         assert_eq!(service.take_request(), Some(PassScope::Unread));
 
-        let folder = service.set_folder(None).unwrap();
+        let folder = service.set_folder(None);
 
         assert!(folder.is_default);
         assert_eq!(folder.path, Some(own.to_string_lossy().into_owned()));
@@ -489,11 +498,27 @@ mod tests {
     }
 
     #[test]
-    fn a_missing_folder_cannot_be_chosen() {
+    fn a_missing_chosen_folder_is_taken_and_reported_by_the_pass() {
+        let host = host(Arc::new(RecordingSink::default()));
         let service = service(None);
 
-        assert!(service.set_folder(Some("Z:/no/such/folder")).is_err());
-        assert_eq!(service.folder().path, None);
+        let folder = service.set_folder(Some("Z:/no/such/folder"));
+        run_pass(&service, &host, PassScope::Unread);
+
+        assert_eq!(folder.path.as_deref(), Some("Z:/no/such/folder"));
+        assert_eq!(service.status().phase, StatsImportPhase::NoFolder);
+    }
+
+    #[test]
+    fn the_folder_is_unknown_until_main_names_one_even_the_sims_own() {
+        let service = service(None);
+
+        assert!(!service.folder_known());
+
+        service.set_folder(None);
+
+        assert!(service.folder_known());
+        assert_eq!(service.take_request(), Some(PassScope::Unread));
     }
 
     #[test]
