@@ -16,6 +16,12 @@ const WHEEL_ZOOM_IN = 0.85;
 const WHEEL_ZOOM_OUT = 1 / WHEEL_ZOOM_IN;
 /** Label size against the view's width. */
 export const LABEL_SCALE = 0.048;
+/** The cursor arrows' length on screen, pixels, whatever the zoom. */
+const ARROW_LENGTH_PX = 22;
+/** A lap's cursor arrow, a dart pointing east: written rotated to the heading. */
+export const ARROW_PATH = 'M 12 0 L -9 8 L -4 0 L -9 -8 Z';
+/** `ARROW_PATH`'s length, tip to tail. */
+const ARROW_PATH_LENGTH = 21;
 /** The hover reaches the track within this share of the view's width. */
 const HOVER_REACH = 0.04;
 /** A view this close to the whole box counts as the whole lap. */
@@ -108,19 +114,6 @@ export const attachMapGestures = ({
 
   const restingCursor = () => (isWhole() ? 'zoom-in' : 'grab');
 
-  const writeBox = () => {
-    const current = box.current ?? fullBox;
-
-    svg.setAttribute(
-      'viewBox',
-      `${current.x} ${current.y} ${current.width} ${current.height}`
-    );
-    elements.labels.forEach((label) =>
-      label?.setAttribute('font-size', String(current.width * LABEL_SCALE))
-    );
-    svg.style.cursor = drag?.kind === 'pan' ? 'grabbing' : restingCursor();
-  };
-
   const writeBright = () => {
     const range = viewport.range;
 
@@ -140,7 +133,17 @@ export const attachMapGestures = ({
     });
   };
 
+  /** Units of the view a screen pixel spans. */
+  const unitsPerPixel = () => {
+    const current = box.current ?? fullBox;
+    const widthPx = svg.getBoundingClientRect().width;
+
+    return widthPx > 0 ? current.width / widthPx : current.width * LABEL_SCALE;
+  };
+
   const writeMarkers = (metres: number | null) => {
+    const arrowScale = (unitsPerPixel() * ARROW_LENGTH_PX) / ARROW_PATH_LENGTH;
+
     paths.forEach((path, index) => {
       const marker = elements.markers[index];
 
@@ -163,10 +166,25 @@ export const attachMapGestures = ({
 
       marker.setAttribute(
         'transform',
-        `translate(${path.xs[point]} ${path.ys[point]}) rotate(${headingDegreesAt(path, point)})`
+        `translate(${path.xs[point]} ${path.ys[point]}) rotate(${headingDegreesAt(path, point)}) scale(${arrowScale})`
       );
       marker.setAttribute('visibility', 'visible');
     });
+  };
+
+  /** Writes the view box; the labels and the arrows keep their screen size. */
+  const writeBox = () => {
+    const current = box.current ?? fullBox;
+
+    svg.setAttribute(
+      'viewBox',
+      `${current.x} ${current.y} ${current.width} ${current.height}`
+    );
+    elements.labels.forEach((label) =>
+      label?.setAttribute('font-size', String(current.width * LABEL_SCALE))
+    );
+    svg.style.cursor = drag?.kind === 'pan' ? 'grabbing' : restingCursor();
+    writeMarkers(viewport.cursorM);
   };
 
   /** The map's view moved: the charts take the longest stretch in it. */
@@ -290,7 +308,18 @@ export const attachMapGestures = ({
       viewport.setGesture(isWhole() ? 'zoom' : 'pan');
     }
 
-    viewport.setCursor(nearestPoint(referencePath, x, y, reach), 'map');
+    const cursorM = nearestPoint(referencePath, x, y, reach);
+
+    if (event.shiftKey) {
+      svg.style.cursor = 'crosshair';
+    } else if (cursorM === null) {
+      svg.style.cursor = restingCursor();
+    } else {
+      // The arrows mark the spot; the pointer would hide them.
+      svg.style.cursor = 'none';
+    }
+
+    viewport.setCursor(cursorM, 'map');
   };
 
   const handleUp = (event: MouseEvent) => {

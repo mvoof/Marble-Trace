@@ -6,12 +6,14 @@ import { Maximize2, Minus, Plus } from 'lucide-react';
 import { useLapAnalysisStore } from '@features/lap-analysis/lap-analysis-context';
 import {
   boundsOf,
+  headingDegreesAt,
   svgPathOf,
   tangentAt,
   type ProjectedPath,
 } from '@features/lap-analysis/map-projection';
 import type { ChartViewport } from '@shared/lib/chart-viewport';
 import {
+  ARROW_PATH,
   attachMapGestures,
   LABEL_SCALE,
   paddedBox,
@@ -27,8 +29,11 @@ const TICK_REACH_M = 16;
 /** Sector labels sit this far outside the track, metres. */
 const LABEL_OFFSET_M = 38;
 const SECTOR_PREFIX = 'S';
-/** The cursor's arrow, metres, pointing east: written rotated to the heading. */
-const ARROW_PATH = 'M 12 0 L -9 9 L -4 0 L -9 -9 Z';
+/** The start/finish line: a checkered bar across the track, metres. */
+const FINISH_SQUARE_M = 3;
+const FINISH_ROWS = 2;
+const FINISH_REACH_M = TICK_REACH_M;
+const FINISH_PATTERN_ID = 'analysis-map-finish';
 
 /** The direction across the track at `index`: the normal of its tangent. */
 const normalAt = (path: ProjectedPath, index: number): [number, number] => {
@@ -217,11 +222,41 @@ const MapView = observer(
             )
           )}
 
-          <circle
-            className={styles.start}
-            cx={referencePath.xs[0]}
-            cy={referencePath.ys[0]}
-            r={TRACK_WIDTH_M / 2}
+          <defs>
+            <pattern
+              id={FINISH_PATTERN_ID}
+              patternUnits="userSpaceOnUse"
+              width={FINISH_SQUARE_M * 2}
+              height={FINISH_SQUARE_M * 2}
+            >
+              <rect
+                className={styles.finishLight}
+                width={FINISH_SQUARE_M * 2}
+                height={FINISH_SQUARE_M * 2}
+              />
+              <rect
+                className={styles.finishDark}
+                width={FINISH_SQUARE_M}
+                height={FINISH_SQUARE_M}
+              />
+              <rect
+                className={styles.finishDark}
+                x={FINISH_SQUARE_M}
+                y={FINISH_SQUARE_M}
+                width={FINISH_SQUARE_M}
+                height={FINISH_SQUARE_M}
+              />
+            </pattern>
+          </defs>
+
+          <rect
+            className={styles.finish}
+            x={-FINISH_SQUARE_M}
+            y={-FINISH_REACH_M}
+            width={FINISH_SQUARE_M * FINISH_ROWS}
+            height={FINISH_REACH_M * 2}
+            fill={`url(#${FINISH_PATTERN_ID})`}
+            transform={`translate(${referencePath.xs[0]} ${referencePath.ys[0]}) rotate(${headingDegreesAt(referencePath, 0)})`}
           />
 
           {markerOrder.map((index) =>
