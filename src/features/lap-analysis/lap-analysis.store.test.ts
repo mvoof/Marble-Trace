@@ -51,7 +51,7 @@ const sessionLap = (
   ...extra,
 });
 
-const emptySet: AnalysisSet = { session: null, laps: [] };
+const emptySet: AnalysisSet = { session: null, laps: [], sectors: [] };
 
 const fakeApi = (): LapAnalysisApi => ({
   getSessionLaps: vi.fn(async () => ({
@@ -148,6 +148,7 @@ describe('holdsTelemetry', () => {
 describe('LapAnalysisStore telemetry', () => {
   const setWithLap: AnalysisSet = {
     session: SESSION,
+    sectors: [],
     laps: [
       {
         lap: ref(2),
@@ -248,6 +249,7 @@ describe('LapAnalysisStore charts', () => {
     vi.mocked(api.getAnalysisSet).mockResolvedValue({
       session: SESSION,
       laps: [lapIn(2, false), lapIn(3, true)],
+      sectors: [],
     });
     const store = new LapAnalysisStore(api);
     await store.load();
@@ -257,7 +259,7 @@ describe('LapAnalysisStore charts', () => {
 
     expect(api.getLapChannels).toHaveBeenLastCalledWith(
       [ref(2), ref(3)],
-      ['Speed', 'ElapsedTime']
+      ['Speed', 'ElapsedTime', 'Lat', 'Lon']
     );
     expect(
       store.chartValues('deltaToReference')?.map((lap) => Array.from(lap))

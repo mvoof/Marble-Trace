@@ -1,6 +1,8 @@
 import { makeAutoObservable, runInAction } from 'mobx';
 
 import type { LapChannelData } from '@shared/api/lap-analysis.service';
+import { ChartViewport } from '@shared/lib/chart-viewport';
+import { originOf, projectPath, type ProjectedPath } from './map-projection';
 import { DELTA_CHANNEL, ELAPSED_CHANNEL, deltaValues } from './channel-looks';
 
 import type {
@@ -39,15 +41,23 @@ export interface ChartData {
   byChannel: Map<string, Float32Array[]>;
 }
 
-/** The file channels the charts need: the delta reads the time since the line. */
+/** Where on the earth each point was: the map draws the laps from them. */
+export const MAP_CHANNELS = ['Lat', 'Lon'];
+
+/**
+ * The file channels the charts and the map need: the delta reads the time
+ * since the line.
+ */
 export const fileChannelsFor = (charts: string[]): string[] => {
   const channels = charts.filter((name) => name !== DELTA_CHANNEL);
 
-  if (charts.includes(DELTA_CHANNEL) && !channels.includes(ELAPSED_CHANNEL)) {
+  if (charts.includes(DELTA_CHANNEL)) {
     channels.push(ELAPSED_CHANNEL);
   }
 
-  return channels;
+  channels.push(...MAP_CHANNELS);
+
+  return [...new Set(channels)];
 };
 
 /**
@@ -79,7 +89,7 @@ export const sameLap = (first: LapRef, second: LapRef) =>
 export const isAnalysable = (lap: SessionLap) =>
   lap.timeS !== null && !lap.partial && !lap.inPit && lap.filePresent;
 
-const EMPTY_SET: AnalysisSet = { session: null, laps: [] };
+const EMPTY_SET: AnalysisSet = { session: null, laps: [], sectors: [] };
 
 /**
  * The analysis lap set, kept in the stats database, and the session modal
@@ -101,6 +111,8 @@ export class LapAnalysisStore {
   };
 
   chartData: ChartData | null = null;
+  /** The stretch shown and the cursor, shared by the charts and the map. */
+  readonly viewport = new ChartViewport();
 
   /** Answers older than the latest telemetry request are dropped. */
   private telemetryRequest = 0;
@@ -114,11 +126,49 @@ export class LapAnalysisStore {
       api: false,
       telemetryRequest: false,
       chartRequest: false,
+      viewport: false,
     });
   }
 
   get holdsTelemetry(): boolean {
     return holdsTelemetry(this.gate);
+  }
+
+  /**
+   * Each lap of the set on the map, in the set's order, centred on the
+   * reference lap's first fix; `null` before the positions are fetched.
+   */
+  get mapPaths(): { laps: (ProjectedPath | null)[]; reference: number } | null {
+    const lats = this.chartValues('Lat');
+    const lons = this.chartValues('Lon');
+
+    if (lats === null || lons === null) {
+      return null;
+    }
+
+    const reference = Math.max(
+      this.set.laps.findIndex((lap) => lap.reference),
+      0
+    );
+    const origin = originOf(lats[reference], lons[reference]);
+
+    if (origin === null) {
+      return null;
+    }
+
+    return {
+      reference,
+      laps: lats.map((lat, index) =>
+        this.isMissing(this.set.laps[index].lap)
+          ? null
+          : projectPath(lat, lons[index], origin)
+      ),
+    };
+  }
+
+  /** Where each sector starts on the grid, metres; the first is 0. */
+  get sectorStartsM(): number[] {
+    return this.set.sectors.map((start) => start * this.viewport.lengthM);
   }
 
   /** The charts' distance grid: a point a metre from the line. */
@@ -187,6 +237,11 @@ export class LapAnalysisStore {
 
       runInAction(() => {
         if (request === this.chartRequest) {
+          if (fetched.points - 1 !== this.viewport.lengthM) {
+            this.viewport.setLength(fetched.points - 1);
+            this.viewport.setRange(null, 'chart');
+          }
+
           this.chartData = {
             points: fetched.points,
             laps,

@@ -270,6 +270,9 @@ pub struct AnalysisSet {
     /// `None` while the set is empty.
     pub session: Option<RecentSession>,
     pub laps: Vec<AnalysisLap>,
+    /// Where each sector of the track starts, a fraction of the lap; empty
+    /// when no file named them.
+    pub sectors: Vec<f64>,
 }
 
 /// What Home shows above the recent sessions: the last seven days next to the

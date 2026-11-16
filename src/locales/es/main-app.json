@@ -749,7 +749,18 @@
       "addChannel": "+ Canal",
       "moveUp": "Subir",
       "moveDown": "Bajar",
-      "removeChart": "Quitar el gráfico"
+      "removeChart": "Quitar el gráfico",
+      "resetZoom": "Vuelta entera",
+      "zoomIn": "Acercar",
+      "zoomOut": "Alejar",
+      "wholeLap": "Vuelta entera",
+      "map": "Mapa de las vueltas",
+      "gesture": {
+        "zoom": "Rueda — zoom",
+        "pan": "Arrastrar — mover",
+        "frame": "Shift + arrastrar — tramo",
+        "whole": "Doble clic — vuelta entera"
+      }
     }
   },
   "bindings": {

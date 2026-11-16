@@ -8,6 +8,7 @@ import { cx } from '@shared/lib/class-names';
 import { formatLapTimeOrDash } from '@shared/lib/telemetry-format';
 import type { AnalysisLap } from '@shared/contracts/generated/bindings';
 import { AnalysisCharts } from './AnalysisCharts';
+import { AnalysisMap } from './AnalysisMap';
 import { AnalysisSettings } from './AnalysisSettings';
 import styles from './AnalysisSection.module.scss';
 
@@ -178,6 +179,8 @@ export const AnalysisSection = observer(() => {
               />
             ))}
           </div>
+
+          <AnalysisMap />
         </aside>
 
         <div className={styles.charts}>

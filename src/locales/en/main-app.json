@@ -749,7 +749,18 @@
       "addChannel": "+ Channel",
       "moveUp": "Move up",
       "moveDown": "Move down",
-      "removeChart": "Remove the chart"
+      "removeChart": "Remove the chart",
+      "resetZoom": "Whole lap",
+      "zoomIn": "Zoom in",
+      "zoomOut": "Zoom out",
+      "wholeLap": "Whole lap",
+      "map": "Map of the laps",
+      "gesture": {
+        "zoom": "Wheel — zoom",
+        "pan": "Drag — pan",
+        "frame": "Shift + drag — frame",
+        "whole": "Double click — whole lap"
+      }
     }
   },
   "bindings": {

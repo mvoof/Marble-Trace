@@ -757,7 +757,18 @@
       "addChannel": "+ Канал",
       "moveUp": "Выше",
       "moveDown": "Ниже",
-      "removeChart": "Убрать график"
+      "removeChart": "Убрать график",
+      "resetZoom": "Весь круг",
+      "zoomIn": "Приблизить",
+      "zoomOut": "Отдалить",
+      "wholeLap": "Весь круг",
+      "map": "Карта кругов",
+      "gesture": {
+        "zoom": "Колесо — масштаб",
+        "pan": "Тянуть — сдвиг",
+        "frame": "Shift + тянуть — участок",
+        "whole": "2× клик — весь круг"
+      }
     }
   },
   "bindings": {

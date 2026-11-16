@@ -154,9 +154,25 @@ impl StatsDb {
             });
         }
 
+        let track_id: Option<i64> = self
+            .connection
+            .query_row(
+                "SELECT track_id FROM session WHERE key = ?1",
+                params![key],
+                |row| row.get(0),
+            )
+            .optional()
+            .map_err(to_message)?
+            .flatten();
+        let sectors = match track_id {
+            Some(track_id) => self.track_sectors(track_id)?,
+            None => Vec::new(),
+        };
+
         Ok(AnalysisSet {
             session: Some(session),
             laps: set_laps,
+            sectors,
         })
     }
 
@@ -381,6 +397,8 @@ mod tests {
             ended_at: id * 1_000 + 600,
             subsession_id: Some(id),
             event_type: "Race".into(),
+            track_id: Some(252),
+            sectors: vec![0.0, 0.5],
             runs: vec![SessionFileRun {
                 session_num: 2,
                 run_type: "Race".into(),
@@ -488,6 +506,7 @@ mod tests {
             .collect();
 
         assert_eq!(set.session.unwrap().key, "sub:1");
+        assert_eq!(set.sectors, vec![0.0, 0.5]);
         assert_eq!(
             laps,
             vec![(3, LAP_PALETTE[0], true), (2, LAP_PALETTE[1], false)]

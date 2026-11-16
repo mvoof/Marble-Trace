@@ -47,6 +47,11 @@ export type AnalysisSet = {
    */
   session: RecentSession | null;
   laps: AnalysisLap[];
+  /**
+   * Where each sector of the track starts, a fraction of the lap; empty
+   * when no file named them.
+   */
+  sectors: number[];
 };
 
 export type AudioDeviceView = { id: string; name: string; isDefault: boolean };

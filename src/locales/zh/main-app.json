@@ -745,7 +745,18 @@
       "addChannel": "+ 通道",
       "moveUp": "上移",
       "moveDown": "下移",
-      "removeChart": "移除图表"
+      "removeChart": "移除图表",
+      "resetZoom": "整圈",
+      "zoomIn": "放大",
+      "zoomOut": "缩小",
+      "wholeLap": "整圈",
+      "map": "圈的地图",
+      "gesture": {
+        "zoom": "滚轮 — 缩放",
+        "pan": "拖动 — 平移",
+        "frame": "Shift + 拖动 — 选段",
+        "whole": "双击 — 整圈"
+      }
     }
   },
   "bindings": {

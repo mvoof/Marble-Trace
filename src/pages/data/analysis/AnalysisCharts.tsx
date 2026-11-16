@@ -1,7 +1,7 @@
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
-import { Select } from 'antd';
-import { ArrowDown, ArrowUp, X } from 'lucide-react';
+import { Button, Select } from 'antd';
+import { ArrowDown, ArrowUp, Maximize2, X } from 'lucide-react';
 
 import { useAppSettingsStore } from '@entities/app-settings/app-settings-context';
 import { useLapAnalysisStore } from '@features/lap-analysis/lap-analysis-context';
@@ -13,6 +13,7 @@ import {
   formatChannelValue,
 } from '@features/lap-analysis/channel-looks';
 import { LapChart, type ChartSeries } from '@shared/ui/LapChart/LapChart';
+import { GestureHint } from './GestureHint';
 import styles from './AnalysisCharts.module.scss';
 
 const ICON_SIZE = 13;
@@ -88,6 +89,8 @@ const ChannelChart = observer(
         height={CHART_HEIGHT + (isLast ? AXIS_HEIGHT : 0)}
         showDistanceAxis={isLast}
         syncKey={SYNC_KEY}
+        viewport={analysis.viewport}
+        sectorStartsM={analysis.sectorStartsM}
         formatValue={(value) => formatChannelValue(look, value)}
         formatDistance={formatPlaqueKm}
         formatAxisDistance={formatAxisKm}
@@ -168,6 +171,7 @@ const AddChannel = observer(() => {
 
 /** The stacked charts on one distance axis, the cursor shared. */
 export const AnalysisCharts = observer(() => {
+  const { t } = useTranslation('main-app');
   const analysis = useLapAnalysisStore();
   const appSettings = useAppSettingsStore();
   const channels = appSettings.appSettings.analysisChannels;
@@ -183,6 +187,16 @@ export const AnalysisCharts = observer(() => {
     <div>
       <div className={styles.head}>
         <AddChannel />
+
+        <Button
+          size="small"
+          icon={<Maximize2 size={ICON_SIZE} />}
+          onClick={() => analysis.viewport.setRange(null, 'chart')}
+        >
+          {t('dataPage.analysis.resetZoom')}
+        </Button>
+
+        <GestureHint viewport={analysis.viewport} />
       </div>
 
       {channels.map((channel, index) => (
