@@ -17,7 +17,7 @@ import { GestureHint } from './GestureHint';
 import styles from './AnalysisCharts.module.scss';
 
 const ICON_SIZE = 13;
-const CHART_HEIGHT = 130;
+const CHART_HEIGHT = 200;
 /** The bottom chart is taller by its distance axis. */
 const AXIS_HEIGHT = 28;
 const SYNC_KEY = 'lap-analysis';

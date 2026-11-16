@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import {
   boundsOf,
+  headingDegreesAt,
   nearestPoint,
   originOf,
   projectPath,
@@ -45,5 +46,20 @@ describe('nearestPoint', () => {
 
     expect(nearestPoint(path, path.xs[3] + 1, path.ys[3], 5)).toBe(3);
     expect(nearestPoint(path, 1_000, 1_000, 5)).toBeNull();
+  });
+});
+
+describe('headingDegreesAt', () => {
+  const straight = (dx: number, dy: number) => ({
+    xs: Float32Array.from({ length: 10 }, (_, index) => index * dx),
+    ys: Float32Array.from({ length: 10 }, (_, index) => index * dy),
+    fixed: new Uint8Array(10).fill(1),
+  });
+
+  it('reads the direction of travel, clockwise from east with y down', () => {
+    expect(headingDegreesAt(straight(1, 0), 5)).toBeCloseTo(0);
+    expect(headingDegreesAt(straight(0, 1), 5)).toBeCloseTo(90);
+    expect(headingDegreesAt(straight(-1, 0), 5)).toBeCloseTo(180);
+    expect(headingDegreesAt(straight(0, -1), 0)).toBeCloseTo(-90);
   });
 });

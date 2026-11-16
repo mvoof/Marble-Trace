@@ -1,5 +1,6 @@
 import {
   boundsOf,
+  headingDegreesAt,
   nearestPoint,
   svgPathOf,
   type MapBounds,
@@ -64,7 +65,7 @@ export interface MapElements {
   svg: SVGSVGElement;
   tools: Element | null;
   brights: (SVGPathElement | null)[];
-  markers: (SVGCircleElement | null)[];
+  markers: (SVGPathElement | null)[];
   labels: (SVGTextElement | null)[];
   select: SVGRectElement | null;
 }
@@ -160,8 +161,10 @@ export const attachMapGestures = ({
         return;
       }
 
-      marker.setAttribute('cx', String(path.xs[point]));
-      marker.setAttribute('cy', String(path.ys[point]));
+      marker.setAttribute(
+        'transform',
+        `translate(${path.xs[point]} ${path.ys[point]}) rotate(${headingDegreesAt(path, point)})`
+      );
       marker.setAttribute('visibility', 'visible');
     });
   };

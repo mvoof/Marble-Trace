@@ -148,3 +148,31 @@ export const nearestPoint = (
 
   return nearest;
 };
+
+/** Points either side the direction of travel is read over. */
+const TANGENT_SPAN = 4;
+const RADIANS_TO_DEGREES = 180 / Math.PI;
+
+/** The direction of travel at `index`, a unit vector on the map (y down). */
+export const tangentAt = (
+  path: ProjectedPath,
+  index: number
+): [number, number] => {
+  const before = Math.max(index - TANGENT_SPAN, 0);
+  const after = Math.min(index + TANGENT_SPAN, path.xs.length - 1);
+  const dx = path.xs[after] - path.xs[before];
+  const dy = path.ys[after] - path.ys[before];
+  const length = Math.hypot(dx, dy) || 1;
+
+  return [dx / length, dy / length];
+};
+
+/** The direction of travel at `index` as an SVG rotation: degrees from east, clockwise. */
+export const headingDegreesAt = (
+  path: ProjectedPath,
+  index: number
+): number => {
+  const [dx, dy] = tangentAt(path, index);
+
+  return Math.atan2(dy, dx) * RADIANS_TO_DEGREES;
+};

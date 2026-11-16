@@ -7,6 +7,7 @@ import { useLapAnalysisStore } from '@features/lap-analysis/lap-analysis-context
 import {
   boundsOf,
   svgPathOf,
+  tangentAt,
   type ProjectedPath,
 } from '@features/lap-analysis/map-projection';
 import type { ChartViewport } from '@shared/lib/chart-viewport';
@@ -25,19 +26,15 @@ const TRACK_WIDTH_M = 14;
 const TICK_REACH_M = 16;
 /** Sector labels sit this far outside the track, metres. */
 const LABEL_OFFSET_M = 38;
-/** Points either side a tick's direction is read over. */
-const TANGENT_SPAN = 4;
 const SECTOR_PREFIX = 'S';
+/** The cursor's arrow, metres, pointing east: written rotated to the heading. */
+const ARROW_PATH = 'M 12 0 L -9 9 L -4 0 L -9 -9 Z';
 
 /** The direction across the track at `index`: the normal of its tangent. */
 const normalAt = (path: ProjectedPath, index: number): [number, number] => {
-  const before = Math.max(index - TANGENT_SPAN, 0);
-  const after = Math.min(index + TANGENT_SPAN, path.xs.length - 1);
-  const dx = path.xs[after] - path.xs[before];
-  const dy = path.ys[after] - path.ys[before];
-  const length = Math.hypot(dx, dy) || 1;
+  const [dx, dy] = tangentAt(path, index);
 
-  return [-dy / length, dx / length];
+  return [-dy, dx];
 };
 
 interface MapViewProps {
@@ -66,7 +63,7 @@ const MapView = observer(
     const { t } = useTranslation('main-app');
     const svgRef = useRef<SVGSVGElement>(null);
     const brightRefs = useRef<(SVGPathElement | null)[]>([]);
-    const markerRefs = useRef<(SVGCircleElement | null)[]>([]);
+    const markerRefs = useRef<(SVGPathElement | null)[]>([]);
     const labelRefs = useRef<(SVGTextElement | null)[]>([]);
     const selectRef = useRef<SVGRectElement>(null);
     const referencePath = paths[reference];
@@ -114,6 +111,13 @@ const MapView = observer(
       return { index, x, y, normalX, normalY };
     });
     const startBox = box.current ?? paddedBox(fullBounds);
+    // The reference lap's arrow is drawn last, over the others.
+    const markerOrder = [
+      ...paths
+        .map((_path, index) => index)
+        .filter((index) => index !== reference),
+      reference,
+    ];
 
     return (
       <div className={styles.map}>
@@ -220,15 +224,15 @@ const MapView = observer(
             r={TRACK_WIDTH_M / 2}
           />
 
-          {paths.map((path, index) =>
-            path === null || !visible[index] ? null : (
-              <circle
+          {markerOrder.map((index) =>
+            paths[index] === null || !visible[index] ? null : (
+              <path
                 key={`marker-${index}`}
                 ref={(element) => {
                   markerRefs.current[index] = element;
                 }}
                 className={styles.marker}
-                r={TRACK_WIDTH_M / 2.5}
+                d={ARROW_PATH}
                 fill={colors[index]}
                 visibility="hidden"
               />
