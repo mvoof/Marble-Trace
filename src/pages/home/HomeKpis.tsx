@@ -10,7 +10,6 @@ import {
   incidentsPerLapChange,
 } from '@features/statistics/home-stats';
 import { changeLabel } from './home-format';
-import { RatingsCard } from './RatingsCard';
 import styles from './HomeKpis.module.scss';
 
 const ICON_SIZE = 14;
@@ -67,7 +66,7 @@ const IncidentsPerLapCard = observer(() => {
   );
 });
 
-/** The licence and iRating card, then the last seven days in figures. */
+/** The last seven days in figures. */
 export const HomeKpis = observer(() => {
   const { t, i18n } = useTranslation('main-app');
   const { homeStats } = useStatisticsStore();
@@ -77,8 +76,6 @@ export const HomeKpis = observer(() => {
 
   return (
     <div className={styles.kpis}>
-      <RatingsCard />
-
       <KpiCard
         icon={<CalendarDays size={ICON_SIZE} />}
         label={t('homePage.kpi.sessions')}

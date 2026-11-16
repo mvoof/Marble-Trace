@@ -134,14 +134,12 @@ pub struct RecentSession {
     pub incidents: u32,
 }
 
-/// What Home shows above the recent sessions: the licence and iRating of
-/// each category driven, and the last seven days next to the seven before.
+/// What Home shows above the recent sessions: the last seven days next to the
+/// seven before, the calendar, the top lists and the last race.
 #[cfg_attr(feature = "dev", derive(specta::Type))]
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct HomeStats {
-    /// The category of the latest session first.
-    pub ratings: Vec<CategoryRating>,
     /// The seven days up to now.
     pub week: WeekStats,
     /// The seven days before those.
@@ -162,10 +160,6 @@ pub struct HomeStats {
 #[serde(rename_all = "camelCase")]
 pub struct LastRace {
     pub session: RecentSession,
-    /// The iRating the next session in its category joined with, against the
-    /// one it joined with: unknown until that next session is driven, and for
-    /// a race offline.
-    pub irating_change: Option<i32>,
     pub track_id: Option<i32>,
     /// As the sim writes it, e.g. `Germany`.
     pub track_country: Option<String>,
@@ -206,38 +200,6 @@ pub struct DrivenSession {
 pub struct TimeDriven {
     pub name: String,
     pub time_in_car_s: f64,
-}
-
-/// One licence and iRating line: the sessions online in one category.
-#[cfg_attr(feature = "dev", derive(specta::Type))]
-#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
-#[serde(rename_all = "camelCase")]
-pub struct CategoryRating {
-    /// As the sim writes it, e.g. `Sports Car`.
-    pub category: String,
-    /// The latest session's, e.g. `B 3.74`.
-    pub licence: Option<String>,
-    /// The latest session's: the snapshot at its join.
-    pub irating: u32,
-    /// The latest iRating against the one before the last seven days; 0 when
-    /// nothing was driven in them.
-    pub week_change: i32,
-    /// UTC unix seconds.
-    pub last_session_at: f64,
-    /// Oldest first, one point a session.
-    pub history: Vec<RatingPoint>,
-}
-
-#[cfg_attr(feature = "dev", derive(specta::Type))]
-#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
-#[serde(rename_all = "camelCase")]
-pub struct RatingPoint {
-    pub key: String,
-    /// UTC unix seconds.
-    pub started_at: f64,
-    /// The snapshot at join: a session's own result shows from the next one.
-    pub irating: u32,
-    pub track_name: Option<String>,
 }
 
 /// Sessions, laps and incidents of one span of days, all categories together.

@@ -8,7 +8,6 @@ import { PageTitle } from '@shared/ui/PageTitle/PageTitle';
 import { AutologHint } from './AutologHint';
 import { DaysDrivenCard } from './DaysDrivenCard';
 import { HomeKpis } from './HomeKpis';
-import { IratingChart } from './IratingChart';
 import { LastRaceCard } from './LastRaceCard';
 import { NowColumn } from './NowColumn';
 import { RecentSessionsTable } from './RecentSessionsTable';
@@ -35,11 +34,7 @@ export const HomePage = observer(() => {
 
             <DaysDrivenCard />
 
-            <div className={styles.chartRow}>
-              <IratingChart />
-
-              <LastRaceCard />
-            </div>
+            <LastRaceCard />
 
             <RecentSessionsTable />
 

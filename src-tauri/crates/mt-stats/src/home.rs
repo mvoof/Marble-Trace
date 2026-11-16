@@ -1,13 +1,12 @@
-//! What Home shows above the recent sessions: licence and iRating by
-//! category, and the last seven days of driving.
+//! What Home shows above the recent sessions: the last seven days of
+//! driving, the calendar, the top lists and the last race.
 
 use std::collections::HashMap;
 
 use rusqlite::params;
 
 use mt_model::app::stats::{
-    CategoryRating, DrivenSession, HomeStats, LastRace, RatingPoint, RecentSession, TimeDriven,
-    WeekStats,
+    DrivenSession, HomeStats, LastRace, RecentSession, TimeDriven, WeekStats,
 };
 
 use crate::db::{to_message, StatsDb, RACE_RUN_TYPE, STATUS_READ};
@@ -26,10 +25,6 @@ struct SessionSummary {
     key: String,
     started_at: i64,
     event_type: String,
-    category: Option<String>,
-    online: bool,
-    irating: Option<i64>,
-    licence: Option<String>,
     track_name: Option<String>,
     track_config: Option<String>,
     track_id: Option<i64>,
@@ -49,7 +44,6 @@ impl StatsDb {
         let previous_week_start = week_start - WEEK_S;
 
         Ok(HomeStats {
-            ratings: category_ratings(&sessions, week_start),
             week: self.week_stats(&sessions, week_start, now)?,
             previous_week: self.week_stats(&sessions, previous_week_start, week_start)?,
             driven: driven_sessions(&sessions, now - CALENDAR_DAYS * DAY_S),
@@ -64,8 +58,8 @@ impl StatsDb {
         let mut statement = self
             .connection
             .prepare(
-                "SELECT s.key, MIN(f.started_at) AS started, s.event_type, s.category,
-                        s.subsession_id, s.irating, s.licence, s.track_name, s.car_name,
+                "SELECT s.key, MIN(f.started_at) AS started, s.event_type,
+                        s.track_name, s.car_name,
                         (SELECT COALESCE(SUM(r.time_in_car_s), 0) FROM run r
                          WHERE r.session_key = s.key),
                         s.track_config,
@@ -80,23 +74,17 @@ impl StatsDb {
             .map_err(to_message)?;
         let rows = statement
             .query_map(params![STATUS_READ, RACE_RUN_TYPE], |row| {
-                let subsession_id: Option<i64> = row.get(4)?;
-
                 Ok(SessionSummary {
                     key: row.get(0)?,
                     started_at: row.get(1)?,
                     event_type: row.get(2)?,
-                    category: row.get(3)?,
-                    online: subsession_id.is_some_and(|id| id > 0),
-                    irating: row.get(5)?,
-                    licence: row.get(6)?,
-                    track_name: row.get(7)?,
-                    car_name: row.get(8)?,
-                    time_in_car_s: row.get(9)?,
-                    track_config: row.get(10)?,
-                    raced: row.get(11)?,
-                    track_id: row.get(12)?,
-                    track_country: row.get(13)?,
+                    track_name: row.get(3)?,
+                    car_name: row.get(4)?,
+                    time_in_car_s: row.get(5)?,
+                    track_config: row.get(6)?,
+                    raced: row.get(7)?,
+                    track_id: row.get(8)?,
+                    track_country: row.get(9)?,
                 })
             })
             .map_err(to_message)?;
@@ -152,7 +140,6 @@ impl StatsDb {
 
         Ok(Some(LastRace {
             session,
-            irating_change: irating_change(race, &sessions[index + 1..]),
             track_id: race
                 .track_id
                 .and_then(|track_id| i32::try_from(track_id).ok()),
@@ -177,24 +164,6 @@ impl StatsDb {
             )
             .map_err(to_message)
     }
-}
-
-/// A session carries the iRating it joined with, so what `race` earned shows
-/// in the next rated session of its category, among `later`.
-fn irating_change(race: &SessionSummary, later: &[SessionSummary]) -> Option<i32> {
-    let rated_irating = |session: &SessionSummary| {
-        session
-            .irating
-            .filter(|irating| session.online && *irating > 0)
-    };
-    let before = rated_irating(race)?;
-    let category = race.category.as_deref()?;
-    let after = later
-        .iter()
-        .filter(|session| session.category.as_deref() == Some(category))
-        .find_map(rated_irating)?;
-
-    i32::try_from(after - before).ok()
 }
 
 /// The sessions started from `from` on with time in the car; a session only
@@ -247,68 +216,6 @@ fn top_by_time(
     ranked.truncate(TOP_LIMIT);
 
     ranked
-}
-
-/// One line per category driven online, the category of the latest session
-/// first. Offline sessions carry no rating of their own and are left out.
-fn category_ratings(sessions: &[SessionSummary], week_start: i64) -> Vec<CategoryRating> {
-    let mut by_category: HashMap<&str, Vec<&SessionSummary>> = HashMap::new();
-
-    for session in sessions {
-        let rated = session.online && session.irating.is_some_and(|irating| irating > 0);
-
-        if let (true, Some(category)) = (rated, session.category.as_deref()) {
-            by_category.entry(category).or_default().push(session);
-        }
-    }
-
-    let mut ratings: Vec<CategoryRating> = by_category
-        .into_iter()
-        .filter_map(|(category, rated)| category_rating(category, &rated, week_start))
-        .collect();
-
-    ratings.sort_by(|left, right| right.last_session_at.total_cmp(&left.last_session_at));
-
-    ratings
-}
-
-/// `rated` is oldest first and every session in it has an iRating.
-fn category_rating(
-    category: &str,
-    rated: &[&SessionSummary],
-    week_start: i64,
-) -> Option<CategoryRating> {
-    let latest = rated.last()?;
-    let irating_of = |session: &SessionSummary| session.irating.unwrap_or_default();
-    // The rating the week started from: the last one before it, or the first
-    // ever when every session falls inside it.
-    let baseline = rated
-        .iter()
-        .rev()
-        .find(|session| session.started_at < week_start)
-        .or(rated.first())?;
-    let week_change = if latest.started_at < week_start {
-        0
-    } else {
-        irating_of(latest) - irating_of(baseline)
-    };
-
-    Some(CategoryRating {
-        category: category.to_owned(),
-        licence: latest.licence.clone(),
-        irating: u32::try_from(irating_of(latest)).unwrap_or_default(),
-        week_change: i32::try_from(week_change).unwrap_or_default(),
-        last_session_at: latest.started_at as f64,
-        history: rated
-            .iter()
-            .map(|session| RatingPoint {
-                key: session.key.clone(),
-                started_at: session.started_at as f64,
-                irating: u32::try_from(irating_of(session)).unwrap_or_default(),
-                track_name: session.track_name.clone(),
-            })
-            .collect(),
-    })
 }
 
 #[cfg(test)]
@@ -370,58 +277,6 @@ mod tests {
         }
 
         db
-    }
-
-    #[test]
-    fn one_line_per_category_the_latest_first() {
-        let db = db_with(&[
-            online(1, NOW - 20 * DAY_S, "Oval", 1350),
-            online(2, NOW - 10 * DAY_S, "Sports Car", 2400),
-            online(3, NOW - 2 * DAY_S, "Sports Car", 2511),
-            online(4, NOW - 5 * DAY_S, "Formula Car", 1840),
-        ]);
-
-        let ratings = db.home_stats(NOW).unwrap().ratings;
-        let lines: Vec<(&str, u32, i32)> = ratings
-            .iter()
-            .map(|rating| (rating.category.as_str(), rating.irating, rating.week_change))
-            .collect();
-
-        assert_eq!(
-            lines,
-            vec![
-                ("Sports Car", 2511, 111),
-                ("Formula Car", 1840, 0),
-                ("Oval", 1350, 0),
-            ]
-        );
-        assert_eq!(ratings[0].licence.as_deref(), Some("B 2511"));
-        assert_eq!(ratings[0].history.len(), 2);
-    }
-
-    #[test]
-    fn the_week_change_counts_from_its_first_session_when_none_came_before() {
-        let db = db_with(&[
-            online(1, NOW - 6 * DAY_S, "Sports Car", 1500),
-            online(2, NOW - 3 * DAY_S, "Sports Car", 1460),
-            online(3, NOW - DAY_S, "Sports Car", 1530),
-        ]);
-
-        assert_eq!(db.home_stats(NOW).unwrap().ratings[0].week_change, 30);
-    }
-
-    #[test]
-    fn offline_and_unrated_sessions_have_no_line() {
-        let db = db_with(&[
-            online(0, NOW - DAY_S, "Sports Car", 2000),
-            online(2, NOW - DAY_S, "Oval", 0),
-            SessionFile {
-                category: None,
-                ..online(3, NOW - DAY_S, "", 1500)
-            },
-        ]);
-
-        assert!(db.home_stats(NOW).unwrap().ratings.is_empty());
     }
 
     #[test]
@@ -546,22 +401,6 @@ mod tests {
             ),
             (Some(4), Some(22), 3, Some(100.0))
         );
-        // The practice joined in the same category with the race's result.
-        assert_eq!(last_race.irating_change, Some(40));
-    }
-
-    #[test]
-    fn the_race_change_waits_for_the_next_session_of_its_category() {
-        let db = db_with(&[
-            raced(1, NOW - 3 * DAY_S, "Sports Car", 2000),
-            online(2, NOW - 2 * DAY_S, "Oval", 1300),
-            online(0, NOW - DAY_S, "Sports Car", 2100),
-        ]);
-
-        let last_race = db.home_stats(NOW).unwrap().last_race.unwrap();
-
-        assert_eq!(last_race.session.track_name.as_deref(), Some("Track 1"));
-        assert_eq!(last_race.irating_change, None);
     }
 
     fn outline(svg_path: &str) -> TrackOutline {
@@ -609,23 +448,9 @@ mod tests {
     }
 
     #[test]
-    fn an_offline_race_has_no_change_and_no_race_no_card() {
-        let offline = db_with(&[
-            raced(1, NOW - 3 * DAY_S, "Sports Car", 2000),
-            raced(0, NOW - 2 * DAY_S, "Sports Car", 2050),
-            online(3, NOW - DAY_S, "Sports Car", 2100),
-        ]);
+    fn no_race_no_card() {
         let none = db_with(&[online(1, NOW - DAY_S, "Sports Car", 2000)]);
 
-        assert_eq!(
-            offline
-                .home_stats(NOW)
-                .unwrap()
-                .last_race
-                .unwrap()
-                .irating_change,
-            None
-        );
         assert_eq!(none.home_stats(NOW).unwrap().last_race, None);
     }
 

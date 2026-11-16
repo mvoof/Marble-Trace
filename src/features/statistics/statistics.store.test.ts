@@ -2,7 +2,6 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type {
   AutologState,
-  CategoryRating,
   HomeStats,
   RecentSession,
   SkippedFile,
@@ -28,7 +27,6 @@ const SESSION: RecentSession = {
 const WEEK = { sessions: 0, races: 0, laps: 0, incidents: 0 };
 
 const EMPTY_HOME: HomeStats = {
-  ratings: [],
   week: WEEK,
   previousWeek: WEEK,
   driven: [],
@@ -36,18 +34,6 @@ const EMPTY_HOME: HomeStats = {
   topTracks: [],
   lastRace: null,
 };
-
-const rating = (category: string): CategoryRating => ({
-  category,
-  licence: 'B 3.74',
-  irating: 2000,
-  weekChange: 0,
-  lastSessionAt: SESSION.startedAt,
-  history: [
-    { key: 'sub:1', startedAt: 1, irating: 1900, trackName: null },
-    { key: 'sub:2', startedAt: 2, irating: 2000, trackName: null },
-  ],
-});
 
 const api = vi.hoisted(() => ({
   status: null as unknown as StatsImportStatus,
@@ -153,45 +139,6 @@ describe('StatisticsStore', () => {
   });
 });
 
-describe('StatisticsStore iRating chart', () => {
-  beforeEach(() => {
-    api.status = IDLE;
-    api.sessions = [SESSION];
-    api.home = {
-      ...EMPTY_HOME,
-      ratings: [rating('Sports Car'), rating('Oval')],
-    };
-  });
-
-  it('shows the latest session’s category until another is picked', async () => {
-    const store = new StatisticsStore(deps());
-    await store.start();
-
-    expect(store.chartRating?.category).toBe('Sports Car');
-
-    store.selectChartCategory('Oval');
-
-    expect(store.chartRating?.category).toBe('Oval');
-  });
-
-  it('falls back to the latest category when the picked one is gone', async () => {
-    const store = new StatisticsStore(deps());
-    store.selectChartCategory('Dirt Oval');
-    await store.start();
-
-    expect(store.chartRating?.category).toBe('Sports Car');
-  });
-
-  it('charts the whole history of the category on All', async () => {
-    const store = new StatisticsStore(deps());
-    await store.start();
-
-    store.setIratingRange('all');
-
-    expect(store.iratingSteps.map((step) => step.change)).toEqual([null, 100]);
-  });
-});
-
 describe('StatisticsStore last race and autolog', () => {
   beforeEach(() => {
     api.status = IDLE;
@@ -204,7 +151,6 @@ describe('StatisticsStore last race and autolog', () => {
   it('serves the last race the home stats hold', async () => {
     const lastRace = {
       session: SESSION,
-      iratingChange: 38,
       trackId: 262,
       trackCountry: 'Germany',
       outline: { svgPath: 'M 0 0 L 1 1 Z', viewBox: '0 0 1 1' },

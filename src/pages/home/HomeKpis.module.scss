@@ -1,6 +1,6 @@
 .kpis {
   display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: rem(12);
 
   @media (max-width: 1000px) {

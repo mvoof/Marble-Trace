@@ -554,37 +554,6 @@ export type CarTarget =
   | 'byClassPosition';
 
 /**
- * One licence and iRating line: the sessions online in one category.
- */
-export type CategoryRating = {
-  /**
-   * As the sim writes it, e.g. `Sports Car`.
-   */
-  category: string;
-  /**
-   * The latest session's, e.g. `B 3.74`.
-   */
-  licence: string | null;
-  /**
-   * The latest session's: the snapshot at its join.
-   */
-  irating: number;
-  /**
-   * The latest iRating against the one before the last seven days; 0 when
-   * nothing was driven in them.
-   */
-  weekChange: number;
-  /**
-   * UTC unix seconds.
-   */
-  lastSessionAt: number;
-  /**
-   * Oldest first, one point a session.
-   */
-  history: RatingPoint[];
-};
-
-/**
  * Chassis telemetry — per-wheel tire and suspension data.
  *
  * Contains ride height, shock deflection, tire temperatures (3 zones),
@@ -1384,14 +1353,10 @@ export type FuelLapRecord = {
 };
 
 /**
- * What Home shows above the recent sessions: the licence and iRating of
- * each category driven, and the last seven days next to the seven before.
+ * What Home shows above the recent sessions: the last seven days next to the
+ * seven before, the calendar, the top lists and the last race.
  */
 export type HomeStats = {
-  /**
-   * The category of the latest session first.
-   */
-  ratings: CategoryRating[];
   /**
    * The seven days up to now.
    */
@@ -1736,12 +1701,6 @@ export type LastCompletedLap = { lapNum: number; delta: number | null };
  */
 export type LastRace = {
   session: RecentSession;
-  /**
-   * The iRating the next session in its category joined with, against the
-   * one it joined with: unknown until that next session is driven, and for
-   * a race offline.
-   */
-  iratingChange: number | null;
   trackId: number | null;
   /**
    * As the sim writes it, e.g. `Germany`.
@@ -2344,19 +2303,6 @@ export type RadioTransmission = {
  * The frequency a radio is tuned to — what the player transmits on.
  */
 export type RadioTune = { radioNum: number; frequencyNum: number };
-
-export type RatingPoint = {
-  key: string;
-  /**
-   * UTC unix seconds.
-   */
-  startedAt: number;
-  /**
-   * The snapshot at join: a session's own result shows from the next one.
-   */
-  irating: number;
-  trackName: string | null;
-};
 
 /**
  * The session text as the sim wrote it, and the same text as a tree.

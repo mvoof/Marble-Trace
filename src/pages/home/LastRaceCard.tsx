@@ -3,7 +3,6 @@ import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
 
 import { useStatisticsStore } from '@features/statistics/statistics-context';
-import { directionOf } from '@features/statistics/home-stats';
 import { formatLapTimeOrDash } from '@shared/lib/telemetry-format';
 import { cx } from '@shared/lib/class-names';
 import { SettingsCard } from '@shared/ui/SettingsCard/SettingsCard';
@@ -17,15 +16,13 @@ const DASH = '—';
 interface FigureProps {
   label: string;
   children: ReactNode;
-  className?: string;
-  title?: string;
 }
 
-const Figure = ({ label, children, className, title }: FigureProps) => (
-  <div className={styles.figure} title={title}>
+const Figure = ({ label, children }: FigureProps) => (
+  <div className={styles.figure}>
     <span className={styles.figureLabel}>{label}</span>
 
-    <span className={cx(styles.figureValue, className)}>{children}</span>
+    <span className={styles.figureValue}>{children}</span>
   </div>
 );
 
@@ -56,17 +53,12 @@ export const LastRaceCard = observer(() => {
     return null;
   }
 
-  const { session, iratingChange, outline, trackCountry } = lastRace;
+  const { session, outline, trackCountry } = lastRace;
   const countryCode = countryCodeForName(trackCountry);
   const date = new Intl.DateTimeFormat(i18n.language, {
     month: 'short',
     day: 'numeric',
   }).format(new Date(session.startedAt * MS_PER_SECOND));
-  const direction = directionOf(iratingChange);
-  const iratingText =
-    iratingChange === null
-      ? DASH
-      : `${iratingChange > 0 ? '+' : ''}${iratingChange}`;
 
   return (
     <SettingsCard title={t('homePage.lastRace.title')}>
@@ -111,18 +103,6 @@ export const LastRaceCard = observer(() => {
 
         <Figure label={t('homePage.lastRace.incidents')}>
           {session.incidents}x
-        </Figure>
-
-        <Figure
-          label={t('homePage.lastRace.irating')}
-          className={styles[direction]}
-          title={
-            iratingChange === null
-              ? t('homePage.lastRace.iratingUnknown')
-              : undefined
-          }
-        >
-          {iratingText}
         </Figure>
       </div>
     </SettingsCard>

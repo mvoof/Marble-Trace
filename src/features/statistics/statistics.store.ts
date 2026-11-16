@@ -17,7 +17,6 @@ import {
 } from '@shared/api/stats.service';
 import type {
   AutologState,
-  CategoryRating,
   HomeStats,
   KnownCar,
   LastRace,
@@ -28,7 +27,6 @@ import type {
   TimeDriven,
 } from '@shared/contracts/generated/bindings';
 import { drivenWeeks, type DrivenDay } from './days-driven';
-import { iratingSteps, type IratingRange } from './home-stats';
 
 /** Rows of the recent sessions table on Home. */
 const RECENT_SESSIONS_LIMIT = 10;
@@ -61,11 +59,8 @@ export class StatisticsStore {
   importStatus: StatsImportStatus = INITIAL_STATUS;
   recentSessions: RecentSession[] = [];
   homeStats: HomeStats | null = null;
-  /** When `homeStats` was counted, unix seconds: the chart's ranges end there. */
+  /** When `homeStats` was counted, unix seconds: the calendar ends there. */
   homeStatsAtS = 0;
-  /** The category the iRating chart shows; `null` follows the latest session. */
-  chartCategory: string | null = null;
-  iratingRange: IratingRange = '90d';
   /** The first load has answered, so an empty list means no sessions. */
   loaded = false;
   /** Whether the game writes the files statistics read; `null` until asked. */
@@ -99,29 +94,6 @@ export class StatisticsStore {
     return this.recentSessions.length > 0;
   }
 
-  get ratings(): CategoryRating[] {
-    return this.homeStats?.ratings ?? [];
-  }
-
-  /** The chosen category while it has a line, else the latest session's. */
-  get chartRating(): CategoryRating | null {
-    const chosen = this.ratings.find(
-      (rating) => rating.category === this.chartCategory
-    );
-
-    return chosen ?? this.ratings[0] ?? null;
-  }
-
-  get iratingSteps() {
-    const rating = this.chartRating;
-
-    if (rating === null) {
-      return [];
-    }
-
-    return iratingSteps(rating.history, this.iratingRange, this.homeStatsAtS);
-  }
-
   /** The calendar's weeks, Monday first, the current week last. */
   get drivenWeeks(): DrivenDay[][] {
     return drivenWeeks(this.homeStats?.driven ?? [], this.homeStatsAtS);
@@ -142,14 +114,6 @@ export class StatisticsStore {
 
   get lastRace(): LastRace | null {
     return this.homeStats?.lastRace ?? null;
-  }
-
-  selectChartCategory(category: string) {
-    this.chartCategory = category;
-  }
-
-  setIratingRange(range: IratingRange) {
-    this.iratingRange = range;
   }
 
   async start() {
