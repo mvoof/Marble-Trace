@@ -615,8 +615,8 @@
         "streamChat": "直播聊天",
         "companionApps": "配套程序",
         "tracks": "已记录的赛道",
-        "strategy": "策略",
-        "statistics": "统计",
+        "strategy": "组件设置",
+        "statistics": "遥测文件",
         "telemetryInspector": "遥测检查器"
       }
     },

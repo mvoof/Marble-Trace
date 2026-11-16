@@ -619,8 +619,8 @@
         "streamChat": "Stream chat",
         "companionApps": "Companion apps",
         "tracks": "Recorded tracks",
-        "strategy": "Strategy",
-        "statistics": "Statistics",
+        "strategy": "Widget settings",
+        "statistics": "Telemetry files",
         "telemetryInspector": "Telemetry inspector"
       }
     },

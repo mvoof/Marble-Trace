@@ -1,13 +1,10 @@
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
-import { Segmented, Slider, Switch } from 'antd';
+import { Segmented, Switch } from 'antd';
 import { useAppSettingsStore } from '@entities/app-settings/app-settings-context';
 import { SettingsCard } from '@shared/ui/SettingsCard/SettingsCard';
 import styles from '../SettingsPage.module.scss';
 
-const STEERING_LOCK_MIN_DEG = 180;
-const STEERING_LOCK_MAX_DEG = 1080;
-const STEERING_LOCK_STEP_DEG = 90;
 // Divisors of the source's 60 Hz tick: each one moves every widget on the same
 // frames, which is what keeps the overlay from changing more often than this.
 const OVERLAY_UPDATE_HZ_OPTIONS = [60, 30, 20, 15];
@@ -82,34 +79,6 @@ export const OverlaySection = observer(() => {
                 label: `${rateHz} Hz`,
                 value: rateHz,
               }))}
-            />
-          </div>
-        </div>
-      </SettingsCard>
-
-      <SettingsCard title={t('settingsPage.steeringLock.title')}>
-        <div className={styles.fieldGroup}>
-          <div className={styles.fieldRow}>
-            <div className={styles.fieldTexts}>
-              <div className={styles.fieldTitle}>
-                {t('settingsPage.steeringLock.rangeTitle')}
-              </div>
-
-              <div className={styles.fieldDesc}>
-                {t('settingsPage.steeringLock.rangeDesc', {
-                  full: appSettings.appSettings.steeringLock,
-                  half: appSettings.appSettings.steeringLock / 2,
-                })}
-              </div>
-            </div>
-
-            <Slider
-              min={STEERING_LOCK_MIN_DEG}
-              max={STEERING_LOCK_MAX_DEG}
-              step={STEERING_LOCK_STEP_DEG}
-              value={appSettings.appSettings.steeringLock}
-              onChange={(v) => appSettings.update({ steeringLock: v })}
-              className={styles.sliderWidth}
             />
           </div>
         </div>

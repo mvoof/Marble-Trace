@@ -627,8 +627,8 @@
         "streamChat": "Чат стрима",
         "companionApps": "Сопутствующие программы",
         "tracks": "Записанные трассы",
-        "strategy": "Стратегия",
-        "statistics": "Статистика",
+        "strategy": "Настройки виджетов",
+        "statistics": "Файлы телеметрии",
         "telemetryInspector": "Инспектор телеметрии"
       }
     },

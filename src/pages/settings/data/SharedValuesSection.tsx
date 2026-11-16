@@ -1,6 +1,6 @@
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
-import { InputNumber } from 'antd';
+import { InputNumber, Slider } from 'antd';
 import { useAppSettingsStore } from '@entities/app-settings/app-settings-context';
 import { SettingsCard } from '@shared/ui/SettingsCard/SettingsCard';
 import { FuelStrategyCard } from './FuelStrategyCard';
@@ -18,6 +18,9 @@ import styles from './DataPage.module.scss';
 const CAR_LENGTH_MIN_M = 1;
 const CAR_LENGTH_MAX_M = 10;
 const CAR_LENGTH_STEP_M = 0.1;
+const STEERING_LOCK_MIN_DEG = 180;
+const STEERING_LOCK_MAX_DEG = 1080;
+const STEERING_LOCK_STEP_DEG = 90;
 
 export const SharedValuesSection = observer(() => {
   const appSettings = useAppSettingsStore();
@@ -48,6 +51,36 @@ export const SharedValuesSection = observer(() => {
                   appSettings.update({ carLength: value });
                 }
               }}
+            />
+          </div>
+        </div>
+      </SettingsCard>
+
+      <SettingsCard title={t('settingsPage.steeringLock.title')}>
+        <div className={styles.fieldGroup}>
+          <div className={styles.fieldRow}>
+            <div className={styles.fieldTexts}>
+              <div className={styles.fieldTitle}>
+                {t('settingsPage.steeringLock.rangeTitle')}
+              </div>
+
+              <div className={styles.fieldDesc}>
+                {t('settingsPage.steeringLock.rangeDesc', {
+                  full: appSettings.appSettings.steeringLock,
+                  half: appSettings.appSettings.steeringLock / 2,
+                })}
+              </div>
+            </div>
+
+            <Slider
+              min={STEERING_LOCK_MIN_DEG}
+              max={STEERING_LOCK_MAX_DEG}
+              step={STEERING_LOCK_STEP_DEG}
+              value={appSettings.appSettings.steeringLock}
+              onChange={(lockDeg) =>
+                appSettings.update({ steeringLock: lockDeg })
+              }
+              className={styles.sliderWidth}
             />
           </div>
         </div>

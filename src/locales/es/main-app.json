@@ -619,8 +619,8 @@
         "streamChat": "Chat del directo",
         "companionApps": "Aplicaciones complementarias",
         "tracks": "Circuitos grabados",
-        "strategy": "Estrategia",
-        "statistics": "Estadísticas",
+        "strategy": "Ajustes de widgets",
+        "statistics": "Archivos de telemetría",
         "telemetryInspector": "Inspector de telemetría"
       }
     },
