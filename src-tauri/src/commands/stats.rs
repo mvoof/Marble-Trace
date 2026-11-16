@@ -267,7 +267,7 @@ pub async fn set_analysis_reference(
     change_analysis(state, move |db| db.set_analysis_reference(&lap)).await
 }
 
-/// Holds exactly `laps` in memory, every channel on the distance grid; drops
+/// Holds exactly `laps` in memory, the stored channels on the distance grid; drops
 /// the others. Answers when the loader is done.
 #[tauri::command]
 pub async fn load_analysis_laps(

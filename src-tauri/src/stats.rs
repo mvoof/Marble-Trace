@@ -46,7 +46,7 @@ pub fn start(app: &AppHandle) {
 
     app.manage(Arc::clone(&service));
     app.manage(Arc::new(LapCache::start(LapCacheHost {
-        read_laps: mt_sim_iracing::ibt::read_lap_telemetry,
+        read_laps: mt_sim_iracing::ibt::read_stored_lap_telemetry,
         read_stored: Box::new(move |lap| stored.stored_lap(lap)),
         on_thread_start: process_priority::lower_current_thread,
     })));

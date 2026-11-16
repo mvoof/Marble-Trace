@@ -1,4 +1,4 @@
-//! A session file's laps resampled for the analysis: every channel on one
+//! A session file's laps resampled for the analysis: its channels on one
 //! distance grid, a value a metre from the line.
 
 use serde::{Deserialize, Serialize};

@@ -1,4 +1,4 @@
-//! The analysis laps' telemetry in memory: every channel of each lap on one
+//! The analysis laps' telemetry in memory: the stored channels of each lap on one
 //! distance grid, read by one background thread. A lap `stats.db` keeps comes
 //! from there; the others from their file, a file at a time.
 //!

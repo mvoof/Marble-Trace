@@ -94,34 +94,10 @@ pub const STORED_LAP_CHANNELS: &[&str] = &[
     "RRpressure",
 ];
 
-/// Which of a file's channels a read keeps.
-#[derive(Clone, Copy)]
-enum ChannelSet {
-    All,
-    Stored,
-}
-
-impl ChannelSet {
-    fn keeps(self, name: &str) -> bool {
-        match self {
-            Self::All => true,
-            Self::Stored => STORED_LAP_CHANNELS.contains(&name),
-        }
-    }
-}
-
-/// Reads `laps` of the file at `path`, every channel. The grid runs from the
-/// line to the track's length as the file's session info gives it.
-pub fn read_lap_telemetry(path: &Path, laps: &[LapKey]) -> Result<FileTelemetry, String> {
-    read_laps(path, laps, ChannelSet::All)
-}
-
-/// Reads `laps` of the file at `path`, the [`STORED_LAP_CHANNELS`] it holds.
+/// Reads `laps` of the file at `path`, the [`STORED_LAP_CHANNELS`] it holds:
+/// the analysis offers no other. The grid runs from the line to the track's
+/// length as the file's session info gives it.
 pub fn read_stored_lap_telemetry(path: &Path, laps: &[LapKey]) -> Result<FileTelemetry, String> {
-    read_laps(path, laps, ChannelSet::Stored)
-}
-
-fn read_laps(path: &Path, laps: &[LapKey], set: ChannelSet) -> Result<FileTelemetry, String> {
     let file = File::open(path).map_err(|error| error.to_string())?;
     let length = file.metadata().map_err(|error| error.to_string())?.len();
     let mut reader = BufReader::with_capacity(READ_BUFFER, file);
@@ -130,7 +106,7 @@ fn read_laps(path: &Path, laps: &[LapKey], set: ChannelSet) -> Result<FileTeleme
         .filter(|length| *length <= MAX_TRACK_LENGTH_M)
         .ok_or_else(|| "no usable track length in the session info".to_string())?;
     let points = (track_length_m / GRID_STEP_M).round() as usize + 1;
-    let kept = kept_vars(&opened.vars, opened.header.buf_len, set);
+    let kept = kept_vars(&opened.vars, opened.header.buf_len);
     let find = |name: &str| {
         opened
             .vars
@@ -210,10 +186,10 @@ fn read_laps(path: &Path, laps: &[LapKey], set: ChannelSet) -> Result<FileTeleme
     })
 }
 
-/// The single-value number channels whose value lies inside a row, each
+/// The stored single-value number channels whose value lies inside a row, each
 /// place in the row once: a broken header cannot make a row read bigger
 /// than it is.
-fn kept_vars(vars: &[VarHeader], buf_len: usize, set: ChannelSet) -> Vec<&VarHeader> {
+fn kept_vars(vars: &[VarHeader], buf_len: usize) -> Vec<&VarHeader> {
     let mut offsets = HashSet::new();
 
     vars.iter()
@@ -224,7 +200,10 @@ fn kept_vars(vars: &[VarHeader], buf_len: usize, set: ChannelSet) -> Vec<&VarHea
                     .is_some_and(|end| end <= buf_len)
             });
 
-            var.count == 1 && fits && set.keeps(&var.name) && offsets.insert(var.offset)
+            var.count == 1
+                && fits
+                && STORED_LAP_CHANNELS.contains(&var.name.as_str())
+                && offsets.insert(var.offset)
         })
         .collect()
 }
@@ -379,7 +358,7 @@ mod tests {
 
     fn var(offset: usize, var_type: i32, count: usize) -> VarHeader {
         VarHeader {
-            name: format!("v{offset}"),
+            name: "Speed".into(),
             var_type,
             offset,
             count,
@@ -401,13 +380,10 @@ mod tests {
             var(16, TEXT, 1),
         ];
 
-        let kept: Vec<usize> = kept_vars(&vars, 16, ChannelSet::All)
-            .iter()
-            .map(|var| var.offset)
-            .collect();
+        let kept: Vec<usize> = kept_vars(&vars, 16).iter().map(|var| var.offset).collect();
 
         assert_eq!(kept, vec![0, 4]);
-        assert!(kept_vars(&[var(12, DOUBLE, 1)], 16, ChannelSet::All).is_empty());
+        assert!(kept_vars(&[var(12, DOUBLE, 1)], 16).is_empty());
     }
 
     #[test]
@@ -420,7 +396,7 @@ mod tests {
         // A car without a clutch pedal: no `Clutch` in its file.
         let vars = vec![named("Speed", 0), named("OilTemp", 4), named("Brake", 8)];
 
-        let kept: Vec<&str> = kept_vars(&vars, 12, ChannelSet::Stored)
+        let kept: Vec<&str> = kept_vars(&vars, 12)
             .iter()
             .map(|var| var.name.as_str())
             .collect();
