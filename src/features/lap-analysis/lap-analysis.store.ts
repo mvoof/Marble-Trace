@@ -2,6 +2,7 @@ import { makeAutoObservable, runInAction } from 'mobx';
 
 import type {
   AnalysisLap,
+  AnalysisLoad,
   AnalysisSet,
   LapRef,
   SessionLap,
@@ -20,7 +21,29 @@ export interface LapAnalysisApi {
     visible: boolean
   ) => Promise<AnalysisSet>;
   setAnalysisReference: (lap: LapRef) => Promise<AnalysisSet>;
+  loadAnalysisLaps: (laps: LapRef[]) => Promise<AnalysisLoad>;
+  unloadAnalysis: () => Promise<void>;
 }
+
+/**
+ * Where the laps' telemetry is: none asked for, being read, in memory, or
+ * dropped while the game runs and the window is away.
+ */
+export type TelemetryState = 'idle' | 'loading' | 'ready' | 'unloaded';
+
+/** What the game rule looks at. */
+export interface AnalysisGate {
+  simConnected: boolean;
+  windowFocused: boolean;
+  keepWhileGameRuns: boolean;
+}
+
+/**
+ * Whether the telemetry may stay in memory: not while the game runs and the
+ * main window is in the background, unless the setting keeps it.
+ */
+export const holdsTelemetry = (gate: AnalysisGate) =>
+  !gate.simConnected || gate.windowFocused || gate.keepWhileGameRuns;
 
 export const sameLap = (first: LapRef, second: LapRef) =>
   first.path === second.path &&
@@ -43,8 +66,74 @@ export class LapAnalysisStore {
   modalKey: string | null = null;
   modalLaps: SessionLaps | null = null;
 
+  telemetry: TelemetryState = 'idle';
+  /** The last load's grid, channels and missing laps. */
+  loaded: AnalysisLoad | null = null;
+  gate: AnalysisGate = {
+    simConnected: false,
+    windowFocused: true,
+    keepWhileGameRuns: false,
+  };
+
+  /** Answers older than the latest telemetry request are dropped. */
+  private telemetryRequest = 0;
+
   constructor(private api: LapAnalysisApi) {
-    makeAutoObservable<LapAnalysisStore, 'api'>(this, { api: false });
+    makeAutoObservable<LapAnalysisStore, 'api' | 'telemetryRequest'>(this, {
+      api: false,
+      telemetryRequest: false,
+    });
+  }
+
+  get holdsTelemetry(): boolean {
+    return holdsTelemetry(this.gate);
+  }
+
+  /** The laps whose file is gone or does not hold them. */
+  isMissing(lap: LapRef): boolean {
+    return (this.loaded?.missing ?? []).some((missing) =>
+      sameLap(missing, lap)
+    );
+  }
+
+  setGate(gate: AnalysisGate) {
+    this.gate = gate;
+  }
+
+  /**
+   * Brings the telemetry in line with the set and the game rule: loads the
+   * set's laps, or drops them.
+   */
+  async syncTelemetry() {
+    this.telemetryRequest += 1;
+    const request = this.telemetryRequest;
+    const laps = this.set.laps.map((lap) => lap.lap);
+
+    if (laps.length === 0 || !this.holdsTelemetry) {
+      this.telemetry = laps.length === 0 ? 'idle' : 'unloaded';
+      this.loaded = null;
+      await this.api.unloadAnalysis().catch((error: unknown) => {
+        console.error('Analysis not unloaded', error);
+      });
+
+      return;
+    }
+
+    this.telemetry = 'loading';
+
+    try {
+      const loaded = await this.api.loadAnalysisLaps(laps);
+
+      runInAction(() => {
+        if (request === this.telemetryRequest) {
+          this.loaded = loaded;
+          this.telemetry = 'ready';
+        }
+      });
+    } catch (error) {
+      // An unload cut it short; the newer request decides the state.
+      console.warn('Analysis laps not loaded', error);
+    }
   }
 
   get laps(): AnalysisLap[] {

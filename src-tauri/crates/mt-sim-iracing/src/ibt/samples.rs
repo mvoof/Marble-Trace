@@ -31,14 +31,32 @@ struct Channel {
 
 impl Channel {
     fn number(self, row: &[u8]) -> f64 {
-        match self.var_type {
-            TYPE_BOOL => f64::from(row.get(self.offset).copied().unwrap_or_default()),
-            TYPE_INT | TYPE_BITFIELD => f64::from(read_i32(row, self.offset)),
-            TYPE_FLOAT => f64::from(read_f32(row, self.offset)),
-            TYPE_DOUBLE => read_f64(row, self.offset),
-            _ => 0.0,
-        }
+        number_at(row, self.var_type, self.offset)
     }
+}
+
+/// A variable's value in a row as a number; 0 for a type that is none.
+pub(crate) fn number_at(row: &[u8], var_type: i32, offset: usize) -> f64 {
+    match var_type {
+        TYPE_BOOL => f64::from(row.get(offset).copied().unwrap_or_default()),
+        TYPE_INT | TYPE_BITFIELD => f64::from(read_i32(row, offset)),
+        TYPE_FLOAT => f64::from(read_f32(row, offset)),
+        TYPE_DOUBLE => read_f64(row, offset),
+        _ => 0.0,
+    }
+}
+
+/// A number type: anything but text.
+pub(crate) const fn is_numeric(var_type: i32) -> bool {
+    matches!(
+        var_type,
+        TYPE_BOOL | TYPE_INT | TYPE_BITFIELD | TYPE_FLOAT | TYPE_DOUBLE
+    )
+}
+
+/// A type whose values step: interpolating between them means nothing.
+pub(crate) const fn is_stepped(var_type: i32) -> bool {
+    matches!(var_type, TYPE_BOOL | TYPE_INT | TYPE_BITFIELD)
 }
 
 /// Where the channels the stats read sit in a row.

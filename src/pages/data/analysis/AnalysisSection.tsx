@@ -1,16 +1,18 @@
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
-import { ColorPicker, Tooltip } from 'antd';
-import { Eye, EyeOff, Flag, Star, X } from 'lucide-react';
+import { ColorPicker, Spin, Tooltip } from 'antd';
+import { Eye, EyeOff, Flag, PauseCircle, Star, X } from 'lucide-react';
 
 import { useLapAnalysisStore } from '@features/lap-analysis/lap-analysis-context';
 import { cx } from '@shared/lib/class-names';
 import { formatLapTimeOrDash } from '@shared/lib/telemetry-format';
 import type { AnalysisLap } from '@shared/contracts/generated/bindings';
+import { AnalysisSettings } from './AnalysisSettings';
 import styles from './AnalysisSection.module.scss';
 
 const MS_PER_SECOND = 1000;
 const ICON_SIZE = 14;
+const GATE_ICON_SIZE = 28;
 const BEST_STAR = '★';
 const DASH = '—';
 
@@ -54,7 +56,7 @@ const LapItem = observer(({ lap }: { lap: AnalysisLap }) => {
       </span>
 
       <span className={cx(styles.time, lap.isBest && styles.best)}>
-        {lap.filePresent ? (
+        {lap.filePresent && !analysis.isMissing(lap.lap) ? (
           formatLapTimeOrDash(lap.timeS)
         ) : (
           <Tooltip title={t('dataPage.analysis.fileDeleted')}>
@@ -84,7 +86,41 @@ const LapItem = observer(({ lap }: { lap: AnalysisLap }) => {
   );
 });
 
-/** The laps picked for the analysis, from one session; charts come later. */
+/** In place of the charts while the game runs and the window was away. */
+const UnloadedNote = observer(() => {
+  const { t } = useTranslation('main-app');
+
+  return (
+    <div className={styles.gate}>
+      <PauseCircle size={GATE_ICON_SIZE} />
+      <p className={styles.gateTitle}>{t('dataPage.analysis.unloaded')}</p>
+      <p>{t('dataPage.analysis.unloadedNote')}</p>
+    </div>
+  );
+});
+
+/** What the charts' place shows for the telemetry's state. */
+const TelemetryArea = observer(() => {
+  const { t } = useTranslation('main-app');
+  const analysis = useLapAnalysisStore();
+
+  if (analysis.telemetry === 'unloaded') {
+    return <UnloadedNote />;
+  }
+
+  if (analysis.telemetry === 'loading') {
+    return (
+      <div className={styles.gate}>
+        <Spin />
+        <p>{t('dataPage.analysis.loading')}</p>
+      </div>
+    );
+  }
+
+  return null;
+});
+
+/** The laps picked for the analysis, from one session, and their telemetry. */
 export const AnalysisSection = observer(() => {
   const { t, i18n } = useTranslation('main-app');
   const analysis = useLapAnalysisStore();
@@ -118,25 +154,35 @@ export const AnalysisSection = observer(() => {
           {' · '}
           {date}
         </span>
+
+        <span className={styles.sessionActions}>
+          <AnalysisSettings />
+        </span>
       </div>
 
-      <aside className={styles.side}>
-        <div className={styles.card}>
-          <div className={styles.cardHead}>
-            {t('dataPage.analysis.laps')}
-            <span className={styles.hint}>
-              {t('dataPage.analysis.referenceHint')}
-            </span>
-          </div>
+      <div className={styles.body}>
+        <aside className={styles.side}>
+          <div className={styles.card}>
+            <div className={styles.cardHead}>
+              {t('dataPage.analysis.laps')}
+              <span className={styles.hint}>
+                {t('dataPage.analysis.referenceHint')}
+              </span>
+            </div>
 
-          {analysis.laps.map((lap) => (
-            <LapItem
-              key={`${lap.lap.path}:${lap.lap.sessionNum}:${lap.lap.lapNum}`}
-              lap={lap}
-            />
-          ))}
+            {analysis.laps.map((lap) => (
+              <LapItem
+                key={`${lap.lap.path}:${lap.lap.sessionNum}:${lap.lap.lapNum}`}
+                lap={lap}
+              />
+            ))}
+          </div>
+        </aside>
+
+        <div className={styles.charts}>
+          <TelemetryArea />
         </div>
-      </aside>
+      </div>
     </div>
   );
 });

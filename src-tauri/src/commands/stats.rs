@@ -3,8 +3,10 @@
 use std::sync::atomic::Ordering;
 use std::sync::Arc;
 
+use tauri::ipc::Response;
 use tauri::{AppHandle, Manager, State};
 
+use mt_model::app::lap_telemetry::AnalysisLoad;
 use mt_model::app::stats::{
     AnalysisSet, AutologState, HomeStats, KnownCar, LapRef, RecentSession, SessionFilter,
     SessionLaps, SessionPage, SkippedFile, StatsFolder, StatsImportStatus, TrackOutline,
@@ -13,6 +15,7 @@ use mt_sim_iracing::app_ini;
 use mt_sim_iracing::car_badges::badge_for_car;
 use mt_stats::db::StatsDb;
 use mt_stats::import::{PassScope, StatsService};
+use mt_stats::lap_cache::LapCache;
 use mt_telemetry::state::TelemetryState;
 use mt_telemetry::storage::load_cached_track_shape;
 
@@ -260,4 +263,42 @@ pub async fn set_analysis_reference(
     lap: LapRef,
 ) -> Result<AnalysisSet, String> {
     change_analysis(state, move |db| db.set_analysis_reference(&lap)).await
+}
+
+/// Holds exactly `laps` in memory, every channel on the distance grid; drops
+/// the others. Answers when the loader is done.
+#[tauri::command]
+pub async fn load_analysis_laps(
+    cache: State<'_, Arc<LapCache>>,
+    laps: Vec<LapRef>,
+) -> Result<AnalysisLoad, String> {
+    let cache = Arc::clone(&cache);
+
+    tauri::async_runtime::spawn_blocking(move || cache.load(laps))
+        .await
+        .map_err(|error| error.to_string())?
+}
+
+/// Drops the analysis telemetry: the game runs and the main window is away.
+#[tauri::command]
+pub async fn unload_analysis(cache: State<'_, Arc<LapCache>>) -> Result<(), String> {
+    cache.unload();
+
+    Ok(())
+}
+
+/// `channels` of `laps` as raw bytes, not JSON: the point count (u32), then
+/// per lap, per channel, a little-endian f32 a point.
+#[tauri::command]
+pub async fn get_lap_channels(
+    cache: State<'_, Arc<LapCache>>,
+    laps: Vec<LapRef>,
+    channels: Vec<String>,
+) -> Result<Response, String> {
+    let cache = Arc::clone(&cache);
+
+    tauri::async_runtime::spawn_blocking(move || cache.channel_bytes(&laps, &channels))
+        .await
+        .map_err(|error| error.to_string())?
+        .map(Response::new)
 }

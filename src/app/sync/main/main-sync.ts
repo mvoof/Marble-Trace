@@ -22,6 +22,7 @@ import {
   pushDefaultStatsFolder,
   registerStatsFolderReaction,
 } from './stats-folder-sync';
+import { registerAnalysisSync } from './analysis-sync';
 import { overlayMonitorNames, syncOverlayWindows } from './overlay-windows';
 import { registerRemotePublishing } from './remote-publish';
 import { registerClientPublishing } from './client-publish';
@@ -278,10 +279,12 @@ export const initMainSync = async (root: MainRoot) => {
 
       // Owns the remote server's lifetime, so it is torn down with the rest.
       const stopRemotePublishing = registerRemotePublishing(root);
+      const stopAnalysisSync = await registerAnalysisSync(root);
 
       const cleanup = () => {
         stopMonitorWatch();
         stopRemotePublishing();
+        stopAnalysisSync();
         clientPublishing.dispose();
         settingsActionUnlisten();
         trackRotationUnlisten();

@@ -21,6 +21,24 @@ export type AnalysisLap = {
 };
 
 /**
+ * What a load of the analysis laps ended with.
+ */
+export type AnalysisLoad = {
+  /**
+   * Grid points of every lap: 0 m, 1 m … the track length.
+   */
+  points: number;
+  /**
+   * The channels the laps' files hold, the time since the line last.
+   */
+  channels: LapChannel[];
+  /**
+   * Laps not loaded: the file is gone, or does not hold the lap.
+   */
+  missing: LapRef[];
+};
+
+/**
  * The laps in the analysis, all of one session, in the order added.
  */
 export type AnalysisSet = {
@@ -1590,6 +1608,24 @@ export type KnownCar = {
    * name; `None` when neither is known.
    */
   carClass: string | null;
+};
+
+/**
+ * A channel a file holds, as "+ Channel" offers it.
+ */
+export type LapChannel = {
+  /**
+   * As the sim names it, e.g. `Speed`.
+   */
+  name: string;
+  /**
+   * As the sim writes it, e.g. `m/s`; empty when it gives none.
+   */
+  unit: string;
+  /**
+   * The sim's own words for it.
+   */
+  description: string;
 };
 
 /**

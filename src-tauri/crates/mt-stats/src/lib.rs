@@ -7,5 +7,6 @@ pub mod db;
 pub mod export;
 pub mod home;
 pub mod import;
+pub mod lap_cache;
 pub mod scan;
 pub mod sessions;

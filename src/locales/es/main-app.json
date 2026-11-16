@@ -737,7 +737,14 @@
       "show": "Mostrar",
       "reference": "Referencia del delta",
       "remove": "Quitar del análisis",
-      "fileDeleted": "El archivo de la sesión se borró"
+      "fileDeleted": "El archivo de la sesión se borró",
+      "settings": "Ajustes del análisis",
+      "keepWhileGameRuns": "Mantener el análisis en memoria con el juego abierto",
+      "keepWhileGameRunsNote": "Por defecto, con el juego abierto, la telemetría de las vueltas solo se mantiene en memoria mientras esta ventana tiene el foco.",
+      "keepWhileGameRunsWarning": "Ocupa hasta ~150 MB de RAM. Mejor apagado en carrera.",
+      "unloaded": "El juego está abierto — análisis descargado",
+      "unloadedNote": "Para no estorbar al overlay, la telemetría de las vueltas no se mantiene mientras la ventana está en segundo plano. Vuelve a ella y los datos se cargan de nuevo.",
+      "loading": "Leyendo las vueltas…"
     }
   },
   "bindings": {

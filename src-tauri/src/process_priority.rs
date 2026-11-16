@@ -30,3 +30,24 @@ pub fn lower_to_below_normal() {
 
 #[cfg(not(windows))]
 pub fn lower_to_below_normal() {}
+
+/// Lowers the calling thread below the rest of the app: work that can wait,
+/// like reading laps for the analysis, gives way to the overlay and the game.
+#[cfg(windows)]
+pub fn lower_current_thread() {
+    use windows::Win32::System::Threading::{
+        GetCurrentThread, SetThreadPriority, THREAD_PRIORITY_LOWEST,
+    };
+
+    // SAFETY: no arguments; the pseudo-handle it returns needs no closing.
+    let current_thread = unsafe { GetCurrentThread() };
+    // SAFETY: the pseudo-handle is always valid for the calling thread.
+    let result = unsafe { SetThreadPriority(current_thread, THREAD_PRIORITY_LOWEST) };
+
+    if let Err(error) = result {
+        tracing::warn!(%error, "thread priority not lowered");
+    }
+}
+
+#[cfg(not(windows))]
+pub fn lower_current_thread() {}

@@ -737,7 +737,14 @@
       "show": "Show",
       "reference": "Reference for the delta",
       "remove": "Remove from the analysis",
-      "fileDeleted": "The session file was deleted"
+      "fileDeleted": "The session file was deleted",
+      "settings": "Analysis settings",
+      "keepWhileGameRuns": "Keep analysis in memory while the game runs",
+      "keepWhileGameRunsNote": "By default, while the game runs, the laps' telemetry stays in memory only while this window has focus.",
+      "keepWhileGameRunsWarning": "Takes up to ~150 MB of RAM. Better off in a race.",
+      "unloaded": "Game is running — analysis unloaded",
+      "unloadedNote": "Not to get in the overlay's way, the laps' telemetry is not held while this window is in the background. Come back to it and the data loads again.",
+      "loading": "Reading the laps…"
     }
   },
   "bindings": {

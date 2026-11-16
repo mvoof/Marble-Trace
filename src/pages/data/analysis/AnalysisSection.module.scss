@@ -18,8 +18,73 @@
   color: $sys-text-primary;
 }
 
+.sessionActions {
+  margin-left: auto;
+}
+
+// The lap list at the left, staying in view; the charts beside it.
+.body {
+  display: grid;
+  grid-template-columns: rem(290) minmax(0, 1fr);
+  gap: rem(16);
+  align-items: start;
+}
+
 .side {
-  width: rem(290);
+  position: sticky;
+  top: rem(12);
+  display: flex;
+  flex-direction: column;
+  gap: rem(12);
+}
+
+.charts {
+  min-width: 0;
+}
+
+.gate {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: rem(8);
+  padding: rem(60) rem(20);
+  text-align: center;
+  font-size: rem(13);
+  color: $sys-text-secondary;
+
+  p {
+    max-width: rem(460);
+    margin: 0;
+  }
+}
+
+.gateTitle {
+  font-weight: 600;
+  color: $sys-text-primary;
+}
+
+.settings {
+  width: rem(300);
+}
+
+.settingsRow {
+  display: flex;
+  align-items: center;
+  gap: rem(8);
+  font-size: rem(13);
+  color: $sys-text-primary;
+  cursor: pointer;
+}
+
+.settingsNote,
+.settingsWarning {
+  margin: rem(8) 0 0;
+  font-size: rem(12);
+  color: $sys-text-muted;
+}
+
+.settingsWarning {
+  color: $sys-warning;
 }
 
 .card {

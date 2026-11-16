@@ -10,8 +10,10 @@ use tauri::{AppHandle, Manager};
 
 use mt_stats::db::StatsDb;
 use mt_stats::import::{self, StatsHost, StatsService};
+use mt_stats::lap_cache::{LapCache, LapCacheHost};
 use mt_telemetry::state::TelemetryState;
 
+use crate::process_priority;
 use crate::sink::TauriSink;
 
 const STATS_DB_FILE: &str = "stats.db";
@@ -35,6 +37,10 @@ pub fn start(app: &AppHandle) {
     );
 
     app.manage(Arc::clone(&service));
+    app.manage(Arc::new(LapCache::start(LapCacheHost {
+        read_laps: mt_sim_iracing::ibt::read_lap_telemetry,
+        on_thread_start: process_priority::lower_current_thread,
+    })));
     import::start(service, host);
 }
 

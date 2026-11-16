@@ -8,6 +8,7 @@ import type {
 } from '@shared/contracts/generated/bindings';
 import {
   LapAnalysisStore,
+  holdsTelemetry,
   isAnalysable,
   type LapAnalysisApi,
 } from './lap-analysis.store';
@@ -69,6 +70,12 @@ const fakeApi = (): LapAnalysisApi => ({
   setAnalysisLapColor: vi.fn(async () => emptySet),
   setAnalysisLapVisible: vi.fn(async () => emptySet),
   setAnalysisReference: vi.fn(async () => emptySet),
+  loadAnalysisLaps: vi.fn(async () => ({
+    points: 4485,
+    channels: [],
+    missing: [],
+  })),
+  unloadAnalysis: vi.fn(async () => undefined),
 });
 
 describe('isAnalysable', () => {
@@ -114,5 +121,107 @@ describe('LapAnalysisStore', () => {
     await opening;
 
     expect(store.modalLaps).toBeNull();
+  });
+});
+
+describe('holdsTelemetry', () => {
+  it('drops only while the game runs, the window is away and the setting is off', () => {
+    const gate = {
+      simConnected: true,
+      windowFocused: false,
+      keepWhileGameRuns: false,
+    };
+
+    expect(holdsTelemetry(gate)).toBe(false);
+    expect(holdsTelemetry({ ...gate, simConnected: false })).toBe(true);
+    expect(holdsTelemetry({ ...gate, windowFocused: true })).toBe(true);
+    expect(holdsTelemetry({ ...gate, keepWhileGameRuns: true })).toBe(true);
+  });
+});
+
+describe('LapAnalysisStore telemetry', () => {
+  const setWithLap: AnalysisSet = {
+    session: SESSION,
+    laps: [
+      {
+        lap: ref(2),
+        runType: 'Race',
+        timeS: 100,
+        isBest: true,
+        color: '#4cc9f0',
+        visible: true,
+        reference: true,
+        filePresent: true,
+      },
+    ],
+  };
+
+  const storeWithLap = async (api: LapAnalysisApi) => {
+    vi.mocked(api.getAnalysisSet).mockResolvedValue(setWithLap);
+    const store = new LapAnalysisStore(api);
+    await store.load();
+
+    return store;
+  };
+
+  it('loads the set, drops it on blur while the game runs, loads it again on focus', async () => {
+    const api = fakeApi();
+    const store = await storeWithLap(api);
+
+    await store.syncTelemetry();
+    expect(store.telemetry).toBe('ready');
+    expect(api.loadAnalysisLaps).toHaveBeenCalledWith([ref(2)]);
+
+    store.setGate({
+      simConnected: true,
+      windowFocused: false,
+      keepWhileGameRuns: false,
+    });
+    await store.syncTelemetry();
+    expect(store.telemetry).toBe('unloaded');
+    expect(api.unloadAnalysis).toHaveBeenCalledOnce();
+
+    store.setGate({
+      simConnected: true,
+      windowFocused: true,
+      keepWhileGameRuns: false,
+    });
+    await store.syncTelemetry();
+    expect(store.telemetry).toBe('ready');
+    expect(api.loadAnalysisLaps).toHaveBeenCalledTimes(2);
+  });
+
+  it('is idle with no laps', async () => {
+    const api = fakeApi();
+    const store = new LapAnalysisStore(api);
+
+    await store.syncTelemetry();
+
+    expect(store.telemetry).toBe('idle');
+    expect(api.loadAnalysisLaps).not.toHaveBeenCalled();
+  });
+
+  it('keeps a load from settling once an unload came after it', async () => {
+    const api = fakeApi();
+    let finishLoad: () => void = () => {};
+    vi.mocked(api.loadAnalysisLaps).mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          finishLoad = () => resolve({ points: 1, channels: [], missing: [] });
+        })
+    );
+    const store = await storeWithLap(api);
+
+    const loading = store.syncTelemetry();
+    store.setGate({
+      simConnected: true,
+      windowFocused: false,
+      keepWhileGameRuns: false,
+    });
+    await store.syncTelemetry();
+    finishLoad();
+    await loading;
+
+    expect(store.telemetry).toBe('unloaded');
   });
 });

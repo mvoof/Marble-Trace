@@ -7,6 +7,7 @@
 //! Only the player's car is in a file. Rows are streamed, never loaded whole:
 //! a long race is half a gigabyte.
 
+mod laps;
 mod outline;
 mod samples;
 mod yaml;
@@ -17,14 +18,20 @@ use std::path::Path;
 
 use mt_model::app::stats::SessionFile;
 
+pub use laps::read_lap_telemetry;
 use samples::{Channels, RunTracker};
 use yaml::{decode_yaml, FileYaml};
 
 const HEADER_LEN: usize = 112;
 const DISK_HEADER_LEN: usize = 32;
 const VAR_HEADER_LEN: usize = 144;
+const VAR_COUNT_OFFSET: usize = 8;
 const VAR_NAME_OFFSET: usize = 16;
 const VAR_NAME_LEN: usize = 32;
+const VAR_DESCRIPTION_OFFSET: usize = 48;
+const VAR_DESCRIPTION_LEN: usize = 64;
+const VAR_UNIT_OFFSET: usize = 112;
+const VAR_UNIT_LEN: usize = 32;
 /// More than any sim build has written; a larger count is a broken header.
 const MAX_VARS: usize = 4096;
 /// Rows go through a reader this large, so a 60 Hz file is not one syscall a row.
@@ -50,6 +57,17 @@ pub(crate) struct VarHeader {
     pub name: String,
     pub var_type: i32,
     pub offset: usize,
+    /// Values per row: 1, or an array's length.
+    pub count: usize,
+    pub unit: String,
+    pub description: String,
+}
+
+/// The parts of a file before its rows.
+pub(crate) struct OpenedFile {
+    header: Header,
+    vars: Vec<VarHeader>,
+    yaml: String,
 }
 
 /// Reads one `.ibt` file. An error names what was wrong; the caller marks the
@@ -61,7 +79,9 @@ pub fn read_session_file(path: &Path) -> Result<SessionFile, String> {
     read_from(BufReader::with_capacity(READ_BUFFER, file), length)
 }
 
-fn read_from<R: Read + Seek>(mut reader: R, length: u64) -> Result<SessionFile, String> {
+/// Reads the header, the variables and the session YAML, and leaves the
+/// reader at the first row.
+pub(crate) fn open_file<R: Read + Seek>(reader: &mut R, length: u64) -> Result<OpenedFile, String> {
     let mut fixed = [0_u8; HEADER_LEN + DISK_HEADER_LEN];
     reader
         .read_exact(&mut fixed)
@@ -84,16 +104,35 @@ fn read_from<R: Read + Seek>(mut reader: R, length: u64) -> Result<SessionFile, 
     reader
         .read_exact(&mut yaml_bytes)
         .map_err(|_| "session info cut short".to_string())?;
-    let file_yaml = FileYaml::parse(&decode_yaml(&yaml_bytes))?;
-
-    let channels = Channels::find(&vars)?;
-    let mut tracker = RunTracker::default();
-    let rows_available = length.saturating_sub(header.rows_offset) / header.buf_len as u64;
-    let rows = header.record_count.min(rows_available);
 
     reader
         .seek(SeekFrom::Start(header.rows_offset))
         .map_err(|error| error.to_string())?;
+
+    Ok(OpenedFile {
+        yaml: decode_yaml(&yaml_bytes),
+        header,
+        vars,
+    })
+}
+
+impl OpenedFile {
+    /// Rows the file holds whole.
+    pub(crate) fn row_count(&self, length: u64) -> u64 {
+        let rows_available =
+            length.saturating_sub(self.header.rows_offset) / self.header.buf_len as u64;
+
+        self.header.record_count.min(rows_available)
+    }
+}
+
+fn read_from<R: Read + Seek>(mut reader: R, length: u64) -> Result<SessionFile, String> {
+    let opened = open_file(&mut reader, length)?;
+    let file_yaml = FileYaml::parse(&opened.yaml)?;
+    let channels = Channels::find(&opened.vars)?;
+    let mut tracker = RunTracker::default();
+    let rows = opened.row_count(length);
+    let header = opened.header;
     let mut row = vec![0_u8; header.buf_len];
 
     for _ in 0..rows {
@@ -164,19 +203,25 @@ fn parse_var_headers(bytes: &[u8], buf_len: usize) -> Vec<VarHeader> {
         .iter()
         .filter_map(|chunk| {
             let offset = usize::try_from(read_i32(chunk, 4)).ok()?;
-            let name_bytes = &chunk[VAR_NAME_OFFSET..VAR_NAME_OFFSET + VAR_NAME_LEN];
-            let name_len = name_bytes
-                .iter()
-                .position(|&byte| byte == 0)
-                .unwrap_or(VAR_NAME_LEN);
 
             (offset < buf_len).then(|| VarHeader {
-                name: String::from_utf8_lossy(&name_bytes[..name_len]).into_owned(),
+                name: text_at(chunk, VAR_NAME_OFFSET, VAR_NAME_LEN),
                 var_type: read_i32(chunk, 0),
                 offset,
+                count: usize::try_from(read_i32(chunk, VAR_COUNT_OFFSET)).unwrap_or_default(),
+                unit: text_at(chunk, VAR_UNIT_OFFSET, VAR_UNIT_LEN),
+                description: text_at(chunk, VAR_DESCRIPTION_OFFSET, VAR_DESCRIPTION_LEN),
             })
         })
         .collect()
+}
+
+/// A zero-ended text field of a variable header.
+fn text_at(chunk: &[u8], at: usize, len: usize) -> String {
+    let bytes = &chunk[at..at + len];
+    let end = bytes.iter().position(|&byte| byte == 0).unwrap_or(len);
+
+    String::from_utf8_lossy(&bytes[..end]).trim().to_owned()
 }
 
 pub(crate) fn read_i32(bytes: &[u8], at: usize) -> i32 {
