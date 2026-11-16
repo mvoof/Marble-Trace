@@ -1,15 +1,11 @@
-import { Fragment } from 'react';
+import { Fragment, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
-import { App, Button, Modal } from 'antd';
-import { Activity, Check, Plus } from 'lucide-react';
+import { Button, Modal } from 'antd';
+import { Activity, Check, Plus, Trash2 } from 'lucide-react';
 
 import { useLapAnalysisStore } from '../lap-analysis-context';
-import {
-  hasTelemetry,
-  isAnalysable,
-  type LapAnalysisStore,
-} from '../lap-analysis.store';
+import { hasTelemetry, isAnalysable } from '../lap-analysis.store';
 import { cx } from '@shared/lib/class-names';
 import { formatLapTimeOrDash } from '@shared/lib/telemetry-format';
 import type {
@@ -18,6 +14,8 @@ import type {
   SessionLap,
 } from '@shared/contracts/generated/bindings';
 import { finishText } from '@shared/lib/finish-text';
+import { DeleteSessionDialog } from './DeleteSessionDialog';
+import { useAnalysisToast } from './useAnalysisToast';
 import styles from './SessionLapsModal.module.scss';
 
 const MS_PER_SECOND = 1000;
@@ -25,8 +23,6 @@ const ICON_SIZE = 14;
 const MODAL_WIDTH = 720;
 const DELTA_DIGITS = 3;
 const DASH = '—';
-/** Long enough to reach the toast's link. */
-const TOAST_SECONDS = 6;
 const STAR = '★';
 
 const useSessionDate = (session: RecentSession) => {
@@ -39,57 +35,6 @@ const useSessionDate = (session: RecentSession) => {
     hour: '2-digit',
     minute: '2-digit',
   }).format(new Date(session.startedAt * MS_PER_SECOND));
-};
-
-/** After an add: "Analysis: Spa, 14 Nov — 3 laps · Open analysis". */
-const useAnalysisToast = (
-  analysis: LapAnalysisStore,
-  onOpenAnalysis: (() => void) | undefined
-) => {
-  const { t, i18n } = useTranslation('main-app');
-  const { message } = App.useApp();
-
-  return () => {
-    const session = analysis.set.session;
-
-    if (session === null) {
-      return;
-    }
-
-    const date = new Intl.DateTimeFormat(i18n.language, {
-      month: 'short',
-      day: 'numeric',
-    }).format(new Date(session.startedAt * MS_PER_SECOND));
-    const handleOpen = () => {
-      message.destroy();
-      analysis.closeSession();
-      onOpenAnalysis?.();
-    };
-
-    void message.open({
-      type: 'success',
-      duration: TOAST_SECONDS,
-      content: (
-        <span className={styles.toast}>
-          {t('homePage.sessionLaps.added', {
-            track: session.trackName ?? DASH,
-            date,
-            count: analysis.laps.length,
-          })}
-
-          {onOpenAnalysis !== undefined && (
-            <button
-              type="button"
-              className={styles.toastLink}
-              onClick={handleOpen}
-            >
-              {t('homePage.sessionLaps.openAnalysis')}
-            </button>
-          )}
-        </span>
-      ),
-    });
-  };
 };
 
 interface LapRowProps {
@@ -209,17 +154,20 @@ const ModalHead = observer(({ session }: { session: RecentSession }) => {
 interface SessionLapsModalProps {
   /** The toast's link to the analysis page; none when already on it. */
   onOpenAnalysis?: () => void;
+  /** A session was deleted: the lists that show sessions load again. */
+  onSessionDeleted?: () => void;
 }
 
 /** The laps of one session, to pick those the analysis shows. */
 export const SessionLapsModal = observer(
-  ({ onOpenAnalysis }: SessionLapsModalProps) => {
+  ({ onOpenAnalysis, onSessionDeleted }: SessionLapsModalProps) => {
     const { t } = useTranslation('main-app');
     const analysis = useLapAnalysisStore();
     const showToast = useAnalysisToast(analysis, onOpenAnalysis);
     const loaded = analysis.modalLaps;
     const laps = loaded?.laps ?? [];
     const severalRuns = new Set(laps.map((lap) => lap.lap.sessionNum)).size > 1;
+    const [isConfirmingDelete, setConfirmingDelete] = useState(false);
 
     const handleAdd = async (lap: LapRef) => {
       await analysis.addLaps([lap]);
@@ -241,6 +189,16 @@ export const SessionLapsModal = observer(
         title={loaded && <ModalHead session={loaded.session} />}
       >
         <div className={styles.headActions}>
+          <Button
+            danger
+            size="small"
+            icon={<Trash2 size={ICON_SIZE} />}
+            disabled={loaded === null}
+            onClick={() => setConfirmingDelete(true)}
+          >
+            {t('homePage.sessionLaps.delete')}
+          </Button>
+
           <Button
             type="primary"
             size="small"
@@ -293,6 +251,12 @@ export const SessionLapsModal = observer(
             </tbody>
           </table>
         </div>
+
+        <DeleteSessionDialog
+          open={isConfirmingDelete}
+          onClose={() => setConfirmingDelete(false)}
+          onDeleted={onSessionDeleted}
+        />
       </Modal>
     );
   }

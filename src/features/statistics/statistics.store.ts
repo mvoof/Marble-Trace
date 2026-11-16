@@ -316,7 +316,8 @@ export class StatisticsStore {
     }
   }
 
-  private async loadSessions() {
+  /** Home's figures and the sessions table, read again. */
+  async loadSessions() {
     try {
       const [sessions, homeStats, knownCars] = await Promise.all([
         getRecentSessions(RECENT_SESSIONS_LIMIT),

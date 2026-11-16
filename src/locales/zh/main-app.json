@@ -1639,7 +1639,12 @@
       "allToAnalysis": "全部加入分析",
       "added": "分析：{{track}}，{{date}} — {{count}} 圈",
       "openAnalysis": "打开分析",
-      "incidentsCount": "{{count}}x"
+      "incidentsCount": "{{count}}x",
+      "delete": "删除会话",
+      "deleteTitle": "删除此会话？",
+      "deleteText": "该会话、其圈速及遥测数据将从数据库中移除。导入不会再读取其文件。",
+      "deleteFiles": "同时删除 .ibt 文件",
+      "deleteFailed": "会话未删除"
     }
   }
 }

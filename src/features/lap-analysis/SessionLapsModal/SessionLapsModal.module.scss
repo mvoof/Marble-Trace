@@ -18,8 +18,14 @@
 
 .headActions {
   display: flex;
+  gap: rem(8);
   justify-content: flex-end;
   margin-bottom: rem(8);
+}
+
+.deleteText {
+  margin-bottom: rem(12);
+  color: $sys-text-secondary;
 }
 
 .body {

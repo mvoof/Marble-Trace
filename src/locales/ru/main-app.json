@@ -1657,7 +1657,12 @@
       "allToAnalysis": "Все круги в анализ",
       "added": "Анализ: {{track}}, {{date}} — кругов: {{count}}",
       "openAnalysis": "Открыть анализ",
-      "incidentsCount": "{{count}}x"
+      "incidentsCount": "{{count}}x",
+      "delete": "Удалить сессию",
+      "deleteTitle": "Удалить сессию?",
+      "deleteText": "Сессия, её круги и их телеметрия уйдут из базы. Импорт больше не будет читать её файлы.",
+      "deleteFiles": "Удалить и файлы .ibt",
+      "deleteFailed": "Сессия не удалена"
     }
   }
 }

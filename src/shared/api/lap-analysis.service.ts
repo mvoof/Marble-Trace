@@ -18,6 +18,10 @@ export const getAnalysisSet = () => invoke<AnalysisSet>('get_analysis_set');
 export const addAnalysisLaps = (key: string, laps: LapRef[]) =>
   invoke<AnalysisSet>('add_analysis_laps', { key, laps });
 
+/** Drops a session from the database; its files are ignored or deleted. */
+export const deleteSession = (key: string, deleteFiles: boolean) =>
+  invoke<AnalysisSet>('delete_session', { key, deleteFiles });
+
 export const removeAnalysisLap = (lap: LapRef) =>
   invoke<AnalysisSet>('remove_analysis_lap', { lap });
 

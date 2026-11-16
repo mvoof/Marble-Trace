@@ -1645,7 +1645,12 @@
       "allToAnalysis": "Todas al análisis",
       "added": "Análisis: {{track}}, {{date}} — {{count}} vueltas",
       "openAnalysis": "Abrir análisis",
-      "incidentsCount": "{{count}}x"
+      "incidentsCount": "{{count}}x",
+      "delete": "Eliminar sesión",
+      "deleteTitle": "¿Eliminar la sesión?",
+      "deleteText": "La sesión, sus vueltas y su telemetría salen de la base de datos. La importación no volverá a leer sus archivos.",
+      "deleteFiles": "Eliminar también los archivos .ibt",
+      "deleteFailed": "La sesión no se eliminó"
     }
   }
 }

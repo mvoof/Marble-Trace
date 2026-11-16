@@ -1645,7 +1645,12 @@
       "allToAnalysis": "All laps to analysis",
       "added": "Analysis: {{track}}, {{date}} — {{count}} laps",
       "openAnalysis": "Open analysis",
-      "incidentsCount": "{{count}}x"
+      "incidentsCount": "{{count}}x",
+      "delete": "Delete session",
+      "deleteTitle": "Delete session?",
+      "deleteText": "The session, its laps and their telemetry leave the database. The import will not read its files again.",
+      "deleteFiles": "Also delete the .ibt files",
+      "deleteFailed": "The session was not deleted"
     }
   }
 }

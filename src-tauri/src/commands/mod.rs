@@ -120,6 +120,7 @@ pub fn invoke_handler() -> impl Fn(Invoke<Wry>) -> bool + Send + Sync + 'static 
         stats::get_sessions_page,
         stats::get_session_laps,
         stats::get_analysis_set,
+        stats::delete_session,
         stats::add_analysis_laps,
         stats::remove_analysis_lap,
         stats::set_analysis_lap_color,

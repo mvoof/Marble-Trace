@@ -7,6 +7,8 @@
 //! looks again for the files that session wrote — or sooner, when the main
 //! window changes the folder or asks to read every file again.
 
+use std::fs;
+use std::io::ErrorKind;
 use std::path::{Path, PathBuf};
 use std::sync::{Arc, Condvar, Mutex};
 use std::thread;
@@ -274,6 +276,31 @@ impl StatsService {
         self.analysis_set()
     }
 
+    /// Drops a session from the database. Its files are kept and ignored, or
+    /// with `delete_files` deleted from disk; one that will not go is ignored.
+    pub fn delete_session(&self, key: &str, delete_files: bool) -> Result<(), String> {
+        let mut db = lock_or_recover(&self.db);
+        let paths = db.delete_session(key, !delete_files)?;
+
+        if !delete_files {
+            return Ok(());
+        }
+
+        let kept: Vec<String> = paths
+            .into_iter()
+            .filter(|path| match fs::remove_file(path) {
+                Ok(()) => false,
+                Err(error) if error.kind() == ErrorKind::NotFound => false,
+                Err(error) => {
+                    tracing::warn!(%error, %path, "session file not deleted");
+                    true
+                }
+            })
+            .collect();
+
+        db.ignore_files(&kept)
+    }
+
     pub fn home_stats(&self) -> Result<HomeStats, String> {
         lock_or_recover(&self.db).home_stats(now())
     }
@@ -338,6 +365,12 @@ pub fn run_pass(service: &StatsService, host: &StatsHost, scope: PassScope) -> b
                 tracing::warn!(%error, "skipped files not tidied");
             }
 
+            // A deleted session's file stays out, changed on disk or not.
+            let ignored = db.ignored_files().unwrap_or_default();
+            let on_disk: Vec<FileStamp> = on_disk
+                .into_iter()
+                .filter(|stamp| !ignored.contains(&stamp.path))
+                .collect();
             let pending = match scope {
                 PassScope::All => on_disk,
                 PassScope::Unread => pending_files(on_disk, &db.known_files().unwrap_or_default()),
@@ -792,6 +825,46 @@ mod tests {
         assert!(service.wait_for_request(Duration::ZERO));
         assert_eq!(service.take_request(), Some(PassScope::All));
         assert_eq!(service.take_request(), None);
+    }
+
+    #[test]
+    fn a_deleted_sessions_kept_file_is_never_read_again_even_changed() {
+        let folder = folder_with(&["a.ibt", "bb.ibt"]);
+        let host = host(Arc::new(RecordingSink::default()));
+        let service = service(Some(folder.clone()));
+        run_pass(&service, &host, PassScope::Unread);
+        let file = folder.join("a.ibt");
+
+        service.delete_session("sub:1", false).unwrap();
+        fs::write(&file, b"grown").unwrap();
+        run_pass(&service, &host, PassScope::Unread);
+        run_pass(&service, &host, PassScope::All);
+
+        assert!(file.is_file());
+        assert_eq!(service.status().total, 1);
+        assert_eq!(service.recent_sessions(10).unwrap().len(), 1);
+
+        fs::remove_dir_all(folder).unwrap();
+    }
+
+    #[test]
+    fn a_sessions_files_are_deleted_only_when_asked() {
+        let folder = folder_with(&["a.ibt", "bb.ibt"]);
+        let host = host(Arc::new(RecordingSink::default()));
+        let service = service(Some(folder.clone()));
+        run_pass(&service, &host, PassScope::Unread);
+
+        service.delete_session("sub:1", true).unwrap();
+
+        assert!(!folder.join("a.ibt").exists());
+        assert!(folder.join("bb.ibt").is_file());
+        assert!(lock_or_recover(&service.db)
+            .ignored_files()
+            .unwrap()
+            .is_empty());
+        assert_eq!(service.recent_sessions(10).unwrap().len(), 1);
+
+        fs::remove_dir_all(folder).unwrap();
     }
 
     #[test]

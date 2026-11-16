@@ -7,6 +7,7 @@ import { List } from 'lucide-react';
 import { useLapAnalysisStore } from '@features/lap-analysis/lap-analysis-context';
 import { SessionLapsModal } from '@features/lap-analysis/SessionLapsModal/SessionLapsModal';
 import { SessionsTable } from '@features/statistics/SessionsTable/SessionsTable';
+import { useStatisticsStore } from '@features/statistics/statistics-context';
 import { PageTitle } from '@shared/ui/PageTitle/PageTitle';
 import { AnalysisSection } from './AnalysisSection';
 import styles from './AnalysisSection.module.scss';
@@ -22,6 +23,7 @@ const SESSIONS_MODAL_WIDTH = 1100;
 export const AnalysisPage = observer(() => {
   const { t } = useTranslation('main-app');
   const analysis = useLapAnalysisStore();
+  const statistics = useStatisticsStore();
   const [isPickingSession, setPickingSession] = useState(false);
   const currentKey = analysis.set.session?.key ?? null;
 
@@ -70,7 +72,9 @@ export const AnalysisPage = observer(() => {
         />
       </Modal>
 
-      <SessionLapsModal />
+      <SessionLapsModal
+        onSessionDeleted={() => void statistics.loadSessions()}
+      />
     </div>
   );
 });

@@ -44,6 +44,7 @@ export const HomePage = observer(() => {
 
           <SessionLapsModal
             onOpenAnalysis={() => navigation.open('analysis')}
+            onSessionDeleted={() => void statistics.loadSessions()}
           />
         </>
       ) : (

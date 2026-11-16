@@ -21,6 +21,7 @@ export interface LapAnalysisApi {
   getAnalysisSet: () => Promise<AnalysisSet>;
   addAnalysisLaps: (key: string, laps: LapRef[]) => Promise<AnalysisSet>;
   removeAnalysisLap: (lap: LapRef) => Promise<AnalysisSet>;
+  deleteSession: (key: string, deleteFiles: boolean) => Promise<AnalysisSet>;
   setAnalysisLapColor: (lap: LapRef, color: string) => Promise<AnalysisSet>;
   setAnalysisLapVisible: (
     lap: LapRef,
@@ -431,6 +432,36 @@ export class LapAnalysisStore {
       .map((lap) => lap.lap);
 
     await this.addLaps(laps);
+  }
+
+  /**
+   * Drops the modal's session from the database, its `.ibt` files with it
+   * when asked, and closes the modal. Answers whether it went.
+   */
+  async deleteSession(deleteFiles: boolean): Promise<boolean> {
+    const key = this.modalKey;
+
+    if (key === null) {
+      return false;
+    }
+
+    try {
+      const set = await this.api.deleteSession(key, deleteFiles);
+
+      runInAction(() => {
+        this.set = set;
+
+        if (this.modalKey === key) {
+          this.closeSession();
+        }
+      });
+
+      return true;
+    } catch (error) {
+      console.error('Session not deleted', error);
+
+      return false;
+    }
   }
 
   async remove(lap: LapRef) {

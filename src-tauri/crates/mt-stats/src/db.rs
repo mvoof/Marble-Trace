@@ -19,7 +19,7 @@ use mt_model::app::stats::{
 use crate::lap_store::{FileAnalysis, StoredLap};
 
 /// Bumped with every schema step; `migrate` runs the steps above the file's.
-const SCHEMA_VERSION: i64 = 7;
+const SCHEMA_VERSION: i64 = 8;
 
 const SCHEMA_V1: &str = "
 CREATE TABLE session (
@@ -163,6 +163,14 @@ CREATE TABLE session_setup (
 );
 CREATE INDEX session_setup_session ON session_setup(session_key);
 UPDATE ibt_file SET size = -1 WHERE status = 'read';
+";
+
+/// The files of a deleted session the import never reads again, whatever
+/// becomes of them on disk.
+const SCHEMA_V8: &str = "
+CREATE TABLE ignored_file (
+  path  TEXT PRIMARY KEY
+);
 ";
 
 /// Between the sector starts in `track_sectors.start_pcts`.
@@ -465,6 +473,73 @@ impl StatsDb {
         transaction.commit().map_err(to_message)
     }
 
+    /// Drops everything stored of a session, its analysis laps too. Returns
+    /// the paths of its files; with `ignore_files` the import never reads
+    /// them again.
+    pub fn delete_session(&mut self, key: &str, ignore_files: bool) -> Result<Vec<String>, String> {
+        let transaction = self.connection.transaction().map_err(to_message)?;
+        let paths: Vec<String> = {
+            let mut statement = transaction
+                .prepare("SELECT path FROM ibt_file WHERE session_key = ?1 ORDER BY path")
+                .map_err(to_message)?;
+            let rows = statement
+                .query_map(params![key], |row| row.get(0))
+                .map_err(to_message)?;
+
+            rows.collect::<Result<_, _>>().map_err(to_message)?
+        };
+
+        for table in [
+            "analysis_lap",
+            "lap_telemetry",
+            "lap",
+            "run",
+            "session_setup",
+            "ibt_file",
+        ] {
+            transaction
+                .execute(
+                    &format!("DELETE FROM {table} WHERE session_key = ?1"),
+                    params![key],
+                )
+                .map_err(to_message)?;
+        }
+
+        transaction
+            .execute("DELETE FROM session WHERE key = ?1", params![key])
+            .map_err(to_message)?;
+
+        if ignore_files {
+            insert_ignored(&transaction, &paths)?;
+        }
+
+        transaction.commit().map_err(to_message)?;
+
+        Ok(paths)
+    }
+
+    /// The import never reads `paths` again.
+    pub fn ignore_files(&mut self, paths: &[String]) -> Result<(), String> {
+        let transaction = self.connection.transaction().map_err(to_message)?;
+
+        insert_ignored(&transaction, paths)?;
+
+        transaction.commit().map_err(to_message)
+    }
+
+    /// The files of deleted sessions the import leaves alone.
+    pub fn ignored_files(&self) -> Result<HashSet<String>, String> {
+        let mut statement = self
+            .connection
+            .prepare("SELECT path FROM ignored_file")
+            .map_err(to_message)?;
+        let rows = statement
+            .query_map([], |row| row.get(0))
+            .map_err(to_message)?;
+
+        rows.map(|row| row.map_err(to_message)).collect()
+    }
+
     /// The `.ibt` folder the dropped `setting` table held, once: main moves
     /// it into `settings.json`.
     pub fn take_legacy_folder(&mut self) -> Option<String> {
@@ -593,6 +668,10 @@ fn migrate(connection: &Connection) -> Result<Option<String>, String> {
         connection.execute_batch(SCHEMA_V7).map_err(to_message)?;
     }
 
+    if version < 8 {
+        connection.execute_batch(SCHEMA_V8).map_err(to_message)?;
+    }
+
     connection
         .pragma_update(None, "user_version", SCHEMA_VERSION)
         .map_err(to_message)?;
@@ -643,6 +722,19 @@ fn insert_session(transaction: &Transaction, key: &str, file: &SessionFile) -> R
         )
         .map(|_| ())
         .map_err(to_message)
+}
+
+fn insert_ignored(transaction: &Transaction, paths: &[String]) -> Result<(), String> {
+    for path in paths {
+        transaction
+            .execute(
+                "INSERT OR IGNORE INTO ignored_file (path) VALUES (?1)",
+                params![path],
+            )
+            .map_err(to_message)?;
+    }
+
+    Ok(())
 }
 
 /// The first outline of a track stays: one clean lap draws it as well as another.
@@ -1385,6 +1477,87 @@ mod tests {
         assert_eq!(pending, vec![stamp("a.ibt")]);
         assert!(has_table(&db.connection, "lap_telemetry"));
         assert!(has_table(&db.connection, "session_setup"));
+    }
+
+    fn rows_of(db: &StatsDb, table: &str, key: &str) -> i64 {
+        let column = if table == "session" {
+            "key"
+        } else {
+            "session_key"
+        };
+
+        db.connection
+            .query_row(
+                &format!("SELECT COUNT(*) FROM {table} WHERE {column} = ?1"),
+                params![key],
+                |row| row.get(0),
+            )
+            .unwrap()
+    }
+
+    #[test]
+    fn a_deleted_session_keeps_nothing_and_leaves_the_others() {
+        let mut db = StatsDb::open_in_memory().unwrap();
+        let mut deleted = race_file(1_000);
+        deleted.runs = vec![race_run(0, vec![lap(2, Some(490.0))])];
+        let mut kept = SessionFile {
+            subsession_id: Some(88),
+            ..deleted.clone()
+        };
+        kept.started_at = 5_000;
+        let analysis = FileAnalysis {
+            setup: Some(CarSetupView::Setup {
+                name: None,
+                groups: Vec::new(),
+            }),
+            ..telemetry_of(2, &[2], 50.0)
+        };
+        db.record_read_with(&stamp("a.ibt"), &deleted, &analysis, 5)
+            .unwrap();
+        db.record_read_with(&stamp("b.ibt"), &deleted, &analysis, 5)
+            .unwrap();
+        db.record_read_with(&stamp("c.ibt"), &kept, &analysis, 5)
+            .unwrap();
+        db.add_analysis_laps("sub:77", &[lap_ref("a.ibt", 2)])
+            .unwrap();
+
+        let paths = db.delete_session("sub:77", true).unwrap();
+
+        assert_eq!(paths, vec!["a.ibt", "b.ibt"]);
+
+        for table in [
+            "session",
+            "ibt_file",
+            "run",
+            "lap",
+            "lap_telemetry",
+            "session_setup",
+            "analysis_lap",
+        ] {
+            assert_eq!(rows_of(&db, table, "sub:77"), 0, "{table}");
+            assert_eq!(
+                rows_of(&db, table, "sub:88"),
+                i64::from(table != "analysis_lap"),
+                "{table}"
+            );
+        }
+
+        assert_eq!(
+            db.ignored_files().unwrap(),
+            HashSet::from(["a.ibt".to_string(), "b.ibt".to_string()])
+        );
+        assert!(!db.known_files().unwrap().contains_key("a.ibt"));
+    }
+
+    #[test]
+    fn a_session_deleted_with_its_files_ignores_none() {
+        let mut db = StatsDb::open_in_memory().unwrap();
+        db.record_read(&stamp("a.ibt"), &race_file(1_000), 5)
+            .unwrap();
+
+        db.delete_session("sub:77", false).unwrap();
+
+        assert!(db.ignored_files().unwrap().is_empty());
     }
 
     fn has_table(connection: &Connection, name: &str) -> bool {

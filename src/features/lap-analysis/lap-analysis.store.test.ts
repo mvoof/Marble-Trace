@@ -69,6 +69,7 @@ const fakeApi = (): LapAnalysisApi => ({
   getAnalysisSet: vi.fn(async () => emptySet),
   addAnalysisLaps: vi.fn(async () => emptySet),
   removeAnalysisLap: vi.fn(async () => emptySet),
+  deleteSession: vi.fn(async () => emptySet),
   setAnalysisLapColor: vi.fn(async () => emptySet),
   setAnalysisLapVisible: vi.fn(async () => emptySet),
   setAnalysisReference: vi.fn(async () => emptySet),
@@ -131,6 +132,34 @@ describe('LapAnalysisStore', () => {
     await opening;
 
     expect(store.modalLaps).toBeNull();
+  });
+
+  it('deletes the open session, takes the set without it and closes', async () => {
+    const api = fakeApi();
+    const store = new LapAnalysisStore(api);
+    await store.openSession('sub:1');
+
+    const deleted = await store.deleteSession(true);
+
+    expect(deleted).toBe(true);
+    expect(api.deleteSession).toHaveBeenCalledWith('sub:1', true);
+    expect(store.set).toEqual(emptySet);
+    expect(store.modalKey).toBeNull();
+  });
+
+  it('keeps the modal open when the delete fails', async () => {
+    const api = fakeApi();
+    api.deleteSession = vi.fn(async () => {
+      throw new Error('locked');
+    });
+    const store = new LapAnalysisStore(api);
+    vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    await store.openSession('sub:1');
+
+    const deleted = await store.deleteSession(false);
+
+    expect(deleted).toBe(false);
+    expect(store.modalKey).toBe('sub:1');
   });
 });
 

@@ -223,6 +223,25 @@ async fn change_analysis(
         .map_err(|error| error.to_string())?
 }
 
+/// Drops a session from `stats.db`; its files are ignored by the import, or
+/// with `delete_files` deleted. Answers the analysis set without its laps.
+#[tauri::command]
+pub async fn delete_session(
+    state: State<'_, Arc<StatsService>>,
+    key: String,
+    delete_files: bool,
+) -> Result<AnalysisSet, String> {
+    let service = Arc::clone(&state);
+
+    tauri::async_runtime::spawn_blocking(move || {
+        service.delete_session(&key, delete_files)?;
+
+        service.analysis_set()
+    })
+    .await
+    .map_err(|error| error.to_string())?
+}
+
 /// Laps of another session than the set's replace it.
 #[tauri::command]
 pub async fn add_analysis_laps(
