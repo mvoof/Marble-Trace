@@ -120,9 +120,14 @@ impl LapCache {
                     .position(|channel| &channel.name == name)
             })
             .collect();
-        let mut bytes = Vec::with_capacity(
-            POINTS_HEADER_BYTES + laps.len() * channels.len() * cache.points * VALUE_BYTES,
-        );
+        let capacity = laps
+            .len()
+            .checked_mul(channels.len())
+            .and_then(|count| count.checked_mul(cache.points))
+            .and_then(|count| count.checked_mul(VALUE_BYTES))
+            .and_then(|count| count.checked_add(POINTS_HEADER_BYTES))
+            .ok_or("too many channels asked for")?;
+        let mut bytes = Vec::with_capacity(capacity);
 
         bytes.extend(
             u32::try_from(cache.points)

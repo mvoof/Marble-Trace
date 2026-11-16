@@ -7,7 +7,7 @@
 //! out of the resampling. Before the lap's first row and after its last the
 //! values hold.
 
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::fs::File;
 use std::io::{BufReader, Read};
 use std::path::Path;
@@ -16,7 +16,7 @@ use mt_model::app::lap_telemetry::{
     FileTelemetry, LapChannel, LapKey, LapTelemetry, ELAPSED_CHANNEL,
 };
 
-use super::samples::{is_numeric, is_stepped, number_at};
+use super::samples::{is_stepped, number_at, value_size};
 use super::yaml::parse_track_length;
 use super::{open_file, VarHeader, READ_BUFFER};
 
@@ -29,6 +29,11 @@ const ELAPSED_UNIT: &str = "s";
 const ELAPSED_DESCRIPTION: &str = "Time since the line";
 /// The grid's step, metres.
 const GRID_STEP_M: f64 = 1.0;
+/// Longer than any track the sim has; a longer one is a broken header, and
+/// would size the grid.
+const MAX_TRACK_LENGTH_M: f64 = 40_000.0;
+/// An hour at 60 Hz: more rows than any lap holds.
+const MAX_LAP_ROWS: usize = 216_000;
 /// Below this a car is not moving: the time back to the line is not guessed.
 const MIN_SPEED_M_S: f64 = 1.0;
 
@@ -48,13 +53,10 @@ pub fn read_lap_telemetry(path: &Path, laps: &[LapKey]) -> Result<FileTelemetry,
     let mut reader = BufReader::with_capacity(READ_BUFFER, file);
     let opened = open_file(&mut reader, length)?;
     let track_length_m = track_length(&opened.yaml)
-        .ok_or_else(|| "no track length in the session info".to_string())?;
+        .filter(|length| *length <= MAX_TRACK_LENGTH_M)
+        .ok_or_else(|| "no usable track length in the session info".to_string())?;
     let points = (track_length_m / GRID_STEP_M).round() as usize + 1;
-    let kept: Vec<&VarHeader> = opened
-        .vars
-        .iter()
-        .filter(|var| var.count == 1 && is_numeric(var.var_type))
-        .collect();
+    let kept = kept_vars(&opened.vars, opened.header.buf_len);
     let find = |name: &str| {
         opened
             .vars
@@ -80,7 +82,10 @@ pub fn read_lap_telemetry(path: &Path, laps: &[LapKey]) -> Result<FileTelemetry,
             session_num: number_at(&row, session_var.var_type, session_var.offset) as i32,
             lap_num: number_at(&row, lap_var.var_type, lap_var.offset) as i32,
         };
-        let Some(lap_rows) = rows_by_lap.get_mut(&key) else {
+        let Some(lap_rows) = rows_by_lap
+            .get_mut(&key)
+            .filter(|rows| rows.len() < MAX_LAP_ROWS)
+        else {
             continue;
         };
 
@@ -129,6 +134,25 @@ pub fn read_lap_telemetry(path: &Path, laps: &[LapKey]) -> Result<FileTelemetry,
         channels,
         laps: resampled,
     })
+}
+
+/// The single-value number channels whose value lies inside a row, each
+/// place in the row once: a broken header cannot make a row read bigger
+/// than it is.
+fn kept_vars(vars: &[VarHeader], buf_len: usize) -> Vec<&VarHeader> {
+    let mut offsets = HashSet::new();
+
+    vars.iter()
+        .filter(|var| {
+            let fits = value_size(var.var_type).is_some_and(|size| {
+                var.offset
+                    .checked_add(size)
+                    .is_some_and(|end| end <= buf_len)
+            });
+
+            var.count == 1 && fits && offsets.insert(var.offset)
+        })
+        .collect()
 }
 
 fn track_length(yaml: &str) -> Option<f64> {
@@ -277,6 +301,36 @@ mod tests {
 
         assert_eq!(values[0], vec![1.0, 2.0, 2.0, 2.0]);
         assert_eq!(values[1], vec![1.0, 4.0, 4.0, 4.0]);
+    }
+
+    fn var(offset: usize, var_type: i32, count: usize) -> VarHeader {
+        VarHeader {
+            name: format!("v{offset}"),
+            var_type,
+            offset,
+            count,
+            unit: String::new(),
+            description: String::new(),
+        }
+    }
+
+    #[test]
+    fn a_var_past_the_row_an_array_text_and_a_repeated_place_are_left_out() {
+        const FLOAT: i32 = 4;
+        const DOUBLE: i32 = 5;
+        const TEXT: i32 = 0;
+        let vars = vec![
+            var(0, FLOAT, 1),
+            var(0, FLOAT, 1),
+            var(4, DOUBLE, 1),
+            var(12, FLOAT, 6),
+            var(16, TEXT, 1),
+        ];
+
+        let kept: Vec<usize> = kept_vars(&vars, 16).iter().map(|var| var.offset).collect();
+
+        assert_eq!(kept, vec![0, 4]);
+        assert!(kept_vars(&[var(12, DOUBLE, 1)], 16).is_empty());
     }
 
     #[test]

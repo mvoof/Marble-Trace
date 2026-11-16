@@ -46,12 +46,14 @@ pub(crate) fn number_at(row: &[u8], var_type: i32, offset: usize) -> f64 {
     }
 }
 
-/// A number type: anything but text.
-pub(crate) const fn is_numeric(var_type: i32) -> bool {
-    matches!(
-        var_type,
-        TYPE_BOOL | TYPE_INT | TYPE_BITFIELD | TYPE_FLOAT | TYPE_DOUBLE
-    )
+/// Bytes of one value of a number type; `None` for text.
+pub(crate) const fn value_size(var_type: i32) -> Option<usize> {
+    match var_type {
+        TYPE_BOOL => Some(1),
+        TYPE_INT | TYPE_BITFIELD | TYPE_FLOAT => Some(4),
+        TYPE_DOUBLE => Some(8),
+        _ => None,
+    }
 }
 
 /// A type whose values step: interpolating between them means nothing.
