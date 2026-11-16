@@ -14,7 +14,7 @@ const BUTTON_ZOOM = 0.7;
 const WHEEL_ZOOM_IN = 0.85;
 const WHEEL_ZOOM_OUT = 1 / WHEEL_ZOOM_IN;
 /** Label size against the view's width. */
-export const LABEL_SCALE = 0.035;
+export const LABEL_SCALE = 0.048;
 /** The hover reaches the track within this share of the view's width. */
 const HOVER_REACH = 0.04;
 /** A view this close to the whole box counts as the whole lap. */
