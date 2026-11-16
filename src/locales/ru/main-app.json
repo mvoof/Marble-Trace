@@ -23,7 +23,6 @@
       "layouts": "Раскладки",
       "crew": "Экипаж",
       "connections": "Подключения",
-      "data": "Данные",
       "analysis": "Анализ",
       "settings": "Настройки"
     },
@@ -625,6 +624,9 @@
         "interaction": "Режимы взаимодействия",
         "maintenance": "Сброс и диагностика",
         "hotkeys": "Горячие клавиши",
+        "tracks": "Записанные трассы",
+        "strategy": "Стратегия",
+        "statistics": "Статистика",
         "telemetryInspector": "Инспектор телеметрии"
       }
     },
@@ -701,12 +703,6 @@
     }
   },
   "dataPage": {
-    "sections": {
-      "tracks": "Записанные трассы",
-      "analysis": "Анализ",
-      "strategy": "Стратегия",
-      "statistics": "Статистика"
-    },
     "statistics": {
       "subtitle": "из файлов телеметрии игры",
       "folderTitle": "Папка телеметрии",

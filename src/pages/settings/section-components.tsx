@@ -6,6 +6,9 @@ import { OverlaySection } from './sections/OverlaySection';
 import { InteractionSection } from './sections/InteractionSection';
 import { MaintenanceSection } from './sections/MaintenanceSection';
 import { HotkeysSection } from './hotkeys/HotkeysSection';
+import { TrackMapSection } from './data/TrackMapSection';
+import { SharedValuesSection } from './data/SharedValuesSection';
+import { StatisticsSection } from './data/StatisticsSection';
 import { TelemetryInspectorSection } from '@features/telemetry-inspector/TelemetryInspectorSection/TelemetryInspectorSection';
 
 /** What each section of the Settings page draws. */
@@ -19,6 +22,9 @@ export const SECTION_COMPONENTS: Record<
   overlay: OverlaySection,
   interaction: InteractionSection,
   hotkeys: HotkeysSection,
+  tracks: TrackMapSection,
+  strategy: SharedValuesSection,
+  statistics: StatisticsSection,
   maintenance: MaintenanceSection,
   telemetryInspector: TelemetryInspectorSection,
 };

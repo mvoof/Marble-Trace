@@ -8,6 +8,7 @@ import {
   type LucideIcon,
 } from 'lucide-react';
 import { SectionedPage } from '@shared/ui/SectionedPage/SectionedPage';
+import { CardGrid } from '@shared/ui/CardGrid/CardGrid';
 import { RemoteScreensSection } from '@features/remote-screens/RemoteScreensSection';
 import { CompanionAppsSection } from '@features/companion-apps/CompanionAppsSection';
 import { StreamChatSection } from './StreamChatSection';
@@ -54,7 +55,9 @@ export const ConnectionsPage = observer(() => {
       active={activeSection}
       onSelect={setActiveSection}
     >
-      <ActiveSection />
+      <CardGrid>
+        <ActiveSection />
+      </CardGrid>
     </SectionedPage>
   );
 });

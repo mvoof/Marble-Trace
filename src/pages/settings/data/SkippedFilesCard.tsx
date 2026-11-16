@@ -22,7 +22,7 @@ export const SkippedFilesCard = observer(() => {
 
   if (skippedFiles.length === 0) {
     return (
-      <SettingsCard title={title}>
+      <SettingsCard title={title} wide>
         <div className={dataStyles.fieldDesc}>
           {t('dataPage.statistics.skippedNone')}
         </div>
@@ -31,7 +31,7 @@ export const SkippedFilesCard = observer(() => {
   }
 
   return (
-    <SettingsCard title={title}>
+    <SettingsCard title={title} wide>
       <div className={styles.scroll}>
         <table className={styles.table}>
           <thead>

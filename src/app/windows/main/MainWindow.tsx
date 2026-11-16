@@ -9,7 +9,6 @@ import { CrewPage } from '@pages/crew/CrewPage';
 import { HomePage } from '@pages/home/HomePage';
 import { AnalysisPage } from '@pages/analysis/AnalysisPage';
 import { ConnectionsPage } from '@pages/connections/ConnectionsPage';
-import { DataPage } from '@pages/data/DataPage';
 import { CrewLeaveDialog } from '@pages/crew/CrewLeaveDialog';
 import { useMainNavigationStore } from '@features/main-navigation/main-navigation-context';
 import { AppHeader } from './AppHeader/AppHeader';
@@ -140,15 +139,6 @@ export const MainWindow = observer(() => {
                 >
                   <HomePage />
                 </div>
-              </div>
-            )}
-
-            {navigation.section === 'data' && (
-              <div
-                className={`${styles.pageContainer} ${styles.animateFadeIn}`}
-                key="data"
-              >
-                <DataPage />
               </div>
             )}
 

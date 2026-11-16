@@ -12,35 +12,59 @@ export type SettingsSectionId =
   | 'overlay'
   | 'interaction'
   | 'hotkeys'
+  | 'tracks'
+  | 'strategy'
+  | 'statistics'
   | 'maintenance'
   | 'telemetryInspector';
 
-/** The app's own settings, in the order the inner menu lists them. */
-const SETTINGS_SECTIONS = [
+/** What sets up the app and how it is driven. */
+const APP_SECTIONS = [
   'general',
   'overlay',
   'interaction',
   'hotkeys',
+] as const satisfies readonly SettingsSectionId[];
+
+/** What the app holds for the driver: recorded tracks, strategy, statistics. */
+const DATA_SECTIONS = [
+  'tracks',
+  'strategy',
+  'statistics',
+] as const satisfies readonly SettingsSectionId[];
+
+/** Keeping the app itself: updates, resets, what it is. */
+const UPKEEP_SECTIONS = [
   'updates',
   'maintenance',
   'about',
 ] as const satisfies readonly SettingsSectionId[];
 
-/** What the Settings page itself shows; the rest lives on the feature pages. */
+/** What the Settings page shows in its menu. */
 export type SettingsMenuSectionId =
-  | (typeof SETTINGS_SECTIONS)[number]
+  | (typeof APP_SECTIONS)[number]
+  | (typeof DATA_SECTIONS)[number]
+  | (typeof UPKEEP_SECTIONS)[number]
   | 'telemetryInspector';
 
 /**
- * The Settings page's inner menu. The telemetry inspector is a developer tool:
- * set apart below a separator, and left out of a release build.
+ * The Settings page's inner menu, three groups apart. The telemetry inspector
+ * is a developer tool: set apart below a separator, and left out of a release
+ * build.
  */
 export const settingsMenu = (
   withDevTools: boolean
-): SectionMenuEntry<SettingsMenuSectionId>[] =>
-  withDevTools
-    ? [...SETTINGS_SECTIONS, MENU_SEPARATOR, 'telemetryInspector']
-    : [...SETTINGS_SECTIONS];
+): SectionMenuEntry<SettingsMenuSectionId>[] => {
+  const menu: SectionMenuEntry<SettingsMenuSectionId>[] = [
+    ...APP_SECTIONS,
+    MENU_SEPARATOR,
+    ...DATA_SECTIONS,
+    MENU_SEPARATOR,
+    ...UPKEEP_SECTIONS,
+  ];
+
+  return withDevTools ? [...menu, MENU_SEPARATOR, 'telemetryInspector'] : menu;
+};
 
 export const SETTINGS_MENU = settingsMenu(hasDevTools);
 

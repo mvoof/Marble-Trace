@@ -1,0 +1,13 @@
+$card-min-width: rem(340);
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax($card-min-width, 1fr));
+  align-items: start;
+  gap: rem(14);
+
+  // The grid's gap spaces the cards; their own stacking margin would add to it.
+  > * {
+    margin: 0;
+  }
+}

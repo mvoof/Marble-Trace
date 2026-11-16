@@ -21,7 +21,6 @@
       "layouts": "Layouts",
       "crew": "Crew",
       "connections": "Connections",
-      "data": "Data",
       "analysis": "Analysis",
       "settings": "Settings"
     },
@@ -617,6 +616,9 @@
         "interaction": "Interaction modes",
         "maintenance": "Reset & diagnostics",
         "hotkeys": "Hotkeys",
+        "tracks": "Recorded tracks",
+        "strategy": "Strategy",
+        "statistics": "Statistics",
         "telemetryInspector": "Telemetry inspector"
       }
     },
@@ -693,12 +695,6 @@
     }
   },
   "dataPage": {
-    "sections": {
-      "tracks": "Recorded tracks",
-      "analysis": "Analysis",
-      "strategy": "Strategy",
-      "statistics": "Statistics"
-    },
     "statistics": {
       "subtitle": "read from the game's telemetry files",
       "folderTitle": "Telemetry folder",

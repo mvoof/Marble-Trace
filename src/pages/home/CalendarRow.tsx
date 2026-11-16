@@ -18,17 +18,19 @@ export const CalendarRow = observer(() => {
     <div className={styles.row}>
       <DaysDrivenCard />
 
-      <TopList
-        icon={<Car size={ICON_SIZE} />}
-        title={t('homePage.tops.cars')}
-        entries={topCars}
-      />
+      <div className={styles.tops}>
+        <TopList
+          icon={<Car size={ICON_SIZE} />}
+          title={t('homePage.tops.cars')}
+          entries={topCars}
+        />
 
-      <TopList
-        icon={<MapIcon size={ICON_SIZE} />}
-        title={t('homePage.tops.tracks')}
-        entries={topTracks}
-      />
+        <TopList
+          icon={<MapIcon size={ICON_SIZE} />}
+          title={t('homePage.tops.tracks')}
+          entries={topTracks}
+        />
+      </div>
     </div>
   );
 });

@@ -21,7 +21,6 @@
       "layouts": "Diseños",
       "crew": "Equipo",
       "connections": "Conexiones",
-      "data": "Datos",
       "analysis": "Análisis",
       "settings": "Ajustes"
     },
@@ -617,6 +616,9 @@
         "interaction": "Modos de interacción",
         "maintenance": "Restablecer y diagnóstico",
         "hotkeys": "Atajos",
+        "tracks": "Circuitos grabados",
+        "strategy": "Estrategia",
+        "statistics": "Estadísticas",
         "telemetryInspector": "Inspector de telemetría"
       }
     },
@@ -693,12 +695,6 @@
     }
   },
   "dataPage": {
-    "sections": {
-      "tracks": "Circuitos grabados",
-      "analysis": "Análisis",
-      "strategy": "Estrategia",
-      "statistics": "Estadísticas"
-    },
     "statistics": {
       "subtitle": "leídas de los archivos de telemetría del juego",
       "folderTitle": "Carpeta de telemetría",

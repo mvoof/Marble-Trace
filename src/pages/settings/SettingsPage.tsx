@@ -2,20 +2,25 @@ import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
 import {
   Activity,
+  BarChart3,
+  Fuel,
   Info,
   Keyboard,
   Layers,
   MousePointer2,
   RefreshCw,
+  Route,
   SlidersHorizontal,
   Wrench,
   type LucideIcon,
 } from 'lucide-react';
 import { useMainNavigationStore } from '@features/main-navigation/main-navigation-context';
 import { SectionedPage } from '@shared/ui/SectionedPage/SectionedPage';
+import { CardGrid } from '@shared/ui/CardGrid/CardGrid';
 import { MENU_SEPARATOR } from '@shared/ui/SectionedPage/section-menu';
 import { SECTION_COMPONENTS } from './section-components';
 import { BindingSearch } from './hotkeys/BindingSearch';
+import { ExportCsvButton } from './data/ExportCsvButton';
 import {
   SETTINGS_MENU,
   settingsSectionOf,
@@ -27,10 +32,27 @@ const SECTION_ICONS: Record<SettingsMenuSectionId, LucideIcon> = {
   overlay: Layers,
   interaction: MousePointer2,
   hotkeys: Keyboard,
+  tracks: Route,
+  strategy: Fuel,
+  statistics: BarChart3,
   updates: RefreshCw,
   maintenance: Wrench,
   about: Info,
   telemetryInspector: Activity,
+};
+
+/** Sections laid out on their own: two columns, or a tool filling the pane. */
+const OWN_LAYOUT = new Set<SettingsMenuSectionId>([
+  'hotkeys',
+  'telemetryInspector',
+]);
+
+/** Controls a section puts at the right of its title. */
+const TITLE_ACTIONS: Partial<
+  Record<SettingsMenuSectionId, React.ReactElement>
+> = {
+  hotkeys: <BindingSearch />,
+  statistics: <ExportCsvButton />,
 };
 
 export const SettingsPage = observer(() => {
@@ -58,9 +80,20 @@ export const SettingsPage = observer(() => {
       onSelect={(section: SettingsMenuSectionId) =>
         navigation.selectSettingsSection(section)
       }
-      titleActions={activeSection === 'hotkeys' ? <BindingSearch /> : undefined}
+      subtitle={
+        activeSection === 'statistics'
+          ? t('dataPage.statistics.subtitle')
+          : undefined
+      }
+      titleActions={TITLE_ACTIONS[activeSection]}
     >
-      <ActiveSection />
+      {OWN_LAYOUT.has(activeSection) ? (
+        <ActiveSection />
+      ) : (
+        <CardGrid>
+          <ActiveSection />
+        </CardGrid>
+      )}
     </SectionedPage>
   );
 });

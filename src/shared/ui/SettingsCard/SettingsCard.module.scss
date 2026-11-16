@@ -10,6 +10,10 @@
   }
 }
 
+.wide {
+  grid-column: 1 / -1;
+}
+
 .cardHeader {
   display: flex;
   align-items: center;

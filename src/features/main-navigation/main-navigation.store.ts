@@ -7,7 +7,6 @@ export const POCKET_SECTIONS = [
   'layouts',
   'crew',
   'connections',
-  'data',
   'analysis',
 ] as const;
 
@@ -27,8 +26,6 @@ type Destination = {
   settingsSection?: string;
   /** On the Settings page's hotkeys: the one widget type to show bindings for. */
   hotkeysWidget?: string;
-  /** On the Data page: the section to show. */
-  dataSection?: string;
 };
 
 type MainNavigationDeps = {
@@ -51,9 +48,6 @@ export class MainNavigationStore {
 
   /** The widget the Widgets page shows; null shows all widgets. */
   activeWidgetId: string | null = null;
-
-  /** The Data page's section; null is the page's first. The page knows its sections. */
-  dataSection: string | null = null;
 
   /** The Settings page's section; null is the page's first. The page knows its sections. */
   settingsSection: string | null = null;
@@ -91,16 +85,6 @@ export class MainNavigationStore {
       settingsSection: HOTKEYS_SETTINGS_SECTION,
       hotkeysWidget: widgetType,
     });
-  }
-
-  /** The Data page, on this section. */
-  openDataSection(section: string) {
-    this.goTo({ section: 'data', dataSection: section });
-  }
-
-  /** The Data page's menu picked a section. */
-  selectDataSection(section: string) {
-    this.dataSection = section;
   }
 
   /** The Settings page's menu picked a section; the hotkeys open unfiltered. */
@@ -152,10 +136,6 @@ export class MainNavigationStore {
   private arrive(destination: Destination) {
     if (destination.widgetId !== undefined) {
       this.activeWidgetId = destination.widgetId;
-    }
-
-    if (destination.dataSection !== undefined) {
-      this.dataSection = destination.dataSection;
     }
 
     if (destination.settingsSection !== undefined) {
