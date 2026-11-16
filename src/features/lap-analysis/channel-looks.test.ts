@@ -25,6 +25,19 @@ describe('channelLook', () => {
     );
     expect(formatChannelValue(channelLook('Gear', ''), 4)).toBe('4');
   });
+
+  it('shows suspension travel in mm, not as a speed', () => {
+    const rideHeight = channelLook('LFrideHeight', 'm');
+    const shockSpeed = channelLook('RRshockVel', 'm/s');
+
+    expect(formatChannelValue(rideHeight, 0.0523 * rideHeight.scale)).toBe(
+      '52.3 mm'
+    );
+    expect(formatChannelValue(shockSpeed, 0.12 * shockSpeed.scale)).toBe(
+      '120 mm/s'
+    );
+    expect(formatChannelValue(channelLook('dcABS', ''), 3)).toBe('3');
+  });
 });
 
 describe('deltaValues', () => {

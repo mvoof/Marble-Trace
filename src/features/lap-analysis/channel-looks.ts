@@ -27,11 +27,32 @@ const plain = (unit: string, digits: number): ChannelLook => ({
   signed: false,
 });
 
+const M_TO_MM = 1000;
+const CORNERS = ['LF', 'RF', 'LR', 'RR'];
+
+const millimetres = (unit: string, digits: number): ChannelLook => ({
+  scale: M_TO_MM,
+  unit,
+  digits,
+  signed: false,
+});
+
+/** A look for one channel of each wheel, e.g. `LFshockVel`… `RRshockVel`. */
+const perCorner = (suffix: string, look: ChannelLook) =>
+  Object.fromEntries(CORNERS.map((corner) => [`${corner}${suffix}`, look]));
+
 /** Channels whose look the unit alone does not give. */
 const KNOWN_LOOKS: Record<string, ChannelLook> = {
   [DELTA_CHANNEL]: { scale: 1, unit: 's', digits: 3, signed: true },
   Gear: plain('', 0),
   RPM: plain('rpm', 0),
+  BrakeABSactive: plain('', 0),
+  dcTractionControl: plain('', 0),
+  dcABS: plain('', 0),
+  ...perCorner('rideHeight', millimetres('mm', 1)),
+  ...perCorner('shockDefl', millimetres('mm', 1)),
+  // Metres a second, as a speed would be: the travel's pace, not the car's.
+  ...perCorner('shockVel', millimetres('mm/s', 0)),
 };
 
 /** The look a channel takes from its unit: km/h, %, degrees, or as written. */

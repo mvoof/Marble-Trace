@@ -92,6 +92,29 @@ pub const STORED_LAP_CHANNELS: &[&str] = &[
     "RFpressure",
     "LRpressure",
     "RRpressure",
+    "LFrideHeight",
+    "RFrideHeight",
+    "LRrideHeight",
+    "RRrideHeight",
+    "LFshockDefl",
+    "RFshockDefl",
+    "LRshockDefl",
+    "RRshockDefl",
+    "LFshockVel",
+    "RFshockVel",
+    "LRshockVel",
+    "RRshockVel",
+    "LFbrakeLinePress",
+    "RFbrakeLinePress",
+    "LRbrakeLinePress",
+    "RRbrakeLinePress",
+    "BrakeABSactive",
+    "dcBrakeBias",
+    "dcTractionControl",
+    "dcABS",
+    "FuelLevel",
+    "OilTemp",
+    "WaterTemp",
 ];
 
 /// Reads `laps` of the file at `path`, the [`STORED_LAP_CHANNELS`] it holds:
@@ -394,7 +417,11 @@ mod tests {
             ..var(offset, FLOAT, 1)
         };
         // A car without a clutch pedal: no `Clutch` in its file.
-        let vars = vec![named("Speed", 0), named("OilTemp", 4), named("Brake", 8)];
+        let vars = vec![
+            named("Speed", 0),
+            named("SessionFlags", 4),
+            named("Brake", 8),
+        ];
 
         let kept: Vec<&str> = kept_vars(&vars, 12)
             .iter()
