@@ -14,10 +14,10 @@ export type SettingsSectionId =
   | 'hotkeys'
   | 'browserScreens'
   | 'streamChat'
-  | 'companionApps'
+  | 'otherApps'
   | 'tracks'
-  | 'strategy'
-  | 'statistics'
+  | 'widgetSettings'
+  | 'telemetryFiles'
   | 'maintenance'
   | 'telemetryInspector';
 
@@ -33,14 +33,14 @@ const APP_SECTIONS = [
 const CONNECTION_SECTIONS = [
   'browserScreens',
   'streamChat',
-  'companionApps',
+  'otherApps',
 ] as const satisfies readonly SettingsSectionId[];
 
-/** What the app holds for the driver: recorded tracks, strategy, statistics. */
+/** What the app holds for the driver: recorded tracks, widget settings, telemetry files. */
 const DATA_SECTIONS = [
   'tracks',
-  'strategy',
-  'statistics',
+  'widgetSettings',
+  'telemetryFiles',
 ] as const satisfies readonly SettingsSectionId[];
 
 /** Keeping the app itself: updates, resets, what it is. */

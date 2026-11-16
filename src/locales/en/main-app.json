@@ -617,10 +617,10 @@
         "hotkeys": "Hotkeys",
         "browserScreens": "Browser screens",
         "streamChat": "Stream chat",
-        "companionApps": "Companion apps",
+        "otherApps": "Other apps",
         "tracks": "Recorded tracks",
-        "strategy": "Widget settings",
-        "statistics": "Telemetry files",
+        "widgetSettings": "Widget settings",
+        "telemetryFiles": "Telemetry files",
         "telemetryInspector": "Telemetry inspector"
       }
     },

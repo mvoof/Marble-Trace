@@ -613,10 +613,10 @@
         "hotkeys": "快捷键",
         "browserScreens": "浏览器屏幕",
         "streamChat": "直播聊天",
-        "companionApps": "配套程序",
+        "otherApps": "其他程序",
         "tracks": "已记录的赛道",
-        "strategy": "组件设置",
-        "statistics": "遥测文件",
+        "widgetSettings": "组件设置",
+        "telemetryFiles": "遥测文件",
         "telemetryInspector": "遥测检查器"
       }
     },

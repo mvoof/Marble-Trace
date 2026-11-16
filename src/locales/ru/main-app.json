@@ -625,10 +625,10 @@
         "hotkeys": "Горячие клавиши",
         "browserScreens": "Экраны для браузера",
         "streamChat": "Чат стрима",
-        "companionApps": "Сопутствующие программы",
+        "otherApps": "Другие программы",
         "tracks": "Записанные трассы",
-        "strategy": "Настройки виджетов",
-        "statistics": "Файлы телеметрии",
+        "widgetSettings": "Настройки виджетов",
+        "telemetryFiles": "Файлы телеметрии",
         "telemetryInspector": "Инспектор телеметрии"
       }
     },

@@ -37,10 +37,10 @@ const SECTION_ICONS: Record<SettingsMenuSectionId, LucideIcon> = {
   hotkeys: Keyboard,
   browserScreens: MonitorSmartphone,
   streamChat: MessageSquare,
-  companionApps: AppWindow,
+  otherApps: AppWindow,
   tracks: Route,
-  strategy: Settings2,
-  statistics: FileStack,
+  widgetSettings: Settings2,
+  telemetryFiles: FileStack,
   updates: RefreshCw,
   maintenance: Wrench,
   about: Info,
@@ -58,7 +58,7 @@ const TITLE_ACTIONS: Partial<
   Record<SettingsMenuSectionId, React.ReactElement>
 > = {
   hotkeys: <BindingSearch />,
-  statistics: <ExportCsvButton />,
+  telemetryFiles: <ExportCsvButton />,
 };
 
 export const SettingsPage = observer(() => {
@@ -87,7 +87,7 @@ export const SettingsPage = observer(() => {
         navigation.selectSettingsSection(section)
       }
       subtitle={
-        activeSection === 'statistics'
+        activeSection === 'telemetryFiles'
           ? t('dataPage.statistics.subtitle')
           : undefined
       }

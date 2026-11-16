@@ -10,11 +10,11 @@ const RELEASE_MENU = [
   MENU_SEPARATOR,
   'browserScreens',
   'streamChat',
-  'companionApps',
+  'otherApps',
   MENU_SEPARATOR,
   'tracks',
-  'strategy',
-  'statistics',
+  'widgetSettings',
+  'telemetryFiles',
   MENU_SEPARATOR,
   'updates',
   'maintenance',
@@ -37,7 +37,7 @@ describe('settingsMenu', () => {
 
 describe('settingsSectionOf', () => {
   it('takes a section the menu has, else the first', () => {
-    expect(settingsSectionOf('statistics')).toBe('statistics');
+    expect(settingsSectionOf('telemetryFiles')).toBe('telemetryFiles');
     expect(settingsSectionOf('nonsense')).toBe('general');
     expect(settingsSectionOf(null)).toBe('general');
   });

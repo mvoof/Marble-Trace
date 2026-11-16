@@ -27,10 +27,10 @@ export const SECTION_COMPONENTS: Record<
   hotkeys: HotkeysSection,
   browserScreens: RemoteScreensSection,
   streamChat: StreamChatSection,
-  companionApps: CompanionAppsSection,
+  otherApps: CompanionAppsSection,
   tracks: TrackMapSection,
-  strategy: SharedValuesSection,
-  statistics: StatisticsSection,
+  widgetSettings: SharedValuesSection,
+  telemetryFiles: StatisticsSection,
   maintenance: MaintenanceSection,
   telemetryInspector: TelemetryInspectorSection,
 };

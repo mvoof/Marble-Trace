@@ -617,10 +617,10 @@
         "hotkeys": "Atajos",
         "browserScreens": "Pantallas para navegador",
         "streamChat": "Chat del directo",
-        "companionApps": "Aplicaciones complementarias",
+        "otherApps": "Otras aplicaciones",
         "tracks": "Circuitos grabados",
-        "strategy": "Ajustes de widgets",
-        "statistics": "Archivos de telemetría",
+        "widgetSettings": "Ajustes de widgets",
+        "telemetryFiles": "Archivos de telemetría",
         "telemetryInspector": "Inspector de telemetría"
       }
     },
