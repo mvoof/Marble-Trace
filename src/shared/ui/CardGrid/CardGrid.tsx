@@ -6,9 +6,9 @@ interface CardGridProps {
 }
 
 /**
- * Main-window cards side by side, as many as the width takes at a readable
- * size (three in a wide window), so a short card's switch or button stays
- * next to its text. A `wide` card spans the row.
+ * Main-window cards side by side, growing to fill the row: one card takes the
+ * whole width, three share it only in a wide window. A `wide` card always
+ * takes a row of its own.
  */
 export const CardGrid = ({ children }: CardGridProps) => (
   <div className={styles.grid}>{children}</div>

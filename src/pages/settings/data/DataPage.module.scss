@@ -18,15 +18,19 @@
   }
 }
 
+// The text, the control at the right; a control that does not fit beside the
+// text goes under it rather than out of the card.
 .fieldRow {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
+  gap: rem(10) rem(24);
 }
 
 .fieldTexts {
-  flex: 1;
-  padding-right: rem(24);
+  flex: 1 1 rem(240);
+  min-width: 0;
 }
 
 .fieldTitle {

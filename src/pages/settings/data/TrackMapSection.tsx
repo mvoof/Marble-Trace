@@ -106,7 +106,6 @@ export const TrackMapSection = observer(() => {
         </div>
 
         <Button
-          block
           size="small"
           danger
           disabled={trackId === null}
@@ -140,7 +139,7 @@ export const TrackMapSection = observer(() => {
           okButtonProps={{ danger: true }}
           onConfirm={() => void handleDeleteReferenceLap()}
         >
-          <Button block size="small" danger disabled={!canDeleteReferenceLap}>
+          <Button size="small" danger disabled={!canDeleteReferenceLap}>
             {t('settingsPage.trackMap.deleteReferenceLap')}
           </Button>
         </Popconfirm>

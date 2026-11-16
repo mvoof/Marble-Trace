@@ -65,7 +65,6 @@ export const FpsDiagnosticsCard = observer(() => {
         <div className={styles.actions}>
           {diagnostics.isRunning ? (
             <Button
-              block
               icon={<Square size={16} />}
               onClick={() => diagnostics.cancel()}
             >
@@ -73,7 +72,6 @@ export const FpsDiagnosticsCard = observer(() => {
             </Button>
           ) : (
             <Button
-              block
               type="primary"
               icon={<Activity size={16} />}
               onClick={() => diagnostics.start()}

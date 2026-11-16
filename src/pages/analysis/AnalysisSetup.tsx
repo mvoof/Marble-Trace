@@ -6,6 +6,7 @@ import { FileWarning, FileX } from 'lucide-react';
 
 import { useLapAnalysisStore } from '@features/lap-analysis/lap-analysis-context';
 import { setupLabel } from '@features/lap-analysis/setup-label';
+import { cx } from '@shared/lib/class-names';
 import type { SetupGroup } from '@shared/contracts/generated/bindings';
 import styles from './AnalysisSetup.module.scss';
 
@@ -15,20 +16,28 @@ const SetupGroupCard = observer(({ group }: { group: SetupGroup }) => (
   <div className={styles.card}>
     <p className={styles.title}>{setupLabel(group.name)}</p>
 
-    {group.sections.map((section, sectionIndex) => (
-      <div key={`${section.name}:${sectionIndex}`} className={styles.section}>
-        {section.name !== '' && (
-          <p className={styles.sectionName}>{setupLabel(section.name)}</p>
-        )}
+    {/* The sections side by side: the four wheels read across, a row each. */}
+    <div
+      className={cx(
+        styles.sections,
+        group.sections.length === 1 && styles.singleSection
+      )}
+    >
+      {group.sections.map((section, sectionIndex) => (
+        <div key={`${section.name}:${sectionIndex}`} className={styles.section}>
+          {section.name !== '' && (
+            <p className={styles.sectionName}>{setupLabel(section.name)}</p>
+          )}
 
-        {section.rows.map((row, rowIndex) => (
-          <div key={`${row.label}:${rowIndex}`} className={styles.row}>
-            <span className={styles.label}>{setupLabel(row.label)}</span>
-            <span className={styles.value}>{row.value}</span>
-          </div>
-        ))}
-      </div>
-    ))}
+          {section.rows.map((row, rowIndex) => (
+            <div key={`${row.label}:${rowIndex}`} className={styles.row}>
+              <span className={styles.label}>{setupLabel(row.label)}</span>
+              <span className={styles.value}>{row.value}</span>
+            </div>
+          ))}
+        </div>
+      ))}
+    </div>
   </div>
 ));
 

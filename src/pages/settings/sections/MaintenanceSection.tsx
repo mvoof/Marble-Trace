@@ -74,7 +74,6 @@ export const MaintenanceSection = observer(() => {
             </div>
 
             <Button
-              block
               size="small"
               loading={exports.saving}
               onClick={() => void handleCaptureSnapshot()}

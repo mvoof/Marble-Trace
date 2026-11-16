@@ -1,13 +1,17 @@
-$card-min-width: rem(340);
+$card-min-width: rem(460);
 
+// Cards share the row and grow to fill it: one card takes the whole width,
+// three stand side by side only where each still gets $card-min-width.
 .grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax($card-min-width, 1fr));
-  align-items: start;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
   gap: rem(14);
 
   // The grid's gap spaces the cards; their own stacking margin would add to it.
   > * {
+    flex: 1 1 $card-min-width;
+    min-width: 0;
     margin: 0;
   }
 }

@@ -1,9 +1,10 @@
-// One column of garage groups, as wide as reads comfortably.
+$section-min-width: rem(220);
+
+// The garage groups one under another, each across the page.
 .setup {
   display: flex;
   flex-direction: column;
   gap: rem(12);
-  max-width: rem(640);
 }
 
 .note {
@@ -31,8 +32,23 @@
   color: $sys-text-secondary;
 }
 
-.section + .section {
-  margin-top: rem(10);
+// A group's sections in columns; the same rows of each line up across.
+.sections {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax($section-min-width, 1fr));
+  gap: rem(12) rem(28);
+}
+
+// A group of one section spreads its rows over the columns instead.
+.singleSection .section {
+  display: grid;
+  grid-column: 1 / -1;
+  grid-template-columns: repeat(auto-fill, minmax($section-min-width, 1fr));
+  column-gap: rem(28);
+}
+
+.singleSection .sectionName {
+  grid-column: 1 / -1;
 }
 
 .sectionName {
@@ -55,6 +71,12 @@
   }
 }
 
+// Spread over columns, every row keeps its rule: the last of a column is not
+// the section's last.
+.singleSection .row:last-child {
+  border-bottom: 1px solid $sys-border-sub;
+}
+
 .label {
   color: $sys-text-secondary;
 }
@@ -62,6 +84,7 @@
 .value {
   font-family: $font-mono;
   text-align: right;
+  white-space: nowrap;
   color: $sys-text-primary;
 }
 
