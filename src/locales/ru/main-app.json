@@ -22,7 +22,6 @@
       "widgets": "Виджеты",
       "layouts": "Раскладки",
       "crew": "Экипаж",
-      "connections": "Подключения",
       "analysis": "Анализ",
       "settings": "Настройки"
     },
@@ -624,6 +623,9 @@
         "interaction": "Режимы взаимодействия",
         "maintenance": "Сброс и диагностика",
         "hotkeys": "Горячие клавиши",
+        "browserScreens": "Экраны для браузера",
+        "streamChat": "Чат стрима",
+        "companionApps": "Сопутствующие программы",
         "tracks": "Записанные трассы",
         "strategy": "Стратегия",
         "statistics": "Статистика",
@@ -693,13 +695,6 @@
       "running": "Запущено",
       "stopped": "Не запущено",
       "title": "Сопутствующие программы"
-    }
-  },
-  "connectionsPage": {
-    "sections": {
-      "browserScreens": "Экраны для браузера",
-      "streamChat": "Чат стрима",
-      "companionApps": "Сопутствующие программы"
     }
   },
   "dataPage": {

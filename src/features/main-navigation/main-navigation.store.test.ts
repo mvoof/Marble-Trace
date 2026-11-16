@@ -15,13 +15,12 @@ describe('MainNavigationStore', () => {
     expect(navigation.section).toBe('home');
   });
 
-  it('lists the six top pages in the pocket, settings outside it', () => {
+  it('lists the five top pages in the pocket, settings outside it', () => {
     expect(POCKET_SECTIONS).toEqual([
       'home',
       'widgets',
       'layouts',
       'crew',
-      'connections',
       'analysis',
     ]);
   });

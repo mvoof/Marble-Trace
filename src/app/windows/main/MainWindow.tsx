@@ -8,7 +8,6 @@ import { SettingsPage } from '@pages/settings/SettingsPage';
 import { CrewPage } from '@pages/crew/CrewPage';
 import { HomePage } from '@pages/home/HomePage';
 import { AnalysisPage } from '@pages/analysis/AnalysisPage';
-import { ConnectionsPage } from '@pages/connections/ConnectionsPage';
 import { CrewLeaveDialog } from '@pages/crew/CrewLeaveDialog';
 import { useMainNavigationStore } from '@features/main-navigation/main-navigation-context';
 import { AppHeader } from './AppHeader/AppHeader';
@@ -139,15 +138,6 @@ export const MainWindow = observer(() => {
                 >
                   <HomePage />
                 </div>
-              </div>
-            )}
-
-            {navigation.section === 'connections' && (
-              <div
-                className={`${styles.pageContainer} ${styles.animateFadeIn}`}
-                key="connections"
-              >
-                <ConnectionsPage />
               </div>
             )}
 

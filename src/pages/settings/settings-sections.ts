@@ -12,6 +12,9 @@ export type SettingsSectionId =
   | 'overlay'
   | 'interaction'
   | 'hotkeys'
+  | 'browserScreens'
+  | 'streamChat'
+  | 'companionApps'
   | 'tracks'
   | 'strategy'
   | 'statistics'
@@ -24,6 +27,13 @@ const APP_SECTIONS = [
   'overlay',
   'interaction',
   'hotkeys',
+] as const satisfies readonly SettingsSectionId[];
+
+/** What reaches outside the PC's own screens. */
+const CONNECTION_SECTIONS = [
+  'browserScreens',
+  'streamChat',
+  'companionApps',
 ] as const satisfies readonly SettingsSectionId[];
 
 /** What the app holds for the driver: recorded tracks, strategy, statistics. */
@@ -43,12 +53,13 @@ const UPKEEP_SECTIONS = [
 /** What the Settings page shows in its menu. */
 export type SettingsMenuSectionId =
   | (typeof APP_SECTIONS)[number]
+  | (typeof CONNECTION_SECTIONS)[number]
   | (typeof DATA_SECTIONS)[number]
   | (typeof UPKEEP_SECTIONS)[number]
   | 'telemetryInspector';
 
 /**
- * The Settings page's inner menu, three groups apart. The telemetry inspector
+ * The Settings page's inner menu, four groups apart. The telemetry inspector
  * is a developer tool: set apart below a separator, and left out of a release
  * build.
  */
@@ -57,6 +68,8 @@ export const settingsMenu = (
 ): SectionMenuEntry<SettingsMenuSectionId>[] => {
   const menu: SectionMenuEntry<SettingsMenuSectionId>[] = [
     ...APP_SECTIONS,
+    MENU_SEPARATOR,
+    ...CONNECTION_SECTIONS,
     MENU_SEPARATOR,
     ...DATA_SECTIONS,
     MENU_SEPARATOR,

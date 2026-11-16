@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
 import {
-  Cast,
   Headset,
   House,
   Activity,
@@ -34,7 +33,6 @@ const SECTION_ICONS: Record<MainSection, LucideIcon> = {
   widgets: LayoutGrid,
   layouts: Layers,
   crew: Headset,
-  connections: Cast,
   analysis: Activity,
   settings: Settings,
 };

@@ -19,7 +19,6 @@
       "widgets": "小组件",
       "layouts": "布局",
       "crew": "车队",
-      "connections": "连接",
       "analysis": "分析",
       "settings": "设置"
     },
@@ -612,6 +611,9 @@
         "interaction": "交互模式",
         "maintenance": "重置与诊断",
         "hotkeys": "快捷键",
+        "browserScreens": "浏览器屏幕",
+        "streamChat": "直播聊天",
+        "companionApps": "配套程序",
         "tracks": "已记录的赛道",
         "strategy": "策略",
         "statistics": "统计",
@@ -681,13 +683,6 @@
       "running": "运行中",
       "stopped": "未运行",
       "title": "配套程序"
-    }
-  },
-  "connectionsPage": {
-    "sections": {
-      "browserScreens": "浏览器屏幕",
-      "streamChat": "直播聊天",
-      "companionApps": "配套程序"
     }
   },
   "dataPage": {

@@ -20,7 +20,6 @@
       "widgets": "Widgets",
       "layouts": "Diseños",
       "crew": "Equipo",
-      "connections": "Conexiones",
       "analysis": "Análisis",
       "settings": "Ajustes"
     },
@@ -616,6 +615,9 @@
         "interaction": "Modos de interacción",
         "maintenance": "Restablecer y diagnóstico",
         "hotkeys": "Atajos",
+        "browserScreens": "Pantallas para navegador",
+        "streamChat": "Chat del directo",
+        "companionApps": "Aplicaciones complementarias",
         "tracks": "Circuitos grabados",
         "strategy": "Estrategia",
         "statistics": "Estadísticas",
@@ -685,13 +687,6 @@
       "running": "En ejecución",
       "stopped": "Detenido",
       "title": "Aplicaciones complementarias"
-    }
-  },
-  "connectionsPage": {
-    "sections": {
-      "browserScreens": "Pantallas para navegador",
-      "streamChat": "Chat del directo",
-      "companionApps": "Aplicaciones complementarias"
     }
   },
   "dataPage": {

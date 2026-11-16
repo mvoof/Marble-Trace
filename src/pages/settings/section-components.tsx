@@ -9,6 +9,9 @@ import { HotkeysSection } from './hotkeys/HotkeysSection';
 import { TrackMapSection } from './data/TrackMapSection';
 import { SharedValuesSection } from './data/SharedValuesSection';
 import { StatisticsSection } from './data/StatisticsSection';
+import { StreamChatSection } from './sections/StreamChatSection';
+import { RemoteScreensSection } from '@features/remote-screens/RemoteScreensSection';
+import { CompanionAppsSection } from '@features/companion-apps/CompanionAppsSection';
 import { TelemetryInspectorSection } from '@features/telemetry-inspector/TelemetryInspectorSection/TelemetryInspectorSection';
 
 /** What each section of the Settings page draws. */
@@ -22,6 +25,9 @@ export const SECTION_COMPONENTS: Record<
   overlay: OverlaySection,
   interaction: InteractionSection,
   hotkeys: HotkeysSection,
+  browserScreens: RemoteScreensSection,
+  streamChat: StreamChatSection,
+  companionApps: CompanionAppsSection,
   tracks: TrackMapSection,
   strategy: SharedValuesSection,
   statistics: StatisticsSection,

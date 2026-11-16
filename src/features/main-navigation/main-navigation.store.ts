@@ -6,7 +6,6 @@ export const POCKET_SECTIONS = [
   'widgets',
   'layouts',
   'crew',
-  'connections',
   'analysis',
 ] as const;
 

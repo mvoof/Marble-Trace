@@ -20,7 +20,6 @@
       "widgets": "Widgets",
       "layouts": "Layouts",
       "crew": "Crew",
-      "connections": "Connections",
       "analysis": "Analysis",
       "settings": "Settings"
     },
@@ -616,6 +615,9 @@
         "interaction": "Interaction modes",
         "maintenance": "Reset & diagnostics",
         "hotkeys": "Hotkeys",
+        "browserScreens": "Browser screens",
+        "streamChat": "Stream chat",
+        "companionApps": "Companion apps",
         "tracks": "Recorded tracks",
         "strategy": "Strategy",
         "statistics": "Statistics",
@@ -685,13 +687,6 @@
       "running": "Running",
       "stopped": "Not running",
       "title": "Companion apps"
-    }
-  },
-  "connectionsPage": {
-    "sections": {
-      "browserScreens": "Browser screens",
-      "streamChat": "Stream chat",
-      "companionApps": "Companion apps"
     }
   },
   "dataPage": {

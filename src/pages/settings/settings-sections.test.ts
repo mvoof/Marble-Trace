@@ -8,6 +8,10 @@ const RELEASE_MENU = [
   'interaction',
   'hotkeys',
   MENU_SEPARATOR,
+  'browserScreens',
+  'streamChat',
+  'companionApps',
+  MENU_SEPARATOR,
   'tracks',
   'strategy',
   'statistics',
@@ -18,7 +22,7 @@ const RELEASE_MENU = [
 ];
 
 describe('settingsMenu', () => {
-  it('lists the app, its data and its upkeep, in groups apart', () => {
+  it('lists the app, its connections, its data and its upkeep, in groups apart', () => {
     expect(settingsMenu(false)).toEqual(RELEASE_MENU);
   });
 
