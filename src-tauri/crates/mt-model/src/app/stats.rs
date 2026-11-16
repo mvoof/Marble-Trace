@@ -232,8 +232,10 @@ pub struct SessionLap {
     /// The session's best lap: the sim's own, else its fastest full lap off
     /// pit road.
     pub is_best: bool,
-    /// Its `.ibt` is still on disk: its telemetry can be analysed.
+    /// Its `.ibt` is still on disk.
     pub file_present: bool,
+    /// `stats.db` holds its telemetry: it can be analysed without the file.
+    pub stored: bool,
 }
 
 /// A session's laps, oldest run first.
@@ -260,6 +262,8 @@ pub struct AnalysisLap {
     /// The lap the delta is counted against.
     pub reference: bool,
     pub file_present: bool,
+    /// `stats.db` holds its telemetry.
+    pub stored: bool,
 }
 
 /// The laps in the analysis, all of one session, in the order added.

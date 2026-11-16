@@ -14,8 +14,8 @@ use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
 use mt_model::app::car_setup::CarSetupView;
 use mt_model::app::stats::{
-    AnalysisSet, HomeStats, KnownCar, RecentSession, SessionFile, SessionFilter, SessionLaps,
-    SessionPage, SkippedFile, StatsFolder, StatsImportPhase, StatsImportStatus,
+    AnalysisSet, HomeStats, KnownCar, LapRef, RecentSession, SessionFile, SessionFilter,
+    SessionLaps, SessionPage, SkippedFile, StatsFolder, StatsImportPhase, StatsImportStatus,
 };
 use mt_model::contract::event_sink::EventSink;
 use mt_model::contract::events::EVENT_STATS_IMPORT;
@@ -23,7 +23,7 @@ use mt_model::utils::lock_or_recover;
 
 use crate::db::{FileStamp, StatsDb};
 use crate::lap_cache::LapTelemetryReader;
-use crate::lap_store::{pack_file, stored_lap_keys, FileAnalysis};
+use crate::lap_store::{pack_file, stored_lap_keys, FileAnalysis, StoredLap};
 use crate::scan::{list_session_files, pending_files};
 
 /// How often a waiting import looks at the sim's connection.
@@ -237,6 +237,31 @@ impl StatsService {
         }
 
         Ok(set)
+    }
+
+    /// A lap's telemetry as `stats.db` keeps it, still packed.
+    pub fn stored_lap(&self, lap: &LapRef) -> Result<Option<StoredLap>, String> {
+        lock_or_recover(&self.db).lap_telemetry(lap)
+    }
+
+    /// The setup the database holds for a file, else the file's own; "file
+    /// deleted" when neither has it.
+    pub fn car_setup(
+        &self,
+        path: &str,
+        read_setup: impl FnOnce(&Path) -> Result<CarSetupView, String>,
+    ) -> Result<CarSetupView, String> {
+        if let Some(setup) = lock_or_recover(&self.db).stored_setup(path)? {
+            return Ok(setup);
+        }
+
+        let file = Path::new(path);
+
+        if !file.is_file() {
+            return Ok(CarSetupView::FileDeleted);
+        }
+
+        read_setup(file)
     }
 
     /// Runs `change` on the database, then answers the set as it now stands.
@@ -606,6 +631,54 @@ mod tests {
         drop(db);
 
         fs::remove_dir_all(folder).unwrap();
+    }
+
+    fn unreadable_setup(_path: &Path) -> Result<CarSetupView, String> {
+        Err("the file is not read for a stored setup".into())
+    }
+
+    #[test]
+    fn a_deleted_files_laps_and_setup_are_still_there_from_the_database() {
+        let folder = folder_with(&["a.ibt"]);
+        let host = StatsHost::new(
+            Arc::new(RecordingSink::default()),
+            SessionFileReaders {
+                read_file: reader_with_laps,
+                ..READERS
+            },
+            Box::new(|| false),
+            || {},
+        );
+        let service = service(Some(folder.clone()));
+        let path = folder.join("a.ibt").to_string_lossy().into_owned();
+
+        run_pass(&service, &host, PassScope::Unread);
+        fs::remove_dir_all(&folder).unwrap();
+
+        let key = service.recent_sessions(1).unwrap()[0].key.clone();
+        let laps = service.session_laps(&key).unwrap().unwrap().laps;
+        let stored: Vec<(i32, bool, bool)> = laps
+            .iter()
+            .map(|lap| (lap.lap.lap_num, lap.stored, lap.file_present))
+            .collect();
+
+        assert_eq!(
+            stored,
+            vec![
+                (1, false, false),
+                (2, true, false),
+                (3, true, false),
+                (4, false, false)
+            ]
+        );
+        assert!(matches!(
+            service.car_setup(&path, unreadable_setup),
+            Ok(CarSetupView::Setup { .. })
+        ));
+        assert_eq!(
+            service.car_setup("Z:/no/such.ibt", unreadable_setup),
+            Ok(CarSetupView::FileDeleted)
+        );
     }
 
     fn service(default_folder: Option<PathBuf>) -> StatsService {

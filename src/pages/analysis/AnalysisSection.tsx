@@ -4,7 +4,10 @@ import { ColorPicker, Spin, Tabs, Tooltip } from 'antd';
 import { Eye, EyeOff, Flag, PauseCircle, Plus, Star, X } from 'lucide-react';
 
 import { useLapAnalysisStore } from '@features/lap-analysis/lap-analysis-context';
-import type { AnalysisTab } from '@features/lap-analysis/lap-analysis.store';
+import {
+  hasTelemetry,
+  type AnalysisTab,
+} from '@features/lap-analysis/lap-analysis.store';
 import { cx } from '@shared/lib/class-names';
 import { formatLapTimeOrDash } from '@shared/lib/telemetry-format';
 import type { AnalysisLap } from '@shared/contracts/generated/bindings';
@@ -60,7 +63,7 @@ const LapItem = observer(({ lap }: { lap: AnalysisLap }) => {
       </span>
 
       <span className={cx(styles.time, lap.isBest && styles.best)}>
-        {lap.filePresent && !analysis.isMissing(lap.lap) ? (
+        {hasTelemetry(lap) && !analysis.isMissing(lap.lap) ? (
           formatLapTimeOrDash(lap.timeS)
         ) : (
           <Tooltip title={t('dataPage.analysis.fileDeleted')}>

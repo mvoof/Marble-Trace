@@ -305,18 +305,16 @@ pub async fn get_lap_channels(
         .map(Response::new)
 }
 
-/// The setup the file at `path` wrote; "file deleted" once it is gone.
+/// The setup the file at `path` wrote: as `stats.db` keeps it, else from the
+/// file; "file deleted" when neither has it.
 #[tauri::command]
-pub async fn get_car_setup(path: String) -> Result<CarSetupView, String> {
-    tauri::async_runtime::spawn_blocking(move || {
-        let path = std::path::Path::new(&path);
+pub async fn get_car_setup(
+    state: State<'_, Arc<StatsService>>,
+    path: String,
+) -> Result<CarSetupView, String> {
+    let service = Arc::clone(&state);
 
-        if !path.is_file() {
-            return Ok(CarSetupView::FileDeleted);
-        }
-
-        read_car_setup(path)
-    })
-    .await
-    .map_err(|error| error.to_string())?
+    tauri::async_runtime::spawn_blocking(move || service.car_setup(&path, read_car_setup))
+        .await
+        .map_err(|error| error.to_string())?
 }

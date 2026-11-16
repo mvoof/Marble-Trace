@@ -18,6 +18,10 @@ export type AnalysisLap = {
    */
   reference: boolean;
   filePresent: boolean;
+  /**
+   * `stats.db` holds its telemetry.
+   */
+  stored: boolean;
 };
 
 /**
@@ -2974,9 +2978,13 @@ export type SessionLap = {
    */
   isBest: boolean;
   /**
-   * Its `.ibt` is still on disk: its telemetry can be analysed.
+   * Its `.ibt` is still on disk.
    */
   filePresent: boolean;
+  /**
+   * `stats.db` holds its telemetry: it can be analysed without the file.
+   */
+  stored: boolean;
 };
 
 /**

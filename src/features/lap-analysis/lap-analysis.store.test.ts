@@ -49,6 +49,7 @@ const sessionLap = (
   partial: false,
   isBest: false,
   filePresent: true,
+  stored: false,
   ...extra,
 });
 
@@ -87,7 +88,7 @@ const fakeApi = (): LapAnalysisApi => ({
 });
 
 describe('isAnalysable', () => {
-  it('takes timed full laps off pit road whose file is on disk', () => {
+  it('takes timed full laps off pit road the database or the file holds', () => {
     expect(
       [
         sessionLap(1),
@@ -95,8 +96,9 @@ describe('isAnalysable', () => {
         sessionLap(3, { inPit: true }),
         sessionLap(4, { timeS: null }),
         sessionLap(5, { filePresent: false }),
+        sessionLap(6, { filePresent: false, stored: true }),
       ].map(isAnalysable)
-    ).toEqual([true, false, false, false, false]);
+    ).toEqual([true, false, false, false, false, true]);
   });
 });
 
@@ -161,6 +163,7 @@ describe('LapAnalysisStore telemetry', () => {
         visible: true,
         reference: true,
         filePresent: true,
+        stored: false,
       },
     ],
   };
@@ -247,6 +250,7 @@ describe('LapAnalysisStore charts', () => {
       visible: true,
       reference,
       filePresent: true,
+      stored: false,
     });
     vi.mocked(api.getAnalysisSet).mockResolvedValue({
       session: SESSION,
@@ -289,6 +293,7 @@ describe('LapAnalysisStore setup', () => {
       visible: true,
       reference,
       filePresent: true,
+      stored: false,
     })),
     sectors: [],
   });

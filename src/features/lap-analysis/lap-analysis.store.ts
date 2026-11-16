@@ -87,9 +87,13 @@ export const sameLap = (first: LapRef, second: LapRef) =>
   first.sessionNum === second.sessionNum &&
   first.lapNum === second.lapNum;
 
-/** A lap the analysis can take: timed, from the line, off pit road, its file on disk. */
+/** `stats.db` keeps the lap's telemetry, or its file is still on disk. */
+export const hasTelemetry = (lap: { filePresent: boolean; stored: boolean }) =>
+  lap.stored || lap.filePresent;
+
+/** A lap the analysis can take: timed, from the line, off pit road, its telemetry kept. */
 export const isAnalysable = (lap: SessionLap) =>
-  lap.timeS !== null && !lap.partial && !lap.inPit && lap.filePresent;
+  lap.timeS !== null && !lap.partial && !lap.inPit && hasTelemetry(lap);
 
 const EMPTY_SET: AnalysisSet = { session: null, laps: [], sectors: [] };
 

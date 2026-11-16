@@ -35,6 +35,8 @@ struct LapRow {
     incidents: u32,
     in_pit: bool,
     partial: bool,
+    /// `stats.db` holds its telemetry.
+    stored: bool,
 }
 
 impl StatsDb {
@@ -98,6 +100,7 @@ impl StatsDb {
                     partial: row.partial,
                     is_best,
                     file_present: false,
+                    stored: row.stored,
                 }
             })
             .collect();
@@ -146,6 +149,7 @@ impl StatsDb {
                     .unwrap_or_default(),
                 time_s: session_lap.and_then(|known| known.time_s),
                 is_best: session_lap.is_some_and(|known| known.is_best),
+                stored: session_lap.is_some_and(|known| known.stored),
                 lap,
                 color,
                 visible,
@@ -324,7 +328,9 @@ impl StatsDb {
             .connection
             .prepare(
                 "SELECT l.path, l.session_num, l.lap_num, r.run_type, l.time_s, l.incidents,
-                        l.in_pit, l.partial
+                        l.in_pit, l.partial,
+                        EXISTS (SELECT 1 FROM lap_telemetry t WHERE t.path = l.path
+                                  AND t.session_num = l.session_num AND t.lap_num = l.lap_num)
                  FROM lap l
                  JOIN run r ON r.path = l.path AND r.session_num = l.session_num
                  JOIN ibt_file f ON f.path = l.path
@@ -345,6 +351,7 @@ impl StatsDb {
                     incidents: row.get(5)?,
                     in_pit: row.get(6)?,
                     partial: row.get(7)?,
+                    stored: row.get(8)?,
                 })
             })
             .map_err(to_message)?;

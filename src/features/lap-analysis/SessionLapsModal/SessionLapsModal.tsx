@@ -5,7 +5,11 @@ import { App, Button, Modal } from 'antd';
 import { Activity, Check, Plus } from 'lucide-react';
 
 import { useLapAnalysisStore } from '../lap-analysis-context';
-import { isAnalysable, type LapAnalysisStore } from '../lap-analysis.store';
+import {
+  hasTelemetry,
+  isAnalysable,
+  type LapAnalysisStore,
+} from '../lap-analysis.store';
 import { cx } from '@shared/lib/class-names';
 import { formatLapTimeOrDash } from '@shared/lib/telemetry-format';
 import type {
@@ -112,7 +116,7 @@ const LapRow = observer(({ lap, inSet, onAdd }: LapRowProps) => {
       );
     }
 
-    if (!lap.filePresent) {
+    if (!hasTelemetry(lap)) {
       return (
         <span className={styles.muted}>
           {t('homePage.sessionLaps.fileDeleted')}
