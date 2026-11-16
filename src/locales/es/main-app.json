@@ -1520,9 +1520,25 @@
       "finish": "Posición",
       "bestLap": "Mejor vuelta",
       "incidents": "Inc.",
-      "eventType": {
+      "type": "Tipo",
+      "laps": "Vueltas",
+      "search": "Circuito o coche",
+      "withBots": "Sesiones con bots",
+      "botsTag": "bots",
+      "none": "Ninguna sesión coincide con el filtro",
+      "shown": "{{from}}–{{to}} de {{total}}",
+      "period": {
+        "7d": "7 d",
+        "30d": "30 d",
+        "90d": "90 d",
+        "all": "Todo"
+      },
+      "kind": {
         "practice": "Práctica",
-        "test": "Prueba"
+        "qualify": "Clasificación",
+        "race": "Carrera",
+        "test": "Test",
+        "timeTrial": "Contrarreloj"
       }
     },
     "calendar": {

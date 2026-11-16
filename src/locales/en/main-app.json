@@ -1520,9 +1520,25 @@
       "finish": "Finish",
       "bestLap": "Best lap",
       "incidents": "Inc.",
-      "eventType": {
+      "type": "Type",
+      "laps": "Laps",
+      "search": "Track or car",
+      "withBots": "Sessions with bots",
+      "botsTag": "bots",
+      "none": "No sessions match the filter",
+      "shown": "{{from}}–{{to}} of {{total}}",
+      "period": {
+        "7d": "7 d",
+        "30d": "30 d",
+        "90d": "90 d",
+        "all": "All"
+      },
+      "kind": {
         "practice": "Practice",
-        "test": "Test"
+        "qualify": "Qualify",
+        "race": "Race",
+        "test": "Test",
+        "timeTrial": "Time trial"
       }
     },
     "calendar": {

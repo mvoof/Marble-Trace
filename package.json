@@ -44,6 +44,7 @@
     "@tauri-apps/plugin-process": "^2.4.0",
     "@tauri-apps/plugin-updater": "^2.14.0",
     "antd": "^6.6.6",
+    "dayjs": "1.11.23",
     "flag-icons": "^7.5.0",
     "i18next": "^26.4.6",
     "lucide-react": "^1.57.0",

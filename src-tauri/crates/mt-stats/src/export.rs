@@ -2,7 +2,7 @@
 
 use rusqlite::params;
 
-use mt_model::app::stats::RecentSession;
+use mt_model::app::stats::{RecentSession, SessionKind};
 
 use crate::db::{to_message, StatsDb, STATUS_READ};
 
@@ -66,6 +66,10 @@ impl StatsDb {
                         key: row.get(0)?,
                         started_at: row.get::<_, i64>(1)? as f64,
                         event_type: row.get(2)?,
+                        // The export writes the sim's own event type.
+                        kind: SessionKind::default(),
+                        has_ai: false,
+                        laps: 0,
                         track_name: row.get(3)?,
                         track_config: row.get(4)?,
                         car_name: row.get(5)?,

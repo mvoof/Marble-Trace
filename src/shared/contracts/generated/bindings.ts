@@ -2356,6 +2356,15 @@ export type RecentSession = {
    */
   startedAt: number;
   eventType: string;
+  kind: SessionKind;
+  /**
+   * A bot drove in it.
+   */
+  hasAi: boolean;
+  /**
+   * Laps completed, each once whichever files hold it.
+   */
+  laps: number;
   trackName: string | null;
   trackConfig: string | null;
   carName: string | null;
@@ -2768,6 +2777,30 @@ export type SessionField =
    */
   | 'incidents';
 
+/**
+ * Which sessions the table lists. Every condition narrows; an empty
+ * `kinds` lists none.
+ */
+export type SessionFilter = {
+  /**
+   * Started at or after, UTC unix seconds.
+   */
+  fromS: number | null;
+  /**
+   * Started before, UTC unix seconds.
+   */
+  toS: number | null;
+  /**
+   * Part of the track or car name, any case; empty matches all.
+   */
+  text: string;
+  kinds: SessionKind[];
+  /**
+   * Off leaves out the sessions a bot drove in.
+   */
+  withBots: boolean;
+};
+
 export type SessionFrame = {
   /**
    * Seconds since the session started
@@ -2815,6 +2848,32 @@ export type SessionFrame = {
    * @see https://sajax.github.io/irsdkdocs/telemetry/caridxsessionflags/
    */
   player_car_flags: number | null;
+};
+
+/**
+ * What was driven in a session, for the table's type column and filter.
+ */
+export type SessionKind =
+  | 'practice'
+  | 'qualify'
+  | 'race'
+  | 'test'
+  | 'timeTrial';
+
+/**
+ * One page of the filtered sessions, newest first.
+ */
+export type SessionPage = {
+  rows: RecentSession[];
+  /**
+   * Sessions the filter matches, all pages together.
+   */
+  total: number;
+  /**
+   * The page served, 0 first: the one asked for, or the last there is.
+   */
+  page: number;
+  pageSize: number;
 };
 
 export type SessionSnapshot = {

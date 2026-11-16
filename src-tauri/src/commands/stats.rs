@@ -6,8 +6,8 @@ use std::sync::Arc;
 use tauri::{AppHandle, Manager, State};
 
 use mt_model::app::stats::{
-    AutologState, HomeStats, KnownCar, RecentSession, SkippedFile, StatsFolder, StatsImportStatus,
-    TrackOutline,
+    AutologState, HomeStats, KnownCar, RecentSession, SessionFilter, SessionPage, SkippedFile,
+    StatsFolder, StatsImportStatus, TrackOutline,
 };
 use mt_sim_iracing::app_ini;
 use mt_sim_iracing::car_badges::badge_for_car;
@@ -167,4 +167,18 @@ pub async fn export_sessions_csv(
     })
     .await
     .map_err(|error| error.to_string())?
+}
+
+/// One page of the sessions table, filtered in the database.
+#[tauri::command]
+pub async fn get_sessions_page(
+    state: State<'_, Arc<StatsService>>,
+    filter: SessionFilter,
+    page: u32,
+) -> Result<SessionPage, String> {
+    let service = Arc::clone(&state);
+
+    tauri::async_runtime::spawn_blocking(move || service.sessions_page(&filter, page))
+        .await
+        .map_err(|error| error.to_string())?
 }

@@ -7,3 +7,4 @@ pub mod export;
 pub mod home;
 pub mod import;
 pub mod scan;
+pub mod sessions;

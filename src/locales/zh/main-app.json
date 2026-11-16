@@ -1514,9 +1514,25 @@
       "finish": "名次",
       "bestLap": "最快圈",
       "incidents": "事故",
-      "eventType": {
+      "type": "类型",
+      "laps": "圈数",
+      "search": "赛道或车辆",
+      "withBots": "含 AI 的会话",
+      "botsTag": "AI",
+      "none": "没有符合筛选的会话",
+      "shown": "{{from}}–{{to}} / 共 {{total}}",
+      "period": {
+        "7d": "7 天",
+        "30d": "30 天",
+        "90d": "90 天",
+        "all": "全部"
+      },
+      "kind": {
         "practice": "练习",
-        "test": "测试"
+        "qualify": "排位",
+        "race": "比赛",
+        "test": "测试",
+        "timeTrial": "计时赛"
       }
     },
     "calendar": {

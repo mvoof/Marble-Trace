@@ -13,8 +13,8 @@ use std::thread;
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
 use mt_model::app::stats::{
-    HomeStats, KnownCar, RecentSession, SessionFile, SkippedFile, StatsFolder, StatsImportPhase,
-    StatsImportStatus,
+    HomeStats, KnownCar, RecentSession, SessionFile, SessionFilter, SessionPage, SkippedFile,
+    StatsFolder, StatsImportPhase, StatsImportStatus,
 };
 use mt_model::contract::event_sink::EventSink;
 use mt_model::contract::events::EVENT_STATS_IMPORT;
@@ -190,6 +190,10 @@ impl StatsService {
 
     pub fn recent_sessions(&self, limit: u32) -> Result<Vec<RecentSession>, String> {
         lock_or_recover(&self.db).recent_sessions(limit)
+    }
+
+    pub fn sessions_page(&self, filter: &SessionFilter, page: u32) -> Result<SessionPage, String> {
+        lock_or_recover(&self.db).sessions_page(filter, page)
     }
 
     pub fn home_stats(&self) -> Result<HomeStats, String> {

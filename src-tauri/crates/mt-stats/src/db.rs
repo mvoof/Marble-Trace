@@ -359,45 +359,6 @@ impl StatsDb {
         self.legacy_folder.take()
     }
 
-    /// The latest sessions first, each merged from all its files.
-    pub fn recent_sessions(&self, limit: u32) -> Result<Vec<RecentSession>, String> {
-        let mut statement = self
-            .connection
-            .prepare(
-                "SELECT s.key, MIN(f.started_at) AS started, s.event_type, s.track_name,
-                        s.track_config, s.car_name
-                 FROM session s
-                 JOIN ibt_file f ON f.session_key = s.key AND f.status = ?1
-                 GROUP BY s.key
-                 ORDER BY started DESC
-                 LIMIT ?2",
-            )
-            .map_err(to_message)?;
-        let rows = statement
-            .query_map(params![STATUS_READ, limit], |row| {
-                Ok(RecentSession {
-                    key: row.get(0)?,
-                    started_at: row.get::<_, i64>(1)? as f64,
-                    event_type: row.get(2)?,
-                    track_name: row.get(3)?,
-                    track_config: row.get(4)?,
-                    car_name: row.get(5)?,
-                    finish_pos: None,
-                    field_size: None,
-                    best_lap_s: None,
-                    incidents: 0,
-                })
-            })
-            .map_err(to_message)?;
-
-        rows.map(|row| {
-            let session = row.map_err(to_message)?;
-
-            self.with_results(session)
-        })
-        .collect()
-    }
-
     pub(crate) fn with_results(&self, session: RecentSession) -> Result<RecentSession, String> {
         let best_lap_s = self
             .connection
@@ -703,7 +664,7 @@ pub(crate) fn to_message(error: rusqlite::Error) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use mt_model::app::stats::{SessionFileLap, SessionFileRun};
+    use mt_model::app::stats::{SessionFileLap, SessionFileRun, SessionKind};
 
     fn stamp(path: &str) -> FileStamp {
         FileStamp {
@@ -771,6 +732,9 @@ mod tests {
                 key: "sub:77".into(),
                 started_at: 1_000.0,
                 event_type: "Race".into(),
+                kind: SessionKind::Race,
+                has_ai: false,
+                laps: 4,
                 track_name: Some("Nürburgring".into()),
                 track_config: None,
                 car_name: Some("Mercedes-AMG GT3".into()),

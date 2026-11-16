@@ -1,3 +1,49 @@
+.card {
+  min-width: 0;
+  padding: rem(14) rem(16);
+  background: $sys-bg-card;
+  border: 1px solid $sys-border-sub;
+  border-radius: rem(10);
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  gap: rem(6);
+  margin-bottom: rem(10);
+  font-size: rem(12);
+  color: $sys-text-muted;
+}
+
+// One row; a narrow window wraps it.
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: rem(8);
+  margin-bottom: rem(10);
+}
+
+.search {
+  width: rem(220);
+}
+
+.kinds {
+  display: flex;
+  flex-wrap: wrap;
+  gap: rem(2);
+}
+
+.bots {
+  display: flex;
+  align-items: center;
+  gap: rem(8);
+  margin-left: auto;
+  font-size: rem(12);
+  color: $sys-text-secondary;
+  cursor: pointer;
+}
+
 .scroll {
   overflow-x: auto;
 }
@@ -26,6 +72,32 @@
   tbody tr:last-child td {
     border-bottom: 0;
   }
+}
+
+.botsTag {
+  margin-left: rem(8);
+  padding: 0 rem(6);
+  font-size: rem(11);
+  color: $sys-text-secondary;
+  border: 1px solid $sys-border-main;
+  border-radius: rem(4);
+}
+
+.empty {
+  margin: rem(16) 0 rem(4);
+  text-align: center;
+  font-size: rem(13);
+  color: $sys-text-muted;
+}
+
+.pager {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: rem(8);
+  margin-top: rem(10);
+  font-size: rem(12);
 }
 
 .secondary {

@@ -8,6 +8,7 @@ import {
   getHomeStats,
   getKnownCars,
   getRecentSessions,
+  getSessionsPage,
   getSkippedFiles,
   getStatsImportStatus,
   listenStatsImport,
@@ -27,9 +28,10 @@ import type {
   TimeDriven,
 } from '@shared/contracts/generated/bindings';
 import { drivenWeeks, type DrivenDay } from './days-driven';
+import { SessionsTableStore } from './sessions-table.store';
 
-/** Rows of the recent sessions table on Home. */
-const RECENT_SESSIONS_LIMIT = 10;
+/** One session is enough to know Home has any: the table loads its own pages. */
+const RECENT_SESSIONS_LIMIT = 1;
 const MS_PER_SECOND = 1000;
 
 /** What the store writes the folder choice into: the settings, main's own. */
@@ -75,6 +77,8 @@ export class StatisticsStore {
   skippedFiles: SkippedFile[] = [];
   /** The cars of the session records, by name. */
   knownCars: KnownCar[] = [];
+  /** Home's sessions table: its filter and the page served. */
+  readonly sessionsTable = new SessionsTableStore(getSessionsPage);
 
   private unlisten: (() => void) | null = null;
   private disposed = false;
@@ -268,6 +272,7 @@ export class StatisticsStore {
         getRecentSessions(RECENT_SESSIONS_LIMIT),
         getHomeStats(),
         getKnownCars(),
+        this.sessionsTable.reload(),
       ]);
 
       runInAction(() => {

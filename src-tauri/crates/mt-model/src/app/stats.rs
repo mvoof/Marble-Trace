@@ -116,6 +116,71 @@ pub struct StatsImportStatus {
     pub broken: u32,
 }
 
+/// What was driven in a session, for the table's type column and filter.
+#[cfg_attr(feature = "dev", derive(specta::Type))]
+#[derive(Serialize, Deserialize, Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
+#[serde(rename_all = "camelCase")]
+pub enum SessionKind {
+    #[default]
+    Practice,
+    Qualify,
+    Race,
+    Test,
+    TimeTrial,
+}
+
+impl SessionKind {
+    pub const ALL: [SessionKind; 5] = [
+        SessionKind::Practice,
+        SessionKind::Qualify,
+        SessionKind::Race,
+        SessionKind::Test,
+        SessionKind::TimeTrial,
+    ];
+}
+
+/// Which sessions the table lists. Every condition narrows; an empty
+/// `kinds` lists none.
+#[cfg_attr(feature = "dev", derive(specta::Type))]
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
+#[serde(rename_all = "camelCase")]
+pub struct SessionFilter {
+    /// Started at or after, UTC unix seconds.
+    pub from_s: Option<f64>,
+    /// Started before, UTC unix seconds.
+    pub to_s: Option<f64>,
+    /// Part of the track or car name, any case; empty matches all.
+    pub text: String,
+    pub kinds: Vec<SessionKind>,
+    /// Off leaves out the sessions a bot drove in.
+    pub with_bots: bool,
+}
+
+impl Default for SessionFilter {
+    fn default() -> Self {
+        Self {
+            from_s: None,
+            to_s: None,
+            text: String::new(),
+            kinds: SessionKind::ALL.to_vec(),
+            with_bots: true,
+        }
+    }
+}
+
+/// One page of the filtered sessions, newest first.
+#[cfg_attr(feature = "dev", derive(specta::Type))]
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
+#[serde(rename_all = "camelCase")]
+pub struct SessionPage {
+    pub rows: Vec<RecentSession>,
+    /// Sessions the filter matches, all pages together.
+    pub total: u32,
+    /// The page served, 0 first: the one asked for, or the last there is.
+    pub page: u32,
+    pub page_size: u32,
+}
+
 /// One row of the recent sessions table.
 #[cfg_attr(feature = "dev", derive(specta::Type))]
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
@@ -125,6 +190,11 @@ pub struct RecentSession {
     /// UTC unix seconds.
     pub started_at: f64,
     pub event_type: String,
+    pub kind: SessionKind,
+    /// A bot drove in it.
+    pub has_ai: bool,
+    /// Laps completed, each once whichever files hold it.
+    pub laps: u32,
     pub track_name: Option<String>,
     pub track_config: Option<String>,
     pub car_name: Option<String>,

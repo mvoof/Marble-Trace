@@ -1532,9 +1532,25 @@
       "finish": "Финиш",
       "bestLap": "Лучший круг",
       "incidents": "Инц.",
-      "eventType": {
+      "type": "Тип",
+      "laps": "Круги",
+      "search": "Трасса или машина",
+      "withBots": "Сессии с ботами",
+      "botsTag": "боты",
+      "none": "Под фильтр ничего не подходит",
+      "shown": "{{from}}–{{to}} из {{total}}",
+      "period": {
+        "7d": "7 дн",
+        "30d": "30 дн",
+        "90d": "90 дн",
+        "all": "Всё"
+      },
+      "kind": {
         "practice": "Тренировка",
-        "test": "Тест"
+        "qualify": "Квалификация",
+        "race": "Гонка",
+        "test": "Тест",
+        "timeTrial": "Time trial"
       }
     },
     "calendar": {

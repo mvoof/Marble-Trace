@@ -6,7 +6,7 @@ use std::collections::HashMap;
 use rusqlite::params;
 
 use mt_model::app::stats::{
-    DrivenSession, HomeStats, LastRace, PersonalBest, RecentSession, TimeDriven, WeekStats,
+    DrivenSession, HomeStats, LastRace, PersonalBest, TimeDriven, WeekStats,
 };
 
 use crate::db::{to_message, StatsDb, RACE_RUN_TYPE, STATUS_READ};
@@ -24,9 +24,7 @@ const TOP_LIMIT: usize = 5;
 struct SessionSummary {
     key: String,
     started_at: i64,
-    event_type: String,
     track_name: Option<String>,
-    track_config: Option<String>,
     track_id: Option<i64>,
     track_country: Option<String>,
     track_length_m: Option<f64>,
@@ -80,11 +78,9 @@ impl StatsDb {
                 Ok(SessionSummary {
                     key: row.get(0)?,
                     started_at: row.get(1)?,
-                    event_type: row.get(2)?,
                     track_name: row.get(3)?,
                     car_name: row.get(4)?,
                     time_in_car_s: row.get(5)?,
-                    track_config: row.get(6)?,
                     raced: row.get(7)?,
                     track_id: row.get(8)?,
                     track_country: row.get(9)?,
@@ -169,18 +165,9 @@ impl StatsDb {
             return Ok(None);
         };
         let race = &sessions[index];
-        let session = self.with_results(RecentSession {
-            key: race.key.clone(),
-            started_at: race.started_at as f64,
-            event_type: race.event_type.clone(),
-            track_name: race.track_name.clone(),
-            track_config: race.track_config.clone(),
-            car_name: race.car_name.clone(),
-            finish_pos: None,
-            field_size: None,
-            best_lap_s: None,
-            incidents: 0,
-        })?;
+        let Some(session) = self.session_row(&race.key)? else {
+            return Ok(None);
+        };
 
         Ok(Some(LastRace {
             session,

@@ -8,6 +8,8 @@ import type {
   HomeStats,
   KnownCar,
   RecentSession,
+  SessionFilter,
+  SessionPage,
   SkippedFile,
   StatsFolder,
   StatsImportStatus,
@@ -20,6 +22,10 @@ export const getStatsImportStatus = () =>
 
 export const getRecentSessions = (limit: number) =>
   invoke<RecentSession[]>('get_recent_sessions', { limit });
+
+/** One page of the sessions table, filtered in the database. */
+export const getSessionsPage = (filter: SessionFilter, page: number) =>
+  invoke<SessionPage>('get_sessions_page', { filter, page });
 
 export const getHomeStats = () => invoke<HomeStats>('get_home_stats');
 
