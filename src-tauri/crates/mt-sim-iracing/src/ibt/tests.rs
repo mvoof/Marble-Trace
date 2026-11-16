@@ -10,7 +10,7 @@ const TYPE_FLOAT: i32 = 4;
 const TYPE_DOUBLE: i32 = 5;
 
 /// (name, type, offset) of each variable in a test row.
-const VARS: [(&str, i32, usize); 10] = [
+const VARS: [(&str, i32, usize); 11] = [
     ("SessionTime", TYPE_DOUBLE, 0),
     ("SessionNum", TYPE_INT, 8),
     ("SessionState", TYPE_INT, 12),
@@ -21,8 +21,9 @@ const VARS: [(&str, i32, usize); 10] = [
     ("OnPitRoad", TYPE_BOOL, 32),
     ("Lat", TYPE_DOUBLE, 36),
     ("Lon", TYPE_DOUBLE, 44),
+    ("LapBestLap", TYPE_INT, 52),
 ];
-const ROW_LEN: usize = 52;
+const ROW_LEN: usize = 56;
 /// One row a second keeps the settle arithmetic readable.
 const TICK_RATE: i32 = 1;
 const STARTED_AT: i64 = 1_762_449_323;
@@ -42,6 +43,7 @@ WeekendInfo:
  TeamRacing: 0
  EventType: Race
  Category: Road
+ TrackLength: 4.4837 km
 SessionInfo:
  Sessions:
  - SessionNum: 0
@@ -59,6 +61,7 @@ DriverInfo:
  - CarIdx: 0
    UserName: Someone Else
    IRating: 3000
+   CarIsAI: 0
  - CarIdx: 1
    UserName: ? ?
    UserID: 42
@@ -67,6 +70,16 @@ DriverInfo:
    CarID: 156
    CarScreenName: Mercedes-AMG GT3 2020
    CarClassShortName: GT3
+   CarIsAI: 0
+SplitTimeInfo:
+ Sectors:
+ - SectorNum: 0
+   SectorStartPct: 0.000000
+ - SectorNum: 1
+   SectorStartPct: 0.314079
+ - SectorNum: 2
+   SectorStartPct: 0.677624
+
 ...
 ";
 
@@ -82,6 +95,7 @@ struct Row {
     on_pit_road: bool,
     /// (latitude, longitude); (0, 0) is a row without a fix.
     location: (f64, f64),
+    best_lap: i32,
 }
 
 fn row_bytes(row: &Row) -> Vec<u8> {
@@ -96,6 +110,7 @@ fn row_bytes(row: &Row) -> Vec<u8> {
     bytes.extend([u8::from(row.on_pit_road), 0, 0, 0]);
     bytes.extend(row.location.0.to_le_bytes());
     bytes.extend(row.location.1.to_le_bytes());
+    bytes.extend(row.best_lap.to_le_bytes());
     bytes
 }
 
@@ -105,14 +120,18 @@ fn put_i32(bytes: &mut [u8], at: usize, value: i32) {
 
 /// An `.ibt` laid out as the sim writes one.
 fn ibt_file(rows: &[Row]) -> Vec<u8> {
+    ibt_file_with(YAML, rows)
+}
+
+fn ibt_file_with(yaml: &str, rows: &[Row]) -> Vec<u8> {
     let var_header_offset = HEADER_LEN + DISK_HEADER_LEN;
     let yaml_offset = var_header_offset + VARS.len() * VAR_HEADER_LEN;
-    let rows_offset = yaml_offset + YAML.len();
+    let rows_offset = yaml_offset + yaml.len();
     let mut bytes = vec![0_u8; rows_offset];
 
     put_i32(&mut bytes, 0, 2);
     put_i32(&mut bytes, 8, TICK_RATE);
-    put_i32(&mut bytes, 16, YAML.len() as i32);
+    put_i32(&mut bytes, 16, yaml.len() as i32);
     put_i32(&mut bytes, 20, yaml_offset as i32);
     put_i32(&mut bytes, 24, VARS.len() as i32);
     put_i32(&mut bytes, 28, var_header_offset as i32);
@@ -135,7 +154,7 @@ fn ibt_file(rows: &[Row]) -> Vec<u8> {
             .copy_from_slice(name.as_bytes());
     }
 
-    bytes[yaml_offset..rows_offset].copy_from_slice(YAML.as_bytes());
+    bytes[yaml_offset..rows_offset].copy_from_slice(yaml.as_bytes());
 
     for row in rows {
         bytes.extend(row_bytes(row));
@@ -242,6 +261,76 @@ fn a_race_file_reads_into_its_session_run_and_laps() {
             },
         ]
     );
+}
+
+#[test]
+fn the_track_length_sectors_and_no_bots_come_from_the_yaml() {
+    let file = read(ibt_file(&race_rows())).unwrap();
+
+    assert_eq!(file.track_length_m, Some(4_483.7));
+    assert_eq!(file.sectors, vec![0.0, 0.314079, 0.677624]);
+    assert!(!file.has_ai);
+}
+
+#[test]
+fn a_bot_among_the_drivers_marks_the_file_the_pace_car_does_not() {
+    let pace_car = YAML.replace(
+        "DriverInfo:\n DriverCarIdx: 1\n Drivers:\n",
+        "DriverInfo:\n DriverCarIdx: 1\n Drivers:\n - CarIdx: 64\n   UserName: Pace Car\n   CarIsPaceCar: 1\n   CarIsAI: 0\n",
+    );
+    let bot = YAML.replace(
+        "   UserName: Someone Else\n   IRating: 3000\n   CarIsAI: 0\n",
+        "   UserName: Someone Else\n   IRating: 3000\n   CarIsAI: 1\n",
+    );
+    assert_ne!(pace_car, YAML);
+    assert_ne!(bot, YAML);
+
+    assert!(!read(ibt_file_with(&pace_car, &race_rows())).unwrap().has_ai);
+    assert!(read(ibt_file_with(&bot, &race_rows())).unwrap().has_ai);
+}
+
+#[test]
+fn a_track_length_is_read_in_km_or_miles_and_nothing_else() {
+    use super::yaml::parse_track_length;
+
+    assert_eq!(parse_track_length("4.4837 km"), Some(4_483.7));
+    assert_eq!(parse_track_length("1.0 mi"), Some(1_609.344));
+    assert_eq!(parse_track_length("4.4837"), None);
+    assert_eq!(parse_track_length("x km"), None);
+    assert_eq!(parse_track_length("-1 km"), None);
+}
+
+#[test]
+fn the_best_lap_is_the_sims_as_the_last_row_has_it() {
+    // The sim skipped lap 1 (an incident) and settled on lap 3 after the line.
+    let rows: Vec<Row> = race_rows()
+        .into_iter()
+        .map(|row| Row {
+            best_lap: if row.time >= 12.0 { 3 } else { -1 },
+            ..row
+        })
+        .collect();
+
+    let run = &read(ibt_file(&rows)).unwrap().runs[0];
+
+    assert_eq!(run.best_lap_num, Some(3));
+}
+
+#[test]
+fn without_the_sims_best_the_fastest_full_lap_off_pit_road_is() {
+    // Lap 1 is partial, lap 2 has no time, lap 3 went through the pits.
+    let run = &read(ibt_file(&race_rows())).unwrap().runs[0];
+    assert_eq!(run.best_lap_num, None);
+
+    let timed: Vec<Row> = race_rows()
+        .into_iter()
+        .map(|row| Row {
+            on_pit_road: false,
+            ..row
+        })
+        .collect();
+    let run = &read(ibt_file(&timed)).unwrap().runs[0];
+    assert_eq!(run.best_lap_num, Some(3));
 }
 
 #[test]

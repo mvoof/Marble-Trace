@@ -36,6 +36,13 @@ pub struct SessionFile {
     pub irating: Option<i64>,
     /// As the sim writes it, e.g. `B 3.74`.
     pub licence: Option<String>,
+    /// A car in the session was driven by the sim, not a person.
+    pub has_ai: bool,
+    /// The track's length as the sim measures a lap, metres.
+    pub track_length_m: Option<f64>,
+    /// Where each sector starts, as a fraction of the lap from the line; the
+    /// first is 0. Empty when the file names none.
+    pub sectors: Vec<f64>,
     pub runs: Vec<SessionFileRun>,
     /// The track drawn from the file's fastest clean lap; `None` without one.
     pub outline: Option<TrackOutline>,
@@ -62,6 +69,10 @@ pub struct SessionFileRun {
     /// Races only, and only with the checkered flag seen in the car.
     pub finish_pos: Option<i64>,
     pub field_size: Option<i64>,
+    /// The run's best lap by the sim's own rule (a race skips laps with an
+    /// incident); else the fastest full lap off pit road. `None` without a
+    /// timed lap. May name a lap of the run's earlier file.
+    pub best_lap_num: Option<i64>,
     pub laps: Vec<SessionFileLap>,
 }
 

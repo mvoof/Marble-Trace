@@ -33,6 +33,19 @@ pub(crate) struct FileYaml {
     weekend_info: WeekendInfo,
     driver_info: DriverInfo,
     session_info: SessionInfo,
+    split_time_info: SplitTimeInfo,
+}
+
+#[derive(Deserialize, Default)]
+#[serde(default, rename_all = "PascalCase")]
+struct SplitTimeInfo {
+    sectors: Vec<Sector>,
+}
+
+#[derive(Deserialize, Default)]
+#[serde(default, rename_all = "PascalCase")]
+struct Sector {
+    sector_start_pct: f64,
 }
 
 #[derive(Deserialize, Default)]
@@ -57,6 +70,8 @@ struct WeekendInfo {
     track_display_name: Option<String>,
     track_config_name: Option<String>,
     track_country: Option<String>,
+    /// e.g. `4.4837 km`.
+    track_length: Option<String>,
 }
 
 #[derive(Deserialize, Default)]
@@ -80,6 +95,8 @@ struct Driver {
     car_id: Option<i64>,
     car_screen_name: Option<String>,
     car_class_short_name: Option<String>,
+    #[serde(rename = "CarIsAI")]
+    car_is_ai: i64,
 }
 
 #[derive(Deserialize, Default)]
@@ -110,6 +127,12 @@ impl FileYaml {
     ) -> SessionFile {
         let weekend = self.weekend_info;
         let player_idx = self.driver_info.driver_car_idx;
+        // The pace car is not flagged as AI; the player never is.
+        let has_ai = self
+            .driver_info
+            .drivers
+            .iter()
+            .any(|driver| driver.car_is_ai != 0 && driver.car_idx != player_idx);
         let player = self
             .driver_info
             .drivers
@@ -138,6 +161,7 @@ impl FileYaml {
                     incidents: samples.incidents,
                     finish_pos: samples.finish_pos.filter(|_| is_race),
                     field_size: field_size.filter(|_| is_race),
+                    best_lap_num: samples.best_lap_num,
                     laps: samples.laps,
                     run_type,
                 }
@@ -167,8 +191,32 @@ impl FileYaml {
             user_name: player.user_name,
             irating: player.irating,
             licence: player.lic_string,
+            has_ai,
+            track_length_m: weekend.track_length.as_deref().and_then(parse_track_length),
+            sectors: self
+                .split_time_info
+                .sectors
+                .iter()
+                .map(|sector| sector.sector_start_pct)
+                .collect(),
             runs,
             outline: None,
         }
     }
+}
+
+const METRES_PER_KM: f64 = 1000.0;
+const METRES_PER_MILE: f64 = 1609.344;
+
+/// `4.4837 km` → 4483.7 m; a mile figure is turned too. `None` for anything else.
+pub(crate) fn parse_track_length(text: &str) -> Option<f64> {
+    let (number, unit) = text.trim().split_once(' ')?;
+    let value: f64 = number.parse().ok()?;
+    let metres_per_unit = match unit.trim() {
+        "km" => METRES_PER_KM,
+        "mi" => METRES_PER_MILE,
+        _ => return None,
+    };
+
+    Some(value * metres_per_unit).filter(|metres| metres.is_finite() && *metres > 0.0)
 }

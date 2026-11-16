@@ -13,7 +13,7 @@ use rusqlite::{params, Connection, OptionalExtension, Transaction};
 use mt_model::app::stats::{KnownCar, RecentSession, SessionFile, SkippedFile, TrackOutline};
 
 /// Bumped with every schema step; `migrate` runs the steps above the file's.
-const SCHEMA_VERSION: i64 = 4;
+const SCHEMA_VERSION: i64 = 5;
 
 const SCHEMA_V1: &str = "
 CREATE TABLE session (
@@ -101,6 +101,23 @@ CREATE TABLE track_outline (
 /// Settings live in `settings.json`, data here (ADR-0015): the folder row
 /// leaves with its table, and `StatsDb::take_legacy_folder` hands it over.
 const SCHEMA_V4: &str = "DROP TABLE IF EXISTS setting;";
+
+/// The facts the lap analysis and Home's filters need. A file's stamp of
+/// size -1 matches no file on disk, so the next pass reads every file again
+/// and fills them in.
+const SCHEMA_V5: &str = "
+ALTER TABLE session ADD COLUMN has_ai INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE session ADD COLUMN track_length_m REAL;
+ALTER TABLE run ADD COLUMN best_lap_num INTEGER;
+CREATE TABLE track_sectors (
+  track_id    INTEGER PRIMARY KEY,
+  start_pcts  TEXT NOT NULL
+);
+UPDATE ibt_file SET size = -1;
+";
+
+/// Between the sector starts in `track_sectors.start_pcts`.
+const SECTOR_SEPARATOR: char = ',';
 
 const LEGACY_SETTING_FOLDER: &str = "folder";
 
@@ -191,8 +208,29 @@ impl StatsDb {
             .map_err(to_message)?;
         insert_runs(&transaction, &stamp.path, &key, file)?;
         insert_outline(&transaction, file)?;
+        insert_sectors(&transaction, file)?;
 
         transaction.commit().map_err(to_message)
+    }
+
+    /// Where each sector of a track starts, a fraction of the lap; empty
+    /// before a file named them.
+    pub fn track_sectors(&self, track_id: i64) -> Result<Vec<f64>, String> {
+        let text: Option<String> = self
+            .connection
+            .query_row(
+                "SELECT start_pcts FROM track_sectors WHERE track_id = ?1",
+                params![track_id],
+                |row| row.get(0),
+            )
+            .optional()
+            .map_err(to_message)?;
+
+        Ok(text
+            .iter()
+            .flat_map(|text| text.split(SECTOR_SEPARATOR))
+            .filter_map(|start| start.parse().ok())
+            .collect())
     }
 
     /// The outline a session file drew of the track; `None` before one did.
@@ -472,6 +510,10 @@ fn migrate(connection: &Connection) -> Result<Option<String>, String> {
         connection.execute_batch(SCHEMA_V4).map_err(to_message)?;
     }
 
+    if version < 5 {
+        connection.execute_batch(SCHEMA_V5).map_err(to_message)?;
+    }
+
     connection
         .pragma_update(None, "user_version", SCHEMA_VERSION)
         .map_err(to_message)?;
@@ -479,16 +521,21 @@ fn migrate(connection: &Connection) -> Result<Option<String>, String> {
     Ok(legacy_folder)
 }
 
-/// The first file of a session writes its row; later ones leave it.
+/// The first file of a session writes its row; later ones leave it, but for
+/// the bots (any file that met one) and a track length the row lacks.
 fn insert_session(transaction: &Transaction, key: &str, file: &SessionFile) -> Result<(), String> {
     transaction
         .execute(
-            "INSERT OR IGNORE INTO session (
+            "INSERT INTO session (
                key, subsession_id, session_id, series_id, season_id, league_id, event_type,
                category, official, team_racing, track_id, track_name, track_config,
-               track_country, car_id, car_name, car_class, user_id, user_name, irating, licence
+               track_country, car_id, car_name, car_class, user_id, user_name, irating, licence,
+               has_ai, track_length_m
              ) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15, ?16,
-                       ?17, ?18, ?19, ?20, ?21)",
+                       ?17, ?18, ?19, ?20, ?21, ?22, ?23)
+             ON CONFLICT(key) DO UPDATE SET
+               has_ai = MAX(session.has_ai, excluded.has_ai),
+               track_length_m = COALESCE(session.track_length_m, excluded.track_length_m)",
             params![
                 key,
                 file.subsession_id,
@@ -511,6 +558,8 @@ fn insert_session(transaction: &Transaction, key: &str, file: &SessionFile) -> R
                 file.user_name,
                 file.irating,
                 file.licence,
+                file.has_ai,
+                file.track_length_m,
             ],
         )
         .map(|_| ())
@@ -528,6 +577,27 @@ fn insert_outline(transaction: &Transaction, file: &SessionFile) -> Result<(), S
             "INSERT OR IGNORE INTO track_outline (track_id, svg_path, view_box)
              VALUES (?1, ?2, ?3)",
             params![track_id, outline.svg_path, outline.view_box],
+        )
+        .map(|_| ())
+        .map_err(to_message)
+}
+
+/// A track's sectors as its latest file read names them.
+fn insert_sectors(transaction: &Transaction, file: &SessionFile) -> Result<(), String> {
+    let Some(track_id) = file.track_id.filter(|_| !file.sectors.is_empty()) else {
+        return Ok(());
+    };
+    let start_pcts = file
+        .sectors
+        .iter()
+        .map(f64::to_string)
+        .collect::<Vec<_>>()
+        .join(&SECTOR_SEPARATOR.to_string());
+
+    transaction
+        .execute(
+            "INSERT OR REPLACE INTO track_sectors (track_id, start_pcts) VALUES (?1, ?2)",
+            params![track_id, start_pcts],
         )
         .map(|_| ())
         .map_err(to_message)
@@ -586,8 +656,8 @@ fn insert_runs(
         transaction
             .execute(
                 "INSERT INTO run (path, session_num, session_key, run_type, time_in_car_s,
-                                  incidents, finish_pos, field_size)
-                 VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)",
+                                  incidents, finish_pos, field_size, best_lap_num)
+                 VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9)",
                 params![
                     path,
                     run.session_num,
@@ -597,6 +667,7 @@ fn insert_runs(
                     run.incidents,
                     run.finish_pos,
                     run.field_size,
+                    run.best_lap_num,
                 ],
             )
             .map_err(to_message)?;
@@ -930,6 +1001,96 @@ mod tests {
 
         assert_eq!(db.take_legacy_folder(), None);
         assert!(!has_table(&db.connection, "setting"));
+    }
+
+    #[test]
+    fn a_session_met_bots_when_any_of_its_files_did() {
+        let mut db = StatsDb::open_in_memory().unwrap();
+        let bots = SessionFile {
+            has_ai: true,
+            ..race_file(2_000)
+        };
+        db.record_read(&stamp("a.ibt"), &race_file(1_000), 5)
+            .unwrap();
+        db.record_read(&stamp("b.ibt"), &bots, 5).unwrap();
+        db.record_read(&stamp("c.ibt"), &race_file(3_000), 5)
+            .unwrap();
+
+        let has_ai: bool = db
+            .connection
+            .query_row("SELECT has_ai FROM session", [], |row| row.get(0))
+            .unwrap();
+        assert!(has_ai);
+    }
+
+    #[test]
+    fn the_track_length_and_the_runs_best_lap_are_kept() {
+        let mut db = StatsDb::open_in_memory().unwrap();
+        let mut file = SessionFile {
+            track_length_m: Some(4_483.7),
+            ..race_file(1_000)
+        };
+        file.runs = vec![SessionFileRun {
+            best_lap_num: Some(2),
+            ..race_run(0, vec![lap(1, Some(500.0)), lap(2, Some(490.0))])
+        }];
+        db.record_read(&stamp("a.ibt"), &file, 5).unwrap();
+
+        let (length, best): (Option<f64>, Option<i64>) = db
+            .connection
+            .query_row(
+                "SELECT s.track_length_m, r.best_lap_num
+                 FROM session s JOIN run r ON r.session_key = s.key",
+                [],
+                |row| Ok((row.get(0)?, row.get(1)?)),
+            )
+            .unwrap();
+        assert_eq!((length, best), (Some(4_483.7), Some(2)));
+    }
+
+    #[test]
+    fn a_tracks_sectors_are_the_latest_files() {
+        let mut db = StatsDb::open_in_memory().unwrap();
+        assert!(db.track_sectors(252).unwrap().is_empty());
+
+        let older = SessionFile {
+            sectors: vec![0.0, 0.5],
+            ..race_file(1_000)
+        };
+        let newer = SessionFile {
+            sectors: vec![0.0, 0.314079, 0.677624],
+            ..race_file(2_000)
+        };
+        db.record_read(&stamp("a.ibt"), &older, 5).unwrap();
+        db.record_read(&stamp("b.ibt"), &newer, 5).unwrap();
+        db.record_read(&stamp("c.ibt"), &race_file(3_000), 5)
+            .unwrap();
+
+        assert_eq!(
+            db.track_sectors(252).unwrap(),
+            vec![0.0, 0.314079, 0.677624]
+        );
+    }
+
+    #[test]
+    fn a_version_four_database_reads_every_file_again() {
+        let connection = Connection::open_in_memory().unwrap();
+        connection
+            .execute_batch(&format!("{SCHEMA_V1}{SCHEMA_V2}{SCHEMA_V3}{SCHEMA_V4}"))
+            .unwrap();
+        connection
+            .execute(
+                "INSERT INTO ibt_file (path, size, modified_at, status, read_at)
+                 VALUES ('a.ibt', 100, 1000, 'read', 5)",
+                [],
+            )
+            .unwrap();
+        connection.pragma_update(None, "user_version", 4).unwrap();
+
+        let db = StatsDb::prepared(connection).unwrap();
+        let pending = crate::scan::pending_files(vec![stamp("a.ibt")], &db.known_files().unwrap());
+
+        assert_eq!(pending, vec![stamp("a.ibt")]);
     }
 
     fn has_table(connection: &Connection, name: &str) -> bool {

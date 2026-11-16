@@ -48,6 +48,7 @@ pub(crate) struct Channels {
     lap_completed: Channel,
     session_state: Option<Channel>,
     lap_last_lap_time: Option<Channel>,
+    lap_best_lap: Option<Channel>,
     incidents: Option<Channel>,
     on_pit_road: Option<Channel>,
     position: Option<Channel>,
@@ -63,6 +64,8 @@ pub(crate) struct Sample {
     pub lap_completed: i64,
     pub checkered: bool,
     pub lap_last_lap_time: Option<f64>,
+    /// The sim's best lap of the run so far; -1 before one counts.
+    pub lap_best_lap: Option<i64>,
     pub incidents: i64,
     pub on_pit_road: bool,
     pub position: i64,
@@ -87,6 +90,7 @@ impl Channels {
             lap_completed: required("LapCompleted")?,
             session_state: find("SessionState"),
             lap_last_lap_time: find("LapLastLapTime"),
+            lap_best_lap: find("LapBestLap"),
             incidents: find("PlayerCarMyIncidentCount"),
             on_pit_road: find("OnPitRoad"),
             position: find("PlayerCarPosition"),
@@ -105,6 +109,7 @@ impl Channels {
             checkered: number(self.session_state)
                 .is_some_and(|state| state as i32 == STATE_CHECKERED),
             lap_last_lap_time: number(self.lap_last_lap_time),
+            lap_best_lap: number(self.lap_best_lap).map(|lap| lap as i64),
             incidents: number(self.incidents).unwrap_or_default() as i64,
             on_pit_road: number(self.on_pit_road).is_some_and(|value| value != 0.0),
             position: number(self.position).unwrap_or_default() as i64,
@@ -121,6 +126,8 @@ pub(crate) struct RunSamples {
     pub time_in_car_s: f64,
     pub incidents: i64,
     pub finish_pos: Option<i64>,
+    /// See `SessionFileRun::best_lap_num`.
+    pub best_lap_num: Option<i64>,
     pub laps: Vec<SessionFileLap>,
     /// The fastest timed lap off pit road, from the line, with a fix all the way.
     pub fastest_clean_lap: Option<LapPath>,
@@ -321,14 +328,32 @@ impl RunState {
             self.settle(pending, time);
         }
 
+        // The sim settles its best a moment after the line, so the last row
+        // holds the run's final one.
+        let best_lap_num = self
+            .last_sample
+            .lap_best_lap
+            .filter(|lap_num| *lap_num > 0)
+            .or_else(|| fastest_full_lap(&self.laps));
+
         RunSamples {
             time_in_car_s: self.rows as f64 / tick_rate,
             incidents: self.incidents,
             finish_pos: self.finish_pos,
+            best_lap_num,
             laps: self.laps,
             fastest_clean_lap: self.fastest_clean_lap,
         }
     }
+}
+
+/// The fastest timed lap from the line that kept off pit road.
+fn fastest_full_lap(laps: &[SessionFileLap]) -> Option<i64> {
+    laps.iter()
+        .filter(|lap| !lap.in_pit && !lap.partial)
+        .filter_map(|lap| lap.time_s.map(|time_s| (lap.lap_num, time_s)))
+        .min_by(|first, second| first.1.total_cmp(&second.1))
+        .map(|(lap_num, _)| lap_num)
 }
 
 /// Splits the rows by `SessionNum` into runs.

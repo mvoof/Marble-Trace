@@ -221,6 +221,7 @@ mod tests {
                 incidents: 4,
                 finish_pos: Some(3),
                 field_size: Some(20),
+                best_lap_num: Some(2),
                 laps: vec![SessionFileLap {
                     lap_num: 2,
                     time_s: Some(138.5),
