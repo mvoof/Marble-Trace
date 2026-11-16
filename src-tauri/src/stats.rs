@@ -9,7 +9,7 @@ use std::sync::Arc;
 use tauri::{AppHandle, Manager};
 
 use mt_stats::db::StatsDb;
-use mt_stats::import::{self, StatsHost, StatsService};
+use mt_stats::import::{self, SessionFileReaders, StatsHost, StatsService};
 use mt_stats::lap_cache::{LapCache, LapCacheHost};
 use mt_telemetry::state::TelemetryState;
 
@@ -32,8 +32,14 @@ pub fn start(app: &AppHandle) {
     let telemetry = Arc::clone(&app.state::<TelemetryState>().service);
     let host = StatsHost::new(
         Arc::new(TauriSink(app.clone())),
-        mt_sim_iracing::ibt::read_session_file,
+        SessionFileReaders {
+            read_file: mt_sim_iracing::ibt::read_session_file,
+            read_laps: mt_sim_iracing::ibt::read_stored_lap_telemetry,
+            read_setup: mt_sim_iracing::ibt::read_car_setup,
+        },
         Box::new(move || telemetry.is_connected.load(Ordering::Relaxed)),
+        // Background work: files read again after a schema step wait for the game.
+        process_priority::lower_current_thread,
     );
 
     app.manage(Arc::clone(&service));

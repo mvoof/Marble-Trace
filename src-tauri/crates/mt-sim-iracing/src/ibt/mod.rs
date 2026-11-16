@@ -19,7 +19,7 @@ use std::path::Path;
 
 use mt_model::app::stats::SessionFile;
 
-pub use laps::read_lap_telemetry;
+pub use laps::{read_lap_telemetry, read_stored_lap_telemetry, STORED_LAP_CHANNELS};
 use samples::{Channels, RunTracker};
 pub use setup::read_car_setup;
 use yaml::{decode_yaml, FileYaml};

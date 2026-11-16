@@ -10,10 +10,16 @@ use std::path::Path;
 
 use rusqlite::{params, Connection, OptionalExtension, Transaction};
 
-use mt_model::app::stats::{KnownCar, RecentSession, SessionFile, SkippedFile, TrackOutline};
+use mt_model::app::car_setup::CarSetupView;
+use mt_model::app::lap_telemetry::LapKey;
+use mt_model::app::stats::{
+    KnownCar, LapRef, RecentSession, SessionFile, SkippedFile, TrackOutline,
+};
+
+use crate::lap_store::{FileAnalysis, StoredLap};
 
 /// Bumped with every schema step; `migrate` runs the steps above the file's.
-const SCHEMA_VERSION: i64 = 6;
+const SCHEMA_VERSION: i64 = 7;
 
 const SCHEMA_V1: &str = "
 CREATE TABLE session (
@@ -132,6 +138,33 @@ CREATE TABLE analysis_lap (
 );
 ";
 
+/// Each timed lap's chart channels and each file's setup, so the analysis
+/// outlives the `.ibt`. A lap's row goes with the lap, so a file read again
+/// replaces its own. The read files are stamped stale: the next pass reads
+/// those still on disk once more and fills the tables.
+const SCHEMA_V7: &str = "
+CREATE TABLE lap_telemetry (
+  path         TEXT NOT NULL,
+  session_num  INTEGER NOT NULL,
+  lap_num      INTEGER NOT NULL,
+  session_key  TEXT NOT NULL,
+  points       INTEGER NOT NULL,
+  channels     TEXT NOT NULL,
+  lap_values   BLOB NOT NULL,
+  PRIMARY KEY (path, session_num, lap_num),
+  FOREIGN KEY (path, session_num, lap_num)
+    REFERENCES lap(path, session_num, lap_num) ON DELETE CASCADE
+);
+CREATE INDEX lap_telemetry_session ON lap_telemetry(session_key);
+CREATE TABLE session_setup (
+  path         TEXT PRIMARY KEY REFERENCES ibt_file(path) ON DELETE CASCADE,
+  session_key  TEXT NOT NULL,
+  setup        TEXT NOT NULL
+);
+CREATE INDEX session_setup_session ON session_setup(session_key);
+UPDATE ibt_file SET size = -1 WHERE status = 'read';
+";
+
 /// Between the sector starts in `track_sectors.start_pcts`.
 const SECTOR_SEPARATOR: char = ',';
 
@@ -209,6 +242,18 @@ impl StatsDb {
         file: &SessionFile,
         read_at: i64,
     ) -> Result<(), String> {
+        self.record_read_with(stamp, file, &FileAnalysis::default(), read_at)
+    }
+
+    /// `record_read`, with the laps' telemetry and the setup the file held.
+    /// A lap of `analysis` the file has no row for is not stored.
+    pub fn record_read_with(
+        &mut self,
+        stamp: &FileStamp,
+        file: &SessionFile,
+        analysis: &FileAnalysis,
+        read_at: i64,
+    ) -> Result<(), String> {
         let key = session_key(file);
         let transaction = self.connection.transaction().map_err(to_message)?;
 
@@ -223,10 +268,55 @@ impl StatsDb {
             .execute("DELETE FROM run WHERE path = ?1", params![stamp.path])
             .map_err(to_message)?;
         insert_runs(&transaction, &stamp.path, &key, file)?;
+        insert_lap_telemetry(&transaction, &stamp.path, &key, &analysis.laps)?;
+        replace_setup(&transaction, &stamp.path, &key, analysis.setup.as_ref())?;
         insert_outline(&transaction, file)?;
         insert_sectors(&transaction, file)?;
 
         transaction.commit().map_err(to_message)
+    }
+
+    /// A lap's stored telemetry; `None` when the database holds none.
+    pub fn lap_telemetry(&self, lap: &LapRef) -> Result<Option<StoredLap>, String> {
+        let row: Option<(u32, String, Vec<u8>)> = self
+            .connection
+            .query_row(
+                "SELECT points, channels, lap_values FROM lap_telemetry
+                 WHERE path = ?1 AND session_num = ?2 AND lap_num = ?3",
+                params![lap.path, lap.session_num, lap.lap_num],
+                |row| Ok((row.get(0)?, row.get(1)?, row.get(2)?)),
+            )
+            .optional()
+            .map_err(to_message)?;
+        let Some((points, channels, packed)) = row else {
+            return Ok(None);
+        };
+
+        Ok(Some(StoredLap {
+            lap: LapKey {
+                session_num: lap.session_num,
+                lap_num: lap.lap_num,
+            },
+            points,
+            channels: serde_json::from_str(&channels).map_err(|error| error.to_string())?,
+            packed,
+        }))
+    }
+
+    /// The setup a file held when it was read; `None` when none was stored.
+    pub fn stored_setup(&self, path: &str) -> Result<Option<CarSetupView>, String> {
+        let text: Option<String> = self
+            .connection
+            .query_row(
+                "SELECT setup FROM session_setup WHERE path = ?1",
+                params![path],
+                |row| row.get(0),
+            )
+            .optional()
+            .map_err(to_message)?;
+
+        text.map(|text| serde_json::from_str(&text).map_err(|error| error.to_string()))
+            .transpose()
     }
 
     /// Where each sector of a track starts, a fraction of the lap; empty
@@ -278,6 +368,12 @@ impl StatsDb {
 
         transaction
             .execute("DELETE FROM run WHERE path = ?1", params![stamp.path])
+            .map_err(to_message)?;
+        transaction
+            .execute(
+                "DELETE FROM session_setup WHERE path = ?1",
+                params![stamp.path],
+            )
             .map_err(to_message)?;
         upsert_file(&transaction, stamp, FileOutcome::Broken(error), read_at)?;
 
@@ -493,6 +589,10 @@ fn migrate(connection: &Connection) -> Result<Option<String>, String> {
         connection.execute_batch(SCHEMA_V6).map_err(to_message)?;
     }
 
+    if version < 7 {
+        connection.execute_batch(SCHEMA_V7).map_err(to_message)?;
+    }
+
     connection
         .pragma_update(None, "user_version", SCHEMA_VERSION)
         .map_err(to_message)?;
@@ -675,6 +775,64 @@ fn insert_runs(
     Ok(())
 }
 
+/// The stored laps of a file, for the laps its runs hold. Runs the rows of
+/// an earlier read went with their laps.
+fn insert_lap_telemetry(
+    transaction: &Transaction,
+    path: &str,
+    key: &str,
+    laps: &[StoredLap],
+) -> Result<(), String> {
+    for lap in laps {
+        let channels = serde_json::to_string(&lap.channels).map_err(|error| error.to_string())?;
+
+        transaction
+            .execute(
+                "INSERT OR REPLACE INTO lap_telemetry
+                   (path, session_num, lap_num, session_key, points, channels, lap_values)
+                 SELECT ?1, ?2, ?3, ?4, ?5, ?6, ?7
+                 WHERE EXISTS (SELECT 1 FROM lap WHERE path = ?1 AND session_num = ?2 AND lap_num = ?3)",
+                params![
+                    path,
+                    lap.lap.session_num,
+                    lap.lap.lap_num,
+                    key,
+                    lap.points,
+                    channels,
+                    lap.packed,
+                ],
+            )
+            .map_err(to_message)?;
+    }
+
+    Ok(())
+}
+
+/// The file's setup as this read found it; none clears an earlier one.
+fn replace_setup(
+    transaction: &Transaction,
+    path: &str,
+    key: &str,
+    setup: Option<&CarSetupView>,
+) -> Result<(), String> {
+    transaction
+        .execute("DELETE FROM session_setup WHERE path = ?1", params![path])
+        .map_err(to_message)?;
+
+    let Some(setup) = setup else {
+        return Ok(());
+    };
+    let text = serde_json::to_string(setup).map_err(|error| error.to_string())?;
+
+    transaction
+        .execute(
+            "INSERT INTO session_setup (path, session_key, setup) VALUES (?1, ?2, ?3)",
+            params![path, key, text],
+        )
+        .map(|_| ())
+        .map_err(to_message)
+}
+
 pub(crate) fn to_message(error: rusqlite::Error) -> String {
     error.to_string()
 }
@@ -682,7 +840,11 @@ pub(crate) fn to_message(error: rusqlite::Error) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use mt_model::app::car_setup::SetupGroup;
+    use mt_model::app::lap_telemetry::{FileTelemetry, LapChannel, LapTelemetry};
     use mt_model::app::stats::{SessionFileLap, SessionFileRun, SessionKind};
+
+    use crate::lap_store::{pack_file, unpack_values};
 
     fn stamp(path: &str) -> FileStamp {
         FileStamp {
@@ -1073,6 +1235,156 @@ mod tests {
         let pending = crate::scan::pending_files(vec![stamp("a.ibt")], &db.known_files().unwrap());
 
         assert_eq!(pending, vec![stamp("a.ibt")]);
+    }
+
+    fn telemetry_of(session_num: i32, lap_nums: &[i32], speed: f32) -> FileAnalysis {
+        let telemetry = FileTelemetry {
+            points: 3,
+            channels: vec![LapChannel {
+                name: "Speed".into(),
+                unit: "m/s".into(),
+                description: "GPS vehicle speed".into(),
+            }],
+            laps: lap_nums
+                .iter()
+                .map(|lap_num| LapTelemetry {
+                    lap: LapKey {
+                        session_num,
+                        lap_num: *lap_num,
+                    },
+                    values: vec![vec![speed, speed + 1.0, speed + 2.0]],
+                })
+                .collect(),
+        };
+
+        FileAnalysis {
+            laps: pack_file(&telemetry).unwrap(),
+            setup: None,
+        }
+    }
+
+    fn lap_ref(path: &str, lap_num: i32) -> LapRef {
+        LapRef {
+            path: path.into(),
+            session_num: 2,
+            lap_num,
+        }
+    }
+
+    fn stored_speed(db: &StatsDb, lap: &LapRef) -> Option<Vec<f32>> {
+        db.lap_telemetry(lap)
+            .unwrap()
+            .map(|stored| unpack_values(&stored).unwrap().remove(0))
+    }
+
+    #[test]
+    fn a_lap_round_trips_through_the_database() {
+        let mut db = StatsDb::open_in_memory().unwrap();
+        let mut file = race_file(1_000);
+        file.runs = vec![race_run(0, vec![lap(2, Some(490.0))])];
+
+        db.record_read_with(&stamp("a.ibt"), &file, &telemetry_of(2, &[2], 50.0), 5)
+            .unwrap();
+
+        let stored = db.lap_telemetry(&lap_ref("a.ibt", 2)).unwrap().unwrap();
+        assert_eq!(stored.points, 3);
+        assert_eq!(stored.channels[0].unit, "m/s");
+        assert_eq!(
+            stored_speed(&db, &lap_ref("a.ibt", 2)),
+            Some(vec![50.0, 51.0, 52.0])
+        );
+        assert_eq!(db.lap_telemetry(&lap_ref("a.ibt", 3)).unwrap(), None);
+    }
+
+    #[test]
+    fn a_file_read_again_replaces_its_stored_laps_and_setup() {
+        let mut db = StatsDb::open_in_memory().unwrap();
+        let mut file = race_file(1_000);
+        file.runs = vec![race_run(0, vec![lap(2, Some(490.0)), lap(3, Some(489.0))])];
+        let mut first = telemetry_of(2, &[2, 3], 50.0);
+        first.setup = Some(CarSetupView::Setup {
+            name: Some("race.sto".into()),
+            groups: Vec::new(),
+        });
+        db.record_read_with(&stamp("a.ibt"), &file, &first, 5)
+            .unwrap();
+
+        file.runs = vec![race_run(0, vec![lap(2, Some(490.0))])];
+        db.record_read_with(&stamp("a.ibt"), &file, &telemetry_of(2, &[2], 70.0), 6)
+            .unwrap();
+
+        assert_eq!(
+            stored_speed(&db, &lap_ref("a.ibt", 2)),
+            Some(vec![70.0, 71.0, 72.0])
+        );
+        assert_eq!(db.lap_telemetry(&lap_ref("a.ibt", 3)).unwrap(), None);
+        assert_eq!(db.stored_setup("a.ibt").unwrap(), None);
+    }
+
+    #[test]
+    fn a_files_setup_is_stored_and_a_broken_read_drops_it_with_the_laps() {
+        let mut db = StatsDb::open_in_memory().unwrap();
+        let mut file = race_file(1_000);
+        file.runs = vec![race_run(0, vec![lap(2, Some(490.0))])];
+        let setup = CarSetupView::Setup {
+            name: Some("race.sto".into()),
+            groups: vec![SetupGroup {
+                name: "Chassis".into(),
+                sections: Vec::new(),
+            }],
+        };
+        let analysis = FileAnalysis {
+            setup: Some(setup.clone()),
+            ..telemetry_of(2, &[2], 50.0)
+        };
+        db.record_read_with(&stamp("a.ibt"), &file, &analysis, 5)
+            .unwrap();
+
+        assert_eq!(db.stored_setup("a.ibt").unwrap(), Some(setup));
+
+        db.record_broken(&stamp("a.ibt"), "truncated", 6).unwrap();
+
+        assert_eq!(db.stored_setup("a.ibt").unwrap(), None);
+        assert_eq!(db.lap_telemetry(&lap_ref("a.ibt", 2)).unwrap(), None);
+    }
+
+    #[test]
+    fn a_lap_the_file_has_no_row_for_is_not_stored() {
+        let mut db = StatsDb::open_in_memory().unwrap();
+        let mut file = race_file(1_000);
+        file.runs = vec![race_run(0, vec![lap(2, Some(490.0))])];
+
+        db.record_read_with(&stamp("a.ibt"), &file, &telemetry_of(2, &[2, 9], 50.0), 5)
+            .unwrap();
+
+        assert_eq!(db.lap_telemetry(&lap_ref("a.ibt", 9)).unwrap(), None);
+    }
+
+    #[test]
+    fn a_version_six_database_reads_its_read_files_again_not_the_broken_ones() {
+        let connection = Connection::open_in_memory().unwrap();
+        connection
+            .execute_batch(&format!(
+                "{SCHEMA_V1}{SCHEMA_V2}{SCHEMA_V3}{SCHEMA_V4}{SCHEMA_V5}{SCHEMA_V6}"
+            ))
+            .unwrap();
+        connection
+            .execute_batch(
+                "INSERT INTO ibt_file (path, size, modified_at, status, read_at)
+                 VALUES ('a.ibt', 100, 1000, 'read', 5), ('b.ibt', 100, 1000, 'broken', 5);",
+            )
+            .unwrap();
+        connection.pragma_update(None, "user_version", 6).unwrap();
+
+        let db = StatsDb::prepared(connection).unwrap();
+        let pending = crate::scan::pending_files(
+            vec![stamp("a.ibt"), stamp("b.ibt")],
+            &db.known_files().unwrap(),
+        );
+
+        assert_eq!(pending, vec![stamp("a.ibt")]);
+        assert!(has_table(&db.connection, "lap_telemetry"));
+        assert!(has_table(&db.connection, "session_setup"));
     }
 
     fn has_table(connection: &Connection, name: &str) -> bool {

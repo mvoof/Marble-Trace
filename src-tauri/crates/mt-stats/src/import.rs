@@ -12,6 +12,7 @@ use std::sync::{Arc, Condvar, Mutex};
 use std::thread;
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
+use mt_model::app::car_setup::CarSetupView;
 use mt_model::app::stats::{
     AnalysisSet, HomeStats, KnownCar, RecentSession, SessionFile, SessionFilter, SessionLaps,
     SessionPage, SkippedFile, StatsFolder, StatsImportPhase, StatsImportStatus,
@@ -21,6 +22,8 @@ use mt_model::contract::events::EVENT_STATS_IMPORT;
 use mt_model::utils::lock_or_recover;
 
 use crate::db::{FileStamp, StatsDb};
+use crate::lap_cache::LapTelemetryReader;
+use crate::lap_store::{pack_file, stored_lap_keys, FileAnalysis};
 use crate::scan::{list_session_files, pending_files};
 
 /// How often a waiting import looks at the sim's connection.
@@ -31,11 +34,25 @@ const UTF8_BOM: [u8; 3] = [0xEF, 0xBB, 0xBF];
 /// Reads one session file; the sim's adapter provides it.
 pub type SessionFileReader = fn(&Path) -> Result<SessionFile, String>;
 
+/// Reads a file's car setup; the sim's adapter provides it.
+pub type CarSetupReader = fn(&Path) -> Result<CarSetupView, String>;
+
+/// How the sim's adapter reads its session files.
+#[derive(Clone, Copy)]
+pub struct SessionFileReaders {
+    pub read_file: SessionFileReader,
+    /// The stored channel set of the laps asked for.
+    pub read_laps: LapTelemetryReader,
+    pub read_setup: CarSetupReader,
+}
+
 /// What the import needs from the app.
 pub struct StatsHost {
     pub sink: Arc<dyn EventSink>,
-    pub read_file: SessionFileReader,
+    pub readers: SessionFileReaders,
     pub is_connected: Box<dyn Fn() -> bool + Send + Sync>,
+    /// Runs first on the import thread: the app lowers its priority there.
+    pub on_thread_start: fn(),
     /// How long to wait between two looks at the connection.
     pub poll: Duration,
 }
@@ -43,13 +60,15 @@ pub struct StatsHost {
 impl StatsHost {
     pub fn new(
         sink: Arc<dyn EventSink>,
-        read_file: SessionFileReader,
+        readers: SessionFileReaders,
         is_connected: Box<dyn Fn() -> bool + Send + Sync>,
+        on_thread_start: fn(),
     ) -> Self {
         Self {
             sink,
-            read_file,
+            readers,
             is_connected,
+            on_thread_start,
             poll: CONNECTION_POLL,
         }
     }
@@ -247,7 +266,10 @@ impl StatsService {
 pub fn start(service: Arc<StatsService>, host: StatsHost) {
     let spawned = thread::Builder::new()
         .name(THREAD_NAME.into())
-        .spawn(move || run(&service, &host));
+        .spawn(move || {
+            (host.on_thread_start)();
+            run(&service, &host);
+        });
 
     if let Err(error) = spawned {
         tracing::error!(%error, "stats import thread not started");
@@ -348,11 +370,16 @@ pub fn run_pass(service: &StatsService, host: &StatsHost, scope: PassScope) -> b
 
 /// Reads one file into the database. Returns the broken files count after it.
 fn import_one(service: &StatsService, host: &StatsHost, stamp: &FileStamp) -> u32 {
+    let path = Path::new(&stamp.path);
     // Read outside the lock: a long file must not hold up the commands.
-    let read = (host.read_file)(Path::new(&stamp.path));
+    let read = (host.readers.read_file)(path).map(|file| {
+        let analysis = read_analysis(&host.readers, path, &file);
+
+        (file, analysis)
+    });
     let mut db = lock_or_recover(&service.db);
     let stored = match read {
-        Ok(file) => db.record_read(stamp, &file, now()),
+        Ok((file, analysis)) => db.record_read_with(stamp, &file, &analysis, now()),
         Err(error) => {
             tracing::warn!(%error, path = %stamp.path, "session file skipped");
             db.record_broken(stamp, &error, now())
@@ -364,6 +391,32 @@ fn import_one(service: &StatsService, host: &StatsHost, stamp: &FileStamp) -> u3
     }
 
     db.broken_count().unwrap_or_default()
+}
+
+/// The kept laps' telemetry and the setup of a file read. What cannot be
+/// read is left out: the session's facts are stored all the same.
+fn read_analysis(readers: &SessionFileReaders, path: &Path, file: &SessionFile) -> FileAnalysis {
+    let keys = stored_lap_keys(file);
+    let laps = if keys.is_empty() {
+        Vec::new()
+    } else {
+        (readers.read_laps)(path, &keys)
+            .and_then(|telemetry| pack_file(&telemetry))
+            .unwrap_or_else(|error| {
+                tracing::warn!(%error, path = %path.display(), "lap telemetry not stored");
+                Vec::new()
+            })
+    };
+    let setup = match (readers.read_setup)(path) {
+        Ok(setup @ CarSetupView::Setup { .. }) => Some(setup),
+        Ok(CarSetupView::FileDeleted) => None,
+        Err(error) => {
+            tracing::warn!(%error, path = %path.display(), "car setup not stored");
+            None
+        }
+    };
+
+    FileAnalysis { laps, setup }
 }
 
 fn phase_only(service: &StatsService, phase: StatsImportPhase) -> StatsImportStatus {
@@ -404,6 +457,8 @@ fn now() -> i64 {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use mt_model::app::lap_telemetry::{FileTelemetry, LapChannel, LapKey, LapTelemetry};
+    use mt_model::app::stats::{LapRef, SessionFileLap, SessionFileRun};
     use std::fs;
     use std::sync::atomic::{AtomicUsize, Ordering};
 
@@ -454,8 +509,103 @@ mod tests {
         folder
     }
 
+    /// Every lap asked for, a speed channel holding the lap's number.
+    fn fake_laps(_path: &Path, laps: &[LapKey]) -> Result<FileTelemetry, String> {
+        Ok(FileTelemetry {
+            points: 2,
+            channels: vec![LapChannel {
+                name: "Speed".into(),
+                unit: "m/s".into(),
+                description: String::new(),
+            }],
+            laps: laps
+                .iter()
+                .map(|lap| LapTelemetry {
+                    lap: *lap,
+                    values: vec![vec![lap.lap_num as f32; 2]],
+                })
+                .collect(),
+        })
+    }
+
+    fn fake_setup(_path: &Path) -> Result<CarSetupView, String> {
+        Ok(CarSetupView::Setup {
+            name: Some("race.sto".into()),
+            groups: Vec::new(),
+        })
+    }
+
+    const READERS: SessionFileReaders = SessionFileReaders {
+        read_file: fake_reader,
+        read_laps: fake_laps,
+        read_setup: fake_setup,
+    };
+
     fn host(sink: Arc<RecordingSink>) -> StatsHost {
-        StatsHost::new(sink, fake_reader, Box::new(|| false))
+        StatsHost::new(sink, READERS, Box::new(|| false), || {})
+    }
+
+    /// A practice run: an out-lap off pit road, two full laps, an in-lap.
+    fn reader_with_laps(_path: &Path) -> Result<SessionFile, String> {
+        let lap = |lap_num, in_pit, partial| SessionFileLap {
+            lap_num,
+            time_s: Some(100.0),
+            in_pit,
+            partial,
+            incidents: 0,
+        };
+
+        Ok(SessionFile {
+            subsession_id: Some(9),
+            event_type: "Practice".into(),
+            runs: vec![SessionFileRun {
+                session_num: 0,
+                laps: vec![
+                    lap(1, true, true),
+                    lap(2, false, false),
+                    lap(3, false, false),
+                    lap(4, true, false),
+                ],
+                ..SessionFileRun::default()
+            }],
+            ..SessionFile::default()
+        })
+    }
+
+    #[test]
+    fn a_pass_stores_the_full_laps_and_the_setup_of_a_file() {
+        let folder = folder_with(&["a.ibt"]);
+        let host = StatsHost::new(
+            Arc::new(RecordingSink::default()),
+            SessionFileReaders {
+                read_file: reader_with_laps,
+                ..READERS
+            },
+            Box::new(|| false),
+            || {},
+        );
+        let service = service(Some(folder.clone()));
+        let path = folder.join("a.ibt").to_string_lossy().into_owned();
+
+        run_pass(&service, &host, PassScope::Unread);
+
+        let db = lock_or_recover(&service.db);
+        let stored: Vec<i32> = (1..=4)
+            .filter(|lap_num| {
+                db.lap_telemetry(&LapRef {
+                    path: path.clone(),
+                    session_num: 0,
+                    lap_num: *lap_num,
+                })
+                .unwrap()
+                .is_some()
+            })
+            .collect();
+        assert_eq!(stored, vec![2, 3]);
+        assert!(db.stored_setup(&path).unwrap().is_some());
+        drop(db);
+
+        fs::remove_dir_all(folder).unwrap();
     }
 
     fn service(default_folder: Option<PathBuf>) -> StatsService {

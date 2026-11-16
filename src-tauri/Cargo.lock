@@ -3081,8 +3081,10 @@ dependencies = [
 name = "mt-stats"
 version = "0.0.0"
 dependencies = [
+ "flate2",
  "mt-model",
  "rusqlite",
+ "serde_json",
  "tracing",
 ]
 

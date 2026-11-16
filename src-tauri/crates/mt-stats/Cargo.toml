@@ -14,4 +14,6 @@ workspace = true
 mt-model.workspace = true
 tracing.workspace = true
 rusqlite = { version = "0.41", features = ["bundled"] }
+flate2.workspace = true
+serde_json.workspace = true
 

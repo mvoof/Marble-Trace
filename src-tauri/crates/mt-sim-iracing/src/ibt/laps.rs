@@ -45,9 +45,83 @@ struct LapRow {
     values: Vec<f64>,
 }
 
-/// Reads `laps` of the file at `path`. The grid runs from the line to the
-/// track's length as the file's session info gives it.
+/// The channels `stats.db` keeps of every timed lap: what the analysis draws
+/// by default and the ones a driver adds most. The time since the line is
+/// always added. A channel a car's file lacks is left out, not zero-filled.
+/// The sim writes no brake temperatures, only line pressures.
+pub const STORED_LAP_CHANNELS: &[&str] = &[
+    "Speed",
+    "Throttle",
+    "Brake",
+    "Clutch",
+    "Gear",
+    "RPM",
+    "SteeringWheelAngle",
+    "LatAccel",
+    "LongAccel",
+    "Lat",
+    "Lon",
+    "YawNorth",
+    "WindVel",
+    "WindDir",
+    "LFtempL",
+    "LFtempM",
+    "LFtempR",
+    "RFtempL",
+    "RFtempM",
+    "RFtempR",
+    "LRtempL",
+    "LRtempM",
+    "LRtempR",
+    "RRtempL",
+    "RRtempM",
+    "RRtempR",
+    "LFtempCL",
+    "LFtempCM",
+    "LFtempCR",
+    "RFtempCL",
+    "RFtempCM",
+    "RFtempCR",
+    "LRtempCL",
+    "LRtempCM",
+    "LRtempCR",
+    "RRtempCL",
+    "RRtempCM",
+    "RRtempCR",
+    "LFpressure",
+    "RFpressure",
+    "LRpressure",
+    "RRpressure",
+];
+
+/// Which of a file's channels a read keeps.
+#[derive(Clone, Copy)]
+enum ChannelSet {
+    All,
+    Stored,
+}
+
+impl ChannelSet {
+    fn keeps(self, name: &str) -> bool {
+        match self {
+            Self::All => true,
+            Self::Stored => STORED_LAP_CHANNELS.contains(&name),
+        }
+    }
+}
+
+/// Reads `laps` of the file at `path`, every channel. The grid runs from the
+/// line to the track's length as the file's session info gives it.
 pub fn read_lap_telemetry(path: &Path, laps: &[LapKey]) -> Result<FileTelemetry, String> {
+    read_laps(path, laps, ChannelSet::All)
+}
+
+/// Reads `laps` of the file at `path`, the [`STORED_LAP_CHANNELS`] it holds.
+pub fn read_stored_lap_telemetry(path: &Path, laps: &[LapKey]) -> Result<FileTelemetry, String> {
+    read_laps(path, laps, ChannelSet::Stored)
+}
+
+fn read_laps(path: &Path, laps: &[LapKey], set: ChannelSet) -> Result<FileTelemetry, String> {
     let file = File::open(path).map_err(|error| error.to_string())?;
     let length = file.metadata().map_err(|error| error.to_string())?.len();
     let mut reader = BufReader::with_capacity(READ_BUFFER, file);
@@ -56,7 +130,7 @@ pub fn read_lap_telemetry(path: &Path, laps: &[LapKey]) -> Result<FileTelemetry,
         .filter(|length| *length <= MAX_TRACK_LENGTH_M)
         .ok_or_else(|| "no usable track length in the session info".to_string())?;
     let points = (track_length_m / GRID_STEP_M).round() as usize + 1;
-    let kept = kept_vars(&opened.vars, opened.header.buf_len);
+    let kept = kept_vars(&opened.vars, opened.header.buf_len, set);
     let find = |name: &str| {
         opened
             .vars
@@ -139,7 +213,7 @@ pub fn read_lap_telemetry(path: &Path, laps: &[LapKey]) -> Result<FileTelemetry,
 /// The single-value number channels whose value lies inside a row, each
 /// place in the row once: a broken header cannot make a row read bigger
 /// than it is.
-fn kept_vars(vars: &[VarHeader], buf_len: usize) -> Vec<&VarHeader> {
+fn kept_vars(vars: &[VarHeader], buf_len: usize, set: ChannelSet) -> Vec<&VarHeader> {
     let mut offsets = HashSet::new();
 
     vars.iter()
@@ -150,7 +224,7 @@ fn kept_vars(vars: &[VarHeader], buf_len: usize) -> Vec<&VarHeader> {
                     .is_some_and(|end| end <= buf_len)
             });
 
-            var.count == 1 && fits && offsets.insert(var.offset)
+            var.count == 1 && fits && set.keeps(&var.name) && offsets.insert(var.offset)
         })
         .collect()
 }
@@ -327,10 +401,31 @@ mod tests {
             var(16, TEXT, 1),
         ];
 
-        let kept: Vec<usize> = kept_vars(&vars, 16).iter().map(|var| var.offset).collect();
+        let kept: Vec<usize> = kept_vars(&vars, 16, ChannelSet::All)
+            .iter()
+            .map(|var| var.offset)
+            .collect();
 
         assert_eq!(kept, vec![0, 4]);
-        assert!(kept_vars(&[var(12, DOUBLE, 1)], 16).is_empty());
+        assert!(kept_vars(&[var(12, DOUBLE, 1)], 16, ChannelSet::All).is_empty());
+    }
+
+    #[test]
+    fn the_stored_set_keeps_its_channels_the_file_holds_and_no_other() {
+        const FLOAT: i32 = 4;
+        let named = |name: &str, offset| VarHeader {
+            name: name.into(),
+            ..var(offset, FLOAT, 1)
+        };
+        // A car without a clutch pedal: no `Clutch` in its file.
+        let vars = vec![named("Speed", 0), named("OilTemp", 4), named("Brake", 8)];
+
+        let kept: Vec<&str> = kept_vars(&vars, 12, ChannelSet::Stored)
+            .iter()
+            .map(|var| var.name.as_str())
+            .collect();
+
+        assert_eq!(kept, vec!["Speed", "Brake"]);
     }
 
     #[test]
