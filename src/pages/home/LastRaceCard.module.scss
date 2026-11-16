@@ -1,9 +1,34 @@
+.card {
+  min-width: 0;
+  padding: rem(14) rem(16);
+  background: $sys-bg-card;
+  border: 1px solid $sys-border-sub;
+  border-radius: rem(10);
+}
+
+.label {
+  display: flex;
+  align-items: center;
+  gap: rem(6);
+  font-size: rem(12);
+  color: $sys-text-muted;
+}
+
+// The outline on the left, the race beside it.
+.body {
+  display: flex;
+  align-items: center;
+  gap: rem(14);
+  margin-top: rem(8);
+}
+
 .outline {
+  flex: none;
   box-sizing: border-box;
-  height: rem(90);
+  width: rem(96);
+  height: rem(70);
+  padding: rem(6);
   overflow: hidden;
-  margin-bottom: rem(12);
-  padding: rem(10);
   background: $sys-bg-sunken;
   border-radius: rem(8);
 }
@@ -17,6 +42,10 @@
   stroke: $sys-accent;
   stroke-width: 2;
   stroke-linejoin: round;
+}
+
+.details {
+  min-width: 0;
 }
 
 .flag {
@@ -34,8 +63,11 @@
 }
 
 .track {
-  font-size: rem(15);
+  overflow: hidden;
+  font-size: rem(14);
   font-weight: 600;
+  white-space: nowrap;
+  text-overflow: ellipsis;
   color: $sys-text-primary;
 }
 
@@ -45,45 +77,42 @@
 }
 
 .carLine {
-  margin-top: rem(2);
-  font-size: rem(13);
-  color: $sys-text-muted;
+  overflow: hidden;
+  font-size: rem(12);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  color: $sys-text-secondary;
 }
 
 .figures {
   display: flex;
   flex-wrap: wrap;
-  align-items: flex-end;
-  gap: rem(12) rem(22);
-  margin-top: rem(16);
+  gap: rem(6) rem(18);
+  margin-top: rem(6);
 }
 
 .figure {
   display: flex;
   flex-direction: column;
-  gap: rem(4);
 }
 
 .figureLabel {
-  font-size: rem(12);
+  font-size: rem(11);
   color: $sys-text-muted;
 }
 
 .figureValue {
   font-family: $font-mono;
-  font-size: rem(15);
+  font-size: rem(13);
   font-variant-numeric: tabular-nums;
   color: $sys-text-primary;
 }
 
-.finish {
-  font-size: rem(26);
-  font-weight: 600;
-  line-height: 1;
+.field {
+  color: $sys-text-muted;
 }
 
-.field {
-  font-size: rem(14);
-  font-weight: 400;
-  color: $sys-text-muted;
+// The sim's purple: a best lap.
+.best {
+  color: $sys-best;
 }

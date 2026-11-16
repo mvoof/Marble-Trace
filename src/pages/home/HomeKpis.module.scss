@@ -1,14 +1,31 @@
-.kpis {
+$narrow-window: 1000px;
+
+// The last race two columns wide, then four figures; without a race the
+// figures share the row.
+.row {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: rem(12);
 
-  @media (max-width: 1000px) {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+  @media (max-width: $narrow-window) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.withRace {
+  grid-template-columns: minmax(0, 2fr) repeat(4, minmax(0, 1fr));
+
+  @media (max-width: $narrow-window) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+
+    > :first-child {
+      grid-column: 1 / -1;
+    }
   }
 }
 
 .kpi {
+  min-width: 0;
   padding: rem(14) rem(16);
   background: $sys-bg-card;
   border: 1px solid $sys-border-sub;
@@ -38,12 +55,19 @@
 }
 
 .change {
-  font-family: $font-mono;
   font-variant-numeric: tabular-nums;
 }
 
 .muted {
   color: $sys-text-muted;
+}
+
+.tracks {
+  display: block;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  color: $sys-text-secondary;
 }
 
 .flat {

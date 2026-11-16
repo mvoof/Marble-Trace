@@ -1504,11 +1504,13 @@
       "noFolder": "No se encontró la carpeta de telemetría de iRacing"
     },
     "kpi": {
-      "sessions": "Sesiones en 7 días",
-      "sessionsSplit": "carreras {{races}} · práctica {{practices}}",
-      "laps": "Vueltas",
-      "incidentsPerLap": "Incidentes / vuelta",
-      "sevenDays": "últimos 7 días"
+      "timeWeek": "Tiempo esta semana",
+      "kmWeek": "Km esta semana",
+      "cleanLaps": "Vueltas limpias",
+      "personalBests": "Récords personales",
+      "vsLastWeek": "{{change}} frente a la anterior",
+      "thisWeek": "esta semana",
+      "noPersonalBests": "ninguno esta semana"
     },
     "recentSessions": {
       "title": "Sesiones recientes",

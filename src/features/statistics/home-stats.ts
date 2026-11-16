@@ -2,6 +2,8 @@ import type { WeekStats } from '@shared/contracts/generated/bindings';
 
 export type Direction = 'up' | 'down' | 'flat';
 
+const PERCENT = 100;
+
 export const directionOf = (change: number | null): Direction => {
   if (change === null || change === 0) {
     return 'flat';
@@ -10,26 +12,24 @@ export const directionOf = (change: number | null): Direction => {
   return change > 0 ? 'up' : 'down';
 };
 
-/** `null` when no lap was driven. */
-export const incidentsPerLap = (week: WeekStats): number | null =>
-  week.laps === 0 ? null : week.incidents / week.laps;
+/** Full laps without an incident, a whole percent; `null` with no full lap. */
+export const cleanLapsPercent = (week: WeekStats): number | null =>
+  week.fullLaps === 0
+    ? null
+    : Math.round((week.cleanLaps / week.fullLaps) * PERCENT);
 
-const PER_LAP_SCALE = 100;
+/** `current` against `previous`; `null` when either is unknown. */
+export const changeBetween = (
+  current: number | null,
+  previous: number | null
+): number | null =>
+  current === null || previous === null ? null : current - previous;
 
-/**
- * Incidents per lap against the seven days before, to two places; `null`
- * when either span drove no lap.
- */
-export const incidentsPerLapChange = (
-  week: WeekStats,
-  previousWeek: WeekStats
-): number | null => {
-  const perLap = incidentsPerLap(week);
-  const previousPerLap = incidentsPerLap(previousWeek);
-
-  if (perLap === null || previousPerLap === null) {
-    return null;
-  }
-
-  return Math.round((perLap - previousPerLap) * PER_LAP_SCALE) / PER_LAP_SCALE;
-};
+/** The tracks of the span's personal bests, each once, in the order driven. */
+export const personalBestTracks = (week: WeekStats): string[] => [
+  ...new Set(
+    week.personalBests
+      .map((best) => best.trackName)
+      .filter((name): name is string => name !== null)
+  ),
+];

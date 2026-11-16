@@ -8,7 +8,6 @@ import { PageTitle } from '@shared/ui/PageTitle/PageTitle';
 import { AutologHint } from './AutologHint';
 import { DaysDrivenCard } from './DaysDrivenCard';
 import { HomeKpis } from './HomeKpis';
-import { LastRaceCard } from './LastRaceCard';
 import { NowStrip } from './NowStrip';
 import { RecentSessionsTable } from './RecentSessionsTable';
 import { TopByTime } from './TopByTime';
@@ -34,8 +33,6 @@ export const HomePage = observer(() => {
           <HomeKpis />
 
           <DaysDrivenCard />
-
-          <LastRaceCard />
 
           <RecentSessionsTable />
 

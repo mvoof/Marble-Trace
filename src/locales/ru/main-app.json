@@ -1516,11 +1516,13 @@
       "noFolder": "Папка телеметрии iRacing не найдена"
     },
     "kpi": {
-      "sessions": "Сессии за 7 дней",
-      "sessionsSplit": "гонки {{races}} · тренировки {{practices}}",
-      "laps": "Круги",
-      "incidentsPerLap": "Инциденты / круг",
-      "sevenDays": "за 7 дней"
+      "timeWeek": "Время за неделю",
+      "kmWeek": "Км за неделю",
+      "cleanLaps": "Чистые круги",
+      "personalBests": "Личные рекорды",
+      "vsLastWeek": "{{change}} к прошлой",
+      "thisWeek": "за неделю",
+      "noPersonalBests": "нет на этой неделе"
     },
     "recentSessions": {
       "title": "Последние сессии",

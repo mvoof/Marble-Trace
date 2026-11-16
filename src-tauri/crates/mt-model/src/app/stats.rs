@@ -202,17 +202,34 @@ pub struct TimeDriven {
     pub time_in_car_s: f64,
 }
 
-/// Sessions, laps and incidents of one span of days, all categories together.
+/// One span of days in figures, the sessions started in it, all categories
+/// together.
 #[cfg_attr(feature = "dev", derive(specta::Type))]
-#[derive(Serialize, Deserialize, Debug, Clone, Copy, PartialEq, Eq, Default)]
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct WeekStats {
-    pub sessions: u32,
-    /// Sessions of a race event; the rest are practice and test.
-    pub races: u32,
-    /// Laps completed, whole or not.
-    pub laps: u32,
-    pub incidents: u32,
+    pub time_in_car_s: f64,
+    /// The track's length × its full laps; a session read before the length
+    /// was stored adds none.
+    pub km: f64,
+    /// Laps from the line, each once whichever files hold it.
+    pub full_laps: u32,
+    /// Full laps without an incident.
+    pub clean_laps: u32,
+    /// The track and car pairs whose fastest lap so far was set in the span,
+    /// in the order they were driven.
+    pub personal_bests: Vec<PersonalBest>,
+}
+
+/// A new fastest lap on a track in a car: the sim's best lap of a session,
+/// faster than any before it on the pair, or the pair's first.
+#[cfg_attr(feature = "dev", derive(specta::Type))]
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
+#[serde(rename_all = "camelCase")]
+pub struct PersonalBest {
+    pub track_name: Option<String>,
+    pub car_name: Option<String>,
+    pub lap_time_s: f64,
 }
 
 /// Where the stats import reads session files from.

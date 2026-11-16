@@ -24,7 +24,13 @@ const SESSION: RecentSession = {
   incidents: 3,
 };
 
-const WEEK = { sessions: 0, races: 0, laps: 0, incidents: 0 };
+const WEEK = {
+  timeInCarS: 0,
+  km: 0,
+  fullLaps: 0,
+  cleanLaps: 0,
+  personalBests: [],
+};
 
 const EMPTY_HOME: HomeStats = {
   week: WEEK,

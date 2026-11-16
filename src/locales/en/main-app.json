@@ -1504,11 +1504,13 @@
       "noFolder": "iRacing telemetry folder not found"
     },
     "kpi": {
-      "sessions": "Sessions in 7 days",
-      "sessionsSplit": "races {{races}} · practice {{practices}}",
-      "laps": "Laps",
-      "incidentsPerLap": "Incidents / lap",
-      "sevenDays": "last 7 days"
+      "timeWeek": "Time this week",
+      "kmWeek": "Km this week",
+      "cleanLaps": "Clean laps",
+      "personalBests": "Personal bests",
+      "vsLastWeek": "{{change}} vs last week",
+      "thisWeek": "this week",
+      "noPersonalBests": "none this week"
     },
     "recentSessions": {
       "title": "Recent sessions",

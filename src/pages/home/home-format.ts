@@ -1,23 +1,14 @@
 import { useTranslation } from 'react-i18next';
 
-import { directionOf } from '@features/statistics/home-stats';
+const PLUS = '+';
+const MINUS = '−';
+const CLOCK_MINUTE_DIGITS = 2;
 
-const ARROW_UP = '▲';
-const ARROW_DOWN = '▼';
-const DASH = '—';
-
-/** "▲ 120", "▼ 32", or a dash for no change. */
-export const changeLabel = (change: number, digits = 0): string => {
-  const direction = directionOf(change);
-
-  if (direction === 'flat') {
-    return DASH;
-  }
-
-  const arrow = direction === 'up' ? ARROW_UP : ARROW_DOWN;
-
-  return `${arrow} ${Math.abs(change).toFixed(digits)}`;
-};
+/** "+212", "−3": the change with its sign, `format` writing its size. */
+export const signedChange = (
+  change: number,
+  format: (size: number) => string = String
+): string => `${change < 0 ? MINUS : PLUS}${format(Math.abs(change))}`;
 
 const SECONDS_PER_MINUTE = 60;
 const MINUTES_PER_HOUR = 60;
@@ -48,6 +39,18 @@ export const durationParts = (seconds: number): DurationParts => {
   }
 
   return { kind: 'hours', hours: Math.round(seconds / SECONDS_PER_HOUR) };
+};
+
+/** Hours and minutes as a clock reads them: "6:42", "0:05". */
+export const formatClock = (seconds: number): string => {
+  const totalMinutes = Math.round(seconds / SECONDS_PER_MINUTE);
+  const hours = Math.floor(totalMinutes / MINUTES_PER_HOUR);
+  const minutes = String(totalMinutes % MINUTES_PER_HOUR).padStart(
+    CLOCK_MINUTE_DIGITS,
+    '0'
+  );
+
+  return `${hours}:${minutes}`;
 };
 
 /** `durationParts` in the app's language. */

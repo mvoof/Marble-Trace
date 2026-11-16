@@ -1,10 +1,20 @@
 import { describe, expect, it } from 'vitest';
 
+import type { WeekStats } from '@shared/contracts/generated/bindings';
 import {
+  changeBetween,
+  cleanLapsPercent,
   directionOf,
-  incidentsPerLap,
-  incidentsPerLapChange,
+  personalBestTracks,
 } from './home-stats';
+
+const EMPTY_WEEK: WeekStats = {
+  timeInCarS: 0,
+  km: 0,
+  fullLaps: 0,
+  cleanLaps: 0,
+  personalBests: [],
+};
 
 describe('directionOf', () => {
   it('is flat without a change', () => {
@@ -17,21 +27,36 @@ describe('directionOf', () => {
   });
 });
 
-describe('incidentsPerLap', () => {
-  it('divides the incidents by the laps, none without laps', () => {
-    const week = { sessions: 2, races: 1, laps: 40, incidents: 6 };
-
-    expect(incidentsPerLap(week)).toBe(0.15);
-    expect(incidentsPerLap({ ...week, laps: 0 })).toBeNull();
+describe('cleanLapsPercent', () => {
+  it('is the clean share of the full laps, none without full laps', () => {
+    expect(
+      cleanLapsPercent({ ...EMPTY_WEEK, fullLaps: 40, cleanLaps: 35 })
+    ).toBe(88);
+    expect(cleanLapsPercent(EMPTY_WEEK)).toBeNull();
   });
 });
 
-describe('incidentsPerLapChange', () => {
-  it('compares the two spans to two places, none without laps in either', () => {
-    const week = { sessions: 2, races: 1, laps: 40, incidents: 6 };
-    const previousWeek = { ...week, laps: 50, incidents: 6 };
+describe('changeBetween', () => {
+  it('subtracts, unknown when either side is', () => {
+    expect(changeBetween(87, 90)).toBe(-3);
+    expect(changeBetween(87, null)).toBeNull();
+    expect(changeBetween(null, 90)).toBeNull();
+  });
+});
 
-    expect(incidentsPerLapChange(week, previousWeek)).toBe(0.03);
-    expect(incidentsPerLapChange(week, { ...week, laps: 0 })).toBeNull();
+describe('personalBestTracks', () => {
+  it('names each track once, in the order driven', () => {
+    const best = (trackName: string | null) => ({
+      trackName,
+      carName: 'Car',
+      lapTimeS: 100,
+    });
+
+    expect(
+      personalBestTracks({
+        ...EMPTY_WEEK,
+        personalBests: [best('Spa'), best('Monza'), best('Spa'), best(null)],
+      })
+    ).toEqual(['Spa', 'Monza']);
   });
 });

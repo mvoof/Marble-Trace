@@ -1,15 +1,25 @@
 import { describe, expect, it } from 'vitest';
 
-import { changeLabel, durationParts } from './home-format';
+import { durationParts, formatClock, signedChange } from './home-format';
 
-describe('changeLabel', () => {
-  it('writes the change with its arrow, a dash for none', () => {
-    expect([changeLabel(120), changeLabel(-32), changeLabel(0)]).toEqual([
-      '▲ 120',
-      '▼ 32',
-      '—',
+describe('signedChange', () => {
+  it('writes the sign, then the size as asked', () => {
+    expect([signedChange(212), signedChange(-3), signedChange(0)]).toEqual([
+      '+212',
+      '−3',
+      '+0',
     ]);
-    expect(changeLabel(0.034, 2)).toBe('▲ 0.03');
+    expect(signedChange(-4_500, formatClock)).toBe('−1:15');
+  });
+});
+
+describe('formatClock', () => {
+  it('writes hours and two-digit minutes', () => {
+    expect([formatClock(24_120), formatClock(300), formatClock(0)]).toEqual([
+      '6:42',
+      '0:05',
+      '0:00',
+    ]);
   });
 });
 

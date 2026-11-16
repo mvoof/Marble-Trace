@@ -1902,6 +1902,16 @@ export type PerfRunConfig = {
 };
 
 /**
+ * A new fastest lap on a track in a car: the sim's best lap of a session,
+ * faster than any before it on the pair, or the pair's first.
+ */
+export type PersonalBest = {
+  trackName: string | null;
+  carName: string | null;
+  lapTimeS: number;
+};
+
+/**
  * A manual change to the pit order.
  */
 export type PitAction =
@@ -3666,17 +3676,27 @@ export type WeatherForecastEntry = {
 };
 
 /**
- * Sessions, laps and incidents of one span of days, all categories together.
+ * One span of days in figures, the sessions started in it, all categories
+ * together.
  */
 export type WeekStats = {
-  sessions: number;
+  timeInCarS: number;
   /**
-   * Sessions of a race event; the rest are practice and test.
+   * The track's length × its full laps; a session read before the length
+   * was stored adds none.
    */
-  races: number;
+  km: number;
   /**
-   * Laps completed, whole or not.
+   * Laps from the line, each once whichever files hold it.
    */
-  laps: number;
-  incidents: number;
+  fullLaps: number;
+  /**
+   * Full laps without an incident.
+   */
+  cleanLaps: number;
+  /**
+   * The track and car pairs whose fastest lap so far was set in the span,
+   * in the order they were driven.
+   */
+  personalBests: PersonalBest[];
 };
