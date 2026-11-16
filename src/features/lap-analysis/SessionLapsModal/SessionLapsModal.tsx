@@ -4,12 +4,8 @@ import { useTranslation } from 'react-i18next';
 import { App, Button, Modal } from 'antd';
 import { Activity, Check, Plus } from 'lucide-react';
 
-import { useLapAnalysisStore } from '@features/lap-analysis/lap-analysis-context';
-import {
-  isAnalysable,
-  type LapAnalysisStore,
-} from '@features/lap-analysis/lap-analysis.store';
-import { useMainNavigationStore } from '@features/main-navigation/main-navigation-context';
+import { useLapAnalysisStore } from '../lap-analysis-context';
+import { isAnalysable, type LapAnalysisStore } from '../lap-analysis.store';
 import { cx } from '@shared/lib/class-names';
 import { formatLapTimeOrDash } from '@shared/lib/telemetry-format';
 import type {
@@ -17,7 +13,7 @@ import type {
   RecentSession,
   SessionLap,
 } from '@shared/contracts/generated/bindings';
-import { finishText } from './recent-session-format';
+import { finishText } from '@shared/lib/finish-text';
 import styles from './SessionLapsModal.module.scss';
 
 const MS_PER_SECOND = 1000;
@@ -42,10 +38,12 @@ const useSessionDate = (session: RecentSession) => {
 };
 
 /** After an add: "Analysis: Spa, 14 Nov — 3 laps · Open analysis". */
-const useAnalysisToast = (analysis: LapAnalysisStore) => {
+const useAnalysisToast = (
+  analysis: LapAnalysisStore,
+  onOpenAnalysis: (() => void) | undefined
+) => {
   const { t, i18n } = useTranslation('main-app');
   const { message } = App.useApp();
-  const navigation = useMainNavigationStore();
 
   return () => {
     const session = analysis.set.session;
@@ -61,7 +59,7 @@ const useAnalysisToast = (analysis: LapAnalysisStore) => {
     const handleOpen = () => {
       message.destroy();
       analysis.closeSession();
-      navigation.openDataSection('analysis');
+      onOpenAnalysis?.();
     };
 
     void message.open({
@@ -75,13 +73,15 @@ const useAnalysisToast = (analysis: LapAnalysisStore) => {
             count: analysis.laps.length,
           })}
 
-          <button
-            type="button"
-            className={styles.toastLink}
-            onClick={handleOpen}
-          >
-            {t('homePage.sessionLaps.openAnalysis')}
-          </button>
+          {onOpenAnalysis !== undefined && (
+            <button
+              type="button"
+              className={styles.toastLink}
+              onClick={handleOpen}
+            >
+              {t('homePage.sessionLaps.openAnalysis')}
+            </button>
+          )}
         </span>
       ),
     });
@@ -202,87 +202,94 @@ const ModalHead = observer(({ session }: { session: RecentSession }) => {
   );
 });
 
+interface SessionLapsModalProps {
+  /** The toast's link to the analysis page; none when already on it. */
+  onOpenAnalysis?: () => void;
+}
+
 /** The laps of one session, to pick those the analysis shows. */
-export const SessionLapsModal = observer(() => {
-  const { t } = useTranslation('main-app');
-  const analysis = useLapAnalysisStore();
-  const showToast = useAnalysisToast(analysis);
-  const loaded = analysis.modalLaps;
-  const laps = loaded?.laps ?? [];
-  const severalRuns = new Set(laps.map((lap) => lap.lap.sessionNum)).size > 1;
+export const SessionLapsModal = observer(
+  ({ onOpenAnalysis }: SessionLapsModalProps) => {
+    const { t } = useTranslation('main-app');
+    const analysis = useLapAnalysisStore();
+    const showToast = useAnalysisToast(analysis, onOpenAnalysis);
+    const loaded = analysis.modalLaps;
+    const laps = loaded?.laps ?? [];
+    const severalRuns = new Set(laps.map((lap) => lap.lap.sessionNum)).size > 1;
 
-  const handleAdd = async (lap: LapRef) => {
-    await analysis.addLaps([lap]);
-    showToast();
-  };
+    const handleAdd = async (lap: LapRef) => {
+      await analysis.addLaps([lap]);
+      showToast();
+    };
 
-  const handleAddAll = async () => {
-    await analysis.addAllLaps();
-    showToast();
-  };
+    const handleAddAll = async () => {
+      await analysis.addAllLaps();
+      showToast();
+    };
 
-  return (
-    <Modal
-      open={analysis.modalKey !== null}
-      width={MODAL_WIDTH}
-      footer={null}
-      destroyOnHidden
-      onCancel={() => analysis.closeSession()}
-      title={loaded && <ModalHead session={loaded.session} />}
-    >
-      <div className={styles.headActions}>
-        <Button
-          type="primary"
-          size="small"
-          icon={<Activity size={ICON_SIZE} />}
-          disabled={!laps.some(isAnalysable)}
-          onClick={() => void handleAddAll()}
-        >
-          {t('homePage.sessionLaps.allToAnalysis')}
-        </Button>
-      </div>
+    return (
+      <Modal
+        open={analysis.modalKey !== null}
+        width={MODAL_WIDTH}
+        footer={null}
+        destroyOnHidden
+        onCancel={() => analysis.closeSession()}
+        title={loaded && <ModalHead session={loaded.session} />}
+      >
+        <div className={styles.headActions}>
+          <Button
+            type="primary"
+            size="small"
+            icon={<Activity size={ICON_SIZE} />}
+            disabled={!laps.some(isAnalysable)}
+            onClick={() => void handleAddAll()}
+          >
+            {t('homePage.sessionLaps.allToAnalysis')}
+          </Button>
+        </div>
 
-      <div className={styles.body}>
-        <table className={styles.table}>
-          <thead>
-            <tr>
-              <th>{t('homePage.sessionLaps.lap')}</th>
-              <th>{t('homePage.sessionLaps.time')}</th>
-              <th>{t('homePage.sessionLaps.delta')}</th>
-              <th>{t('homePage.sessionLaps.incidents')}</th>
-              <th
-                aria-label={`${t('homePage.sessionLaps.pit')} / ${t('homePage.sessionLaps.partial')}`}
-              />
-              <th aria-label={t('homePage.sessionLaps.toAnalysis')} />
-            </tr>
-          </thead>
+        <div className={styles.body}>
+          <table className={styles.table}>
+            <thead>
+              <tr>
+                <th>{t('homePage.sessionLaps.lap')}</th>
+                <th>{t('homePage.sessionLaps.time')}</th>
+                <th>{t('homePage.sessionLaps.delta')}</th>
+                <th>{t('homePage.sessionLaps.incidents')}</th>
+                <th
+                  aria-label={`${t('homePage.sessionLaps.pit')} / ${t('homePage.sessionLaps.partial')}`}
+                />
+                <th aria-label={t('homePage.sessionLaps.toAnalysis')} />
+              </tr>
+            </thead>
 
-          <tbody>
-            {laps.map((lap, index) => {
-              const runStarts =
-                severalRuns &&
-                (index === 0 ||
-                  laps[index - 1].lap.sessionNum !== lap.lap.sessionNum);
+            <tbody>
+              {laps.map((lap, index) => {
+                const runStarts =
+                  severalRuns &&
+                  (index === 0 ||
+                    laps[index - 1].lap.sessionNum !== lap.lap.sessionNum);
 
-              return (
-                <Fragment key={`${lap.lap.sessionNum}:${lap.lap.lapNum}`}>
-                  {runStarts && (
-                    <tr className={styles.run}>
-                      <td colSpan={6}>{lap.runType}</td>
-                    </tr>
-                  )}
+                return (
+                  <Fragment key={`${lap.lap.sessionNum}:${lap.lap.lapNum}`}>
+                    {runStarts && (
+                      <tr className={styles.run}>
+                        <td colSpan={6}>{lap.runType}</td>
+                      </tr>
+                    )}
 
-                  <LapRow
-                    lap={lap}
-                    inSet={analysis.isInSet(lap.lap)}
-                    onAdd={(added) => void handleAdd(added)}
-                  />
-                </Fragment>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
-    </Modal>
-  );
-});
+                    <LapRow
+                      lap={lap}
+                      inSet={analysis.isInSet(lap.lap)}
+                      onAdd={(added) => void handleAdd(added)}
+                    />
+                  </Fragment>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      </Modal>
+    );
+  }
+);

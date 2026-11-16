@@ -8,10 +8,13 @@ export const POCKET_SECTIONS = [
   'crew',
   'connections',
   'data',
-  'hotkeys',
+  'analysis',
 ] as const;
 
 export type MainSection = (typeof POCKET_SECTIONS)[number] | 'settings';
+
+/** The Settings page's section that holds the key bindings. */
+export const HOTKEYS_SETTINGS_SECTION = 'hotkeys';
 
 export type LayoutsMode = 'list' | 'editor';
 
@@ -20,7 +23,9 @@ type Destination = {
   section: MainSection;
   /** On the Widgets page: a widget type, or null for all widgets. */
   widgetId?: string | null;
-  /** On the Hotkeys page: the one widget type to show bindings for. */
+  /** On the Settings page: the section to show. */
+  settingsSection?: string;
+  /** On the Settings page's hotkeys: the one widget type to show bindings for. */
   hotkeysWidget?: string;
   /** On the Data page: the section to show. */
   dataSection?: string;
@@ -41,7 +46,7 @@ export class MainNavigationStore {
   /** The Layouts page's list or editor, kept while other pages are open. */
   layoutsMode: LayoutsMode = 'list';
 
-  /** The widget type the Hotkeys page is filtered to; null shows them all. */
+  /** The widget type the hotkeys are filtered to; null shows them all. */
   hotkeysWidget: string | null = null;
 
   /** The widget the Widgets page shows; null shows all widgets. */
@@ -49,6 +54,9 @@ export class MainNavigationStore {
 
   /** The Data page's section; null is the page's first. The page knows its sections. */
   dataSection: string | null = null;
+
+  /** The Settings page's section; null is the page's first. The page knows its sections. */
+  settingsSection: string | null = null;
 
   /** Where the user asked to go while the crew still holds unsaved edits. */
   private heldDestination: Destination | null = null;
@@ -76,9 +84,13 @@ export class MainNavigationStore {
     this.goTo({ section: 'widgets', widgetId: null });
   }
 
-  /** The Hotkeys page, showing only this widget type's bindings. */
+  /** The Settings page's hotkeys, showing only this widget type's bindings. */
   openHotkeys(widgetType: string) {
-    this.goTo({ section: 'hotkeys', hotkeysWidget: widgetType });
+    this.goTo({
+      section: 'settings',
+      settingsSection: HOTKEYS_SETTINGS_SECTION,
+      hotkeysWidget: widgetType,
+    });
   }
 
   /** The Data page, on this section. */
@@ -91,7 +103,13 @@ export class MainNavigationStore {
     this.dataSection = section;
   }
 
-  /** The Hotkeys page drops its widget filter. */
+  /** The Settings page's menu picked a section; the hotkeys open unfiltered. */
+  selectSettingsSection(section: string) {
+    this.settingsSection = section;
+    this.hotkeysWidget = null;
+  }
+
+  /** The hotkeys drop their widget filter. */
   showAllHotkeys() {
     this.hotkeysWidget = null;
   }
@@ -140,7 +158,11 @@ export class MainNavigationStore {
       this.dataSection = destination.dataSection;
     }
 
-    if (destination.section === 'hotkeys') {
+    if (destination.settingsSection !== undefined) {
+      this.settingsSection = destination.settingsSection;
+    }
+
+    if (destination.section === 'settings') {
       this.hotkeysWidget = destination.hotkeysWidget ?? null;
     }
 

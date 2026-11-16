@@ -1,10 +1,5 @@
 /** What the app holds for the driver, in the order the menu lists it. */
-export const DATA_MENU = [
-  'tracks',
-  'analysis',
-  'strategy',
-  'statistics',
-] as const;
+export const DATA_MENU = ['tracks', 'strategy', 'statistics'] as const;
 
 export type DataSectionId = (typeof DATA_MENU)[number];
 

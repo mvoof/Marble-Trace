@@ -24,7 +24,7 @@
       "crew": "Экипаж",
       "connections": "Подключения",
       "data": "Данные",
-      "hotkeys": "Горячие клавиши",
+      "analysis": "Анализ",
       "settings": "Настройки"
     },
     "websiteTitle": "Открыть marbletrace.com",
@@ -624,6 +624,7 @@
         "overlay": "Показ виджетов",
         "interaction": "Режимы взаимодействия",
         "maintenance": "Сброс и диагностика",
+        "hotkeys": "Горячие клавиши",
         "telemetryInspector": "Инспектор телеметрии"
       }
     },
@@ -736,7 +737,10 @@
       "exportFailed": "Экспорт не удался: {{reason}}"
     },
     "analysis": {
-      "empty": "Кругов пока нет. Откройте сессию на главной и добавьте круги в анализ.",
+      "empty": "Кругов пока нет. Выберите сессию ниже и добавьте её круги в анализ.",
+      "changeSession": "Сессии",
+      "sessionsTitle": "Выберите сессию",
+      "addLaps": "Добавить круги",
       "laps": "Круги",
       "referenceHint": "☆ — эталон для дельты",
       "lap": "Круг {{number}}",
@@ -1563,7 +1567,13 @@
       "personalBests": "Личные рекорды",
       "vsLastWeek": "{{change}} к прошлой",
       "thisWeek": "за неделю",
-      "noPersonalBests": "нет на этой неделе"
+      "noPersonalBests": "нет на этой неделе",
+      "results": {
+        "wins": "Победы",
+        "podiums": "Топ-3",
+        "topTens": "Топ-10",
+        "races": "Гонки"
+      }
     },
     "recentSessions": {
       "title": "Последние сессии",
@@ -1596,7 +1606,8 @@
     },
     "calendar": {
       "title": "Дни за рулём",
-      "span": "6 месяцев",
+      "previousYear": "Предыдущий год",
+      "nextYear": "Следующий год",
       "summary": "Дней за рулём: {{days}} · {{time}}",
       "less": "меньше",
       "more": "больше"

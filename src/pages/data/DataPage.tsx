@@ -1,31 +1,22 @@
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
-import {
-  Activity,
-  BarChart3,
-  Fuel,
-  Route,
-  type LucideIcon,
-} from 'lucide-react';
+import { BarChart3, Fuel, Route, type LucideIcon } from 'lucide-react';
 import { useMainNavigationStore } from '@features/main-navigation/main-navigation-context';
 import { SectionedPage } from '@shared/ui/SectionedPage/SectionedPage';
 import { TrackMapSection } from './TrackMapSection';
 import { SharedValuesSection } from './SharedValuesSection';
 import { StatisticsSection } from './StatisticsSection';
-import { AnalysisSection } from './analysis/AnalysisSection';
 import { ExportCsvButton } from './ExportCsvButton';
 import { DATA_MENU, dataSectionOf, type DataSectionId } from './data-sections';
 
 const SECTION_ICONS: Record<DataSectionId, LucideIcon> = {
   tracks: Route,
-  analysis: Activity,
   strategy: Fuel,
   statistics: BarChart3,
 };
 
 const SECTION_COMPONENTS: Record<DataSectionId, () => React.ReactElement> = {
   tracks: TrackMapSection,
-  analysis: AnalysisSection,
   strategy: SharedValuesSection,
   statistics: StatisticsSection,
 };

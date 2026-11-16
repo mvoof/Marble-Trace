@@ -1,6 +1,7 @@
-$cell-size: rem(11);
+$cell-max: rem(14);
 $cell-gap: rem(3);
 $weekday-width: rem(22);
+$legend-cell-size: rem(10);
 
 .card {
   min-width: 0;
@@ -19,22 +20,58 @@ $weekday-width: rem(22);
   color: $sys-text-muted;
 }
 
-.span {
+// The year shown, between its arrows, at the right of the heading.
+.years {
+  display: flex;
+  align-items: center;
+  gap: rem(4);
   margin-left: auto;
 }
 
-// Weekday labels in the first column, month labels over the cells.
+.year {
+  min-width: rem(36);
+  text-align: center;
+  font-family: $font-mono;
+  font-variant-numeric: tabular-nums;
+  color: $sys-text-primary;
+}
+
+.yearButton {
+  display: grid;
+  place-items: center;
+  padding: rem(2);
+  color: $sys-text-secondary;
+  cursor: pointer;
+  background: none;
+  border: 0;
+  border-radius: rem(4);
+
+  &:hover:not(:disabled) {
+    color: $sys-text-primary;
+    background: $sys-bg-raised;
+  }
+
+  &:disabled {
+    color: $sys-text-muted;
+    cursor: default;
+    opacity: 0.4;
+  }
+}
+
+// Weekday labels in the first column, month labels over the cells; a cell
+// shrinks with a narrow card and never grows past its size, the calendar
+// centred in a wide one.
 .calendar {
   display: grid;
   grid-template-columns: $weekday-width auto;
   gap: $cell-gap rem(6);
-  justify-content: start;
+  justify-content: center;
 }
 
 .months {
   display: grid;
   grid-column: 2;
-  grid-auto-columns: $cell-size;
+  grid-template-columns: repeat(var(--weeks), minmax(0, $cell-max));
   gap: $cell-gap;
   height: rem(13);
   font-size: rem(10);
@@ -48,47 +85,47 @@ $weekday-width: rem(22);
 
 .weekdays {
   display: grid;
-  grid-template-rows: repeat(7, $cell-size);
+  grid-template-rows: repeat(7, minmax(0, 1fr));
+  align-items: center;
   gap: $cell-gap;
   font-size: rem(9);
-  line-height: $cell-size;
   color: $sys-text-muted;
 }
 
 .grid {
   display: grid;
   grid-auto-flow: column;
-  grid-template-rows: repeat(7, $cell-size);
-  grid-auto-columns: $cell-size;
+  grid-template-rows: repeat(7, auto);
+  grid-template-columns: repeat(var(--weeks), minmax(0, $cell-max));
   gap: $cell-gap;
 }
 
 .cell,
 .future {
   display: block;
-  width: $cell-size;
-  height: $cell-size;
-  border-radius: rem(2);
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: rem(3);
 }
 
-// Shades of the up colour, from a day not driven to the longest one.
+// Shades of white, from a day not driven to the longest one.
 .cell {
   background: $sys-bg-raised;
 
   &[data-level='1'] {
-    background: color-mix(in srgb, $sys-up 22%, $sys-bg-raised);
+    background: color-mix(in srgb, $sys-text-primary 22%, $sys-bg-raised);
   }
 
   &[data-level='2'] {
-    background: color-mix(in srgb, $sys-up 45%, $sys-bg-raised);
+    background: color-mix(in srgb, $sys-text-primary 45%, $sys-bg-raised);
   }
 
   &[data-level='3'] {
-    background: color-mix(in srgb, $sys-up 72%, $sys-bg-raised);
+    background: color-mix(in srgb, $sys-text-primary 72%, $sys-bg-raised);
   }
 
   &[data-level='4'] {
-    background: $sys-up;
+    background: $sys-text-primary;
   }
 }
 
@@ -108,8 +145,8 @@ $weekday-width: rem(22);
   gap: $cell-gap;
 
   .cell {
-    width: rem(10);
-    height: rem(10);
+    width: $legend-cell-size;
+    height: $legend-cell-size;
   }
 }
 

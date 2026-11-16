@@ -7,7 +7,7 @@ import { LayoutEditor } from '@pages/layouts/LayoutEditor';
 import { SettingsPage } from '@pages/settings/SettingsPage';
 import { CrewPage } from '@pages/crew/CrewPage';
 import { HomePage } from '@pages/home/HomePage';
-import { HotkeysPage } from '@pages/hotkeys/HotkeysPage';
+import { AnalysisPage } from '@pages/analysis/AnalysisPage';
 import { ConnectionsPage } from '@pages/connections/ConnectionsPage';
 import { DataPage } from '@pages/data/DataPage';
 import { CrewLeaveDialog } from '@pages/crew/CrewLeaveDialog';
@@ -161,12 +161,12 @@ export const MainWindow = observer(() => {
               </div>
             )}
 
-            {navigation.section === 'hotkeys' && (
-              <div className={styles.scrollContainer} key="hotkeys">
+            {navigation.section === 'analysis' && (
+              <div className={styles.scrollContainer} key="analysis">
                 <div
                   className={`${styles.contentInner} ${styles.animateFadeIn}`}
                 >
-                  <HotkeysPage />
+                  <AnalysisPage />
                 </div>
               </div>
             )}

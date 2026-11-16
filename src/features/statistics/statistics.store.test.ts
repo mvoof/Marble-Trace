@@ -32,6 +32,10 @@ const WEEK = {
   km: 0,
   fullLaps: 0,
   cleanLaps: 0,
+  races: 0,
+  wins: 0,
+  podiums: 0,
+  topTens: 0,
   personalBests: [],
 };
 

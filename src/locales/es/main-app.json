@@ -22,7 +22,7 @@
       "crew": "Equipo",
       "connections": "Conexiones",
       "data": "Datos",
-      "hotkeys": "Atajos",
+      "analysis": "Análisis",
       "settings": "Ajustes"
     },
     "websiteTitle": "Abrir marbletrace.com",
@@ -616,6 +616,7 @@
         "overlay": "Visibilidad de widgets",
         "interaction": "Modos de interacción",
         "maintenance": "Restablecer y diagnóstico",
+        "hotkeys": "Atajos",
         "telemetryInspector": "Inspector de telemetría"
       }
     },
@@ -728,7 +729,10 @@
       "exportFailed": "La exportación falló: {{reason}}"
     },
     "analysis": {
-      "empty": "Aún no hay vueltas. Abre una sesión en Inicio y añade vueltas al análisis.",
+      "empty": "Aún no hay vueltas. Elige una sesión abajo y añade sus vueltas al análisis.",
+      "changeSession": "Sesiones",
+      "sessionsTitle": "Elige una sesión",
+      "addLaps": "Añadir vueltas",
       "laps": "Vueltas",
       "referenceHint": "☆ — referencia del delta",
       "lap": "Vuelta {{number}}",
@@ -1551,7 +1555,13 @@
       "personalBests": "Récords personales",
       "vsLastWeek": "{{change}} frente a la anterior",
       "thisWeek": "esta semana",
-      "noPersonalBests": "ninguno esta semana"
+      "noPersonalBests": "ninguno esta semana",
+      "results": {
+        "wins": "Victorias",
+        "podiums": "Top 3",
+        "topTens": "Top 10",
+        "races": "Carreras"
+      }
     },
     "recentSessions": {
       "title": "Sesiones recientes",
@@ -1584,7 +1594,8 @@
     },
     "calendar": {
       "title": "Días al volante",
-      "span": "6 meses",
+      "previousYear": "Año anterior",
+      "nextYear": "Año siguiente",
       "summary": "{{days}} días al volante · {{time}}",
       "less": "menos",
       "more": "más"

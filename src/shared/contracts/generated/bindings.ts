@@ -1433,7 +1433,7 @@ export type HomeStats = {
    */
   previousWeek: WeekStats;
   /**
-   * The sessions of the calendar's span spent in the car, oldest first.
+   * Every session spent in the car, oldest first: the calendar's years.
    */
   driven: DrivenSession[];
   /**
@@ -3900,6 +3900,22 @@ export type WeekStats = {
    * Full laps without an incident.
    */
   cleanLaps: number;
+  /**
+   * Sessions with a race result.
+   */
+  races: number;
+  /**
+   * Of `races`, those finished first.
+   */
+  wins: number;
+  /**
+   * Of `races`, those finished in the top three.
+   */
+  podiums: number;
+  /**
+   * Of `races`, those finished in the top ten.
+   */
+  topTens: number;
   /**
    * The track and car pairs whose fastest lap so far was set in the span,
    * in the order they were driven.

@@ -4,12 +4,15 @@ import { FolderSearch } from 'lucide-react';
 
 import { ImportNote } from '@features/statistics/ImportNote/ImportNote';
 import { useStatisticsStore } from '@features/statistics/statistics-context';
+import { SessionsTable } from '@features/statistics/SessionsTable/SessionsTable';
+import { useLapAnalysisStore } from '@features/lap-analysis/lap-analysis-context';
+import { SessionLapsModal } from '@features/lap-analysis/SessionLapsModal/SessionLapsModal';
+import { useMainNavigationStore } from '@features/main-navigation/main-navigation-context';
 import { PageTitle } from '@shared/ui/PageTitle/PageTitle';
 import { AutologHint } from './AutologHint';
 import { CalendarRow } from './CalendarRow';
 import { HomeKpis } from './HomeKpis';
 import { NowStrip } from './NowStrip';
-import { RecentSessionsTable } from './RecentSessionsTable';
 import styles from './HomePage.module.scss';
 
 const EMPTY_ICON_SIZE = 28;
@@ -18,6 +21,8 @@ const EMPTY_ICON_SIZE = 28;
 export const HomePage = observer(() => {
   const { t } = useTranslation('main-app');
   const statistics = useStatisticsStore();
+  const analysis = useLapAnalysisStore();
+  const navigation = useMainNavigationStore();
 
   return (
     <div className={styles.page}>
@@ -33,7 +38,13 @@ export const HomePage = observer(() => {
 
           <CalendarRow />
 
-          <RecentSessionsTable />
+          <SessionsTable
+            onOpenSession={(key) => void analysis.openSession(key)}
+          />
+
+          <SessionLapsModal
+            onOpenAnalysis={() => navigation.open('analysis')}
+          />
         </>
       ) : (
         <div className={styles.empty}>

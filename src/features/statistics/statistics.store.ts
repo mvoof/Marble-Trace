@@ -27,7 +27,12 @@ import type {
   StatsImportStatus,
   TimeDriven,
 } from '@shared/contracts/generated/bindings';
-import { drivenWeeks, type DrivenDay } from './days-driven';
+import {
+  drivenWeeks,
+  drivenYears,
+  yearOf,
+  type DrivenDay,
+} from './days-driven';
 import { SessionsTableStore } from './sessions-table.store';
 
 /** One session is enough to know Home has any: the table loads its own pages. */
@@ -63,6 +68,8 @@ export class StatisticsStore {
   homeStats: HomeStats | null = null;
   /** When `homeStats` was counted, unix seconds: the calendar ends there. */
   homeStatsAtS = 0;
+  /** The year the calendar shows; `null` follows the current one. */
+  calendarYear: number | null = null;
   /** The first load has answered, so an empty list means no sessions. */
   loaded = false;
   /** Whether the game writes the files statistics read; `null` until asked. */
@@ -98,14 +105,57 @@ export class StatisticsStore {
     return this.recentSessions.length > 0;
   }
 
-  /** The calendar's weeks, Monday first, the current week last. */
-  get drivenWeeks(): DrivenDay[][] {
-    return drivenWeeks(this.homeStats?.driven ?? [], this.homeStatsAtS);
+  /** The first and last years the calendar pages through. */
+  get calendarYears(): { first: number; last: number } {
+    return drivenYears(this.homeStats?.driven ?? [], this.homeStatsAtS);
   }
 
-  /** The calendar's darkest shade: the longest day in it. */
+  /** The year the calendar shows, within the years driven. */
+  get shownYear(): number {
+    const { first, last } = this.calendarYears;
+    const year = this.calendarYear ?? yearOf(this.homeStatsAtS);
+
+    return Math.min(Math.max(year, first), last);
+  }
+
+  get canShowPreviousYear(): boolean {
+    return this.shownYear > this.calendarYears.first;
+  }
+
+  get canShowNextYear(): boolean {
+    return this.shownYear < this.calendarYears.last;
+  }
+
+  /** The calendar's weeks of the shown year, Monday first. */
+  get drivenWeeks(): DrivenDay[][] {
+    return drivenWeeks(
+      this.homeStats?.driven ?? [],
+      this.shownYear,
+      this.homeStatsAtS
+    );
+  }
+
+  /** The calendar's darkest shade: the longest day of the shown year. */
   get longestDrivenDayS(): number {
-    return Math.max(0, ...this.drivenWeeks.flat().map((day) => day.timeInCarS));
+    return Math.max(
+      0,
+      ...this.drivenWeeks
+        .flat()
+        .filter((day) => !day.outside)
+        .map((day) => day.timeInCarS)
+    );
+  }
+
+  showPreviousYear() {
+    if (this.canShowPreviousYear) {
+      this.calendarYear = this.shownYear - 1;
+    }
+  }
+
+  showNextYear() {
+    if (this.canShowNextYear) {
+      this.calendarYear = this.shownYear + 1;
+    }
   }
 
   get topCars(): TimeDriven[] {

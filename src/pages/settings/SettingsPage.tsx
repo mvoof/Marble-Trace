@@ -1,9 +1,9 @@
-import { useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
 import {
   Activity,
   Info,
+  Keyboard,
   Layers,
   MousePointer2,
   RefreshCw,
@@ -11,12 +11,14 @@ import {
   Wrench,
   type LucideIcon,
 } from 'lucide-react';
+import { useMainNavigationStore } from '@features/main-navigation/main-navigation-context';
 import { SectionedPage } from '@shared/ui/SectionedPage/SectionedPage';
 import { MENU_SEPARATOR } from '@shared/ui/SectionedPage/section-menu';
 import { SECTION_COMPONENTS } from './section-components';
+import { BindingSearch } from './hotkeys/BindingSearch';
 import {
-  DEFAULT_SETTINGS_SECTION,
   SETTINGS_MENU,
+  settingsSectionOf,
   type SettingsMenuSectionId,
 } from './settings-sections';
 
@@ -24,6 +26,7 @@ const SECTION_ICONS: Record<SettingsMenuSectionId, LucideIcon> = {
   general: SlidersHorizontal,
   overlay: Layers,
   interaction: MousePointer2,
+  hotkeys: Keyboard,
   updates: RefreshCw,
   maintenance: Wrench,
   about: Info,
@@ -33,9 +36,8 @@ const SECTION_ICONS: Record<SettingsMenuSectionId, LucideIcon> = {
 export const SettingsPage = observer(() => {
   const { t } = useTranslation('main-app');
 
-  const [activeSection, setActiveSection] = useState<SettingsMenuSectionId>(
-    DEFAULT_SETTINGS_SECTION
-  );
+  const navigation = useMainNavigationStore();
+  const activeSection = settingsSectionOf(navigation.settingsSection);
 
   const menu = SETTINGS_MENU.map((entry) =>
     entry === MENU_SEPARATOR
@@ -53,7 +55,10 @@ export const SettingsPage = observer(() => {
     <SectionedPage
       menu={menu}
       active={activeSection}
-      onSelect={setActiveSection}
+      onSelect={(section: SettingsMenuSectionId) =>
+        navigation.selectSettingsSection(section)
+      }
+      titleActions={activeSection === 'hotkeys' ? <BindingSearch /> : undefined}
     >
       <ActiveSection />
     </SectionedPage>

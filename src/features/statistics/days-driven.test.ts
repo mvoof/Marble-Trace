@@ -2,9 +2,9 @@ import { describe, expect, it } from 'vitest';
 
 import type { DrivenSession } from '@shared/contracts/generated/bindings';
 import {
-  CALENDAR_WEEKS,
   drivenTotals,
   drivenWeeks,
+  drivenYears,
   intensityLevel,
   monthStarts,
 } from './days-driven';
@@ -27,25 +27,48 @@ const driven = (startedAt: number, timeInCarS: number): DrivenSession => ({
 
 // Saturday 14 November 2026, afternoon.
 const NOW_S = at(10, 14, 15);
+const YEAR = 2026;
+/** 1 January 2026 is a Thursday, 31 December too: 53 Monday-first weeks. */
+const WEEKS_OF_2026 = 53;
 
 describe('drivenWeeks', () => {
-  it('lays the weeks out Monday first, the current week last', () => {
-    const weeks = drivenWeeks([], NOW_S);
+  it('lays the year out Monday first, from the week of 1 January to that of 31 December', () => {
+    const weeks = drivenWeeks([], YEAR, NOW_S);
+    const firstWeek = weeks[0];
     const lastWeek = weeks[weeks.length - 1];
 
-    expect(weeks).toHaveLength(CALENDAR_WEEKS);
+    expect(weeks).toHaveLength(WEEKS_OF_2026);
     expect(weeks.every((week) => week.length === DAYS_PER_WEEK)).toBe(true);
-    expect(new Date(lastWeek[0].dayStartS * MS_PER_SECOND).getDay()).toBe(1);
-    // Today is the Saturday: only the Sunday is still to come.
-    expect(lastWeek.map((day) => day.future)).toEqual([
+    expect(new Date(firstWeek[0].dayStartS * MS_PER_SECOND).getDay()).toBe(1);
+    // Monday 29 December 2025 to Wednesday 31: the year before.
+    expect(firstWeek.map((day) => day.outside)).toEqual([
+      true,
+      true,
+      true,
       false,
       false,
+      false,
+      false,
+    ]);
+    // Thursday 31 December 2026 is the year's last day.
+    expect(lastWeek.map((day) => day.outside)).toEqual([
       false,
       false,
       false,
       false,
       true,
+      true,
+      true,
     ]);
+  });
+
+  it('marks the days after today as still to come', () => {
+    const weeks = drivenWeeks([], YEAR, NOW_S);
+    const days = weeks.flat();
+    const today = days.findIndex((day) => day.dayStartS === at(10, 14, 0));
+
+    expect(days[today].future).toBe(false);
+    expect(days[today + 1].future).toBe(true);
   });
 
   it('adds up the sessions of one local day', () => {
@@ -55,19 +78,35 @@ describe('drivenWeeks', () => {
         driven(at(10, 12, 23), 600),
         driven(at(10, 13, 0), 300),
       ],
+      YEAR,
       NOW_S
     );
-    const [thursday, friday] = weeks[weeks.length - 1].slice(3, 5);
+    const days = weeks.flat();
+    const thursday = days.find((day) => day.dayStartS === at(10, 12, 0));
+    const friday = days.find((day) => day.dayStartS === at(10, 13, 0));
 
-    expect(thursday.timeInCarS).toBe(1_800);
-    expect(thursday.sessions).toHaveLength(2);
-    expect(friday.timeInCarS).toBe(300);
+    expect(thursday?.timeInCarS).toBe(1_800);
+    expect(thursday?.sessions).toHaveLength(2);
+    expect(friday?.timeInCarS).toBe(300);
   });
 
-  it('leaves out a session older than the first column', () => {
-    const weeks = drivenWeeks([driven(NOW_S - 400 * DAY_S, 600)], NOW_S);
+  it('leaves out a session of another year', () => {
+    const weeks = drivenWeeks([driven(NOW_S - 400 * DAY_S, 600)], YEAR, NOW_S);
 
     expect(weeks.flat().some((day) => day.sessions.length > 0)).toBe(false);
+  });
+});
+
+describe('drivenYears', () => {
+  it('runs from the first session’s year to now’s', () => {
+    expect(drivenYears([driven(NOW_S - 400 * DAY_S, 600)], NOW_S)).toEqual({
+      first: 2025,
+      last: 2026,
+    });
+  });
+
+  it('is only the current year without sessions', () => {
+    expect(drivenYears([], NOW_S)).toEqual({ first: 2026, last: 2026 });
   });
 });
 
@@ -83,18 +122,18 @@ describe('intensityLevel', () => {
 
 describe('monthStarts', () => {
   it('labels the column of each month’s first Monday, not a month begun before', () => {
-    const weeks = drivenWeeks([], NOW_S);
+    const weeks = drivenWeeks([], YEAR, NOW_S);
     const labels = monthStarts(weeks).map(({ column, mondayS }) => {
       const monday = new Date(mondayS * MS_PER_SECOND);
 
       return [column, monday.getMonth(), monday.getDate()];
     });
 
-    // 26 weeks back from Monday 9 November 2026 is Monday 18 May: May began
-    // before the calendar, so June is the first label.
-    expect(labels[0]).toEqual([2, 5, 1]);
-    expect(labels.at(-1)).toEqual([24, 10, 2]);
-    expect(labels).toHaveLength(6);
+    // The first column's Monday is 29 December 2025: January's label goes
+    // over Monday 5 January.
+    expect(labels[0]).toEqual([1, 0, 5]);
+    expect(labels.at(-1)).toEqual([49, 11, 7]);
+    expect(labels).toHaveLength(12);
   });
 });
 
@@ -106,6 +145,7 @@ describe('drivenTotals', () => {
         driven(at(10, 12, 20), 600),
         driven(at(10, 10, 9), 300),
       ],
+      YEAR,
       NOW_S
     );
 

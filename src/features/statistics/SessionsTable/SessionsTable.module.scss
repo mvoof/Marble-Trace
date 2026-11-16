@@ -82,6 +82,11 @@
   }
 }
 
+// The session the analysis holds.
+.current td {
+  background: $sys-bg-raised;
+}
+
 .botsTag {
   margin-left: rem(8);
   padding: 0 rem(6);

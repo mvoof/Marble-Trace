@@ -1,7 +1,7 @@
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
 import { ColorPicker, Spin, Tabs, Tooltip } from 'antd';
-import { Eye, EyeOff, Flag, PauseCircle, Star, X } from 'lucide-react';
+import { Eye, EyeOff, Flag, PauseCircle, Plus, Star, X } from 'lucide-react';
 
 import { useLapAnalysisStore } from '@features/lap-analysis/lap-analysis-context';
 import type { AnalysisTab } from '@features/lap-analysis/lap-analysis.store';
@@ -131,7 +131,7 @@ export const AnalysisSection = observer(() => {
   const session = analysis.set.session;
 
   if (session === null) {
-    return <p className={styles.empty}>{t('dataPage.analysis.empty')}</p>;
+    return null;
   }
 
   const date = new Intl.DateTimeFormat(i18n.language, {
@@ -186,6 +186,15 @@ export const AnalysisSection = observer(() => {
                   {t('dataPage.analysis.referenceHint')}
                 </span>
               </div>
+
+              <button
+                type="button"
+                className={styles.addLaps}
+                onClick={() => void analysis.openSession(session.key)}
+              >
+                <Plus size={ICON_SIZE} />
+                {t('dataPage.analysis.addLaps')}
+              </button>
 
               {analysis.laps.map((lap) => (
                 <LapItem

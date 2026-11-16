@@ -378,9 +378,22 @@ impl StatsDb {
     pub(crate) fn with_results(&self, session: RecentSession) -> Result<RecentSession, String> {
         let best_lap_s = self.session_best(&session.key)?.map(|best| best.time_s);
         let incidents = self.session_incidents(&session.key)?;
-        // The last race of the session, as its latest file saw the flag. The
-        // field size comes from the latest file whose results list the race:
-        // the one at the flag often opened before the results were out.
+        let (finish_pos, field_size) = self.session_finish(&session.key)?;
+
+        Ok(RecentSession {
+            finish_pos,
+            field_size,
+            best_lap_s,
+            incidents,
+            ..session
+        })
+    }
+
+    /// (finish position, field size) of the session's last race, as its
+    /// latest file saw the flag; both `None` without a race result. The field
+    /// size comes from the latest file whose results list the race: the one
+    /// at the flag often opened before the results were out.
+    pub(crate) fn session_finish(&self, key: &str) -> Result<(Option<u32>, Option<u32>), String> {
         let finish: Option<(Option<u32>, Option<u32>)> = self
             .connection
             .query_row(
@@ -397,20 +410,13 @@ impl StatsDb {
                  WHERE r.session_key = ?1 AND r.run_type = ?2 AND r.finish_pos IS NOT NULL
                  ORDER BY r.session_num DESC, f.started_at DESC
                  LIMIT 1",
-                params![session.key, RACE_RUN_TYPE],
+                params![key, RACE_RUN_TYPE],
                 |row| Ok((row.get(0)?, row.get(1)?)),
             )
             .optional()
             .map_err(to_message)?;
-        let (finish_pos, field_size) = finish.unwrap_or((None, None));
 
-        Ok(RecentSession {
-            finish_pos,
-            field_size,
-            best_lap_s,
-            incidents,
-            ..session
-        })
+        Ok(finish.unwrap_or((None, None)))
     }
 
     /// A run's count carries over between its files: the largest is the run's.

@@ -15,10 +15,10 @@
 }
 
 // A group is a heading over its rows: which widget or part of the app the
-// keys belong to. No box of its own, nothing to fold.
+// keys belong to. No box and no rule: space and the heading set it apart.
 .group {
   & + & {
-    margin-top: rem(18);
+    margin-top: rem(32);
   }
 }
 
@@ -26,8 +26,7 @@
   display: flex;
   align-items: center;
   gap: rem(8);
-  padding: rem(4) 0 rem(6);
-  border-bottom: 1px solid $sys-border-main;
+  padding-bottom: rem(8);
 }
 
 .groupBody {
@@ -42,11 +41,9 @@
 
 .groupTitle {
   margin: 0 !important;
-  font-size: rem(12);
+  font-size: rem(16);
   font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: $sys-text-secondary;
+  color: $sys-text-primary;
 }
 
 .groupCount {

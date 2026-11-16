@@ -40,6 +40,35 @@ const KpiCard = observer(({ icon, label, value, detail }: KpiCardProps) => (
   </div>
 ));
 
+/** The week's race finishes, each figure over its name. */
+const RaceResults = observer(({ week }: { week: WeekStats }) => {
+  const { t } = useTranslation('main-app');
+  const results = [
+    { key: 'wins', count: week.wins },
+    { key: 'podiums', count: week.podiums },
+    { key: 'topTens', count: week.topTens },
+    { key: 'races', count: week.races },
+  ] as const;
+
+  return (
+    <div className={styles.results}>
+      {results.map(({ key, count }) => (
+        <div key={key} className={styles.result}>
+          <span
+            className={cx(styles.resultCount, count === 0 && styles.resultZero)}
+          >
+            {count}
+          </span>
+
+          <span className={styles.resultLabel}>
+            {t(`homePage.kpi.results.${key}`)}
+          </span>
+        </div>
+      ))}
+    </div>
+  );
+});
+
 interface WeekChangeProps {
   /** `null` when last week cannot be compared. */
   change: number | null;
@@ -120,11 +149,15 @@ const WeekKpis = observer(({ week, previousWeek }: WeekKpisProps) => {
         label={t('homePage.kpi.personalBests')}
         value={String(week.personalBests.length)}
         detail={
-          <span className={styles.tracks} title={bestTracks.join(', ')}>
-            {bestTracks.length > 0
-              ? bestTracks.join(', ')
-              : t('homePage.kpi.noPersonalBests')}
-          </span>
+          <>
+            <span className={styles.tracks} title={bestTracks.join(', ')}>
+              {bestTracks.length > 0
+                ? bestTracks.join(', ')
+                : t('homePage.kpi.noPersonalBests')}
+            </span>
+
+            <RaceResults week={week} />
+          </>
         }
       />
     </>

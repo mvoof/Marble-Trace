@@ -1,10 +1,10 @@
 $narrow-window: 1100px;
 
-// The calendar at its own width, the two tops sharing the rest; on a narrow
-// window the tops wrap under it.
+// The calendar takes half the row, the two tops share the other half; on a
+// narrow window the tops wrap under it.
 .row {
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr) minmax(0, 1fr);
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) minmax(0, 1fr);
   gap: rem(12);
 
   @media (max-width: $narrow-window) {

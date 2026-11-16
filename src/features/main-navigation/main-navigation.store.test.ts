@@ -23,16 +23,16 @@ describe('MainNavigationStore', () => {
       'crew',
       'connections',
       'data',
-      'hotkeys',
+      'analysis',
     ]);
   });
 
   it('opens a feature page', () => {
     const { navigation } = buildNavigation();
 
-    navigation.open('hotkeys');
+    navigation.open('analysis');
 
-    expect(navigation.section).toBe('hotkeys');
+    expect(navigation.section).toBe('analysis');
   });
 
   it('switches to the page it is asked for', () => {
@@ -78,23 +78,34 @@ describe('MainNavigationStore', () => {
     expect(navigation.activeWidgetId).toBe('relative');
   });
 
-  it('opens the hotkeys page filtered to one widget', () => {
+  it('opens the settings hotkeys filtered to one widget', () => {
     const { navigation } = buildNavigation();
 
     navigation.openHotkeys('relative');
 
-    expect(navigation.section).toBe('hotkeys');
+    expect(navigation.section).toBe('settings');
+    expect(navigation.settingsSection).toBe('hotkeys');
     expect(navigation.hotkeysWidget).toBe('relative');
   });
 
-  it('opens the hotkeys page unfiltered from the header', () => {
+  it('opens the hotkeys unfiltered from the settings menu', () => {
     const { navigation } = buildNavigation();
 
     navigation.openHotkeys('relative');
-    navigation.open('settings');
-    navigation.open('hotkeys');
+    navigation.selectSettingsSection('general');
+    navigation.selectSettingsSection('hotkeys');
 
     expect(navigation.hotkeysWidget).toBeNull();
+  });
+
+  it('keeps the settings section when settings is opened again', () => {
+    const { navigation } = buildNavigation();
+
+    navigation.selectSettingsSection('updates');
+    navigation.open('home');
+    navigation.open('settings');
+
+    expect(navigation.settingsSection).toBe('updates');
   });
 
   it('drops the hotkeys filter when asked to show every widget', () => {
@@ -103,7 +114,7 @@ describe('MainNavigationStore', () => {
     navigation.openHotkeys('relative');
     navigation.showAllHotkeys();
 
-    expect(navigation.section).toBe('hotkeys');
+    expect(navigation.section).toBe('settings');
     expect(navigation.hotkeysWidget).toBeNull();
   });
 
@@ -165,7 +176,7 @@ describe('MainNavigationStore', () => {
       navigation.openHotkeys('relative');
       navigation.leave();
 
-      expect(navigation.section).toBe('hotkeys');
+      expect(navigation.section).toBe('settings');
       expect(navigation.hotkeysWidget).toBe('relative');
     });
 

@@ -22,7 +22,7 @@
       "crew": "Crew",
       "connections": "Connections",
       "data": "Data",
-      "hotkeys": "Hotkeys",
+      "analysis": "Analysis",
       "settings": "Settings"
     },
     "websiteTitle": "Open marbletrace.com",
@@ -616,6 +616,7 @@
         "overlay": "Widget display",
         "interaction": "Interaction modes",
         "maintenance": "Reset & diagnostics",
+        "hotkeys": "Hotkeys",
         "telemetryInspector": "Telemetry inspector"
       }
     },
@@ -728,7 +729,10 @@
       "exportFailed": "Export failed: {{reason}}"
     },
     "analysis": {
-      "empty": "No laps yet. Open a session on Home and add laps to the analysis.",
+      "empty": "No laps yet. Pick a session below and add its laps to the analysis.",
+      "changeSession": "Sessions",
+      "sessionsTitle": "Pick a session",
+      "addLaps": "Add laps",
       "laps": "Laps",
       "referenceHint": "☆ — reference for the delta",
       "lap": "Lap {{number}}",
@@ -1551,7 +1555,13 @@
       "personalBests": "Personal bests",
       "vsLastWeek": "{{change}} vs last week",
       "thisWeek": "this week",
-      "noPersonalBests": "none this week"
+      "noPersonalBests": "none this week",
+      "results": {
+        "wins": "Wins",
+        "podiums": "Top 3",
+        "topTens": "Top 10",
+        "races": "Races"
+      }
     },
     "recentSessions": {
       "title": "Recent sessions",
@@ -1584,7 +1594,8 @@
     },
     "calendar": {
       "title": "Days driven",
-      "span": "6 months",
+      "previousYear": "Previous year",
+      "nextYear": "Next year",
       "summary": "{{days}} days driven · {{time}}",
       "less": "less",
       "more": "more"

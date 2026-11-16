@@ -14,10 +14,10 @@ use crate::db::{to_message, StatsDb, RACE_RUN_TYPE, STATUS_READ};
 const DAY_S: i64 = 24 * 60 * 60;
 const WEEK_S: i64 = 7 * DAY_S;
 const METRES_PER_KM: f64 = 1000.0;
-/// The calendar's span: 26 weeks, so its first column is always whole.
-const CALENDAR_DAYS: i64 = 26 * 7;
 /// Entries of each top list.
 const TOP_LIMIT: usize = 5;
+const PODIUM_LAST: u32 = 3;
+const TOP_TEN_LAST: u32 = 10;
 
 /// One session as Home needs it, merged from its files.
 #[derive(Debug, Clone)]
@@ -47,7 +47,7 @@ impl StatsDb {
         Ok(HomeStats {
             week: self.week_stats(&sessions, &bests, week_start, now)?,
             previous_week: self.week_stats(&sessions, &bests, previous_week_start, week_start)?,
-            driven: driven_sessions(&sessions, now - CALENDAR_DAYS * DAY_S),
+            driven: driven_sessions(&sessions),
             top_cars: top_by_time(&sessions, |session| session.car_name.as_deref()),
             top_tracks: top_by_time(&sessions, |session| session.track_name.as_deref()),
             last_race: self.last_race(&sessions)?,
@@ -117,6 +117,19 @@ impl StatsDb {
             week.clean_laps += clean_laps;
             week.km +=
                 session.track_length_m.unwrap_or_default() / METRES_PER_KM * f64::from(full_laps);
+
+            if !session.raced {
+                continue;
+            }
+
+            let (Some(finish_pos), _) = self.session_finish(&session.key)? else {
+                continue;
+            };
+
+            week.races += 1;
+            week.wins += u32::from(finish_pos == 1);
+            week.podiums += u32::from(finish_pos <= PODIUM_LAST);
+            week.top_tens += u32::from(finish_pos <= TOP_TEN_LAST);
         }
 
         Ok(week)
@@ -232,12 +245,12 @@ fn personal_bests(
     in_span.into_iter().map(|(_, best)| best).collect()
 }
 
-/// The sessions started from `from` on with time in the car; a session only
-/// sat in the garage leaves the calendar empty.
-fn driven_sessions(sessions: &[SessionSummary], from: i64) -> Vec<DrivenSession> {
+/// Every session with time in the car, for the calendar's years; a session
+/// only sat in the garage leaves the calendar empty.
+fn driven_sessions(sessions: &[SessionSummary]) -> Vec<DrivenSession> {
     sessions
         .iter()
-        .filter(|session| session.started_at >= from && session.time_in_car_s > 0.0)
+        .filter(|session| session.time_in_car_s > 0.0)
         .map(|session| DrivenSession {
             key: session.key.clone(),
             started_at: session.started_at as f64,
@@ -533,13 +546,13 @@ mod tests {
     }
 
     #[test]
-    fn the_calendar_holds_the_sessions_of_its_span_spent_in_the_car() {
+    fn the_calendar_holds_every_session_spent_in_the_car() {
         let mut two_files = driven_in(3, NOW - DAY_S, "BMW", "Spa", 600.0);
         let mut second_file = driven_in(3, NOW - DAY_S + 700, "BMW", "Spa", 300.0);
         two_files.runs[0].session_num = 1;
         second_file.runs[0].session_num = 2;
         let db = db_with(&[
-            driven_in(1, NOW - CALENDAR_DAYS * DAY_S - 1, "BMW", "Spa", 900.0),
+            driven_in(1, NOW - 400 * DAY_S, "BMW", "Spa", 900.0),
             driven_in(2, NOW - 3 * DAY_S, "BMW", "Spa", 0.0),
             two_files,
             second_file,
@@ -551,9 +564,9 @@ mod tests {
             .map(|session| (session.started_at as i64, session.time_in_car_s))
             .collect();
 
-        assert_eq!(seen, vec![(NOW - DAY_S, 900.0)]);
-        assert_eq!(driven[0].car_name.as_deref(), Some("BMW"));
-        assert_eq!(driven[0].track_name.as_deref(), Some("Spa"));
+        assert_eq!(seen, vec![(NOW - 400 * DAY_S, 900.0), (NOW - DAY_S, 900.0)]);
+        assert_eq!(driven[1].car_name.as_deref(), Some("BMW"));
+        assert_eq!(driven[1].track_name.as_deref(), Some("Spa"));
     }
 
     fn raced(subsession_id: i64, started_at: i64, category: &str, irating: i64) -> SessionFile {
@@ -565,6 +578,32 @@ mod tests {
             }],
             ..online(subsession_id, started_at, category, irating)
         }
+    }
+
+    fn finished(subsession_id: i64, started_at: i64, finish_pos: Option<i64>) -> SessionFile {
+        let mut file = raced(subsession_id, started_at, "Sports Car", 2000);
+        file.runs[0].finish_pos = finish_pos;
+
+        file
+    }
+
+    #[test]
+    fn the_week_counts_its_races_by_where_they_finished() {
+        let db = db_with(&[
+            finished(1, NOW - 5 * DAY_S, Some(1)),
+            finished(2, NOW - 4 * DAY_S, Some(3)),
+            finished(3, NOW - 3 * DAY_S, Some(7)),
+            finished(4, NOW - 2 * DAY_S, Some(15)),
+            finished(5, NOW - DAY_S, None),
+            finished(6, NOW - 10 * DAY_S, Some(1)),
+        ]);
+
+        let week = db.home_stats(NOW).unwrap().week;
+
+        assert_eq!(
+            (week.races, week.wins, week.podiums, week.top_tens),
+            (4, 1, 2, 3)
+        );
     }
 
     #[test]

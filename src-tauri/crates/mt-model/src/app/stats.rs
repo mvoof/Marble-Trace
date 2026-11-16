@@ -285,7 +285,7 @@ pub struct HomeStats {
     pub week: WeekStats,
     /// The seven days before those.
     pub previous_week: WeekStats,
-    /// The sessions of the calendar's span spent in the car, oldest first.
+    /// Every session spent in the car, oldest first: the calendar's years.
     pub driven: Vec<DrivenSession>,
     /// The cars driven longest, all time, the longest first.
     pub top_cars: Vec<TimeDriven>,
@@ -357,6 +357,14 @@ pub struct WeekStats {
     pub full_laps: u32,
     /// Full laps without an incident.
     pub clean_laps: u32,
+    /// Sessions with a race result.
+    pub races: u32,
+    /// Of `races`, those finished first.
+    pub wins: u32,
+    /// Of `races`, those finished in the top three.
+    pub podiums: u32,
+    /// Of `races`, those finished in the top ten.
+    pub top_tens: u32,
     /// The track and car pairs whose fastest lap so far was set in the span,
     /// in the order they were driven.
     pub personal_bests: Vec<PersonalBest>,

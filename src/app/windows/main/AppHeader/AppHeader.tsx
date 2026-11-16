@@ -6,7 +6,7 @@ import {
   Database,
   Headset,
   House,
-  Keyboard,
+  Activity,
   Layers,
   LayoutGrid,
   Settings,
@@ -37,7 +37,7 @@ const SECTION_ICONS: Record<MainSection, LucideIcon> = {
   crew: Headset,
   connections: Cast,
   data: Database,
-  hotkeys: Keyboard,
+  analysis: Activity,
   settings: Settings,
 };
 

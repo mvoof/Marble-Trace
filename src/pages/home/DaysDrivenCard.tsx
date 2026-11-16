@@ -1,7 +1,8 @@
+import type { CSSProperties } from 'react';
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
 import { Tooltip } from 'antd';
-import { CalendarDays } from 'lucide-react';
+import { CalendarDays, ChevronLeft, ChevronRight } from 'lucide-react';
 
 import { useStatisticsStore } from '@features/statistics/statistics-context';
 import {
@@ -62,7 +63,7 @@ const DayCell = observer(
   ({ day, longestDayS }: { day: DrivenDay; longestDayS: number }) => {
     const level = intensityLevel(day.timeInCarS, longestDayS);
 
-    if (day.future) {
+    if (day.future || day.outside) {
       return <i className={styles.future} />;
     }
 
@@ -120,7 +121,41 @@ const WeekdayLabels = observer(({ week }: { week: DrivenDay[] }) => {
   );
 });
 
-/** The last 26 weeks, a cell a day, shaded by the time spent in the car. */
+/** The year's paging: the arrows either side of the year shown. */
+const YearSwitch = observer(() => {
+  const { t } = useTranslation('main-app');
+  const statistics = useStatisticsStore();
+
+  return (
+    <span className={styles.years}>
+      <button
+        type="button"
+        className={styles.yearButton}
+        disabled={!statistics.canShowPreviousYear}
+        title={t('homePage.calendar.previousYear')}
+        aria-label={t('homePage.calendar.previousYear')}
+        onClick={() => statistics.showPreviousYear()}
+      >
+        <ChevronLeft size={ICON_SIZE} />
+      </button>
+
+      <span className={styles.year}>{statistics.shownYear}</span>
+
+      <button
+        type="button"
+        className={styles.yearButton}
+        disabled={!statistics.canShowNextYear}
+        title={t('homePage.calendar.nextYear')}
+        aria-label={t('homePage.calendar.nextYear')}
+        onClick={() => statistics.showNextYear()}
+      >
+        <ChevronRight size={ICON_SIZE} />
+      </button>
+    </span>
+  );
+});
+
+/** A calendar year, a cell a day, shaded by the time spent in the car. */
 export const DaysDrivenCard = observer(() => {
   const { t } = useTranslation('main-app');
   const formatDuration = useFormatDuration();
@@ -134,10 +169,13 @@ export const DaysDrivenCard = observer(() => {
       <div className={styles.head}>
         <CalendarDays size={ICON_SIZE} />
         {t('homePage.calendar.title')}
-        <span className={styles.span}>{t('homePage.calendar.span')}</span>
+        <YearSwitch />
       </div>
 
-      <div className={styles.calendar}>
+      <div
+        className={styles.calendar}
+        style={{ '--weeks': weeks.length } as CSSProperties}
+      >
         <MonthLabels weeks={weeks} />
 
         {weeks.length > 0 && <WeekdayLabels week={weeks[0]} />}

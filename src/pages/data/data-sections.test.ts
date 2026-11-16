@@ -6,8 +6,8 @@ import {
 } from './data-sections';
 
 describe('DATA_MENU', () => {
-  it('lists recorded tracks, analysis, strategy and statistics, in that order', () => {
-    expect(DATA_MENU).toEqual(['tracks', 'analysis', 'strategy', 'statistics']);
+  it('lists recorded tracks, strategy and statistics, in that order', () => {
+    expect(DATA_MENU).toEqual(['tracks', 'strategy', 'statistics']);
   });
 
   it('opens on recorded tracks', () => {
@@ -17,7 +17,7 @@ describe('DATA_MENU', () => {
 
 describe('dataSectionOf', () => {
   it('takes a section the menu has, else the first', () => {
-    expect(dataSectionOf('analysis')).toBe('analysis');
+    expect(dataSectionOf('strategy')).toBe('strategy');
     expect(dataSectionOf('nonsense')).toBe('tracks');
     expect(dataSectionOf(null)).toBe('tracks');
   });

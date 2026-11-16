@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { finishText } from './recent-session-format';
+import { finishText } from './finish-text';
 
 describe('finishText', () => {
   it('names the place and the field, the place alone when the field is unknown', () => {

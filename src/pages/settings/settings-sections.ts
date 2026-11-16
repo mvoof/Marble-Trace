@@ -11,6 +11,7 @@ export type SettingsSectionId =
   | 'about'
   | 'overlay'
   | 'interaction'
+  | 'hotkeys'
   | 'maintenance'
   | 'telemetryInspector';
 
@@ -19,6 +20,7 @@ const SETTINGS_SECTIONS = [
   'general',
   'overlay',
   'interaction',
+  'hotkeys',
   'updates',
   'maintenance',
   'about',
@@ -43,3 +45,11 @@ export const settingsMenu = (
 export const SETTINGS_MENU = settingsMenu(hasDevTools);
 
 export const DEFAULT_SETTINGS_SECTION: SettingsMenuSectionId = 'general';
+
+/** A section the navigation names, if the menu has it; else the first. */
+export const settingsSectionOf = (
+  section: string | null
+): SettingsMenuSectionId =>
+  SETTINGS_MENU.find(
+    (entry): entry is SettingsMenuSectionId => entry === section
+  ) ?? DEFAULT_SETTINGS_SECTION;

@@ -1,3 +1,11 @@
+// The title row, then the analysis or the sessions to pick from.
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: rem(12);
+  min-width: 0;
+}
+
 .section {
   display: flex;
   flex-direction: column;
@@ -118,6 +126,27 @@
   color: $sys-text-muted;
 }
 
+// Under the list: more laps of the same session.
+.addLaps {
+  display: flex;
+  align-items: center;
+  gap: rem(6);
+  width: 100%;
+  margin-top: rem(6);
+  padding: rem(6) rem(4);
+  font-size: rem(12);
+  color: $sys-text-secondary;
+  cursor: pointer;
+  background: none;
+  border: 1px dashed $sys-border-main;
+  border-radius: rem(6);
+
+  &:hover {
+    color: $sys-text-primary;
+    border-color: $sys-text-muted;
+  }
+}
+
 // Colour, eye, lap, time, reference, remove.
 .lap {
   display: grid;
@@ -198,7 +227,7 @@
 }
 
 .empty {
-  margin: rem(40) 0;
+  margin: rem(8) 0;
   text-align: center;
   font-size: rem(13);
   color: $sys-text-muted;

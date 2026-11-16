@@ -70,6 +70,42 @@ $narrow-window: 1000px;
   color: $sys-text-secondary;
 }
 
+// Wins, top 3, top 10 and races of the week, in a row under the bests.
+.results {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: rem(6);
+  margin-top: rem(10);
+  padding-top: rem(8);
+  border-top: 1px solid $sys-border-sub;
+}
+
+.result {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.resultCount {
+  font-family: $font-mono;
+  font-size: rem(15);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: $sys-text-primary;
+}
+
+.resultLabel {
+  overflow: hidden;
+  font-size: rem(10);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  color: $sys-text-muted;
+}
+
+.resultZero {
+  color: $sys-text-muted;
+}
+
 .flat {
   color: $sys-text-muted;
 }
