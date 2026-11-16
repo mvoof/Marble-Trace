@@ -1,0 +1,29 @@
+.head {
+  display: flex;
+  align-items: center;
+  gap: rem(8);
+  margin-bottom: rem(8);
+}
+
+.addChannel {
+  width: rem(180);
+}
+
+.tool {
+  display: grid;
+  place-items: center;
+  padding: 0;
+  color: $sys-text-muted;
+  cursor: pointer;
+  background: none;
+  border: 0;
+
+  &:hover:not(:disabled) {
+    color: $sys-text-primary;
+  }
+
+  &:disabled {
+    opacity: 0.3;
+    cursor: default;
+  }
+}

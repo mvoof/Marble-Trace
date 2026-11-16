@@ -1,5 +1,8 @@
 import { makeAutoObservable, runInAction } from 'mobx';
 
+import type { LapChannelData } from '@shared/api/lap-analysis.service';
+import { DELTA_CHANNEL, ELAPSED_CHANNEL, deltaValues } from './channel-looks';
+
 import type {
   AnalysisLap,
   AnalysisLoad,
@@ -23,7 +26,29 @@ export interface LapAnalysisApi {
   setAnalysisReference: (lap: LapRef) => Promise<AnalysisSet>;
   loadAnalysisLaps: (laps: LapRef[]) => Promise<AnalysisLoad>;
   unloadAnalysis: () => Promise<void>;
+  getLapChannels: (
+    laps: LapRef[],
+    channels: string[]
+  ) => Promise<LapChannelData>;
 }
+
+/** Channels on the grid: per channel, a value array per lap of `laps`. */
+export interface ChartData {
+  points: number;
+  laps: LapRef[];
+  byChannel: Map<string, Float32Array[]>;
+}
+
+/** The file channels the charts need: the delta reads the time since the line. */
+export const fileChannelsFor = (charts: string[]): string[] => {
+  const channels = charts.filter((name) => name !== DELTA_CHANNEL);
+
+  if (charts.includes(DELTA_CHANNEL) && !channels.includes(ELAPSED_CHANNEL)) {
+    channels.push(ELAPSED_CHANNEL);
+  }
+
+  return channels;
+};
 
 /**
  * Where the laps' telemetry is: none asked for, being read, in memory, or
@@ -75,18 +100,108 @@ export class LapAnalysisStore {
     keepWhileGameRuns: false,
   };
 
+  chartData: ChartData | null = null;
+
   /** Answers older than the latest telemetry request are dropped. */
   private telemetryRequest = 0;
+  private chartRequest = 0;
 
   constructor(private api: LapAnalysisApi) {
-    makeAutoObservable<LapAnalysisStore, 'api' | 'telemetryRequest'>(this, {
+    makeAutoObservable<
+      LapAnalysisStore,
+      'api' | 'telemetryRequest' | 'chartRequest'
+    >(this, {
       api: false,
       telemetryRequest: false,
+      chartRequest: false,
     });
   }
 
   get holdsTelemetry(): boolean {
     return holdsTelemetry(this.gate);
+  }
+
+  /** The charts' distance grid: a point a metre from the line. */
+  get chartDistances(): Float64Array {
+    const points = this.chartData?.points ?? 0;
+
+    return Float64Array.from({ length: points }, (_, metre) => metre);
+  }
+
+  /** A chart's values per lap of the set, in the set's order; the delta is
+   *  each lap's time minus the reference's. `null` until fetched. */
+  chartValues(channel: string): Float32Array[] | null {
+    const data = this.chartData;
+
+    if (data === null) {
+      return null;
+    }
+
+    const ordered = (name: string) => {
+      const values = data.byChannel.get(name);
+
+      if (values === undefined) {
+        return null;
+      }
+
+      return this.set.laps.map((lap) => {
+        const index = data.laps.findIndex((fetched) =>
+          sameLap(fetched, lap.lap)
+        );
+
+        return values[index] ?? new Float32Array(data.points);
+      });
+    };
+
+    if (channel !== DELTA_CHANNEL) {
+      return ordered(channel);
+    }
+
+    const elapsed = ordered(ELAPSED_CHANNEL);
+    const referenceIndex = this.set.laps.findIndex((lap) => lap.reference);
+
+    if (elapsed === null || referenceIndex < 0) {
+      return null;
+    }
+
+    return elapsed.map((times) => deltaValues(times, elapsed[referenceIndex]));
+  }
+
+  /** Asks for the channels the charts draw, of every lap held. */
+  async fetchCharts(charts: string[]) {
+    this.chartRequest += 1;
+    const request = this.chartRequest;
+    const laps = this.set.laps
+      .map((lap) => lap.lap)
+      .filter((lap) => !this.isMissing(lap));
+    const channels = fileChannelsFor(charts);
+
+    if (this.telemetry !== 'ready' || laps.length === 0) {
+      this.chartData = null;
+
+      return;
+    }
+
+    try {
+      const fetched = await this.api.getLapChannels(laps, channels);
+
+      runInAction(() => {
+        if (request === this.chartRequest) {
+          this.chartData = {
+            points: fetched.points,
+            laps,
+            byChannel: new Map(
+              channels.map((name, index) => [
+                name,
+                fetched.values.map((lapValues) => lapValues[index]),
+              ])
+            ),
+          };
+        }
+      });
+    } catch (error) {
+      console.warn('Chart channels not loaded', error);
+    }
   }
 
   /** The laps whose file is gone or does not hold them. */
@@ -112,6 +227,7 @@ export class LapAnalysisStore {
     if (laps.length === 0 || !this.holdsTelemetry) {
       this.telemetry = laps.length === 0 ? 'idle' : 'unloaded';
       this.loaded = null;
+      this.chartData = null;
       await this.api.unloadAnalysis().catch((error: unknown) => {
         console.error('Analysis not unloaded', error);
       });

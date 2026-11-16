@@ -7,6 +7,7 @@ import { useLapAnalysisStore } from '@features/lap-analysis/lap-analysis-context
 import { cx } from '@shared/lib/class-names';
 import { formatLapTimeOrDash } from '@shared/lib/telemetry-format';
 import type { AnalysisLap } from '@shared/contracts/generated/bindings';
+import { AnalysisCharts } from './AnalysisCharts';
 import { AnalysisSettings } from './AnalysisSettings';
 import styles from './AnalysisSection.module.scss';
 
@@ -117,7 +118,7 @@ const TelemetryArea = observer(() => {
     );
   }
 
-  return null;
+  return <AnalysisCharts />;
 });
 
 /** The laps picked for the analysis, from one session, and their telemetry. */

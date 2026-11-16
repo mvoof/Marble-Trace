@@ -1,0 +1,59 @@
+.card {
+  position: relative;
+  padding: rem(8) rem(10) rem(4);
+  margin-bottom: rem(8);
+  background: $sys-bg-card;
+  border: 1px solid $sys-border-sub;
+  border-radius: rem(10);
+
+  // The cursor: a white dashed line through every chart at once.
+  :global(.u-cursor-x) {
+    border-right: 1px dashed $sys-text-primary;
+  }
+}
+
+.title {
+  position: absolute;
+  top: rem(8);
+  left: rem(12);
+  z-index: 2;
+  font-size: rem(11);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: $sys-text-secondary;
+  pointer-events: none;
+}
+
+.tools {
+  position: absolute;
+  top: rem(6);
+  right: rem(10);
+  z-index: 2;
+  display: flex;
+  gap: rem(4);
+  color: $sys-text-muted;
+}
+
+.host {
+  width: 100%;
+}
+
+// By the cursor: the distance, then each shown lap's value in its colour.
+.plaque {
+  position: absolute;
+  top: rem(24);
+  z-index: 5;
+  padding: rem(4) rem(7);
+  font-family: $font-mono;
+  font-size: rem(11);
+  line-height: 1.5;
+  white-space: nowrap;
+  pointer-events: none;
+  background: rgba(13, 14, 18, 0.92);
+  border: 1px solid $sys-border-main;
+  border-radius: rem(6);
+}
+
+.plaqueDistance {
+  color: $sys-text-secondary;
+}

@@ -744,7 +744,12 @@
       "keepWhileGameRunsWarning": "Takes up to ~150 MB of RAM. Better off in a race.",
       "unloaded": "Game is running — analysis unloaded",
       "unloadedNote": "Not to get in the overlay's way, the laps' telemetry is not held while this window is in the background. Come back to it and the data loads again.",
-      "loading": "Reading the laps…"
+      "loading": "Reading the laps…",
+      "delta": "Delta",
+      "addChannel": "+ Channel",
+      "moveUp": "Move up",
+      "moveDown": "Move down",
+      "removeChart": "Remove the chart"
     }
   },
   "bindings": {

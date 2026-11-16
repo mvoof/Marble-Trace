@@ -744,7 +744,12 @@
       "keepWhileGameRunsWarning": "Ocupa hasta ~150 MB de RAM. Mejor apagado en carrera.",
       "unloaded": "El juego está abierto — análisis descargado",
       "unloadedNote": "Para no estorbar al overlay, la telemetría de las vueltas no se mantiene mientras la ventana está en segundo plano. Vuelve a ella y los datos se cargan de nuevo.",
-      "loading": "Leyendo las vueltas…"
+      "loading": "Leyendo las vueltas…",
+      "delta": "Delta",
+      "addChannel": "+ Canal",
+      "moveUp": "Subir",
+      "moveDown": "Bajar",
+      "removeChart": "Quitar el gráfico"
     }
   },
   "bindings": {

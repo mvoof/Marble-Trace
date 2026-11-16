@@ -43,6 +43,18 @@ export const registerAnalysisSync = async (
       () => void root.lapAnalysis.syncTelemetry(),
       { fireImmediately: true, equals: compareStructural }
     ),
+    // The charts ask for their channels once the laps are in memory.
+    reaction(
+      () => ({
+        telemetry: root.lapAnalysis.telemetry,
+        charts: [...root.appSettings.appSettings.analysisChannels],
+        laps: root.lapAnalysis.laps.map(
+          (lap) => `${lap.lap.path}|${lap.lap.sessionNum}|${lap.lap.lapNum}`
+        ),
+      }),
+      ({ charts }) => void root.lapAnalysis.fetchCharts(charts),
+      { fireImmediately: true, equals: compareStructural }
+    ),
   ];
 
   root.lapAnalysis.setGate({

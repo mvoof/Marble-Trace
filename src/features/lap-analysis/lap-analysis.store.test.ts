@@ -76,6 +76,12 @@ const fakeApi = (): LapAnalysisApi => ({
     missing: [],
   })),
   unloadAnalysis: vi.fn(async () => undefined),
+  getLapChannels: vi.fn(async (laps: LapRef[], channels: string[]) => ({
+    points: 3,
+    values: laps.map((lap) =>
+      channels.map(() => new Float32Array([0, lap.lapNum, lap.lapNum * 2]))
+    ),
+  })),
 });
 
 describe('isAnalysable', () => {
@@ -223,5 +229,44 @@ describe('LapAnalysisStore telemetry', () => {
     await loading;
 
     expect(store.telemetry).toBe('unloaded');
+  });
+});
+
+describe('LapAnalysisStore charts', () => {
+  it('counts the delta from each lap’s time minus the reference’s', async () => {
+    const api = fakeApi();
+    const lapIn = (lapNum: number, reference: boolean) => ({
+      lap: ref(lapNum),
+      runType: 'Race',
+      timeS: 100,
+      isBest: false,
+      color: '#4cc9f0',
+      visible: true,
+      reference,
+      filePresent: true,
+    });
+    vi.mocked(api.getAnalysisSet).mockResolvedValue({
+      session: SESSION,
+      laps: [lapIn(2, false), lapIn(3, true)],
+    });
+    const store = new LapAnalysisStore(api);
+    await store.load();
+    await store.syncTelemetry();
+
+    await store.fetchCharts(['deltaToReference', 'Speed']);
+
+    expect(api.getLapChannels).toHaveBeenLastCalledWith(
+      [ref(2), ref(3)],
+      ['Speed', 'ElapsedTime']
+    );
+    expect(
+      store.chartValues('deltaToReference')?.map((lap) => Array.from(lap))
+    ).toEqual([
+      [0, -1, -2],
+      [0, 0, 0],
+    ]);
+    expect(Array.from(store.chartValues('Speed')?.[1] ?? [])).toEqual([
+      0, 3, 6,
+    ]);
   });
 });
