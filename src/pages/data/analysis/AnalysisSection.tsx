@@ -1,15 +1,17 @@
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
-import { ColorPicker, Spin, Tooltip } from 'antd';
+import { ColorPicker, Spin, Tabs, Tooltip } from 'antd';
 import { Eye, EyeOff, Flag, PauseCircle, Star, X } from 'lucide-react';
 
 import { useLapAnalysisStore } from '@features/lap-analysis/lap-analysis-context';
+import type { AnalysisTab } from '@features/lap-analysis/lap-analysis.store';
 import { cx } from '@shared/lib/class-names';
 import { formatLapTimeOrDash } from '@shared/lib/telemetry-format';
 import type { AnalysisLap } from '@shared/contracts/generated/bindings';
 import { AnalysisCharts } from './AnalysisCharts';
 import { AnalysisMap } from './AnalysisMap';
 import { AnalysisSettings } from './AnalysisSettings';
+import { AnalysisSetup } from './AnalysisSetup';
 import styles from './AnalysisSection.module.scss';
 
 const MS_PER_SECOND = 1000;
@@ -162,31 +164,45 @@ export const AnalysisSection = observer(() => {
         </span>
       </div>
 
-      <div className={styles.body}>
-        <aside className={styles.side}>
-          <div className={styles.card}>
-            <div className={styles.cardHead}>
-              {t('dataPage.analysis.laps')}
-              <span className={styles.hint}>
-                {t('dataPage.analysis.referenceHint')}
-              </span>
+      <Tabs
+        className={styles.tabs}
+        activeKey={analysis.tab}
+        onChange={(key) => analysis.setTab(key as AnalysisTab)}
+        items={[
+          { key: 'telemetry', label: t('dataPage.analysis.telemetryTab') },
+          { key: 'setup', label: t('dataPage.analysis.setupTab') },
+        ]}
+      />
+
+      {analysis.tab === 'setup' ? (
+        <AnalysisSetup />
+      ) : (
+        <div className={styles.body}>
+          <aside className={styles.side}>
+            <div className={styles.card}>
+              <div className={styles.cardHead}>
+                {t('dataPage.analysis.laps')}
+                <span className={styles.hint}>
+                  {t('dataPage.analysis.referenceHint')}
+                </span>
+              </div>
+
+              {analysis.laps.map((lap) => (
+                <LapItem
+                  key={`${lap.lap.path}:${lap.lap.sessionNum}:${lap.lap.lapNum}`}
+                  lap={lap}
+                />
+              ))}
             </div>
 
-            {analysis.laps.map((lap) => (
-              <LapItem
-                key={`${lap.lap.path}:${lap.lap.sessionNum}:${lap.lap.lapNum}`}
-                lap={lap}
-              />
-            ))}
+            <AnalysisMap />
+          </aside>
+
+          <div className={styles.charts}>
+            <TelemetryArea />
           </div>
-
-          <AnalysisMap />
-        </aside>
-
-        <div className={styles.charts}>
-          <TelemetryArea />
         </div>
-      </div>
+      )}
     </div>
   );
 });

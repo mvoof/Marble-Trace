@@ -22,6 +22,11 @@
   margin-left: auto;
 }
 
+// The tab bar sits in the section's own gap.
+.tabs :global(.ant-tabs-nav) {
+  margin: 0;
+}
+
 // The lap list at the left, staying in view; the charts beside it.
 .body {
   display: grid;

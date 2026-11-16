@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 
 import type {
   AnalysisSet,
+  CarSetupView,
   LapRef,
   RecentSession,
   SessionLap,
@@ -76,6 +77,7 @@ const fakeApi = (): LapAnalysisApi => ({
     missing: [],
   })),
   unloadAnalysis: vi.fn(async () => undefined),
+  getCarSetup: vi.fn(async () => ({ state: 'fileDeleted' as const })),
   getLapChannels: vi.fn(async (laps: LapRef[], channels: string[]) => ({
     points: 3,
     values: laps.map((lap) =>
@@ -270,5 +272,108 @@ describe('LapAnalysisStore charts', () => {
     expect(Array.from(store.chartValues('Speed')?.[1] ?? [])).toEqual([
       0, 3, 6,
     ]);
+  });
+});
+
+describe('LapAnalysisStore setup', () => {
+  const setOf = (
+    laps: { path: string; reference: boolean }[]
+  ): AnalysisSet => ({
+    session: SESSION,
+    laps: laps.map(({ path, reference }, index) => ({
+      lap: { path, sessionNum: 0, lapNum: index + 1 },
+      runType: 'Practice',
+      timeS: 100,
+      isBest: false,
+      color: '#4cc9f0',
+      visible: true,
+      reference,
+      filePresent: true,
+    })),
+    sectors: [],
+  });
+  const SETUP: CarSetupView = {
+    state: 'setup',
+    name: 'race.sto',
+    groups: [
+      {
+        name: 'Chassis',
+        sections: [
+          { name: 'Front', rows: [{ label: 'ArbBlades', value: '3' }] },
+        ],
+      },
+    ],
+  };
+
+  it('reads the setup of the reference lap’s file', async () => {
+    const api = fakeApi();
+    api.getCarSetup = vi.fn(async () => SETUP);
+    vi.mocked(api.getAnalysisSet).mockResolvedValue(
+      setOf([
+        { path: 'first.ibt', reference: false },
+        { path: 'second.ibt', reference: true },
+      ])
+    );
+    const store = new LapAnalysisStore(api);
+    await store.load();
+
+    await store.fetchSetup();
+
+    expect(api.getCarSetup).toHaveBeenCalledWith('second.ibt');
+    expect(store.setup).toEqual(SETUP);
+  });
+
+  it('keeps the answer for the file asked for last', async () => {
+    const api = fakeApi();
+    let answerFirst: (view: CarSetupView) => void = () => undefined;
+    api.getCarSetup = vi
+      .fn()
+      .mockImplementationOnce(
+        () =>
+          new Promise<CarSetupView>((resolve) => {
+            answerFirst = resolve;
+          })
+      )
+      .mockResolvedValueOnce({ state: 'fileDeleted' });
+    vi.mocked(api.getAnalysisSet)
+      .mockResolvedValueOnce(setOf([{ path: 'old.ibt', reference: true }]))
+      .mockResolvedValueOnce(setOf([{ path: 'new.ibt', reference: true }]));
+    const store = new LapAnalysisStore(api);
+    await store.load();
+    const stale = store.fetchSetup();
+    await store.load();
+
+    await store.fetchSetup();
+    answerFirst(SETUP);
+    await stale;
+
+    expect(store.setup).toEqual({ state: 'fileDeleted' });
+  });
+
+  it('says so when the file cannot be read', async () => {
+    const api = fakeApi();
+    api.getCarSetup = vi.fn(async () => {
+      throw new Error('broken header');
+    });
+    vi.mocked(api.getAnalysisSet).mockResolvedValue(
+      setOf([{ path: 'broken.ibt', reference: true }])
+    );
+    const store = new LapAnalysisStore(api);
+    await store.load();
+
+    await store.fetchSetup();
+
+    expect(store.setup).toEqual({ state: 'unreadable' });
+  });
+
+  it('has no setup without laps', async () => {
+    const api = fakeApi();
+    api.getCarSetup = vi.fn(async () => SETUP);
+    const store = new LapAnalysisStore(api);
+
+    await store.fetchSetup();
+
+    expect(api.getCarSetup).not.toHaveBeenCalled();
+    expect(store.setup).toBeNull();
   });
 });

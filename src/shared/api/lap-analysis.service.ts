@@ -3,6 +3,7 @@ import { invoke } from '@tauri-apps/api/core';
 import type {
   AnalysisLoad,
   AnalysisSet,
+  CarSetupView,
   LapRef,
   SessionLaps,
 } from '@shared/contracts/generated/bindings';
@@ -70,3 +71,7 @@ export const getLapChannels = async (
 
   return { points, values };
 };
+
+/** The setup the file at `path` wrote; `fileDeleted` once it is gone. */
+export const getCarSetup = (path: string) =>
+  invoke<CarSetupView>('get_car_setup', { path });

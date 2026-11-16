@@ -10,6 +10,7 @@
 mod laps;
 mod outline;
 mod samples;
+mod setup;
 mod yaml;
 
 use std::fs::File;
@@ -20,6 +21,7 @@ use mt_model::app::stats::SessionFile;
 
 pub use laps::read_lap_telemetry;
 use samples::{Channels, RunTracker};
+pub use setup::read_car_setup;
 use yaml::{decode_yaml, FileYaml};
 
 const HEADER_LEN: usize = 112;

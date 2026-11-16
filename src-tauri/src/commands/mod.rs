@@ -128,6 +128,7 @@ pub fn invoke_handler() -> impl Fn(Invoke<Wry>) -> bool + Send + Sync + 'static 
         stats::load_analysis_laps,
         stats::unload_analysis,
         stats::get_lap_channels,
+        stats::get_car_setup,
         stats::get_home_stats,
         stats::get_autolog_state,
         stats::enable_autolog,

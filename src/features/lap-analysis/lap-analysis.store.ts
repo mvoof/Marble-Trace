@@ -9,6 +9,7 @@ import type {
   AnalysisLap,
   AnalysisLoad,
   AnalysisSet,
+  CarSetupView,
   LapRef,
   SessionLap,
   SessionLaps,
@@ -28,6 +29,7 @@ export interface LapAnalysisApi {
   setAnalysisReference: (lap: LapRef) => Promise<AnalysisSet>;
   loadAnalysisLaps: (laps: LapRef[]) => Promise<AnalysisLoad>;
   unloadAnalysis: () => Promise<void>;
+  getCarSetup: (path: string) => Promise<CarSetupView>;
   getLapChannels: (
     laps: LapRef[],
     channels: string[]
@@ -91,6 +93,15 @@ export const isAnalysable = (lap: SessionLap) =>
 
 const EMPTY_SET: AnalysisSet = { session: null, laps: [], sectors: [] };
 
+/** The analysis page's tabs. */
+export type AnalysisTab = 'telemetry' | 'setup';
+
+/** What the setup tab shows: the backend's answer, or why there is none yet. */
+export type SetupState =
+  | CarSetupView
+  | { state: 'loading' }
+  | { state: 'unreadable' };
+
 /**
  * The analysis lap set, kept in the stats database, and the session modal
  * laps are picked from. Every change answers the set as the backend stored it.
@@ -114,20 +125,70 @@ export class LapAnalysisStore {
   /** The stretch shown and the cursor, shared by the charts and the map. */
   readonly viewport = new ChartViewport();
 
+  tab: AnalysisTab = 'telemetry';
+  /** The setup of `setupPath`'s file; `null` without laps. */
+  setup: SetupState | null = null;
+
   /** Answers older than the latest telemetry request are dropped. */
   private telemetryRequest = 0;
   private chartRequest = 0;
+  private setupRequest = 0;
 
   constructor(private api: LapAnalysisApi) {
     makeAutoObservable<
       LapAnalysisStore,
-      'api' | 'telemetryRequest' | 'chartRequest'
+      'api' | 'telemetryRequest' | 'chartRequest' | 'setupRequest'
     >(this, {
       api: false,
       telemetryRequest: false,
       chartRequest: false,
+      setupRequest: false,
       viewport: false,
     });
+  }
+
+  setTab(tab: AnalysisTab) {
+    this.tab = tab;
+  }
+
+  /**
+   * The file the setup tab shows: the reference lap's, else the first lap's;
+   * `null` without laps.
+   */
+  get setupPath(): string | null {
+    return (this.reference ?? this.set.laps.at(0))?.lap.path ?? null;
+  }
+
+  /** Reads the setup of `setupPath`'s file; the last file's goes at once. */
+  async fetchSetup() {
+    this.setupRequest += 1;
+    const request = this.setupRequest;
+    const path = this.setupPath;
+
+    if (path === null) {
+      this.setup = null;
+
+      return;
+    }
+
+    this.setup = { state: 'loading' };
+
+    try {
+      const view = await this.api.getCarSetup(path);
+
+      runInAction(() => {
+        if (request === this.setupRequest) {
+          this.setup = view;
+        }
+      });
+    } catch (error) {
+      console.warn('Car setup not read', error);
+      runInAction(() => {
+        if (request === this.setupRequest) {
+          this.setup = { state: 'unreadable' };
+        }
+      });
+    }
   }
 
   get holdsTelemetry(): boolean {

@@ -106,6 +106,7 @@ pub fn register_types(types: &mut specta::TypeCollection) {
         .register::<app::stats::SessionLaps>()
         .register::<app::stats::AnalysisSet>()
         .register::<app::lap_telemetry::AnalysisLoad>()
+        .register::<app::car_setup::CarSetupView>()
         .register::<app::stats::HomeStats>()
         .register::<app::stats::AutologState>()
         .register::<app::stats::StatsFolder>()

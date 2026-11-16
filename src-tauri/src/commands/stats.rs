@@ -6,6 +6,7 @@ use std::sync::Arc;
 use tauri::ipc::Response;
 use tauri::{AppHandle, Manager, State};
 
+use mt_model::app::car_setup::CarSetupView;
 use mt_model::app::lap_telemetry::AnalysisLoad;
 use mt_model::app::stats::{
     AnalysisSet, AutologState, HomeStats, KnownCar, LapRef, RecentSession, SessionFilter,
@@ -13,6 +14,7 @@ use mt_model::app::stats::{
 };
 use mt_sim_iracing::app_ini;
 use mt_sim_iracing::car_badges::badge_for_car;
+use mt_sim_iracing::ibt::read_car_setup;
 use mt_stats::db::StatsDb;
 use mt_stats::import::{PassScope, StatsService};
 use mt_stats::lap_cache::LapCache;
@@ -301,4 +303,20 @@ pub async fn get_lap_channels(
         .await
         .map_err(|error| error.to_string())?
         .map(Response::new)
+}
+
+/// The setup the file at `path` wrote; "file deleted" once it is gone.
+#[tauri::command]
+pub async fn get_car_setup(path: String) -> Result<CarSetupView, String> {
+    tauri::async_runtime::spawn_blocking(move || {
+        let path = std::path::Path::new(&path);
+
+        if !path.is_file() {
+            return Ok(CarSetupView::FileDeleted);
+        }
+
+        read_car_setup(path)
+    })
+    .await
+    .map_err(|error| error.to_string())?
 }

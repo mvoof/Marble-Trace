@@ -1,0 +1,80 @@
+// One column of garage groups, as wide as reads comfortably.
+.setup {
+  display: flex;
+  flex-direction: column;
+  gap: rem(12);
+  max-width: rem(640);
+}
+
+.note {
+  margin: 0;
+  font-size: rem(13);
+  color: $sys-text-muted;
+}
+
+.fileName {
+  font-family: $font-mono;
+}
+
+.card {
+  padding: rem(14) rem(16);
+  background: $sys-bg-card;
+  border: 1px solid $sys-border-sub;
+  border-radius: rem(10);
+}
+
+.title {
+  margin: 0 0 rem(6);
+  font-size: rem(12);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: $sys-text-secondary;
+}
+
+.section + .section {
+  margin-top: rem(10);
+}
+
+.sectionName {
+  margin: 0 0 rem(2);
+  font-size: rem(12);
+  font-weight: 600;
+  color: $sys-text-primary;
+}
+
+.row {
+  display: flex;
+  justify-content: space-between;
+  gap: rem(16);
+  padding: rem(5) 0;
+  font-size: rem(12);
+  border-bottom: 1px solid $sys-border-sub;
+
+  &:last-child {
+    border-bottom: 0;
+  }
+}
+
+.label {
+  color: $sys-text-secondary;
+}
+
+.value {
+  font-family: $font-mono;
+  text-align: right;
+  color: $sys-text-primary;
+}
+
+.gate {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: rem(8);
+  padding: rem(60) rem(20);
+  font-size: rem(13);
+  color: $sys-text-secondary;
+
+  p {
+    margin: 0;
+  }
+}

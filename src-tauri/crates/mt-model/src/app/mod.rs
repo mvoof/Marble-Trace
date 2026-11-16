@@ -2,6 +2,7 @@
 //! input devices, the install check, remote screens, statistics and the lap
 //! analysis.
 
+pub mod car_setup;
 pub mod chat;
 pub mod companions;
 pub mod crew;

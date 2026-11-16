@@ -393,6 +393,19 @@ export type CarPositionsFrame = {
 };
 
 /**
+ * What the setup tab shows of a file.
+ */
+export type CarSetupView =
+  /**
+   * The file is no longer on disk.
+   */
+  | { state: 'fileDeleted' }
+  /**
+   * The file's setup; no groups when it wrote none.
+   */
+  | { state: 'setup'; name: string | null; groups: SetupGroup[] };
+
+/**
  * Car status telemetry — vehicle systems, fuel, engine, and pit state.
  *
  * Contains fuel levels, engine temperatures, voltage, oil pressure,
@@ -3098,6 +3111,29 @@ export type SessionState =
   | 'CoolDown';
 
 export type SessionType = 'Practice' | 'Qualify' | 'Race' | 'Unknown';
+
+/**
+ * A garage tab, e.g. `TiresAero`, in the file's order.
+ */
+export type SetupGroup = { name: string; sections: SetupSection[] };
+
+/**
+ * One garage value: the sim's key and the text it wrote, units included,
+ * e.g. `StartingPressure` and `159 kPa`.
+ */
+export type SetupRow = { label: string; value: string };
+
+/**
+ * A part of a group, e.g. `LeftFront`. The same name recurs in other
+ * groups: a row is known by group and section together.
+ */
+export type SetupSection = {
+  /**
+   * Empty for values that sit in the group itself.
+   */
+  name: string;
+  rows: SetupRow[];
+};
 
 export type SimPerfFrame = {
   /**
