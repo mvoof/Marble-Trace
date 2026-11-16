@@ -97,10 +97,17 @@
   fill: $sys-bg-main;
 }
 
-// The cursor: a dot where the car was, a chevron where its nose pointed.
+// The cursor: a dot where the car was, a thin line and a chevron where its
+// nose pointed.
 .dot {
   stroke: $sys-bg-main;
   stroke-width: 1.5px;
+  vector-effect: non-scaling-stroke;
+}
+
+.stem {
+  fill: none;
+  stroke-width: 1px;
   vector-effect: non-scaling-stroke;
 }
 

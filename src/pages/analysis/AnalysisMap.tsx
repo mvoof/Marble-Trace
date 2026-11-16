@@ -17,6 +17,7 @@ import {
   LABEL_SCALE,
   MARKER_CHEVRON_PATH,
   MARKER_DOT_RADIUS_PX,
+  MARKER_STEM_PATH,
   paddedBox,
   type ViewBox,
 } from './map-gestures';
@@ -269,6 +270,11 @@ const MapView = observer(
                 }}
                 visibility="hidden"
               >
+                <path
+                  className={styles.stem}
+                  d={MARKER_STEM_PATH}
+                  stroke={colors[index]}
+                />
                 <path
                   className={styles.chevron}
                   d={MARKER_CHEVRON_PATH}

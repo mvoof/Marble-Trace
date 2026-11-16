@@ -23,6 +23,8 @@ export const LABEL_SCALE = 0.048;
  */
 export const MARKER_DOT_RADIUS_PX = 4.5;
 export const MARKER_CHEVRON_PATH = 'M 19 -5 L 26 0 L 19 5';
+/** A thin line from the dot to the chevron's tip. */
+export const MARKER_STEM_PATH = 'M 0 0 L 26 0';
 /** The hover reaches the track within this share of the view's width. */
 const HOVER_REACH = 0.04;
 /** A view this close to the whole box counts as the whole lap. */
