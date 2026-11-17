@@ -1,12 +1,14 @@
 /* ==========================================================================
    Widget gallery (section 02)
 
-   Groups across the top, the widgets of the open group down the side, and
-   the stage: one widget on a blurred cockpit with the setups it switches to
-   under it. Every widget is drawn at one shared scale (widget-gallery.js sets
-   --wg-scale and each picture's --shot-w), so a small widget reads small
-   beside a large one, as it does on the screen - the stage never blows a
-   badge up to the size of the standings.
+   The section that sells the overlay, so it takes the room: a stage nearly a
+   screen tall with the widget large on a cockpit, its name, what it does and
+   its setups on a panel beside it, and under the stage the groups and a strip
+   of every widget as its own picture.
+
+   Scale: every widget is drawn at one factor of its size on the overlay
+   (TARGET_SCALE in widget-gallery.js), so a small widget stays smaller than a
+   large one; only a widget that would not fit is brought down to fit.
    ========================================================================== */
 
 .gallery-lede {
@@ -15,19 +17,249 @@
 }
 
 .wg {
-  display: grid;
-  grid-template-columns: minmax(12rem, 15rem) minmax(0, 1fr);
-  grid-template-areas:
-    'tabs tabs'
-    'list stage';
-  gap: 1.25rem clamp(1.25rem, 2.5vw, 2.25rem);
-  align-items: start;
+  --wg-panel: min(27rem, 34%);
 }
 
-/* ---- Groups ------------------------------------------------------------- */
+/* ---- Stage ------------------------------------------------------------------ */
+
+.wg-stage {
+  position: relative;
+  display: grid;
+  grid-template-columns: var(--wg-panel) minmax(0, 1fr);
+  max-width: calc(var(--container-width) + 12rem);
+  margin: 0 auto;
+  padding: 0 var(--container-padding);
+}
+
+.wg-scene,
+.wg-panel {
+  grid-row: 1;
+}
+
+/* The cockpit the widgets are made for, darkened under the panel so the
+   words read, and left clear on the right where the widget stands. */
+.wg-scene {
+  grid-column: 1 / -1;
+  position: relative;
+  display: grid;
+  place-items: center;
+  height: clamp(32rem, 78vh, 52rem);
+  padding: clamp(1.5rem, 3vw, 3rem) clamp(1.5rem, 3vw, 3rem)
+    clamp(1.5rem, 3vw, 3rem) calc(var(--wg-panel) + clamp(1.5rem, 3vw, 3rem));
+  overflow: hidden;
+  border-radius: 14px;
+  background: #0b0e12 url('../../assets/img/why/cockpit-bg-1920.webp') center /
+    cover no-repeat;
+  box-shadow:
+    0 2.4rem 4.8rem -2rem rgba(0, 0, 0, 0.85),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+}
+
+.wg-scene::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(
+      90deg,
+      rgba(9, 11, 14, 0.94) 0%,
+      rgba(9, 11, 14, 0.82) 26%,
+      rgba(9, 11, 14, 0.3) 52%,
+      rgba(9, 11, 14, 0.42) 100%
+    ),
+    linear-gradient(180deg, rgba(9, 11, 14, 0) 55%, rgba(9, 11, 14, 0.55));
+  backdrop-filter: blur(2px);
+}
+
+.wg-figure {
+  position: relative;
+  z-index: 1;
+  margin: 0;
+}
+
+.wg-shot {
+  display: block;
+  width: calc(var(--shot-w, 300) * var(--wg-scale, 1) * 1px);
+  max-width: none;
+  height: auto;
+  filter: drop-shadow(0 1rem 2rem rgba(0, 0, 0, 0.55));
+  transition:
+    opacity 0.25s ease,
+    transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.wg.is-swapping .wg-shot {
+  opacity: 0;
+  transform: translateX(2rem) scale(0.97);
+}
+
+/* ---- Panel ------------------------------------------------------------------ */
+
+.wg-panel {
+  grid-column: 1;
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  padding: clamp(1.75rem, 3.5vw, 3.25rem);
+  color: #ffffff;
+}
+
+.wg-group-name {
+  margin: 0 0 0.9rem;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  color: var(--livery-blue);
+}
+
+.wg-name {
+  margin: 0;
+  font-family: var(--font-hero-heading);
+  font-style: italic;
+  font-weight: 800;
+  font-size: clamp(2.6rem, 4.6vw, 4.6rem);
+  line-height: 0.92;
+  text-transform: uppercase;
+  color: #ffffff;
+  transition: opacity 0.2s ease;
+}
+
+.wg-index {
+  display: flex;
+  align-items: baseline;
+  gap: 0.4rem;
+  margin: 0.9rem 0 0;
+  font-family: var(--font-mono);
+}
+
+.wg-index-now {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--livery-blue);
+}
+
+.wg-index-total {
+  font-size: 0.8rem;
+  color: #6f7883;
+}
+
+.wg-desc {
+  max-width: 36ch;
+  margin: 1.1rem 0 0;
+  font-size: 1.02rem;
+  line-height: 1.6;
+  color: #c3c9d1;
+  transition: opacity 0.2s ease;
+}
+
+.wg.is-swapping .wg-name,
+.wg.is-swapping .wg-desc {
+  opacity: 0.35;
+}
+
+.wg-setups-slot {
+  margin-top: 1.75rem;
+}
+
+.wg-setups {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+.wg-setups[hidden] {
+  display: none;
+}
+
+.wg-setups-label {
+  flex-basis: 100%;
+  margin: 0 0 0.25rem;
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: #8a939e;
+}
+
+.wg-setup {
+  padding: 0.55rem 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 999px;
+  background-color: rgba(255, 255, 255, 0.04);
+  font-family: var(--font-family);
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #dfe3e8;
+  cursor: pointer;
+  transition:
+    background-color var(--transition-fast),
+    border-color var(--transition-fast),
+    color var(--transition-fast);
+}
+
+.wg-setup:hover {
+  border-color: rgba(255, 255, 255, 0.5);
+  color: #ffffff;
+}
+
+.wg-setup.is-active {
+  border-color: var(--livery-blue);
+  background-color: var(--livery-blue);
+  color: var(--color-btn-download-text);
+}
+
+/* One setup only: a label, not a control */
+.wg-setups:not(:has(.wg-setup + .wg-setup)) .wg-setup {
+  pointer-events: none;
+}
+
+.wg-nav {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: auto;
+  padding-top: 1.75rem;
+}
+
+.wg-step {
+  display: grid;
+  place-items: center;
+  width: 3rem;
+  height: 3rem;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  background-color: rgba(255, 255, 255, 0.04);
+  color: #ffffff;
+  cursor: pointer;
+  transition:
+    background-color var(--transition-fast),
+    border-color var(--transition-fast);
+}
+
+.wg-step:hover {
+  border-color: var(--livery-blue);
+  background-color: rgba(var(--accent-rgb), 0.18);
+}
+
+.wg-step svg {
+  width: 1.25rem;
+  height: 1.25rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* ---- Groups and the strip ------------------------------------------------- */
+
+.wg-browser {
+  margin-top: clamp(1.5rem, 3vw, 2.25rem);
+}
 
 .wg-tabs {
-  grid-area: tabs;
   display: flex;
   flex-wrap: wrap;
   gap: 0.25rem;
@@ -49,7 +281,8 @@
   transition: color var(--transition-fast);
 }
 
-.wg-tab:hover {
+.wg-tab:hover,
+.wg-tab.is-active {
   color: #ffffff;
 }
 
@@ -65,211 +298,44 @@
   transition: transform var(--transition-normal);
 }
 
-.wg-tab.is-active {
-  color: #ffffff;
-}
-
 .wg-tab.is-active::after {
   transform: none;
 }
 
-.wg-tab:focus-visible,
-.wg-item:focus-visible,
-.wg-setup:focus-visible {
-  outline: 2px solid var(--livery-blue);
-  outline-offset: 2px;
-}
-
-/* ---- Widgets of the group ------------------------------------------------ */
-
-.wg-list {
-  grid-area: list;
+.wg-strip {
   display: flex;
-  flex-direction: column;
-  gap: 2px;
-  margin: 0;
-  padding: 0;
+  gap: 0.75rem;
+  margin: 1.25rem 0 0;
+  padding: 0 0 0.75rem;
   list-style: none;
+  overflow-x: auto;
+  scroll-snap-type: x proximity;
+  scrollbar-color: rgba(255, 255, 255, 0.25) transparent;
 }
 
-.wg-list > li[hidden] {
+.wg-strip > li {
+  flex: none;
+  width: 11.5rem;
+  scroll-snap-align: start;
+}
+
+.wg-strip > li[hidden] {
   display: none;
 }
 
 .wg-item {
+  position: relative;
   display: flex;
-  align-items: center;
-  gap: 0.75rem;
+  flex-direction: column;
+  gap: 0.6rem;
   width: 100%;
-  padding: 0.7rem 0.9rem;
-  border: 0;
-  border-radius: 6px;
-  background: none;
+  padding: 0.6rem;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  background-color: rgba(255, 255, 255, 0.03);
   font-family: var(--font-family);
-  font-size: 0.95rem;
-  font-weight: 600;
   text-align: left;
   color: #9aa2ad;
-  cursor: pointer;
-  transition:
-    background-color var(--transition-fast),
-    color var(--transition-fast);
-}
-
-.wg-item:hover {
-  background-color: rgba(255, 255, 255, 0.04);
-  color: #ffffff;
-}
-
-.wg-item.is-active {
-  background-color: rgba(255, 255, 255, 0.07);
-  box-shadow: inset 3px 0 0 var(--livery-blue);
-  color: #ffffff;
-}
-
-.wg-item-count {
-  margin-left: auto;
-  min-width: 1.4rem;
-  padding: 0.1rem 0.35rem;
-  border-radius: 4px;
-  background-color: rgba(255, 255, 255, 0.07);
-  font-family: var(--font-mono);
-  font-size: 0.7rem;
-  text-align: center;
-  color: #8a939e;
-}
-
-/* ---- Stage ----------------------------------------------------------------- */
-
-/* The setups sit on the scene, over its foot, so the widget and what it
-   can be switched to are seen together; the caption comes under both. */
-.wg-stage {
-  grid-area: stage;
-  display: grid;
-  grid-template-areas:
-    'scene'
-    'caption';
-  min-width: 0;
-}
-
-/* A cockpit out of focus: the widgets are drawn for one, and a transparent
-   capture on a flat ground reads as a sticker. */
-.wg-scene {
-  grid-area: scene;
-  position: relative;
-  display: grid;
-  place-items: center;
-  height: clamp(20rem, 34vw, 30rem);
-  padding: 1.25rem 1.25rem 4.75rem;
-  overflow: hidden;
-  border-radius: 10px;
-  background-color: #0b0e12;
-  box-shadow:
-    0 1.6rem 3.2rem -1.4rem rgba(0, 0, 0, 0.8),
-    inset 0 0 0 1px rgba(255, 255, 255, 0.08);
-}
-
-.wg-scene::before {
-  content: '';
-  position: absolute;
-  inset: -2rem;
-  background: url('../../assets/img/why/cockpit-bg-960.webp') center / cover
-    no-repeat;
-  filter: blur(16px) brightness(0.5) saturate(0.7);
-}
-
-.wg-figure {
-  position: relative;
-  z-index: 1;
-  margin: 0;
-}
-
-.wg-shot {
-  display: block;
-  width: calc(var(--shot-w, 300) * var(--wg-scale, 1) * 1px);
-  max-width: none;
-  height: auto;
-  filter: drop-shadow(0 0.6rem 1.4rem rgba(0, 0, 0, 0.45));
-  transition: opacity 0.2s ease;
-}
-
-.wg-stage.is-swapping .wg-shot {
-  opacity: 0;
-}
-
-.wg-caption {
-  grid-area: caption;
-  margin-top: 1.1rem;
-}
-
-.wg-group-name {
-  margin: 0 0 0.35rem;
-  font-family: var(--font-mono);
-  font-size: 0.66rem;
-  letter-spacing: 0.24em;
-  text-transform: uppercase;
-  color: var(--livery-blue);
-}
-
-.wg-name {
-  margin: 0;
-  font-family: var(--font-family);
-  font-size: clamp(1.3rem, 2vw, 1.6rem);
-  font-weight: 700;
-  color: #ffffff;
-}
-
-.wg-desc {
-  max-width: 62ch;
-  margin: 0.4rem 0 0;
-  font-size: 0.95rem;
-  line-height: 1.55;
-  color: #9aa2ad;
-}
-
-/* ---- Setups ------------------------------------------------------------ */
-
-.wg-setups {
-  grid-area: scene;
-  align-self: end;
-  justify-self: center;
-  z-index: 2;
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  align-items: center;
-  gap: 0.4rem;
-  max-width: calc(100% - 2rem);
-  margin-bottom: 1rem;
-  padding: 0.35rem 0.4rem 0.35rem 0.9rem;
-  border-radius: 999px;
-  background-color: rgba(11, 14, 18, 0.72);
-  backdrop-filter: blur(8px);
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
-}
-
-.wg-setups[hidden] {
-  display: none;
-}
-
-.wg-setups-label {
-  margin-right: 0.35rem;
-  font-family: var(--font-mono);
-  font-size: 0.66rem;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  color: #8a939e;
-}
-
-.wg-setup {
-  padding: 0.45rem 0.9rem;
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  border-radius: 999px;
-  background: none;
-  font-family: var(--font-family);
-  font-size: 0.8rem;
-  font-weight: 600;
-  color: #c9ced5;
   cursor: pointer;
   transition:
     background-color var(--transition-fast),
@@ -277,31 +343,96 @@
     color var(--transition-fast);
 }
 
-.wg-setup:hover {
-  border-color: rgba(255, 255, 255, 0.4);
+.wg-item:hover {
+  border-color: rgba(255, 255, 255, 0.22);
   color: #ffffff;
 }
 
-.wg-setup.is-active {
+.wg-item.is-active {
   border-color: var(--livery-blue);
-  background-color: var(--livery-blue);
-  color: var(--color-btn-download-text);
+  background-color: rgba(var(--accent-rgb), 0.1);
+  color: #ffffff;
 }
 
-/* One setup only: a label, not a control */
-.wg-setups:not(:has(.wg-setup + .wg-setup)) .wg-setup {
-  pointer-events: none;
+.wg-item-thumb {
+  display: grid;
+  place-items: center;
+  height: 5.5rem;
+  border-radius: 6px;
+  background-color: rgba(0, 0, 0, 0.35);
+  overflow: hidden;
 }
 
-/* ---- Narrow ---------------------------------------------------------------- */
+/* Bounded in rem: a percentage of the grid cell does not hold, and a tall
+   capture (Pit Line) would run out of the box */
+.wg-item-thumb img {
+  width: auto;
+  height: auto;
+  max-width: 88%;
+  max-height: 4.4rem;
+}
 
-@media (max-width: 860px) {
-  .wg {
+.wg-item-name {
+  padding: 0 0.2rem;
+  font-size: 0.86rem;
+  font-weight: 600;
+}
+
+.wg-item-count {
+  position: absolute;
+  top: 0.95rem;
+  right: 0.95rem;
+  padding: 0.1rem 0.4rem;
+  border-radius: 4px;
+  background-color: rgba(9, 11, 14, 0.85);
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+  color: #c3c9d1;
+}
+
+.wg-tab:focus-visible,
+.wg-item:focus-visible,
+.wg-setup:focus-visible,
+.wg-step:focus-visible {
+  outline: 2px solid var(--livery-blue);
+  outline-offset: 2px;
+}
+
+/* ---- Narrow: the panel goes under the scene --------------------------------- */
+
+@media (max-width: 900px) {
+  .wg-stage {
     grid-template-columns: minmax(0, 1fr);
-    grid-template-areas:
-      'tabs'
-      'list'
-      'stage';
+  }
+
+  .wg-scene {
+    height: clamp(18rem, 62vw, 26rem);
+    padding: 1.25rem;
+  }
+
+  .wg-scene::before {
+    background: linear-gradient(
+      180deg,
+      rgba(9, 11, 14, 0.25),
+      rgba(9, 11, 14, 0.55)
+    );
+  }
+
+  .wg-panel {
+    grid-row: 2;
+    padding: 1.5rem 0 0;
+  }
+
+  .wg-nav {
+    position: absolute;
+    top: 1.5rem;
+    right: 0;
+    margin: 0;
+    padding: 0;
+  }
+
+  .wg-name {
+    padding-right: 7rem;
   }
 
   .wg-tabs {
@@ -314,47 +445,23 @@
     flex: none;
   }
 
-  /* The widgets of the group as a strip of chips */
-  .wg-list {
-    flex-direction: row;
-    overflow-x: auto;
-    scrollbar-width: none;
-    gap: 0.35rem;
+  .wg-strip > li {
+    width: 9rem;
   }
 
-  .wg-list > li {
-    flex: none;
+  .wg-item-thumb {
+    height: 4.5rem;
   }
 
-  .wg-item {
-    width: auto;
-    padding: 0.5rem 0.8rem;
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    border-radius: 999px;
-    font-size: 0.82rem;
-  }
-
-  .wg-item.is-active {
-    box-shadow: none;
-    border-color: var(--livery-blue);
-  }
-
-  .wg-item-count {
-    display: none;
-  }
-
-  .wg-scene {
-    height: 20rem;
-    padding: 1rem 1rem 5.5rem;
-  }
-
-  .wg-setups {
-    border-radius: 12px;
+  .wg-item-thumb img {
+    max-height: 3.5rem;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .wg-shot,
+  .wg-name,
+  .wg-desc,
   .wg-tab::after {
     transition: none;
   }

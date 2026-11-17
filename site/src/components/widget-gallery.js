@@ -1,22 +1,22 @@
 /**
  * Marble Trace Site - Widget gallery (section 02)
  *
- * Groups, the widgets of the open group, and a stage showing one widget in
- * one setup. Everything the stage shows is in the markup: a widget's name and
- * group on its button and tab, its description in the catalogue below, and
- * every setup's picture as a hidden <img> the build has already turned into
- * WebP copies with the source's size. This file only moves them onto the
- * stage.
+ * A stage with one widget in one setup, a panel saying what it is, and a
+ * strip of every widget under it. Everything the stage shows is in the
+ * markup: a widget's name and group on its button and tab, its description
+ * in the catalogue below, and every setup's picture as a hidden <img> the
+ * build has already turned into WebP copies with the source's size. This
+ * file only moves them onto the stage.
  *
- * One scale for every widget. The captures are taken at CAPTURE_SCALE, so a
- * picture's width attribute divided by it is the widget's width on the
- * overlay; the stage draws every picture at that width times one shared
- * factor, chosen so the largest setup there is still fits the scene. A small
- * widget therefore stays small next to a large one.
+ * Scale. The captures are taken at CAPTURE_SCALE, so a picture's width
+ * attribute divided by it is the widget's width on the overlay. Every widget
+ * is drawn at TARGET_SCALE of that, so the sizes keep their proportions to
+ * each other; one whose largest setup would not fit the scene is brought
+ * down until it does, and keeps that one scale across its setups.
  *
  * While the stage is in view and the reader has not touched the gallery, it
  * walks through the setups of the widget on it, then on to the next widget.
- * The first press anywhere in the gallery ends that for good.
+ * The first touch anywhere in the gallery ends that for good.
  */
 
 (() => {
@@ -28,11 +28,12 @@
   /* The device scale the widget captures are taken at (capture:widgets) */
   const CAPTURE_SCALE = 3;
 
-  /* Never drawn larger than on the overlay itself */
-  const MAX_SCALE = 1;
+  /* How large every widget is drawn against its size on the overlay. The
+     captures hold three times that, so the pictures stay sharp. */
+  const TARGET_SCALE = 1.6;
 
   /* The stylesheet's fade; the swap waits for the old picture to be gone */
-  const FADE_MS = 200;
+  const FADE_MS = 250;
 
   const AUTOPLAY_MS = 3200;
 
@@ -47,6 +48,8 @@
   const overlayHeightOf = (img) =>
     Number(img.getAttribute('height')) / CAPTURE_SCALE;
 
+  const padOrdinal = (value) => (value < 10 ? `0${value}` : String(value));
+
   const initWidgetGallery = () => {
     const gallery = document.querySelector('[data-widget-gallery] .wg');
 
@@ -54,62 +57,47 @@
       return;
     }
 
-    const stage = gallery.querySelector('.wg-stage');
     const scene = gallery.querySelector('.wg-scene');
     const shot = gallery.querySelector('.wg-shot');
     const groupName = gallery.querySelector('.wg-group-name');
     const widgetName = gallery.querySelector('.wg-name');
+    const indexNow = gallery.querySelector('.wg-index-now');
     const description = gallery.querySelector('.wg-desc');
+    const strip = gallery.querySelector('.wg-strip');
     const tabs = Array.from(gallery.querySelectorAll('.wg-tab'));
     const items = Array.from(gallery.querySelectorAll('.wg-item'));
     const setupRows = Array.from(gallery.querySelectorAll('.wg-setups'));
-    const pictures = Array.from(gallery.querySelectorAll('.wg-setup img'));
 
-    if (!stage || !scene || !shot || !items.length) {
+    if (!scene || !shot || !strip || !items.length) {
       return;
     }
 
     let activeItem =
       items.find((item) => item.classList.contains(ACTIVE_CLASS)) ?? items[0];
+    let activeRow = null;
     let activeSetup = null;
     let fadeTimer = 0;
     let autoplayTimer = 0;
     let autoplayOn = true;
     let inView = false;
 
+    const groupOf = (item) => item.parentElement.getAttribute('data-wg-group');
+
     /* ---- Scale ---------------------------------------------------------- */
 
-    const largest = pictures.reduce(
-      (size, img) => ({
-        width: Math.max(size.width, overlayWidthOf(img) || 0),
-        height: Math.max(size.height, overlayHeightOf(img) || 0),
-      }),
-      { width: 0, height: 0 }
-    );
-
-    const updateScale = () => {
+    const roomOfScene = () => {
       const style = getComputedStyle(scene);
-      const roomX =
-        scene.clientWidth -
-        parseFloat(style.paddingLeft) -
-        parseFloat(style.paddingRight);
-      const roomY =
-        scene.clientHeight -
-        parseFloat(style.paddingTop) -
-        parseFloat(style.paddingBottom);
 
-      if (!largest.width || !largest.height || roomX <= 0 || roomY <= 0) {
-        return;
-      }
-
-      const scale = Math.min(
-        MAX_SCALE,
-        roomX / largest.width,
-        roomY / largest.height
-      );
-
-      gallery.style.setProperty('--wg-scale', scale.toFixed(4));
-      updateSizes();
+      return {
+        width:
+          scene.clientWidth -
+          parseFloat(style.paddingLeft) -
+          parseFloat(style.paddingRight),
+        height:
+          scene.clientHeight -
+          parseFloat(style.paddingTop) -
+          parseFloat(style.paddingBottom),
+      };
     };
 
     /* The browser picks a copy by the width the picture is drawn at */
@@ -121,6 +109,35 @@
       if (width) {
         shot.sizes = `${Math.ceil(width * scale)}px`;
       }
+    };
+
+    /* One scale per widget: the largest of its setups decides it */
+    const updateScale = () => {
+      if (!activeRow) {
+        return;
+      }
+
+      const largest = Array.from(activeRow.querySelectorAll('img')).reduce(
+        (size, img) => ({
+          width: Math.max(size.width, overlayWidthOf(img) || 0),
+          height: Math.max(size.height, overlayHeightOf(img) || 0),
+        }),
+        { width: 0, height: 0 }
+      );
+      const room = roomOfScene();
+
+      if (!largest.width || !largest.height || room.width <= 0) {
+        return;
+      }
+
+      const scale = Math.min(
+        TARGET_SCALE,
+        room.width / largest.width,
+        room.height / largest.height
+      );
+
+      gallery.style.setProperty('--wg-scale', scale.toFixed(4));
+      updateSizes();
     };
 
     /* ---- Showing -------------------------------------------------------- */
@@ -146,7 +163,7 @@
         );
       }
 
-      updateSizes();
+      updateScale();
       shot.srcset = img.getAttribute('srcset') || '';
       shot.src = img.getAttribute('src') || '';
       shot.alt = activeItem.getAttribute('data-alt') || '';
@@ -160,8 +177,7 @@
       }
 
       activeSetup = setup;
-      setup
-        .closest('.wg-setups')
+      activeRow
         .querySelectorAll('.wg-setup')
         .forEach((button) => setPressed(button, button === setup));
 
@@ -181,7 +197,7 @@
       loader.srcset = img.getAttribute('srcset') || '';
       loader.src = img.getAttribute('src') || '';
 
-      stage.classList.add(SWAPPING_CLASS);
+      gallery.classList.add(SWAPPING_CLASS);
 
       const ready = loader.decode
         ? loader.decode().catch(() => {})
@@ -196,27 +212,62 @@
         }
 
         putOnStage(img);
-        stage.classList.remove(SWAPPING_CLASS);
+        gallery.classList.remove(SWAPPING_CLASS);
       });
+    };
+
+    /* The strip scrolls itself, never the page */
+    const bringIntoStrip = (item) => {
+      const cell = item.parentElement;
+      const left = cell.offsetLeft - strip.offsetLeft;
+      const right = left + cell.offsetWidth;
+
+      if (left < strip.scrollLeft) {
+        strip.scrollTo({ left, behavior: 'smooth' });
+      } else if (right > strip.scrollLeft + strip.clientWidth) {
+        strip.scrollTo({
+          left: right - strip.clientWidth,
+          behavior: 'smooth',
+        });
+      }
+    };
+
+    const showGroupOf = (item) => {
+      const key = groupOf(item);
+
+      tabs.forEach((tab) =>
+        setPressed(tab, tab.getAttribute('data-group-tab') === key)
+      );
+
+      items.forEach((candidate) => {
+        candidate.parentElement.hidden = groupOf(candidate) !== key;
+      });
+
+      const tab = tabs.find(
+        (candidate) => candidate.getAttribute('data-group-tab') === key
+      );
+
+      groupName.textContent = tab ? tab.textContent.trim() : '';
     };
 
     const showWidget = (item, animate = true) => {
       activeItem = item;
       activeSetup = null;
       items.forEach((candidate) => setPressed(candidate, candidate === item));
+      showGroupOf(item);
 
       const key = item.getAttribute('data-widget');
-      let row = null;
 
-      setupRows.forEach((candidate) => {
-        const isRow = candidate.getAttribute('data-setups-for') === key;
+      setupRows.forEach((row) => {
+        const isRow = row.getAttribute('data-setups-for') === key;
 
-        candidate.hidden = !isRow;
-        row = isRow ? candidate : row;
+        row.hidden = !isRow;
+        activeRow = isRow ? row : activeRow;
       });
 
       widgetName.textContent =
         item.querySelector('.wg-item-name')?.textContent.trim() ?? '';
+      indexNow.textContent = padOrdinal(items.indexOf(item) + 1);
 
       const descriptionSource = document.getElementById(
         item.getAttribute('data-desc-id') || ''
@@ -226,66 +277,35 @@
         ? descriptionSource.textContent.replace(/\s+/g, ' ').trim()
         : '';
 
-      const tab = tabs.find(
-        (candidate) =>
-          candidate.getAttribute('data-group-tab') ===
-          item.parentElement.getAttribute('data-wg-group')
-      );
+      bringIntoStrip(item);
 
-      groupName.textContent = tab ? tab.textContent.trim() : '';
-
-      const first = row?.querySelector('.wg-setup');
+      const first = activeRow?.querySelector('.wg-setup');
 
       if (first) {
         showSetup(first, animate);
       }
     };
 
-    const showGroup = (key, animate = true) => {
-      tabs.forEach((tab) =>
-        setPressed(tab, tab.getAttribute('data-group-tab') === key)
-      );
+    const step = (direction) => {
+      const next =
+        items[
+          (items.indexOf(activeItem) + direction + items.length) % items.length
+        ];
 
-      items.forEach((item) => {
-        item.parentElement.hidden =
-          item.parentElement.getAttribute('data-wg-group') !== key;
-      });
-
-      const first = items.find((item) => !item.parentElement.hidden);
-
-      if (first) {
-        showWidget(first, animate);
-      }
+      showWidget(next);
     };
 
     /* ---- Autoplay ------------------------------------------------------- */
 
     const advance = () => {
-      const row = activeSetup?.closest('.wg-setups');
-      const setups = row ? Array.from(row.querySelectorAll('.wg-setup')) : [];
+      const setups = Array.from(activeRow?.querySelectorAll('.wg-setup') ?? []);
       const nextSetup = setups[setups.indexOf(activeSetup) + 1];
 
       if (nextSetup) {
         showSetup(nextSetup);
-
-        return;
+      } else {
+        step(1);
       }
-
-      const visibleItems = items.filter((item) => !item.parentElement.hidden);
-      const nextItem = visibleItems[visibleItems.indexOf(activeItem) + 1];
-
-      if (nextItem) {
-        showWidget(nextItem);
-
-        return;
-      }
-
-      const activeTab = tabs.find((tab) =>
-        tab.classList.contains(ACTIVE_CLASS)
-      );
-      const nextTab = tabs[(tabs.indexOf(activeTab) + 1) % tabs.length];
-
-      showGroup(nextTab.getAttribute('data-group-tab'));
     };
 
     const schedule = () => {
@@ -308,26 +328,41 @@
 
     tabs.forEach((tab) =>
       tab.addEventListener('click', () => {
-        stopAutoplay();
-        showGroup(tab.getAttribute('data-group-tab'));
+        const key = tab.getAttribute('data-group-tab');
+        const first = items.find((item) => groupOf(item) === key);
+
+        if (first) {
+          showWidget(first);
+        }
       })
     );
 
     items.forEach((item) =>
-      item.addEventListener('click', () => {
-        stopAutoplay();
-        showWidget(item);
-      })
+      item.addEventListener('click', () => showWidget(item))
     );
 
     setupRows.forEach((row) =>
-      row.querySelectorAll('.wg-setup').forEach((setup) =>
-        setup.addEventListener('click', () => {
-          stopAutoplay();
-          showSetup(setup);
-        })
-      )
+      row
+        .querySelectorAll('.wg-setup')
+        .forEach((setup) =>
+          setup.addEventListener('click', () => showSetup(setup))
+        )
     );
+
+    gallery
+      .querySelectorAll('.wg-step')
+      .forEach((button) =>
+        button.addEventListener('click', () =>
+          step(Number(button.getAttribute('data-step')) || 1)
+        )
+      );
+
+    gallery.addEventListener('keydown', (event) => {
+      if (event.key === 'ArrowRight' || event.key === 'ArrowLeft') {
+        event.preventDefault();
+        step(event.key === 'ArrowRight' ? 1 : -1);
+      }
+    });
 
     // A hand on the gallery is a reader looking: the walk stops for good
     gallery.addEventListener('pointerdown', stopAutoplay);
@@ -336,7 +371,6 @@
     window.addEventListener('resize', updateScale, { passive: true });
 
     showWidget(activeItem, false);
-    updateScale();
 
     const reducedMotion = window.matchMedia(
       '(prefers-reduced-motion: reduce)'
@@ -351,8 +385,8 @@
         inView = entries.some((entry) => entry.isIntersecting);
         schedule();
       },
-      { threshold: 0.4 }
-    ).observe(stage);
+      { threshold: 0.5 }
+    ).observe(scene);
   };
 
   if (document.readyState === 'loading') {
