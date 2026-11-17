@@ -82,21 +82,6 @@
   stroke-width: 1.5px;
 }
 
-// The start/finish line, checkered across the track.
-.finish {
-  stroke: $sys-bg-main;
-  stroke-width: 1px;
-  vector-effect: non-scaling-stroke;
-}
-
-.finishLight {
-  fill: $sys-text-primary;
-}
-
-.finishDark {
-  fill: $sys-bg-main;
-}
-
 // The cursor: a dot where the car was, a thin line and a chevron where its
 // nose pointed.
 .dot {
