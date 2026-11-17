@@ -2,7 +2,10 @@ import {
   fuelStrategyOf,
   pitStrategyOf,
 } from '@entities/app-settings/app-settings.store';
-import { ruleLayoutFor } from '@entities/layout/auto-switch-rules';
+import {
+  playerCarClass,
+  ruleLayoutFor,
+} from '@entities/layout/auto-switch-rules';
 import { widgetsOnMonitor } from '@entities/layout/virtual-desktop';
 import { cloneMonitor } from '@shared/lib/remote-screen';
 import type { MainRoot } from '@app/roots/main-root';
@@ -16,7 +19,7 @@ import type {
 const garageLayoutId = (root: MainRoot): string | null =>
   ruleLayoutFor(root.layouts.autoSwitchRules, {
     context: 'Garage',
-    carClass: root.session.playerCar?.carClass ?? null,
+    carClass: playerCarClass(root.carCatalogue.cars, root.session.playerCar),
     carId: root.session.playerCar?.carId ?? null,
   });
 

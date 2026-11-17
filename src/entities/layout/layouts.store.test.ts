@@ -84,6 +84,87 @@ describe('LayoutsStore', () => {
     ]);
   });
 
+  it('clears the class when a rule is given a car', () => {
+    const { store } = freshStore();
+
+    store.setAutoSwitchRules([
+      { ...sessionRule('Race', 'layout-race'), carClass: 'GT3' },
+    ]);
+    store.updateAutoSwitchRule('Race-layout-race', { carId: 156 });
+
+    expect(store.autoSwitchRules[0]).toMatchObject({
+      context: 'Race',
+      carClass: null,
+      carId: 156,
+    });
+  });
+
+  it('adds a rule naming both a class and a car as a car rule', () => {
+    const { store } = freshStore();
+
+    store.addAutoSwitchRule('layout-race', { carClass: 'GT3', carId: 156 });
+
+    expect(store.autoSwitchRules[0]).toMatchObject({
+      carClass: null,
+      carId: 156,
+    });
+  });
+
+  it('clears the car when a rule is given a class', () => {
+    const { store } = freshStore();
+
+    store.setAutoSwitchRules([
+      { ...sessionRule('Race', 'layout-race'), carId: 156 },
+    ]);
+    store.updateAutoSwitchRule('Race-layout-race', { carClass: 'GT3' });
+
+    expect(store.autoSwitchRules[0]).toMatchObject({
+      carClass: 'GT3',
+      carId: null,
+    });
+  });
+
+  it('refuses a rule repeating the situation of a rule on another layout', () => {
+    const { store } = freshStore();
+    const rules = [
+      sessionRule('Race', 'layout-race'),
+      sessionRule('Qualify', 'layout-quali'),
+    ];
+
+    store.setAutoSwitchRules(rules.map((entry) => ({ ...entry })));
+
+    expect(
+      store.updateAutoSwitchRule('Qualify-layout-quali', { context: 'Race' })
+    ).toBe(false);
+    expect(store.addAutoSwitchRule('layout-quali', { context: 'Race' })).toBe(
+      false
+    );
+    expect(store.autoSwitchRules).toEqual(rules);
+  });
+
+  it('refuses a rule repeating the situation of a rule on the same layout', () => {
+    const { store } = freshStore();
+
+    store.setAutoSwitchRules([sessionRule(null, 'layout-race')]);
+
+    expect(store.addAutoSwitchRule('layout-race')).toBe(false);
+    expect(store.autoSwitchRules).toHaveLength(1);
+  });
+
+  it('lets a rule be updated into its own situation', () => {
+    const { store } = freshStore();
+
+    store.setAutoSwitchRules([sessionRule('Race', 'layout-race')]);
+
+    expect(
+      store.updateAutoSwitchRule('Race-layout-race', {
+        context: 'Race',
+        layoutId: 'layout-quali',
+      })
+    ).toBe(true);
+    expect(store.autoSwitchRules[0].layoutId).toBe('layout-quali');
+  });
+
   it('spans every monitor of the active layout', () => {
     const { store } = freshStore();
 

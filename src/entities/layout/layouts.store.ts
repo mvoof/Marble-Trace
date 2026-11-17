@@ -18,6 +18,11 @@ import {
   uniqueSlug,
 } from '@shared/lib/remote-screen';
 import type { SettingsMutationLog } from '@entities/layout/mutation-log.store';
+import {
+  layoutHolding,
+  withRuleChange,
+  type RuleSituation,
+} from '@entities/layout/auto-switch-rules';
 import type {
   AutoSwitchRule,
   LayoutMonitor,
@@ -120,7 +125,7 @@ export class LayoutsStore {
   layouts: SavedLayout[] = [];
   editingLayoutId: string | null = null;
 
-  /** In the user's order: of equally specific rules, the higher one wins. */
+  /** One per situation: no two name the same session, class and car. */
   autoSwitchRules: AutoSwitchRule[] = [];
 
   /**
@@ -224,19 +229,55 @@ export class LayoutsStore {
     this.mutations.record();
   }
 
-  /** Appends a rule for any situation, putting the layout on screen. */
-  addAutoSwitchRule(layoutId: string) {
-    this.autoSwitchRules.push(newAutoSwitchRule(layoutId, null));
+  /**
+   * Appends a rule putting the layout on screen in the situation — any, unless
+   * named. Refused, answering `false`, when a rule already holds it.
+   */
+  addAutoSwitchRule(
+    layoutId: string,
+    situation: Partial<RuleSituation> = {}
+  ): boolean {
+    const rule = withRuleChange<AutoSwitchRule>(
+      newAutoSwitchRule(layoutId, null),
+      situation
+    );
+
+    if (layoutHolding(this.autoSwitchRules, rule) !== null) {
+      return false;
+    }
+
+    this.autoSwitchRules.push(rule);
     this.mutations.record();
+
+    return true;
   }
 
-  updateAutoSwitchRule(id: string, patch: Partial<Omit<AutoSwitchRule, 'id'>>) {
+  /**
+   * Changes a rule. A rule names a class or a car, never both: naming one
+   * clears the other. Refused, answering `false`, when another rule already
+   * holds the situation it would name.
+   */
+  updateAutoSwitchRule(
+    id: string,
+    patch: Partial<Omit<AutoSwitchRule, 'id'>>
+  ): boolean {
     const rule = this.autoSwitchRules.find((entry) => entry.id === id);
 
-    if (!rule) return;
+    if (!rule) {
+      return false;
+    }
 
-    Object.assign(rule, patch);
+    const updated = withRuleChange<AutoSwitchRule>(rule, patch);
+    const others = this.autoSwitchRules.filter((entry) => entry.id !== id);
+
+    if (layoutHolding(others, updated) !== null) {
+      return false;
+    }
+
+    Object.assign(rule, updated);
     this.mutations.record();
+
+    return true;
   }
 
   removeAutoSwitchRule(id: string) {

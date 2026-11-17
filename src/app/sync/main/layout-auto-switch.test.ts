@@ -52,7 +52,7 @@ describe('session layout auto-switch', () => {
   let root: MainRoot;
   let dispose: IReactionDisposer;
 
-  const goOnTrackInPractice = () => {
+  const goOnTrackInPractice = (sessionClass = 'GT3') => {
     runInAction(() => {
       root.sim.isConnected = true;
       root.player.carStatus = {
@@ -67,7 +67,7 @@ describe('session layout auto-switch', () => {
             carIdx: 0,
             carId: MERCEDES_GT3,
             carScreenName: 'Mercedes-AMG GT3 2020',
-            carClassShortName: 'GT3',
+            carClassShortName: sessionClass,
             isPaceCar: false,
             isSpectator: false,
           },
@@ -118,6 +118,25 @@ describe('session layout auto-switch', () => {
     ]);
 
     goOnTrackInPractice();
+
+    expect(root.layouts.editingLayoutId).toBe('layout-mercedes');
+  });
+
+  it("matches a class rule by the player's own car in an All Cars class", () => {
+    root.carCatalogue.setCars([
+      {
+        carId: MERCEDES_GT3,
+        name: 'Mercedes-AMG GT3 2020',
+        badge: 'GT3',
+        retired: false,
+      },
+    ]);
+    root.layouts.setAutoSwitchRules([
+      rule('layout-practice', { context: 'Practice' }),
+      rule('layout-mercedes', { carClass: 'GT3' }),
+    ]);
+
+    goOnTrackInPractice('All Cars');
 
     expect(root.layouts.editingLayoutId).toBe('layout-mercedes');
   });

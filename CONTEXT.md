@@ -79,10 +79,13 @@ opened for it.
 Qualify or Race (`SessionContext`). Garage means connected but not in the car.
 
 **Auto-switch rule** — a pairing of a situation with the layout to put on screen
-when it arises. The situation is a session context, a car class and a car, any
-of them "any"; the most specific matching rule wins — a car over a class, a
-class over a session context. Edited only in the Auto-switch block of the
-Layouts page.
+when it arises. The situation is a session context and a car class or a car —
+never both — each of them "any" when unset. A class rule matches the badge of
+the player's own car (the session class's badge for a car the catalogue lacks).
+A situation belongs to one layout only: no two rules name the same one, so the
+most specific matching rule wins — a car over a class, a class over a session
+context — and the order of the rules never decides. Edited in the Auto-switch
+block of the Layouts page.
 _Avoid_: layout binding (a binding is a hotkey), layout mapping.
 
 ## Main window

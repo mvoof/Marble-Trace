@@ -34,7 +34,10 @@ import {
 import { setUpFirstRun } from '@entities/layout/first-run';
 import { watchMonitorArrangement } from './monitor-watch';
 import type { SessionContext } from '@shared/contracts/widget-settings';
-import { ruleLayoutFor } from '@entities/layout/auto-switch-rules';
+import {
+  playerCarClass,
+  ruleLayoutFor,
+} from '@entities/layout/auto-switch-rules';
 import type { MainRoot } from '@app/roots/main-root';
 
 let mainSyncInitPromise: Promise<() => void> | null = null;
@@ -54,7 +57,7 @@ export const registerLayoutAutoSwitchReaction = (
       isOnTrack: root.player.isOnTrack,
       sessionType: root.session.currentSessionType,
       carId: root.session.playerCar?.carId ?? null,
-      carClass: root.session.playerCar?.carClass ?? null,
+      carClass: playerCarClass(root.carCatalogue.cars, root.session.playerCar),
       autoSwitchLayouts: root.appSettings.appSettings.autoSwitchLayouts,
       autoSwitchRules: JSON.stringify(root.layouts.autoSwitchRules),
     }),
