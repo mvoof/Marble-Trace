@@ -35,8 +35,9 @@ Most iRacing overlays are either bloated desktop apps or locked behind subscript
 
 - **Rust core** — a tiny Rust backend reads telemetry directly via [kerb](https://github.com/mvoof/kerb), our own multi-sim shared-memory telemetry library; the UI is a transparent frameless window that floats above the sim.
 - **Fully modular** — enable only the widgets you need. Every widget is positioned, scaled and styled on its own inside a single transparent overlay that spans all of your monitors.
-- **Layouts for every session** — build as many layouts as you race disciplines, arrange them across your monitors in a visual editor, and switch between them by key or automatically per session type.
+- **Layouts for every session** — build as many layouts as you race disciplines, arrange them across your monitors in a visual editor, and switch between them by key or automatically by session, car class or car.
 - **Any screen you own** — a layout can also feed a phone, a tablet or a second PC over your local network, with nothing to install on the device.
+- **Your own numbers** — Home turns the sim's telemetry files into statistics of your driving, and Analysis lays your laps over each other, channel by channel.
 - **Free & Open Source** — licensed under GPLv3, free to use, modify, and contribute to.
 - **Modern stack** — Tauri v2 + React 19 + MobX + Ant Design. Fast and type-safe.
 
@@ -82,15 +83,15 @@ Standalone shift-light LED bar driven by engine RPM, with configurable colour zo
 
 ### Engine Panel
 
-Liquid temperatures, oil pressure, voltage, and live system adjustments — ABS, traction control, brake bias, and engine map — in one compact strip.
+One strip per system, always in the same order: brake bias as the large figure, then traction control and ABS, the formula cars' engine braking with peak and fine bias, the differential, the anti-roll bars, and the engine readings — water and oil temperature, oil pressure, voltage — at the bottom. A strip your car has no controls for is left out, so every value stays where you expect it; an overheating temperature turns red.
 
-<img src="site/assets/widgets/engine.png" alt="Engine Panel" width="480">
+<img src="site/assets/widgets/engine.png" alt="Engine Panel" width="332">
 
 ---
 
 ### Battery
 
-Hybrid battery charge, what the MGU-K is doing with it — deploying or harvesting, and how hard — and the energy spent on the lap. On cars that expose a deploy-mode selector, the current mode is lit.
+Hybrid battery charge as slanted cells and a large figure, coloured green, yellow or red by charge; what the MGU-K is doing with it — IDLE, DEPLOY or REGEN, and how hard — and the energy spent on the lap. On cars that expose a deploy-mode selector, the modes sit on their own strip with the current one lit.
 
 <img src="site/assets/widgets/battery.png" alt="Battery" width="280">
 
@@ -114,11 +115,11 @@ The ABS setting from the cockpit, 0 to 12, beside a badge that lights yellow whi
 
 ### Input Trace
 
-Watch your throttle, brake, and clutch inputs scroll in real time. The horizontal trace mode shows a rolling history so you can see exactly where you're trail-braking, blipping, or lifting early. Switch to vertical bars for a clean side-by-side view of all three pedals at once.
+Watch your throttle, brake, and clutch inputs scroll in real time. The trace shows a rolling history so you can see exactly where you're trail-braking, blipping, or lifting early; the pedal bars beside it light their end stops once a pedal is touched and when it is fully pressed.
 
-The steering block draws either the built-in dial or one of several wheel silhouettes, with your choice of gear, speed, angle or nothing at all in the middle. Adding another wheel is a traced product photo — see [docs/steering-wheel-assets.md](docs/steering-wheel-assets.md).
+The speed and gear sit at the top of their block with the corner's entry, apex and exit speeds as chips — under them, above them, or beside them in a column. The steering block draws the built-in dial, one of several wheel silhouettes, or a picture of your own wheel that turns with the steering. Adding another built-in wheel is a traced product photo — see [docs/steering-wheel-assets.md](docs/steering-wheel-assets.md).
 
-<img src="site/assets/widgets/input-trace.png" alt="Input Trace" width="530">
+<img src="site/assets/widgets/input-trace.png" alt="Input Trace" width="528">
 
 ---
 
@@ -132,7 +133,7 @@ Friction circle visualising lateral and longitudinal G-forces in real time. Thre
 
 ### Coach
 
-Live braking and throttle coaching against your stored best lap. The call row tells you what to do right now — **BRAKE** with the distance left to the braking point, or a corner-exit **GAS** call — with an urgency bar that fills as the marker approaches. Underneath, a rolling speed trace plots your current lap against the reference lap in a configurable window (in metres), coloured green where you are gaining time and red where you are losing it. Footer shows current vs reference speed, the reference lap time and the track condition. Both rows can be switched off independently, and every colour is configurable.
+Live braking and throttle coaching against your stored best lap. The call chip tells you what to do right now — **BRAKE** before the braking point, or a corner-exit **GAS** call — beside the speed gap to your reference lap, and **IN**, **APEX** and **OUT** light up in turn as you pass through the corner, each with the time it won or lost. Underneath, a rolling speed trace plots your current lap against the reference lap in a configurable window (in metres). The footer shows current vs reference speed, the reference lap time and the corner's total. Both rows can be switched off independently, and every colour is configurable.
 
 <img src="site/assets/widgets/coach.png" alt="Coach" width="360">
 
@@ -142,17 +143,19 @@ Live braking and throttle coaching against your stored best lap. The call row te
 
 ### Standings
 
-Full race standings table with multi-class support, SOF, qualify deltas, brand & tire info, and a configurable row budget. All columns visible at once or stripped to essentials. Switch between the combined leaderboard and a single-class group view with its own SOF and field size.
+Full race standings table with multi-class support: safety rating and iRating chips, laps, gap, interval to the car above, last lap with its delta to the one before, best lap (purple for the class best, green for a personal best), car make and tire. The header carries the session, field size, SOF, laps and clock around the track name; the footer the track conditions, your pit stops and incidents. Cars on pit road show how long they have been there, a driver's flag — blue, black, meatball — is drawn beside the name, and in team events the team sits under the driver.
 
-<img src="site/assets/widgets/standings.png" alt="Standings" width="796">
+Every column can be switched off and dragged into a different order, and the table switches between the combined leaderboard and a single-class view with its own SOF and field size.
+
+<img src="site/assets/widgets/standings.png" alt="Standings" width="900">
 
 ---
 
 ### Relative
 
-Relative timing sorted by F2Time — player always centred. Closing/gap trend arrows, lap status (lapping/lapped), class stripes.
+The cars around you on track, player always centred, in the same chip style as Standings: class stripes, safety rating and iRating, the gap — blue for cars ahead, red behind — and optionally the bumper-to-bumper distance. Lapping and lapped cars, pit time and flags read as they do in Standings; columns can be reordered or switched off, and making the widget taller adds rows one at a time.
 
-<img src="site/assets/widgets/relative.png" alt="Relative" width="422">
+<img src="site/assets/widgets/relative.png" alt="Relative" width="462">
 
 ---
 
@@ -166,26 +169,26 @@ Compact 1-D track map showing relative car positions along the lap. Horizontal o
 
 ### Delta
 
-Live delta bar that compares your current lap against a configurable reference — your personal best (PB), your personal optimal (PO, best sectors combined), session best (SB), session optimal (SO), or the previous lap in the session (SL). The bar fills green when you are ahead and red when behind. When you cross the finish line a lap flash card appears (top, bottom, left, or right of the widget) showing the completed lap time and its delta. Card display duration is adjustable.
+Live delta bar that compares your current lap against a configurable reference — your personal best (PB), your personal optimal (PO, best sectors combined), session best (SB), session optimal (SO), or the previous lap in the session (SL) — switched in its own block beside the plate. The bar fills green when you are ahead and red when behind. When you cross the finish line a lap flash card appears (top, bottom, left, or right of the widget) showing the completed lap time and its delta. Card display duration is adjustable.
 
-<img src="site/assets/widgets/delta.png" alt="Delta" width="296">
-<img src="site/assets/widgets/delta-best.png" alt="Delta Best" width="200">
+<img src="site/assets/widgets/delta.png" alt="Delta" width="520">
+<img src="site/assets/widgets/delta-best.png" alt="Delta Best" width="212">
 
 ---
 
 ### Sector Matrix
 
-Grid of sector times for the current lap with color-coded delta chips (green = faster than personal best, red = slower). Header shows live delta and predicted finish time. Reference for the live delta and predicted time is configurable; sector chips always compare vs your personal best.
+The lap as a grid of sectors: each cell edged in its state with its delta to your personal best as a chip, **LIVE** on the sector you are in, and last lap's time dimmed on the sectors still ahead. The header carries the lap with its running time and the predicted lap time; a segmented bar fills sector by sector, and **LAST** and **BEST** sit underneath. Four sectors make a square, more add rows of three. The reference for the prediction is configurable, and PRED, LAST, BEST and the progress bar can each be hidden.
 
-<img src="site/assets/widgets/sector-matrix.png" alt="Sector Matrix" width="320">
+<img src="site/assets/widgets/sector-matrix.png" alt="Sector Matrix" width="330">
 
 ---
 
 ### Lap Log
 
-Rolling history of your completed laps — lap number, lap time, and delta vs personal best for each row. The live row at the top shows the current lap's real-time delta using the configured reference (PB / PO / SB / SO / SL). Historical rows always compare vs personal best.
+Rolling history of your completed laps — lap, time, and the loss to your best as a chip: yellow up to half a second, red past it, a purple **BEST** on the best lap and **INV** on an invalid one. The lap being driven sits on top as **RUN**, the header carries your best lap and the footer the average of the valid laps. The height decides how many laps show, up to 50; the delta can be drawn as pace-loss bars or hidden.
 
-<img src="site/assets/widgets/lap-log.png" alt="Lap Log" width="220">
+<img src="site/assets/widgets/lap-log.png" alt="Lap Log" width="264">
 
 ---
 
@@ -201,7 +204,7 @@ Session clock with laps-to-go, estimated total laps, and optional real-time cloc
 
 ### Track Map
 
-SVG overhead track map with every car's position, class-coloured dots, P1 / YOU labels, class legend, and sector markers — recorded from your own lap data.
+SVG overhead track map with every car's position, class-coloured dots, P1 / YOU labels, class legend, sector markers and a checkered start/finish bar — recorded from your own lap data.
 
 <img src="site/assets/widgets/map.png" alt="Track Map" width="600">
 <img src="site/assets/widgets/map-record.png" alt="Track Map Recording" width="600">
@@ -272,9 +275,9 @@ LED matrix and flat banner-style flag indicators with green, yellow, red, blue, 
 
 ### Pit Service
 
-Everything about the stop in one plate: live pit-lane speed against the pit limit, the fuel you are about to add, repair times (required, optional and fast repairs left), windshield tear-offs, and a per-corner tire grid with carcass temperatures, tread temps and remaining wear — each corner marked with the tire set you will take or a **KEEP** if it stays on the car. The header shows your current position and whether you are in the box; the footer projects the position you will rejoin in.
+Everything about the stop in one plate: live pit-lane speed against the pit limit, the fuel you are about to add, repair times (required, optional and fast repairs left — **REPAIR DONE · GO** once they have run out), windshield tear-offs, the compound, and a per-corner tire grid with temperatures and remaining wear, each corner green when new tires are ordered. The footer shows whether you are in the box and the position you will rejoin in, counting the time the pit lane itself costs.
 
-Optional automation adds fuel for you and orders new tires once wear drops below a configurable threshold. Blocks (speed, fuel, tires, repairs, footer) are toggled individually.
+In interact mode each tire takes a − and + for its pressure, and hotkeys raise or lower all four at once. Optional automation adds fuel for you and orders new tires once wear drops below a configurable threshold. Blocks (speed, fuel, tires, repairs, footer) are toggled individually.
 
 <img src="site/assets/widgets/pit-service.png" alt="Pit Service" width="236">
 
@@ -284,20 +287,22 @@ Optional automation adds fuel for you and orders new tires once wear drops below
 
 Pit lane speed against the limit, and the roll to your stall — as a vertical or a horizontal rail.
 
-<img src="site/assets/widgets/pit-line.png" alt="Pit Line" width="90">
+<img src="site/assets/widgets/pit-line.png" alt="Pit Line" width="96">
 
 ---
 
 ### Fuel
 
-Lap-by-lap consumption graph, laps remaining, add-fuel suggestion, and tank fill level. Line or bar chart mode.
+The tank, what it lasts, and when to stop: a quartered tank bar under the fuel left, a lap-by-lap consumption chart (line or bars), and the last, lowest and highest consumption with the laps each would last.
 
-- **LAPS LEFT:** Current driving range in laps based on fuel in the tank.
-- **EST. FINISH:** Projected fuel balance (surplus or deficit in liters) at the end of the race.
-- **PIT WARNING:** Appears when you need to refuel, showing exactly how many liters to add (including a +1 lap buffer) to reach the finish.
+- **LAPS LEFT:** Current driving range in laps, in a box coloured by urgency.
+- **FINISH:** Projected fuel balance (surplus or deficit) at the end of the race.
+- **NEXT PIT / PIT WINDOW:** The laps you can stop on; once you need to refuel, how much to fill now (with a +1 lap buffer) to reach the finish, and how many stops it takes.
 
-<img src="site/assets/widgets/fuel.png" alt="Fuel" width="240">
-<img src="site/assets/widgets/fuel-pit-stop.png" alt="Fuel Pit Stop" width="240">
+The low-fuel warning, the averaging window and counting laps under yellow are set once, under Shared Values, and every Fuel widget follows them.
+
+<img src="site/assets/widgets/fuel.png" alt="Fuel" width="306">
+<img src="site/assets/widgets/fuel-pit-stop.png" alt="Fuel Pit Stop" width="306">
 
 ---
 
@@ -311,9 +316,9 @@ Wind direction compass, temperature, humidity, and forecast strip for dynamic we
 
 ### Incident Tracker
 
-Your incidents against the session limit, the drive-throughs served and how many points are left before the next one, and an estimate of where your Safety Rating lands at the flag — with the clean corners it would take to break even. Two compact tiers; the penalty column is left out in a session that hands out none. The rating is an estimate from a community model (see [Credits](#credits)); a session that does not move it shows **OFF**.
+Your incidents against the session limit, the drive-throughs served and how many points are left before the next one, and an estimate of where your Safety Rating lands at the flag — the SR badge in your license colour, with the clean corners it would take to break even. Near the limit the points left turn red and blink, and the whole widget is framed in red; the penalty column is left out in a session that hands out none. The rating is an estimate from a community model (see [Credits](#credits)); a session that does not move it shows **OFF**.
 
-<img src="site/assets/widgets/incident-tracker.png" alt="Incident Tracker" width="180">
+<img src="site/assets/widgets/incident-tracker.png" alt="Incident Tracker" width="248">
 
 ---
 
@@ -322,6 +327,8 @@ Your incidents against the session limit, the drive-throughs served and how many
 ### Stream Chat
 
 Twitch and YouTube live chat merged into a single feed on top of the sim, so you can read your stream without alt-tabbing. Messages carry a platform glyph and role badges (moderator, VIP, subscriber) as compact text plates or the original badge artwork. Channel events — raids, subs, cheers and donations — appear as highlighted rows, and the footer strip shows viewer counts, message rate and totals. Row density, message limit and auto-expiry are configurable, and every block can be turned off.
+
+Viewers can ask the sim themselves: `!pos`, `!gap`, `!lap`, `!best`, `!sof`, `!car`, `!weather`, `!fuel` and more get a reply in your Twitch chat with live session data, each command with its own switch and cooldown.
 
 <img src="site/assets/widgets/stream-chat.png" alt="Stream Chat" width="380">
 

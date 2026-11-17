@@ -106,8 +106,14 @@ export const NoHistory: Story = {
   args: { ...Default.args, lapNum: 1, currentLapTime: 12.3, bestLapTime: 0 },
 };
 
+/** The log's laps run to L10 with L9 the best, so the lap being driven is L11. */
 export const WithHistory: Story = {
-  args: { ...Default.args, history: mockLapLog().history },
+  args: {
+    ...Default.args,
+    lapNum: 11,
+    bestLapTime: 90.845,
+    history: mockLapLog().history,
+  },
 };
 
 /** The lap that has just gone green — the star row and the re-deltaed laps under it. */

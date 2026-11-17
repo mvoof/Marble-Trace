@@ -57,7 +57,7 @@ const SHOTS = {
   drs: ['DrsWidget', 'open'],
   engine: ['EnginePanelWidget', 'default'],
   'flat-flag': ['FlatFlagsWidget', 'showcase', { ground: false }],
-  fuel: ['FuelWidget', 'full-preview'],
+  fuel: ['FuelWidget', 'showcase'],
   'fuel-pit-stop': ['FuelWidget', 'pit-window-open'],
   'g-metr': ['GMeter', 'showcase'],
   'incident-tracker': ['IncidentTrackerWidget', 'minor-incidents'],

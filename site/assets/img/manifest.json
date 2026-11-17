@@ -11,7 +11,7 @@
   },
   "assets/widgets/battery.png": {
     "width": 840,
-    "height": 360,
+    "height": 366,
     "variants": [
       {
         "width": 480,
@@ -43,7 +43,7 @@
   },
   "assets/widgets/coach.png": {
     "width": 1080,
-    "height": 486,
+    "height": 588,
     "variants": [
       {
         "width": 480,
@@ -74,7 +74,7 @@
     ]
   },
   "assets/widgets/delta-best.png": {
-    "width": 600,
+    "width": 636,
     "height": 300,
     "variants": [
       {
@@ -82,8 +82,8 @@
         "path": "assets/img/widgets/delta-best-480.webp"
       },
       {
-        "width": 600,
-        "path": "assets/img/widgets/delta-best-600.webp"
+        "width": 636,
+        "path": "assets/img/widgets/delta-best-636.webp"
       }
     ]
   },
@@ -124,8 +124,8 @@
     ]
   },
   "assets/widgets/engine.png": {
-    "width": 1440,
-    "height": 240,
+    "width": 996,
+    "height": 300,
     "variants": [
       {
         "width": 480,
@@ -136,8 +136,8 @@
         "path": "assets/img/widgets/engine-960.webp"
       },
       {
-        "width": 1440,
-        "path": "assets/img/widgets/engine-1440.webp"
+        "width": 996,
+        "path": "assets/img/widgets/engine-996.webp"
       }
     ]
   },
@@ -156,30 +156,30 @@
     ]
   },
   "assets/widgets/fuel-pit-stop.png": {
-    "width": 720,
-    "height": 1080,
+    "width": 918,
+    "height": 1050,
     "variants": [
       {
         "width": 480,
         "path": "assets/img/widgets/fuel-pit-stop-480.webp"
       },
       {
-        "width": 720,
-        "path": "assets/img/widgets/fuel-pit-stop-720.webp"
+        "width": 918,
+        "path": "assets/img/widgets/fuel-pit-stop-918.webp"
       }
     ]
   },
   "assets/widgets/fuel.png": {
-    "width": 720,
-    "height": 1080,
+    "width": 918,
+    "height": 1071,
     "variants": [
       {
         "width": 480,
         "path": "assets/img/widgets/fuel-480.webp"
       },
       {
-        "width": 720,
-        "path": "assets/img/widgets/fuel-720.webp"
+        "width": 918,
+        "path": "assets/img/widgets/fuel-918.webp"
       }
     ]
   },
@@ -198,22 +198,22 @@
     ]
   },
   "assets/widgets/incident-tracker.png": {
-    "width": 540,
-    "height": 174,
+    "width": 744,
+    "height": 204,
     "variants": [
       {
         "width": 480,
         "path": "assets/img/widgets/incident-tracker-480.webp"
       },
       {
-        "width": 540,
-        "path": "assets/img/widgets/incident-tracker-540.webp"
+        "width": 744,
+        "path": "assets/img/widgets/incident-tracker-744.webp"
       }
     ]
   },
   "assets/widgets/input-trace.png": {
-    "width": 1590,
-    "height": 444,
+    "width": 1584,
+    "height": 408,
     "variants": [
       {
         "width": 480,
@@ -228,8 +228,8 @@
         "path": "assets/img/widgets/input-trace-1440.webp"
       },
       {
-        "width": 1590,
-        "path": "assets/img/widgets/input-trace-1590.webp"
+        "width": 1584,
+        "path": "assets/img/widgets/input-trace-1584.webp"
       }
     ]
   },
@@ -264,16 +264,16 @@
     ]
   },
   "assets/widgets/lap-log.png": {
-    "width": 660,
-    "height": 780,
+    "width": 792,
+    "height": 1158,
     "variants": [
       {
         "width": 480,
         "path": "assets/img/widgets/lap-log-480.webp"
       },
       {
-        "width": 660,
-        "path": "assets/img/widgets/lap-log-660.webp"
+        "width": 792,
+        "path": "assets/img/widgets/lap-log-792.webp"
       }
     ]
   },
@@ -350,18 +350,18 @@
     ]
   },
   "assets/widgets/pit-line.png": {
-    "width": 270,
+    "width": 288,
     "height": 1302,
     "variants": [
       {
-        "width": 270,
-        "path": "assets/img/widgets/pit-line-270.webp"
+        "width": 288,
+        "path": "assets/img/widgets/pit-line-288.webp"
       }
     ]
   },
   "assets/widgets/pit-service.png": {
     "width": 708,
-    "height": 960,
+    "height": 918,
     "variants": [
       {
         "width": 480,
@@ -464,7 +464,7 @@
     ]
   },
   "assets/widgets/relative.png": {
-    "width": 1266,
+    "width": 1386,
     "height": 1200,
     "variants": [
       {
@@ -476,8 +476,8 @@
         "path": "assets/img/widgets/relative-960.webp"
       },
       {
-        "width": 1266,
-        "path": "assets/img/widgets/relative-1266.webp"
+        "width": 1386,
+        "path": "assets/img/widgets/relative-1386.webp"
       }
     ]
   },
@@ -500,8 +500,8 @@
     ]
   },
   "assets/widgets/sector-matrix.png": {
-    "width": 960,
-    "height": 588,
+    "width": 990,
+    "height": 696,
     "variants": [
       {
         "width": 480,
@@ -510,11 +510,15 @@
       {
         "width": 960,
         "path": "assets/img/widgets/sector-matrix-960.webp"
+      },
+      {
+        "width": 990,
+        "path": "assets/img/widgets/sector-matrix-990.webp"
       }
     ]
   },
   "assets/widgets/standings.png": {
-    "width": 2388,
+    "width": 3030,
     "height": 1500,
     "variants": [
       {
@@ -534,8 +538,12 @@
         "path": "assets/img/widgets/standings-1920.webp"
       },
       {
-        "width": 2388,
-        "path": "assets/img/widgets/standings-2388.webp"
+        "width": 2560,
+        "path": "assets/img/widgets/standings-2560.webp"
+      },
+      {
+        "width": 2560,
+        "path": "assets/img/widgets/standings-2560.webp"
       }
     ]
   },
@@ -559,7 +567,7 @@
   },
   "assets/widgets/timer.png": {
     "width": 720,
-    "height": 654,
+    "height": 666,
     "variants": [
       {
         "width": 480,
