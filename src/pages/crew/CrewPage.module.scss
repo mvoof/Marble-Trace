@@ -504,20 +504,32 @@
   flex-shrink: 0;
 }
 
+// The popover sizes to its content, so the help bounds itself by the window:
+// never wider or taller than it fits, scrolling past that.
 .syntaxHelp {
+  container-type: inline-size;
   display: flex;
   flex-direction: column;
   gap: rem(12);
+  width: min(rem(640), calc(100vw - rem(48)));
+  max-height: calc(100vh - rem(160));
+  overflow-y: auto;
 }
 
 .syntaxRow {
   display: grid;
-  grid-template-columns: rem(240) 1fr;
+  grid-template-columns: minmax(0, rem(240)) minmax(0, 1fr);
   gap: rem(16);
   align-items: start;
+
+  @container (max-width: #{rem(480)}) {
+    grid-template-columns: minmax(0, 1fr);
+    gap: rem(4);
+  }
 }
 
 .syntaxExample {
+  overflow-wrap: anywhere;
   font-family: $font-mono;
   font-size: rem(12);
   color: $sys-accent;
