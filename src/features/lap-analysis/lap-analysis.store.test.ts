@@ -386,6 +386,7 @@ describe('LapAnalysisStore setup', () => {
   });
 
   it('says so when the file cannot be read', async () => {
+    vi.spyOn(console, 'warn').mockImplementation(() => undefined);
     const api = fakeApi();
     api.getCarSetup = vi.fn(async () => {
       throw new Error('broken header');
