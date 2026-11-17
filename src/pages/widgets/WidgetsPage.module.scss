@@ -1,0 +1,9 @@
+// The menu's Importance / A–Z switch: the mockup's 12 px, so both names fit
+// the menu's width.
+.sortSwitch {
+  font-size: rem(12);
+
+  :global(.ant-segmented-item-label) {
+    padding-inline: rem(6);
+  }
+}

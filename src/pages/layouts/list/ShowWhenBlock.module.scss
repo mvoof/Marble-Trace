@@ -1,0 +1,101 @@
+.block {
+  display: flex;
+  flex-direction: column;
+  gap: rem(6);
+  margin-top: rem(8);
+  padding-top: rem(8);
+  border-top: 1px solid $sys-border-sub;
+}
+
+.title {
+  font-size: rem(11);
+  font-weight: 600;
+  color: $sys-text-muted;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: rem(4);
+  align-items: center;
+  min-height: rem(22);
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: rem(2);
+  font-size: rem(11);
+  line-height: rem(20);
+  padding: 0 rem(2) 0 rem(8);
+  border-radius: rem(10);
+  border: 1px solid $sys-border-main;
+  color: $sys-text-secondary;
+}
+
+// The session's tone, quiet: a deep fill, the text stays neutral.
+@mixin session-tone($ground, $tone) {
+  background: $ground;
+  border-color: rgba($tone, 0.4);
+  color: $chip-text;
+}
+
+.info {
+  @include session-tone($chip-info-bg, $chip-info);
+}
+
+.positive {
+  @include session-tone($chip-positive-bg, $chip-positive);
+}
+
+.special {
+  @include session-tone($chip-special-bg, $chip-special);
+}
+
+.accent {
+  @include session-tone($chip-accent-bg, $chip-accent);
+}
+
+// Assigned, but auto-switch is off: the assignment waits.
+.chipOff {
+  border-style: dashed;
+  opacity: 0.55;
+}
+
+// Changes nothing: other situations put the same layout on without it.
+.chipRedundant {
+  border-style: dashed;
+  opacity: 0.55;
+  cursor: help;
+}
+
+.removeChip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: rem(16);
+  height: rem(16);
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: none;
+  color: $sys-text-muted;
+  cursor: pointer;
+
+  &:hover,
+  &:focus-visible {
+    color: $sys-text-primary;
+    background: $sys-border-sub;
+  }
+}
+
+.notAssigned {
+  font-size: rem(12);
+  color: $sys-text-muted;
+}
+
+.addChip {
+  border-radius: rem(10);
+}

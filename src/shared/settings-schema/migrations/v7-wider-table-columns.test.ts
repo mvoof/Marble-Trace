@@ -447,3 +447,55 @@ describe('v7 — a fuel strategy value the app cannot hold', () => {
     expect(widgetsOf(migrated)[0]['settings']).toStrictEqual({});
   });
 });
+
+describe('v7 — session layouts become auto-switch rules', () => {
+  it('makes one rule per assigned situation, garage first', () => {
+    const migrated = v7WiderTableColumns.migrate({
+      sessionLayouts: {
+        Practice: 'layout-a',
+        Qualify: null,
+        Race: 'layout-b',
+        Garage: 'layout-c',
+      },
+    });
+
+    expect(migrated['sessionLayouts']).toBeUndefined();
+    expect(migrated['autoSwitchRules']).toEqual([
+      {
+        id: 'session-garage',
+        context: 'Garage',
+        carClass: null,
+        carId: null,
+        layoutId: 'layout-c',
+      },
+      {
+        id: 'session-practice',
+        context: 'Practice',
+        carClass: null,
+        carId: null,
+        layoutId: 'layout-a',
+      },
+      {
+        id: 'session-race',
+        context: 'Race',
+        carClass: null,
+        carId: null,
+        layoutId: 'layout-b',
+      },
+    ]);
+  });
+
+  it('drops a situation it does not know and a layout id that is no string', () => {
+    const migrated = v7WiderTableColumns.migrate({
+      sessionLayouts: { Warmup: 'layout-a', Race: 7 },
+    });
+
+    expect(migrated['autoSwitchRules']).toEqual([]);
+  });
+
+  it('adds nothing to a file with no session layouts', () => {
+    const migrated = v7WiderTableColumns.migrate({ layouts: [] });
+
+    expect('autoSwitchRules' in migrated).toBe(false);
+  });
+});

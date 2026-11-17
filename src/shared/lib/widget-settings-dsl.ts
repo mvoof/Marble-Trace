@@ -48,8 +48,20 @@ export type NumberRecordField = FieldBase<'numRecord', Record<string, number>>;
  */
 export type FileNameField = FieldBase<'fileName', string>;
 
+/**
+ * The order of a fixed set of names — a table's columns. Every member is in
+ * it once; a stored list is brought to that on load (`normalizeOrder`).
+ */
+export interface OrderField<Member extends string> extends FieldBase<
+  'order',
+  readonly Member[]
+> {
+  options: readonly Member[];
+}
+
 type PlainField =
   | BoolField
+  | OrderField<string>
   | NumberField
   | ChoiceField<string | number>
   | ColorField
@@ -116,6 +128,45 @@ export const fileName = (fallback: string, meta: Meta = {}): FileNameField => ({
   ...meta,
 });
 
+export const order = <const Members extends readonly string[]>(
+  members: Members,
+  meta: Meta = {}
+): OrderField<Members[number]> => ({
+  kind: 'order',
+  default: members,
+  options: members,
+  ...meta,
+});
+
+/**
+ * A stored order made whole: names no longer known and repeats dropped, and a
+ * member it lacks — one added since it was saved — put right after the member
+ * it follows in the shipped order, or first when it leads that order.
+ */
+export const normalizeOrder = <Member extends string>(
+  stored: readonly string[],
+  members: readonly Member[]
+): Member[] => {
+  const known = new Set<string>(members);
+  const result = [...new Set(stored)].filter((name): name is Member =>
+    known.has(name)
+  );
+
+  members.forEach((member, shippedIndex) => {
+    if (result.includes(member)) {
+      return;
+    }
+
+    const shippedBefore = members.slice(0, shippedIndex).reverse();
+    const anchor = shippedBefore.find((previous) => result.includes(previous));
+    const insertAt = anchor === undefined ? 0 : result.indexOf(anchor) + 1;
+
+    result.splice(insertAt, 0, member);
+  });
+
+  return result;
+};
+
 /**
  * `fallback` is the shipped value when it is `null` rather than the inner
  * field's own — "not set" as the default, the inner field still giving the
@@ -162,6 +213,9 @@ const isNumberRecord = (value: unknown): boolean =>
   !Array.isArray(value) &&
   Object.values(value).every(isFiniteNumber);
 
+const isNameList = (value: unknown): value is string[] =>
+  Array.isArray(value) && value.every((name) => typeof name === 'string');
+
 const isValid = (field: Field, value: unknown): boolean => {
   if (value === null) {
     return 'nullable' in field;
@@ -180,12 +234,18 @@ const isValid = (field: Field, value: unknown): boolean => {
       return isNumberRecord(value);
     case 'fileName':
       return isFileName(value);
+    case 'order':
+      return isNameList(value);
   }
 };
 
 const normalize = (field: Field, value: unknown): unknown => {
   if (field.kind === 'number' && isFiniteNumber(value)) {
     return Math.min(field.max, Math.max(field.min, value));
+  }
+
+  if (field.kind === 'order' && isNameList(value)) {
+    return normalizeOrder(value, field.options);
   }
 
   return value;

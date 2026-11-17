@@ -1,7 +1,11 @@
 import { runInAction, compareStructural } from 'mobx';
 import { getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow';
 
-import { emitToMain, listenToMain } from '@shared/api/events.service';
+import {
+  emitToMain,
+  listenMonitorIdentify,
+  listenToMain,
+} from '@shared/api/events.service';
 import { setupOverlayListeners } from '../listeners';
 import { applyClientSnapshot } from '../client/client-sync';
 import { initPerfRun } from '../dev/perf-run';
@@ -59,6 +63,12 @@ export const initOverlaySync = async (root: OverlayRoot) => {
 
       applyOverlaySnapshot(root, message);
     })
+  );
+
+  unlistens.push(
+    await listenMonitorIdentify((monitorNumber) =>
+      root.monitorIdentify.show(monitorNumber)
+    )
   );
 
   const stopPerfRun = await initPerfRun(root);

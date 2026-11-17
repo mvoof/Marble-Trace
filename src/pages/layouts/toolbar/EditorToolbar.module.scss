@@ -1,59 +1,93 @@
+// The overview's band: one row across the top of the editor. Below ~1280 px
+// the collapsible labels go (ToolbarButton), never onto a second row.
 .toolbar {
+  position: relative;
+  z-index: 25;
   display: flex;
-  align-items: center;
-  // Left controls stay packed against the left edge on a wide window; the
-  // preview controls are pushed to the right edge by their own auto margin.
-  justify-content: flex-start;
-  gap: sp(md);
-  row-gap: sp(xs);
   flex: 0 0 auto;
-  // The bar carries more tools than fit a window that is not maximised, and a
-  // tool the user cannot see is a tool they do not have. Every group wraps
-  // onto as many rows as the width needs rather than running off the edge.
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: rem(6);
+  min-width: 0;
+  padding: rem(6) rem(12);
+  background: $sys-bg-sidebar;
+  border-bottom: 1px solid $sys-border-sub;
+  font-family: $font-widget;
 }
 
-.previewControls {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: sp(sm);
-  row-gap: sp(xs);
-  // Pushed to the right edge only while the bar is still one row: once it
-  // wraps, an auto margin would strand the group against the far edge with a
-  // hole beside it.
-  margin-left: auto;
+.spacer {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.name {
+  overflow: hidden;
+  max-width: rem(200);
+  padding: 0 rem(6);
+  color: $sys-text-primary;
+  font-size: rem(12);
+  font-weight: 600;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
 .activeChip {
-  color: #52c41a;
-  font-size: fs(xs);
-  font-family: $font-mono;
-  font-weight: 600;
-  padding: 2px sp(xxs);
-  border: 1px solid rgba(82, 196, 26, 0.35);
-  border-radius: radius(sm);
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: rem(5);
+  margin: 0 rem(2);
+  padding: rem(1) rem(6);
+  background: rgba($sys-up, 0.12);
+  border: 1px solid rgba($sys-up, 0.32);
+  border-radius: rem(6);
+  color: $sys-up;
+  font-size: rem(11);
+  font-weight: 500;
   white-space: nowrap;
 }
 
-// Small floating panel centered at the top instead of a full-width bar. Width
-// shrinks to its content; the widget-panel toggle sits at its left edge.
-.toolbarFullscreen {
+.activeDot {
+  width: rem(5);
+  height: rem(5);
+  background: $sys-up;
+  border-radius: 50%;
+}
+
+// Full size and On the monitor: a pill of icons centred at the top of the
+// canvas, moved by its grip (`--dock-x`/`--dock-y`, reset on each entry).
+.toolbarFloating {
   position: absolute;
-  top: sp(sm);
+  top: rem(12);
   left: 50%;
-  z-index: 40;
-  width: auto;
-  justify-content: flex-start;
-  gap: sp(sm);
-  transform: translateX(-50%);
-  // Never wider than the screen it floats over: past that the panel would
-  // centre itself with its ends cut off on both sides.
-  max-width: calc(100% - #{sp(xl)});
-  justify-content: center;
-  padding: sp(xs) sp(sm);
-  background: rgba(11, 12, 16, 0.55);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: radius(lg);
-  backdrop-filter: blur(6px);
+  z-index: 50;
+  gap: rem(5);
+  max-width: calc(100% - #{rem(24)});
+  padding: rem(5) rem(8);
+  background: rgba(13, 14, 18, 0.88);
+  border: 1px solid rgba(255, 255, 255, 0.11);
+  border-radius: rem(11);
+  box-shadow:
+    0 14px 42px rgba(0, 0, 0, 0.75),
+    0 0 0 1px rgba(0, 0, 0, 0.6);
+  transform: translate(calc(-50% + var(--dock-x, 0px)), var(--dock-y, 0px));
+  backdrop-filter: blur(16px) saturate(140%);
+
+  .spacer {
+    flex: 0 0 rem(4);
+  }
+}
+
+.grip {
+  display: flex;
+  flex: none;
+  align-items: center;
+  padding: 0 rem(3);
+  color: $sys-text-muted;
+  cursor: move;
+  touch-action: none;
+
+  &:hover {
+    color: $sys-text-secondary;
+  }
 }

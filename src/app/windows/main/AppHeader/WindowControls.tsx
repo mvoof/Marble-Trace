@@ -2,7 +2,12 @@ import { useState, useEffect } from 'react';
 import type { MouseEvent } from 'react';
 import { Minus, Square, Copy, X } from 'lucide-react';
 import { getCurrentWindow } from '@tauri-apps/api/window';
+import { useTranslation } from 'react-i18next';
+import { observer } from 'mobx-react-lite';
 import styles from './WindowControls.module.scss';
+
+const CONTROL_ICON_SIZE = 16;
+const MAXIMISE_ICON_SIZE = 14;
 
 const handleMinimize = (event: MouseEvent) => {
   event.stopPropagation();
@@ -21,7 +26,8 @@ const handleClose = (event: MouseEvent) => {
 
 // Minimize / maximize / close buttons. Lives in the unified header bar (which
 // doubles as the window title bar).
-export const WindowControls = () => {
+export const WindowControls = observer(() => {
+  const { t } = useTranslation('main-app');
   const [isMaximized, setIsMaximized] = useState(false);
 
   useEffect(() => {
@@ -40,6 +46,12 @@ export const WindowControls = () => {
     };
   }, []);
 
+  // A maximized window fills the screen edge to edge: the rounded frame goes
+  // square (MainWindow.module.scss reads the flag).
+  useEffect(() => {
+    document.documentElement.dataset.maximized = String(isMaximized);
+  }, [isMaximized]);
+
   return (
     <div
       className={styles.controls}
@@ -50,21 +62,23 @@ export const WindowControls = () => {
         type="button"
         className={styles.button}
         onClick={handleMinimize}
-        aria-label="Minimize"
+        aria-label={t('appHeader.window.minimise')}
+        title={t('appHeader.window.minimise')}
       >
-        <Minus size={14} strokeWidth={2.5} />
+        <Minus size={CONTROL_ICON_SIZE} />
       </button>
 
       <button
         type="button"
         className={styles.button}
         onClick={handleMaximize}
-        aria-label="Maximize"
+        aria-label={t('appHeader.window.maximise')}
+        title={t('appHeader.window.maximise')}
       >
         {isMaximized ? (
-          <Copy size={12} strokeWidth={2.5} />
+          <Copy size={MAXIMISE_ICON_SIZE} />
         ) : (
-          <Square size={12} strokeWidth={2.5} />
+          <Square size={MAXIMISE_ICON_SIZE} />
         )}
       </button>
 
@@ -72,10 +86,11 @@ export const WindowControls = () => {
         type="button"
         className={`${styles.button} ${styles.close}`}
         onClick={handleClose}
-        aria-label="Close"
+        aria-label={t('appHeader.window.close')}
+        title={t('appHeader.window.close')}
       >
-        <X size={14} strokeWidth={2.5} />
+        <X size={CONTROL_ICON_SIZE} />
       </button>
     </div>
   );
-};
+});

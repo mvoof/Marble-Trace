@@ -31,7 +31,11 @@ export const watchMonitorArrangement = (
   let stopped = false;
 
   const check = async () => {
-    if (stopped || !document.hasFocus()) return;
+    if (stopped) return;
+
+    // The first read goes through unfocused: until it lands, the editor's
+    // monitor map has no attached monitor to draw.
+    if (lastSignature !== null && !document.hasFocus()) return;
 
     try {
       const monitors = await listMonitorBounds();
@@ -43,6 +47,7 @@ export const watchMonitorArrangement = (
 
       lastSignature = signature;
       root.liveWidgets.setAttachedMonitors(monitors);
+      void root.displays.refresh();
 
       if (isFirstRun) return;
 

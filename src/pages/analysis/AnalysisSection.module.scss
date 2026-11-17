@@ -1,0 +1,217 @@
+// The session's title row, then the analysis or the sessions to pick from.
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: rem(12);
+  min-width: 0;
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: rem(12);
+  min-width: 0;
+}
+
+// The tab bar sits in the section's own gap.
+.tabs :global(.ant-tabs-nav) {
+  margin: 0;
+}
+
+// The lap list at the left, staying in view; the charts beside it.
+.body {
+  display: grid;
+  grid-template-columns: rem(290) minmax(0, 1fr);
+  gap: rem(16);
+  align-items: start;
+}
+
+.side {
+  position: sticky;
+  top: rem(12);
+  display: flex;
+  flex-direction: column;
+  gap: rem(12);
+}
+
+.charts {
+  min-width: 0;
+}
+
+.gate {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: rem(8);
+  padding: rem(60) rem(20);
+  text-align: center;
+  font-size: rem(13);
+  color: $sys-text-secondary;
+
+  p {
+    max-width: rem(460);
+    margin: 0;
+  }
+}
+
+.gateTitle {
+  font-weight: 600;
+  color: $sys-text-primary;
+}
+
+.settings {
+  width: rem(300);
+}
+
+.settingsRow {
+  display: flex;
+  align-items: center;
+  gap: rem(8);
+  font-size: rem(13);
+  color: $sys-text-primary;
+  cursor: pointer;
+}
+
+.settingsNote,
+.settingsWarning {
+  margin: rem(8) 0 0;
+  font-size: rem(12);
+  color: $sys-text-muted;
+}
+
+.settingsWarning {
+  color: $sys-warning;
+}
+
+.card {
+  padding: rem(10);
+  background: $sys-bg-card;
+  border: 1px solid $sys-border-sub;
+  border-radius: rem(10);
+}
+
+.cardHead {
+  display: flex;
+  align-items: center;
+  gap: rem(8);
+  margin-bottom: rem(6);
+  font-size: rem(12);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: $sys-text-secondary;
+}
+
+.hint {
+  margin-left: auto;
+  font-size: rem(11);
+  letter-spacing: 0;
+  text-transform: none;
+  color: $sys-text-muted;
+}
+
+// Under the list: more laps of the same session.
+.addLaps {
+  display: flex;
+  align-items: center;
+  gap: rem(6);
+  width: 100%;
+  margin-top: rem(6);
+  padding: rem(6) rem(4);
+  font-size: rem(12);
+  color: $sys-text-secondary;
+  cursor: pointer;
+  background: none;
+  border: 1px dashed $sys-border-main;
+  border-radius: rem(6);
+
+  &:hover {
+    color: $sys-text-primary;
+    border-color: $sys-text-muted;
+  }
+}
+
+// Colour, eye, lap, time, reference, remove.
+.lap {
+  display: grid;
+  grid-template-columns: rem(14) rem(18) minmax(0, 1fr) auto rem(18) rem(18);
+  gap: rem(8);
+  align-items: center;
+  padding: rem(6) rem(4);
+  border-radius: rem(6);
+
+  &:hover {
+    background: $sys-bg-raised;
+  }
+}
+
+.hidden .lapName,
+.hidden .time {
+  opacity: 0.35;
+}
+
+.swatch {
+  width: rem(12);
+  height: rem(12);
+  padding: 0;
+  cursor: pointer;
+  border: 0;
+  border-radius: 50%;
+}
+
+.icon {
+  display: grid;
+  place-items: center;
+  padding: 0;
+  color: $sys-text-muted;
+  cursor: pointer;
+  background: none;
+  border: 0;
+
+  &:hover {
+    color: $sys-text-primary;
+  }
+}
+
+.on {
+  color: $sys-text-primary;
+}
+
+.reference {
+  color: $sys-warning;
+}
+
+.lapName {
+  overflow: hidden;
+  font-size: rem(12);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  color: $sys-text-primary;
+
+  small {
+    display: block;
+    font-size: rem(11);
+    color: $sys-text-muted;
+  }
+}
+
+.time {
+  font-family: $font-mono;
+  font-size: rem(12);
+  font-variant-numeric: tabular-nums;
+  color: $sys-text-primary;
+}
+
+.best {
+  color: $sys-best;
+}
+
+.muted {
+  color: $sys-text-muted;
+}
+
+.empty {
+  margin: rem(8) 0;
+  text-align: center;
+  font-size: rem(13);
+  color: $sys-text-muted;
+}

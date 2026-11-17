@@ -46,7 +46,7 @@ export const PitServiceSettingsPanel = observer(() => {
 
   return (
     <>
-      <Card title={t('settingsPanels.pitService.sections')}>
+      <Card group="content">
         <Row setting="showFuel" />
         <Row setting="showTires" />
         <Row setting="showRepairs" />
@@ -59,7 +59,7 @@ export const PitServiceSettingsPanel = observer(() => {
         <Row setting="showProjectedPosition" />
       </Card>
 
-      <Card title={t('settingsPanels.pitService.visibility')}>
+      <Card group="behaviour">
         <Row setting="alwaysVisible" />
 
         <div className={styles.fieldGroup}>

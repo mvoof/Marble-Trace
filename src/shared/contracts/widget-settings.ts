@@ -185,6 +185,12 @@ export interface WidgetManifest extends WidgetMeta {
    * they picked.
    */
   previewBaseline?: boolean;
+  /**
+   * `core`: one of the widgets nearly every driver runs (Standings, Relative,
+   * Input Trace, the radars); the Widgets page lists them first. Absent: the
+   * rest.
+   */
+  tier?: 'core';
   /** Hotkeys that cycle a setting of this widget. */
   hotkeyCycles?: readonly HotkeyCycle[];
   /** The plate's shape, when it is not a plain rounded rectangle. */
@@ -271,6 +277,20 @@ export interface LayoutMonitor {
 }
 
 export type SessionContext = 'Practice' | 'Qualify' | 'Race' | 'Garage';
+
+/**
+ * A situation and the layout to put on screen when it arises. Each of the
+ * three conditions is `null` for "any"; the most specific matching rule wins.
+ */
+export interface AutoSwitchRule {
+  id: string;
+  context: SessionContext | null;
+  /** The class badge, e.g. `GT3` — the name the car class resolves to. */
+  carClass: string | null;
+  /** iRacing's `CarID`. */
+  carId: number | null;
+  layoutId: string;
+}
 
 export interface SavedLayout {
   id: string;

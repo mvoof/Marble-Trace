@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
 import { pluralForms, pluralSample } from '@features/voice-crew/plural-message';
-import { movedBefore } from '@features/voice-crew/block-order';
+import { movedBefore } from '@shared/lib/moved-before';
 import {
   replyFromBlocks,
   spacedReplyBlocks,
@@ -11,7 +11,7 @@ import {
 import { Block, type BlockChange, type BlockTone } from './Block';
 import { BlockInput } from './BlockInput';
 import { ChoiceChip } from './ChoiceChip';
-import { useBlockDrag } from './useBlockDrag';
+import { usePointerReorder } from '@shared/hooks/usePointerReorder';
 import { PluralDialog, ValueInsert } from './ValueInsert';
 import styles from './CrewPage.module.scss';
 
@@ -69,7 +69,7 @@ export const ReplyBlocks = observer(
       ((value: string) =>
         t(`crewPage.values.names.${value}`, { defaultValue: value }));
     const editingBlock = editing === null ? null : blocks[editing];
-    const drag = useBlockDrag(blocks.length, (from, before) =>
+    const drag = usePointerReorder(blocks.length, 'x', (from, before) =>
       write(movedBefore(blocks, from, before))
     );
     const reply = replyFromBlocks(blocks);
@@ -187,7 +187,7 @@ export const ReplyBlocks = observer(
               key={index}
               tone={TONES[block.kind]}
               optional={block.kind === 'choice' && block.optional === true}
-              drag={drag.block(index)}
+              drag={drag.item(index)}
               changes={changes(block, index)}
               onRemove={() => remove(index)}
             >

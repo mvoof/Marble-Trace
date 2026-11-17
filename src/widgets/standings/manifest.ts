@@ -41,6 +41,7 @@ export const STANDINGS_MANIFEST: WidgetManifest = {
     'heavy-rain',
   ],
   telemetryEvents: ['driverEntries'],
+  tier: 'core',
   label: 'Standings',
   description: 'Live session standings and intervals.',
   resolveLayoutChange: resolveStandingsLayout,

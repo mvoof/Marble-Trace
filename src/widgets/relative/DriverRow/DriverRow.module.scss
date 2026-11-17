@@ -33,12 +33,16 @@
   padding-inline: sp(xxs);
 }
 
-// Position block — reaches the row's left edge so the class marker sits on it
 .posBlock {
   display: flex;
   align-items: center;
+  padding: 0 sp(xxxs) 0 0;
+}
+
+// Leading the row, it reaches the row's left edge so the class marker sits on it
+.posBlock:first-child {
   margin-left: calc(-1 * sp(md));
-  padding: 0 sp(xxxs) 0 sp(md);
+  padding-left: sp(md);
 }
 
 // Position — primary emphasis

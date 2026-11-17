@@ -1,0 +1,51 @@
+.head {
+  display: flex;
+  align-items: center;
+  gap: rem(8);
+  margin-bottom: rem(8);
+}
+
+.addChannel {
+  width: rem(180);
+}
+
+.tool {
+  display: grid;
+  place-items: center;
+  padding: 0;
+  color: $sys-text-muted;
+  cursor: pointer;
+  background: none;
+  border: 0;
+
+  &:hover:not(:disabled) {
+    color: $sys-text-primary;
+  }
+
+  &:disabled {
+    opacity: 0.3;
+    cursor: default;
+  }
+}
+
+.hint {
+  display: flex;
+  flex-wrap: wrap;
+  gap: rem(6);
+  margin-left: rem(12);
+
+  b {
+    padding: rem(2) rem(7);
+    font-size: rem(11);
+    font-weight: 400;
+    color: $sys-text-muted;
+    border: 1px solid transparent;
+    border-radius: rem(5);
+  }
+}
+
+// The gesture the pointer is set for.
+.lit {
+  color: $sys-text-primary !important;
+  border-color: $sys-border-main !important;
+}

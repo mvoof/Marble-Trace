@@ -79,6 +79,27 @@ export const GeneralSection = observer(() => {
           </div>
         </div>
       </SettingsCard>
+
+      <SettingsCard title={t('settingsPage.appearance.title')}>
+        <div className={styles.fieldGroup}>
+          <div className={styles.fieldRow}>
+            <div className={styles.fieldTexts}>
+              <div className={styles.fieldTitle}>
+                {t('settingsPage.appearance.headerAnimationTitle')}
+              </div>
+
+              <div className={styles.fieldDesc}>
+                {t('settingsPage.appearance.headerAnimationDesc')}
+              </div>
+            </div>
+
+            <Switch
+              checked={appSettings.appSettings.headerAnimation}
+              onChange={(isOn) => appSettings.update({ headerAnimation: isOn })}
+            />
+          </div>
+        </div>
+      </SettingsCard>
     </>
   );
 });

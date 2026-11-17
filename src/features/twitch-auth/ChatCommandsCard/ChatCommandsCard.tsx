@@ -6,6 +6,8 @@ import { useAppSettingsStore } from '@entities/app-settings/app-settings-context
 import { useTwitchAuthStore } from '@features/twitch-auth/twitch-auth-context';
 import type { ChatCommand } from '@shared/contracts/generated/bindings';
 
+import { SettingsCard } from '@shared/ui/SettingsCard/SettingsCard';
+
 import styles from './ChatCommandsCard.module.scss';
 
 const COMMANDS: ChatCommand[] = [
@@ -56,130 +58,124 @@ export const ChatCommandsCard = observer(() => {
   };
 
   return (
-    <div className={styles.card}>
-      <h3 className={styles.cardTitle}>
-        {t('settingsPage.streamChat.commands.title')}
-      </h3>
+    <SettingsCard title={t('settingsPage.streamChat.commands.title')}>
+      <div className={styles.fieldGroup}>
+        <div className={styles.fieldRow}>
+          <div className={styles.fieldTexts}>
+            <div className={styles.fieldTitle}>
+              {t('settingsPage.streamChat.commands.enabled')}
+            </div>
 
-      <div className={styles.cardContent}>
-        <div className={styles.fieldGroup}>
+            <div className={styles.fieldDesc}>
+              {t('settingsPage.streamChat.commands.enabledDesc')}
+            </div>
+          </div>
+
+          <Switch
+            checked={settings.streamChatCommandsEnabled}
+            onChange={(value) =>
+              appSettings.update({ streamChatCommandsEnabled: value })
+            }
+          />
+        </div>
+
+        {settings.streamChatCommandsEnabled && !twitchAuth.isSignedIn && (
+          <Alert
+            className={styles.notice}
+            type="warning"
+            showIcon
+            title={t('settingsPage.streamChat.commands.needsSignIn')}
+          />
+        )}
+
+        {settings.streamChatCommandsEnabled && twitchAuth.needsReconnect && (
+          <Alert
+            className={styles.notice}
+            type="warning"
+            showIcon
+            title={t('settingsPage.streamChat.commands.needsReconnect')}
+            action={
+              <Button size="small" onClick={() => void twitchAuth.start()}>
+                {t('settingsPage.streamChat.reconnect')}
+              </Button>
+            }
+          />
+        )}
+
+        {settings.streamChatCommandsEnabled &&
+          twitchAuth.isSignedIn &&
+          !isOwnChannel && (
+            <Alert
+              className={styles.notice}
+              type="warning"
+              showIcon
+              title={t('settingsPage.streamChat.commands.ownChannelOnly')}
+            />
+          )}
+      </div>
+
+      <div className={styles.fieldGroup}>
+        <div className={styles.fieldRow}>
+          <div className={styles.fieldTexts}>
+            <div className={styles.fieldTitle}>
+              {t('settingsPage.streamChat.commands.cooldown')}
+            </div>
+
+            <div className={styles.fieldDesc}>
+              {t('settingsPage.streamChat.commands.cooldownDesc')}
+            </div>
+          </div>
+
+          <InputNumber
+            min={MIN_COOLDOWN_SECONDS}
+            max={MAX_COOLDOWN_SECONDS}
+            value={settings.streamChatCommandCooldownSeconds}
+            onChange={handleCooldownChange}
+          />
+        </div>
+      </div>
+
+      <div className={styles.fieldGroup}>
+        <div className={styles.fieldRow}>
+          <div className={styles.fieldTexts}>
+            <div className={styles.fieldTitle}>
+              {t('settingsPage.streamChat.commands.globalCooldown')}
+            </div>
+
+            <div className={styles.fieldDesc}>
+              {t('settingsPage.streamChat.commands.globalCooldownDesc')}
+            </div>
+          </div>
+
+          <InputNumber
+            min={MIN_GLOBAL_COOLDOWN_SECONDS}
+            max={MAX_COOLDOWN_SECONDS}
+            value={settings.streamChatCommandGlobalCooldownSeconds}
+            onChange={handleGlobalCooldownChange}
+          />
+        </div>
+      </div>
+
+      {COMMANDS.map((command) => (
+        <div key={command} className={styles.fieldGroup}>
           <div className={styles.fieldRow}>
             <div className={styles.fieldTexts}>
-              <div className={styles.fieldTitle}>
-                {t('settingsPage.streamChat.commands.enabled')}
-              </div>
+              <div className={styles.commandName}>!{command}</div>
 
               <div className={styles.fieldDesc}>
-                {t('settingsPage.streamChat.commands.enabledDesc')}
+                {t(`settingsPage.streamChat.commands.list.${command}`)}
               </div>
             </div>
 
             <Switch
-              checked={settings.streamChatCommandsEnabled}
+              checked={settings.streamChatCommandSwitches[command]}
               onChange={(value) =>
-                appSettings.update({ streamChatCommandsEnabled: value })
+                appSettings.setStreamChatCommandSwitch(command, value)
               }
             />
           </div>
-
-          {settings.streamChatCommandsEnabled && !twitchAuth.isSignedIn && (
-            <Alert
-              className={styles.notice}
-              type="warning"
-              showIcon
-              title={t('settingsPage.streamChat.commands.needsSignIn')}
-            />
-          )}
-
-          {settings.streamChatCommandsEnabled && twitchAuth.needsReconnect && (
-            <Alert
-              className={styles.notice}
-              type="warning"
-              showIcon
-              title={t('settingsPage.streamChat.commands.needsReconnect')}
-              action={
-                <Button size="small" onClick={() => void twitchAuth.start()}>
-                  {t('settingsPage.streamChat.reconnect')}
-                </Button>
-              }
-            />
-          )}
-
-          {settings.streamChatCommandsEnabled &&
-            twitchAuth.isSignedIn &&
-            !isOwnChannel && (
-              <Alert
-                className={styles.notice}
-                type="warning"
-                showIcon
-                title={t('settingsPage.streamChat.commands.ownChannelOnly')}
-              />
-            )}
         </div>
-
-        <div className={styles.fieldGroup}>
-          <div className={styles.fieldRow}>
-            <div className={styles.fieldTexts}>
-              <div className={styles.fieldTitle}>
-                {t('settingsPage.streamChat.commands.cooldown')}
-              </div>
-
-              <div className={styles.fieldDesc}>
-                {t('settingsPage.streamChat.commands.cooldownDesc')}
-              </div>
-            </div>
-
-            <InputNumber
-              min={MIN_COOLDOWN_SECONDS}
-              max={MAX_COOLDOWN_SECONDS}
-              value={settings.streamChatCommandCooldownSeconds}
-              onChange={handleCooldownChange}
-            />
-          </div>
-        </div>
-
-        <div className={styles.fieldGroup}>
-          <div className={styles.fieldRow}>
-            <div className={styles.fieldTexts}>
-              <div className={styles.fieldTitle}>
-                {t('settingsPage.streamChat.commands.globalCooldown')}
-              </div>
-
-              <div className={styles.fieldDesc}>
-                {t('settingsPage.streamChat.commands.globalCooldownDesc')}
-              </div>
-            </div>
-
-            <InputNumber
-              min={MIN_GLOBAL_COOLDOWN_SECONDS}
-              max={MAX_COOLDOWN_SECONDS}
-              value={settings.streamChatCommandGlobalCooldownSeconds}
-              onChange={handleGlobalCooldownChange}
-            />
-          </div>
-        </div>
-
-        {COMMANDS.map((command) => (
-          <div key={command} className={styles.fieldGroup}>
-            <div className={styles.fieldRow}>
-              <div className={styles.fieldTexts}>
-                <div className={styles.commandName}>!{command}</div>
-
-                <div className={styles.fieldDesc}>
-                  {t(`settingsPage.streamChat.commands.list.${command}`)}
-                </div>
-              </div>
-
-              <Switch
-                checked={settings.streamChatCommandSwitches[command]}
-                onChange={(value) =>
-                  appSettings.setStreamChatCommandSwitch(command, value)
-                }
-              />
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
+      ))}
+    </SettingsCard>
   );
 });

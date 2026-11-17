@@ -1,8 +1,10 @@
 import { createContext, use, type ReactNode } from 'react';
 import { observer } from 'mobx-react-lite';
+import { useTranslation } from 'react-i18next';
 import { ChevronDown } from 'lucide-react';
 import { useSettingsPanelUiStore } from '@entities/widget/settings-panel-ui-context';
 import styles from '@features/widget-settings/WidgetSettings.module.scss';
+import { settingsGroupOrder, type SettingsGroup } from './settings-groups';
 
 /**
  * Which widget the surrounding panel is editing. Supplied by WidgetSettings so
@@ -23,17 +25,42 @@ export const PanelWidgetProvider = ({
   </PanelWidgetContext.Provider>
 );
 
-interface CardProps {
-  title?: string;
+/**
+ * Cards drawn open, each a framed card with its title in a strip across the
+ * top — the Widgets page, which has the room. Where room is short (the layout
+ * editor's drawer, the overlay's popup) groups stay foldable.
+ */
+export const OpenCardsContext = createContext(false);
+
+type CardProps = {
   /** Starts unfolded. Most groups start folded so a long panel fits. */
   defaultOpen?: boolean;
   children: ReactNode;
-}
+} & (
+  | {
+      /**
+       * One of the groups every widget shares: it names the card and puts it
+       * in its place among the panel's cards, whatever the source order.
+       */
+      group: SettingsGroup;
+      title?: never;
+    }
+  | {
+      group?: never;
+      /** A block of the widget's own, under a name of its own. */
+      title?: string;
+    }
+);
 
 export const Card = observer(
-  ({ title, defaultOpen = false, children }: CardProps) => {
+  ({ group, title: ownTitle, defaultOpen = false, children }: CardProps) => {
     const panelUi = useSettingsPanelUiStore();
     const widgetId = use(PanelWidgetContext);
+    const { t } = useTranslation('main-app');
+    const isAlwaysOpen = use(OpenCardsContext);
+
+    const title =
+      group === undefined ? ownTitle : t(`widgetSettings.groups.${group}`);
 
     // The translated title doubles as the group key: the folded state is
     // session-only, so the worst a language switch can do is fold a group back.
@@ -45,13 +72,33 @@ export const Card = observer(
 
     // A card with no title has no header to click, and outside a panel (previews,
     // Storybook) there is nothing to key the state on — both stay always open.
-    const isCollapsible = title !== undefined && widgetId !== null;
+    const isCollapsible =
+      !isAlwaysOpen && title !== undefined && widgetId !== null;
 
     const isOpen =
       !isCollapsible || panelUi.isExpanded(widgetId, groupId, defaultOpen);
 
+    if (isAlwaysOpen) {
+      return (
+        <section
+          className={styles.openCard}
+          style={{ order: settingsGroupOrder(group) }}
+        >
+          {title && (
+            <header className={styles.openCardHeader}>
+              <h3 className={styles.openCardTitle}>{title}</h3>
+            </header>
+          )}
+
+          <div className={styles.openCardContent}>{children}</div>
+        </section>
+      );
+    }
+
     return (
-      <div className={styles.card}>
+      // The panel's cards and the common ones WidgetSettings adds share one
+      // flex column; the order is how a panel's Behaviour lands after them.
+      <div className={styles.card} style={{ order: settingsGroupOrder(group) }}>
         {title &&
           (isCollapsible ? (
             <button

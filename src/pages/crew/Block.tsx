@@ -3,7 +3,7 @@ import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
 import { Dropdown } from 'antd';
 import { ChevronDown, GripVertical, X } from 'lucide-react';
-import type { BlockDragState } from './useBlockDrag';
+import type { ReorderItem } from '@shared/hooks/usePointerReorder';
 import styles from './CrewPage.module.scss';
 
 /** How a block looks: its kind, read from its outline rather than a label. */
@@ -27,7 +27,7 @@ interface BlockProps {
   tone: BlockTone;
   /** A value or a choice that may be left out, outlined like an optional part. */
   optional?: boolean;
-  drag: BlockDragState;
+  drag: ReorderItem;
   /** What the block can be turned into, in a menu beside its cross. */
   changes?: BlockChange[];
   onRemove: () => void;

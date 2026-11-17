@@ -18,6 +18,8 @@ line; it is never edited into agreeing with the new one.
 | [0010](0010-overlay-window-covers-its-monitor.md)  | The overlay window covers its whole monitor; it is not shrunk to the widgets' bounding box              | accepted, 2026-10-19      |
 | [0011](0011-backend-is-a-cargo-workspace.md)       | The backend is a Cargo workspace, one crate per layer or domain; only `mt-sim-*` sees kerb              | accepted, 2026-10-25      |
 | [0013](0013-bundles-applied-on-arrival.md)         | A bundle is applied when it arrives; the overlay does not coalesce bundles per frame                    | accepted, 2026-11-13      |
+| [0014](0014-statistics-in-sqlite.md)               | Statistics live in SQLite (`stats.db`), apart from settings.json; rows per `.ibt` file, merged on read  | accepted, 2026-11-14      |
+| [0015](0015-settings-in-json-data-in-sqlite.md)    | Settings in settings.json, data in SQLite; the `.ibt` folder moves out of `stats.db`                    | accepted, 2026-11-16      |
 
 When a decision is resolved, see [`docs/agents/domain.md`](../agents/domain.md)
 for how the record is written.

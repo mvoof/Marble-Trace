@@ -26,6 +26,7 @@ export const PROXIMITY_RADAR_MANIFEST: WidgetManifest = {
     'traffic-rear-bumper',
   ],
   telemetryEvents: ['proximity'],
+  tier: 'core',
   label: 'Proximity Radar',
   description: 'Visual radar for nearby traffic.',
   requiredCapabilities: ['radar'],

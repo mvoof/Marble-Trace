@@ -1,0 +1,121 @@
+.title {
+  font-size: rem(16);
+  font-weight: 600;
+  color: $sys-text-primary;
+}
+
+.config {
+  font-weight: 400;
+  color: $sys-text-secondary;
+}
+
+.meta {
+  margin-top: rem(3);
+  font-size: rem(12);
+  font-weight: 400;
+  color: $sys-text-secondary;
+}
+
+.headActions {
+  display: flex;
+  gap: rem(8);
+  justify-content: flex-end;
+  margin-bottom: rem(8);
+}
+
+.deleteText {
+  margin-bottom: rem(12);
+  color: $sys-text-secondary;
+}
+
+.body {
+  max-height: 60vh;
+  overflow: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: rem(13);
+  color: $sys-text-primary;
+
+  th {
+    position: sticky;
+    top: 0;
+    padding: rem(6) rem(8);
+    text-align: left;
+    font-size: rem(12);
+    font-weight: 500;
+    color: $sys-text-muted;
+    background: $sys-bg-main;
+    border-bottom: 1px solid $sys-border-sub;
+  }
+
+  td {
+    padding: rem(6) rem(8);
+    white-space: nowrap;
+    border-bottom: 1px solid $sys-border-sub;
+  }
+}
+
+// A partial or pit lap: no delta, not for the analysis.
+.dimmed td {
+  color: $sys-text-muted;
+}
+
+.run td {
+  padding-top: rem(12);
+  font-size: rem(11);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: $sys-text-secondary;
+}
+
+.best {
+  color: $sys-best;
+}
+
+.tag {
+  padding: 0 rem(6);
+  font-size: rem(11);
+  color: $sys-text-secondary;
+  border: 1px solid $sys-border-main;
+  border-radius: rem(4);
+}
+
+.action {
+  text-align: right;
+}
+
+.inSet {
+  display: inline-flex;
+  align-items: center;
+  gap: rem(4);
+  font-size: rem(12);
+  color: $sys-up;
+}
+
+.muted {
+  color: $sys-text-muted;
+}
+
+.mono {
+  font-family: $font-mono;
+  font-variant-numeric: tabular-nums;
+}
+
+.toast {
+  display: inline-flex;
+  align-items: center;
+  gap: rem(14);
+}
+
+.toastLink {
+  padding: 0;
+  font: inherit;
+  color: $sys-text-primary;
+  text-decoration: underline;
+  cursor: pointer;
+  background: none;
+  border: 0;
+}

@@ -44,6 +44,18 @@ vi.mock(
   }
 );
 
+vi.mock('@features/statistics/statistics.store', async (importOriginal) => {
+  const actual =
+    await importOriginal<
+      typeof import('@features/statistics/statistics.store')
+    >();
+
+  return {
+    ...actual,
+    StatisticsStore: tracked('StatisticsStore', actual.StatisticsStore),
+  };
+});
+
 vi.mock(
   '@features/companion-apps/companion-apps.store',
   async (importOriginal) => {
@@ -212,6 +224,7 @@ vi.mock('@entities/track/track-rotation.store', async (importOriginal) => {
 const MAIN_ONLY_STORES = [
   'LayoutEditorStore',
   'CompanionAppsStore',
+  'StatisticsStore',
   'TwitchAuthStore',
   'DeviceInputStore',
   'BindingsUiStore',

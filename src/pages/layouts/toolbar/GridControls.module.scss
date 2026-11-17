@@ -1,0 +1,30 @@
+.sizes {
+  display: flex;
+  gap: rem(2);
+  margin: rem(2) rem(8) rem(4) rem(30);
+  padding: rem(2);
+  background: $sys-bg-sunken;
+  border: 1px solid $sys-border-sub;
+  border-radius: rem(8);
+}
+
+.size {
+  flex: 1 1 0;
+  height: rem(22);
+  background: transparent;
+  border: 0;
+  border-radius: rem(6);
+  color: $sys-text-secondary;
+  font-family: $font-mono;
+  font-size: rem(11);
+  cursor: pointer;
+
+  &:hover {
+    color: $sys-text-primary;
+  }
+}
+
+.sizeOn {
+  background: $sys-bg-raised;
+  color: $sys-text-primary;
+}

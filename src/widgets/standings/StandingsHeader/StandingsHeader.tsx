@@ -1,15 +1,50 @@
 import { useWidgetSettings } from '@entities/layout/useWidgetSettings';
 import { observer } from 'mobx-react-lite';
 
+import type { StandingsColumn } from '@widgets/standings/standings-columns';
 import {
   buildBlockEndColumns,
   buildGridTemplate,
-  type StandingsColumn,
+  visibleStandingsColumns,
 } from '@widgets/standings/standings-utils';
 import { StandingsHeaderCell } from './StandingsHeaderCell';
 
 import styles from './StandingsHeader.module.scss';
 import type { StandingsWidgetSettings } from '../settings-schema';
+
+interface HeaderSpec {
+  label: string;
+  align?: 'left' | 'center' | 'right';
+  title?: string;
+}
+
+// The flag column has no heading; a space keeps the cell from collapsing.
+const HEADERS: Record<StandingsColumn, HeaderSpec> = {
+  pos: { label: 'Pos' },
+  carNumber: { label: '#', align: 'right' },
+  posChange: { label: '±', align: 'center' },
+  countryFlag: { label: ' ' },
+  name: { label: 'Driver' },
+  sr: { label: 'SR', align: 'center' },
+  ir: { label: 'iR', align: 'center' },
+  irChange: {
+    label: '±iR',
+    align: 'center',
+    title: 'Projected iR change (Elo estimate, not real iRacing data)',
+  },
+  laps: { label: 'Laps', align: 'center' },
+  gap: { label: 'Gap', align: 'right' },
+  interval: { label: 'Int', align: 'right' },
+  lastLap: { label: 'Last', align: 'right' },
+  lapDelta: {
+    label: 'Delta',
+    align: 'right',
+    title: 'Last lap against the lap before it',
+  },
+  bestLap: { label: 'Best', align: 'right' },
+  brand: { label: 'Brand', align: 'center' },
+  tire: { label: 'Tire', align: 'center' },
+};
 
 export const StandingsHeader = observer(() => {
   const settings = useWidgetSettings<StandingsWidgetSettings>('standings');
@@ -19,111 +54,28 @@ export const StandingsHeader = observer(() => {
   }
 
   const gridTemplate = buildGridTemplate(settings);
-  const blockEnds = buildBlockEndColumns(settings);
-
   // The rules between groups of columns run up through the header too.
-  const endsBlock = (column: StandingsColumn): boolean => blockEnds.has(column);
+  const blockEnds = buildBlockEndColumns(settings);
 
   return (
     <div
       className={styles.headerRow}
       style={{ gridTemplateColumns: gridTemplate }}
     >
-      <StandingsHeaderCell>Pos</StandingsHeaderCell>
+      {visibleStandingsColumns(settings).map((column) => {
+        const { label, align, title } = HEADERS[column];
 
-      <StandingsHeaderCell align="right" endsBlock={endsBlock('carNumber')}>
-        #
-      </StandingsHeaderCell>
-
-      {settings.showPosChange && (
-        <StandingsHeaderCell align="center" endsBlock={endsBlock('posChange')}>
-          ±
-        </StandingsHeaderCell>
-      )}
-
-      {settings.showCountryFlag && (
-        <StandingsHeaderCell endsBlock={endsBlock('countryFlag')}>
-          {' '}
-        </StandingsHeaderCell>
-      )}
-
-      <StandingsHeaderCell endsBlock={endsBlock('name')}>
-        Driver
-      </StandingsHeaderCell>
-
-      {settings.showLicBadge && (
-        <StandingsHeaderCell align="center" endsBlock={endsBlock('sr')}>
-          SR
-        </StandingsHeaderCell>
-      )}
-
-      {settings.showIRating && (
-        <StandingsHeaderCell align="center" endsBlock={endsBlock('ir')}>
-          iR
-        </StandingsHeaderCell>
-      )}
-
-      {settings.showIrChange && (
-        <StandingsHeaderCell
-          align="center"
-          title="Projected iR change (Elo estimate, not real iRacing data)"
-          endsBlock={endsBlock('irChange')}
-        >
-          ±iR
-        </StandingsHeaderCell>
-      )}
-
-      {settings.showLapsCompleted && (
-        <StandingsHeaderCell align="center" endsBlock={endsBlock('laps')}>
-          Laps
-        </StandingsHeaderCell>
-      )}
-
-      {settings.showGap && (
-        <StandingsHeaderCell align="right" endsBlock={endsBlock('gap')}>
-          Gap
-        </StandingsHeaderCell>
-      )}
-
-      {settings.showInterval && (
-        <StandingsHeaderCell align="right" endsBlock={endsBlock('interval')}>
-          Int
-        </StandingsHeaderCell>
-      )}
-
-      {settings.showLastLap && (
-        <StandingsHeaderCell align="right" endsBlock={endsBlock('lastLap')}>
-          Last
-        </StandingsHeaderCell>
-      )}
-
-      {settings.showLapDelta && (
-        <StandingsHeaderCell
-          align="right"
-          title="Last lap against the lap before it"
-          endsBlock={endsBlock('lapDelta')}
-        >
-          Delta
-        </StandingsHeaderCell>
-      )}
-
-      {settings.showBestLap && (
-        <StandingsHeaderCell align="right" endsBlock={endsBlock('bestLap')}>
-          Best
-        </StandingsHeaderCell>
-      )}
-
-      {settings.showBrand && (
-        <StandingsHeaderCell align="center" endsBlock={endsBlock('brand')}>
-          Brand
-        </StandingsHeaderCell>
-      )}
-
-      {settings.showTire && (
-        <StandingsHeaderCell align="center" endsBlock={endsBlock('tire')}>
-          Tire
-        </StandingsHeaderCell>
-      )}
+        return (
+          <StandingsHeaderCell
+            key={column}
+            align={align}
+            title={title}
+            endsBlock={blockEnds.has(column)}
+          >
+            {label}
+          </StandingsHeaderCell>
+        );
+      })}
     </div>
   );
 });

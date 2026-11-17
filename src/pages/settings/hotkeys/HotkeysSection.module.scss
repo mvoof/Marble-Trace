@@ -1,0 +1,15 @@
+// Bindings, and the devices beside them; one column in a narrow window.
+.columns {
+  display: grid;
+  grid-template-columns: minmax(0, 1.7fr) minmax(0, 1fr);
+  align-items: start;
+  gap: rem(14);
+
+  @media (max-width: 1000px) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.pane {
+  min-width: 0;
+}

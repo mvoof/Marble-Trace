@@ -1,0 +1,23 @@
+.flash {
+  position: fixed;
+  inset: 0;
+  z-index: 10001;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+}
+
+.number {
+  display: grid;
+  place-items: center;
+  min-width: rem(220);
+  padding: rem(16) rem(48);
+  border: 2px solid $sys-accent;
+  border-radius: rem(24);
+  background: rgba($sys-bg-main, 0.8);
+  color: $sys-text-primary;
+  font-family: $font-widget;
+  font-size: rem(180);
+  font-weight: 700;
+  line-height: 1;
+}

@@ -14,6 +14,7 @@ import {
   visibilityAfterToggle,
 } from '@entities/layout/hotkey-targets';
 import {
+  centredOnMonitor,
   clampOnOwnMonitor,
   monitorMoveOf,
   withoutGeometry,
@@ -61,6 +62,7 @@ import type {
 } from '@shared/contracts/widget-settings';
 import { DEFAULT_LAYOUT_RESOLUTION } from '@entities/layout/layout-resolution';
 import {
+  defaultMonitorOf,
   hotkeysActOn,
   widgetsOnMonitor,
 } from '@entities/layout/virtual-desktop';
@@ -87,8 +89,11 @@ type WidgetSettingsWrite =
   | 'updateUserSettings'
   | 'setWidgetEnabled'
   | 'setTypeEnabledOnMonitor'
+  | 'addTypeToScreen'
+  | 'addWidgetAtCentre'
   | 'duplicateWidget'
   | 'removeWidgetCopy'
+  | 'removeTypeFromMonitor'
   | 'copySettingsFrom'
   | 'resetSettings'
   | 'bringToFront'
@@ -551,6 +556,31 @@ export class LiveWidgetsStore implements WidgetMap {
   }
 
   /**
+   * Takes a widget off one monitor in one undo step: its copies there go for
+   * good, the first instance is switched off and keeps its settings for the
+   * next time it is added. Other monitors are left alone.
+   */
+  removeTypeFromMonitor(type: string, monitorName: string) {
+    const layout = this.widgetOwner;
+    const [first, ...copies] = widgetsOnMonitor(
+      this.allWidgets,
+      monitorName
+    ).filter((widget) => widget.type === type);
+
+    if (!layout || !first) {
+      return;
+    }
+
+    this.pushUndo();
+
+    const copyIds = new Set(copies.map((copy) => copy.id));
+
+    first.userSettings.enabled = false;
+    layout.widgets = layout.widgets.filter((entry) => !copyIds.has(entry.id));
+    this.bumpMutation();
+  }
+
+  /**
    * The other instances of the same widget a settings copy can be taken from,
    * on any monitor of the layout.
    */
@@ -711,6 +741,23 @@ export class LiveWidgetsStore implements WidgetMap {
   }
 
   /**
+   * Puts a widget on screen from its own page: switched on on the layout's
+   * first monitor (`setTypeEnabledOnMonitor`). Returns the instance, or null
+   * when the layout has no monitor.
+   */
+  addTypeToScreen(type: string): string | null {
+    const monitor = this.widgetOwner
+      ? defaultMonitorOf(this.widgetOwner)
+      : undefined;
+
+    if (!monitor) {
+      return null;
+    }
+
+    return this.setTypeEnabledOnMonitor(type, monitor.name, true);
+  }
+
+  /**
    * The switch of one widget on one monitor's list (`monitorSwitchOf`): on
    * reuses an instance already standing here, settings and all, or makes one
    * from the widget's template in a free spot; off touches nothing on any
@@ -762,6 +809,40 @@ export class LiveWidgetsStore implements WidgetMap {
     this.bumpMutation();
 
     return switchedOnId;
+  }
+
+  /**
+   * The editor's "+ Widget": one more instance of a widget in the middle of a
+   * monitor, above everything else there — the widget switched on, or a copy
+   * of it when it already stands on that monitor. One undo step. Returns the
+   * instance, or null when the layout has no such monitor.
+   */
+  addWidgetAtCentre(type: string, monitorName: string): string | null {
+    const monitor = this.widgetOwner?.monitors.find(
+      (entry) => entry.name === monitorName
+    );
+
+    if (!monitor || !DEFAULT_WIDGET_BY_ID.has(type)) {
+      return null;
+    }
+
+    const standing = this.widgetsOnMonitorNamed(monitorName).find(
+      (widget) => widget.type === type
+    );
+    const addedId = standing
+      ? this.duplicateWidget(standing.id)
+      : this.setTypeEnabledOnMonitor(type, monitorName, true);
+    const added = addedId ? this.getWidget(addedId) : undefined;
+
+    if (!added) {
+      return null;
+    }
+
+    moveWidgetTo(added, centredOnMonitor(added, monitor));
+    added.userSettings.zIndex = topZIndex(this.allWidgets, added.id) + 1;
+    this.bumpMutation();
+
+    return added.id;
   }
 
   /**

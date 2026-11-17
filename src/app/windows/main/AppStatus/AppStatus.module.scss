@@ -2,22 +2,24 @@
   display: flex;
   align-items: center;
   gap: rem(8);
-  margin-top: rem(4);
+  padding: 0 rem(10);
 }
 
 .dot {
-  width: rem(6);
-  height: rem(6);
+  width: rem(7);
+  height: rem(7);
   border-radius: 50%;
   flex-shrink: 0;
-  box-shadow: 0 0 8px currentColor;
 }
 
 .label {
-  font-size: rem(10);
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
+  font-size: rem(12);
+  white-space: nowrap;
+
+  // In a narrow window the header keeps the dot; the label is its tooltip.
+  @media (max-width: 1100px) {
+    display: none;
+  }
 }
 
 .connected {
@@ -26,13 +28,18 @@
 }
 
 .connectedText {
-  color: $widget-text-accent;
+  color: $sys-text-secondary;
 }
 
 .waiting {
   background-color: $widget-status-caution;
   color: rgba($widget-status-caution, 0.4);
   animation: pulse 2s infinite;
+}
+
+// The sim is not running: nothing is wrong, nothing is pending.
+.idle {
+  background-color: $sys-text-muted;
 }
 
 .waitingText {

@@ -17,6 +17,12 @@ import { registerSaveReaction } from './save-sync';
 import { registerTelemetrySettingsReaction } from './telemetry-settings-sync';
 import { registerPitServiceMainReactions } from './pit-service-sync';
 import { registerVoiceMainReactions } from './voice-sync';
+import {
+  adoptLegacyStatsFolder,
+  pushDefaultStatsFolder,
+  registerStatsFolderReaction,
+} from './stats-folder-sync';
+import { registerAnalysisSync } from './analysis-sync';
 import { overlayMonitorNames, syncOverlayWindows } from './overlay-windows';
 import { registerRemotePublishing } from './remote-publish';
 import { registerClientPublishing } from './client-publish';
@@ -27,7 +33,7 @@ import {
 } from '@shared/api/overlay-resolution';
 import { setUpFirstRun } from '@entities/layout/first-run';
 import { watchMonitorArrangement } from './monitor-watch';
-import type { SessionContext } from '@shared/contracts/widget-settings';
+import { autoSwitchTarget } from '@entities/layout/auto-switch-rules';
 import type { MainRoot } from '@app/roots/main-root';
 
 let mainSyncInitPromise: Promise<() => void> | null = null;
@@ -43,38 +49,25 @@ export const registerLayoutAutoSwitchReaction = (
 ): IReactionDisposer =>
   reaction(
     () => ({
-      isConnected: root.sim.isConnected,
-      isOnTrack: root.player.isOnTrack,
-      sessionType: root.session.currentSessionType,
+      target: autoSwitchTarget(root.layouts.autoSwitchRules, {
+        isConnected: root.sim.isConnected,
+        isOnTrack: root.player.isOnTrack,
+        sessionType: root.session.currentSessionType,
+        catalogue: root.carCatalogue.cars,
+        playerCar: root.session.playerCar,
+      }),
       autoSwitchLayouts: root.appSettings.appSettings.autoSwitchLayouts,
-      sessionLayouts: JSON.stringify(root.layouts.sessionLayouts),
+      autoSwitchRules: JSON.stringify(root.layouts.autoSwitchRules),
     }),
-    ({ isConnected, isOnTrack, sessionType, autoSwitchLayouts }) => {
-      if (!autoSwitchLayouts) return;
-      if (!isConnected) return;
-
-      let context: SessionContext | null = null;
-
-      if (!isOnTrack) {
-        context = 'Garage';
-      } else if (sessionType === 'Practice') {
-        context = 'Practice';
-      } else if (sessionType === 'Qualify') {
-        context = 'Qualify';
-      } else if (sessionType === 'Race') {
-        context = 'Race';
+    ({ target, autoSwitchLayouts }) => {
+      if (!autoSwitchLayouts || !target?.layoutId) {
+        return;
       }
-
-      if (!context) return;
-
-      const layoutId = root.layouts.sessionLayouts?.[context];
-
-      if (!layoutId) return;
 
       // The screen follows the session whatever the editor is doing: while it
       // is open this moves the live layout only, leaving the one being edited
       // where the user put it.
-      root.layoutEditor.applySessionLayout(layoutId);
+      root.layoutEditor.applySessionLayout(target.layoutId);
     },
     { fireImmediately: true }
   );
@@ -141,6 +134,7 @@ export const initMainSync = async (root: MainRoot) => {
       // the exact loss the check exists to prevent.
       if (root.appSettings.settingsLocked) {
         await offerLastGoodSettings(root);
+        void pushDefaultStatsFolder(root);
 
         return () => {
           mainSyncInitPromise = null;
@@ -238,6 +232,8 @@ export const initMainSync = async (root: MainRoot) => {
         }),
       ]);
 
+      await adoptLegacyStatsFolder(root);
+
       // Registration order matches the original single list: the
       // `fireImmediately` reactions (layout auto-switch, device polling, chat
       // connect, sim-armed pit order) run in this sequence at startup.
@@ -251,14 +247,17 @@ export const initMainSync = async (root: MainRoot) => {
         ...registerChatReactions(root),
         ...registerPitServiceMainReactions(root),
         ...registerVoiceMainReactions(root),
+        registerStatsFolderReaction(root),
       ];
 
       // Owns the remote server's lifetime, so it is torn down with the rest.
       const stopRemotePublishing = registerRemotePublishing(root);
+      const stopAnalysisSync = await registerAnalysisSync(root);
 
       const cleanup = () => {
         stopMonitorWatch();
         stopRemotePublishing();
+        stopAnalysisSync();
         clientPublishing.dispose();
         settingsActionUnlisten();
         trackRotationUnlisten();

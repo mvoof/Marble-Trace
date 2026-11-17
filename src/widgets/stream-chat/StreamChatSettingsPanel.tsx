@@ -29,7 +29,7 @@ export const StreamChatSettingsPanel = observer(() => {
         </div>
       </Card>
 
-      <Card title={t('settingsPanels.streamChat.visibleElements')}>
+      <Card group="content">
         <div className={styles.fieldGroup}>
           <Row setting="compactRows" />
         </div>

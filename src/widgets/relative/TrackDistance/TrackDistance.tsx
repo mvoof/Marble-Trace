@@ -10,11 +10,15 @@ import { useUnitsStore } from '@entities/app-settings/units-context';
 import { useAppSettingsStore } from '@entities/app-settings/app-settings-context';
 import { useRelativeWidgetStore } from '@widgets/relative/relative.store';
 
+import { cx } from '@shared/lib/class-names';
+
 import styles from './TrackDistance.module.scss';
 
 interface TrackDistanceProps {
   carIdx: number;
   isPaceCar: boolean;
+  /** The row's own classes for the cell, the group rule among them. */
+  className?: string;
 }
 
 const NO_DISTANCE = '-';
@@ -25,7 +29,7 @@ const NO_DISTANCE = '-';
  * written straight to its span.
  */
 export const TrackDistance = observer(
-  ({ carIdx, isPaceCar }: TrackDistanceProps) => {
+  ({ carIdx, isPaceCar, className }: TrackDistanceProps) => {
     const computed = useBackendComputedStore();
     const relativeWidget = useRelativeWidgetStore();
     const session = useSessionStore();
@@ -64,7 +68,7 @@ export const TrackDistance = observer(
     );
 
     return (
-      <div className={styles.distanceBlock}>
+      <div className={cx(styles.distanceBlock, className)}>
         <span ref={distanceRef} className={styles.distance} />
       </div>
     );

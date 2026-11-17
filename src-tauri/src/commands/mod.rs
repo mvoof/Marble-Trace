@@ -5,8 +5,10 @@
 //! broadcast makes every one of them harder to find, and hides that they need
 //! entirely different state.
 
+pub mod cars;
 pub mod chat;
 pub mod companions;
+pub mod displays;
 pub mod hotkeys;
 pub mod input;
 #[cfg(feature = "dev")]
@@ -14,6 +16,7 @@ pub mod perf;
 pub mod pit;
 pub mod remote;
 pub mod settings;
+pub mod stats;
 pub mod telemetry;
 pub mod track;
 pub mod voice;
@@ -78,6 +81,7 @@ pub fn invoke_handler() -> impl Fn(Invoke<Wry>) -> bool + Send + Sync + 'static 
         track::reset_pit_lane_pct,
         track::get_active_reference_lap,
         track::delete_reference_lap,
+        displays::list_display_names,
         settings::log_settings_snapshot,
         settings::backup_settings_file,
         settings::load_settings,
@@ -111,6 +115,31 @@ pub fn invoke_handler() -> impl Fn(Invoke<Wry>) -> bool + Send + Sync + 'static 
         companions::launch_companion_app,
         companions::close_companion_app,
         companions::close_companion_apps,
-        companions::companion_app_icon
+        companions::companion_app_icon,
+        stats::get_stats_import_status,
+        stats::get_recent_sessions,
+        stats::get_sessions_page,
+        stats::get_session_laps,
+        stats::get_analysis_set,
+        stats::delete_session,
+        stats::add_analysis_laps,
+        stats::remove_analysis_lap,
+        stats::set_analysis_lap_color,
+        stats::set_analysis_lap_visible,
+        stats::set_analysis_reference,
+        stats::load_analysis_laps,
+        stats::unload_analysis,
+        stats::get_lap_channels,
+        stats::get_car_setup,
+        stats::get_home_stats,
+        stats::get_autolog_state,
+        stats::enable_autolog,
+        stats::set_stats_folder,
+        stats::take_legacy_stats_folder,
+        stats::reimport_stats,
+        stats::get_skipped_files,
+        stats::get_known_cars,
+        stats::export_sessions_csv,
+        cars::get_car_catalogue
     ]
 }

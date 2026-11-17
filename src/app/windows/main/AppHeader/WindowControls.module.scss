@@ -1,30 +1,30 @@
 .controls {
   display: flex;
-  align-items: center;
-  gap: rem(4);
+  margin-left: rem(6);
 }
 
 .button {
-  width: rem(30);
-  height: rem(30);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  width: rem(32);
+  height: rem(32);
+  display: grid;
+  place-items: center;
   padding: 0;
   border: none;
+  border-radius: rem(8);
   background: transparent;
-  color: #5e626d;
+  color: $sys-text-secondary;
   cursor: pointer;
-  border-radius: radius(sm);
-  transition: all 0.15s;
+  transition:
+    color 0.15s,
+    background 0.15s;
 
   &:hover {
-    color: #e0e0e0;
-    background: rgba(255, 255, 255, 0.06);
+    color: $sys-text-primary;
+    background: $sys-bg-raised;
   }
 
   &.close:hover {
-    color: #ffffff;
-    background: #ff5a5a;
+    color: $sys-danger-soft-text;
+    background: $sys-danger-soft-bg;
   }
 }

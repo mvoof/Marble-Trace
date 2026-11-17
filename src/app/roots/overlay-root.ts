@@ -6,6 +6,7 @@ import {
 import type { BindingsStore } from '@features/hotkey-bindings/bindings.store';
 import { SettingsClientStore } from '@app/sync/overlay/settings-client.store';
 import type { SettingsPanelUiStore } from '@entities/widget/settings-panel-ui.store';
+import { MonitorIdentifyStore } from '@entities/layout/monitor-identify.store';
 
 /**
  * An overlay window: the renderer core plus the two stores every app window
@@ -17,6 +18,7 @@ export class OverlayRoot extends RendererCore implements AppWindowStores {
   bindings: BindingsStore;
   settingsPanelUi: SettingsPanelUiStore;
   settingsClient: SettingsClientStore;
+  monitorIdentify = new MonitorIdentifyStore();
 
   constructor(options?: { skipInit?: boolean }) {
     super(options);

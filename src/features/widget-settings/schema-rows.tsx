@@ -8,6 +8,7 @@ import type {
   SettingsSchema,
   SettingsShape,
 } from '@shared/lib/widget-settings-dsl';
+import { columnRows } from './column-rows';
 import { SettingRow } from './SettingRow';
 import { untypedRows, useBoundSetting } from './setting-rows';
 
@@ -30,7 +31,7 @@ import { untypedRows, useBoundSetting } from './setting-rows';
  */
 const SLIDER_WIDTH_PX = 160;
 
-type BoolKey<Settings> = {
+export type BoolKey<Settings> = {
   [Key in keyof Settings]-?: Settings[Key] extends boolean ? Key : never;
 }[keyof Settings];
 
@@ -49,7 +50,7 @@ interface RowProps<Shape extends SettingsShape> {
   input?: boolean;
 }
 
-interface Labels {
+export interface Labels {
   title: string;
   /** Absent when the locale has no `<key>Desc` — a row can be a title alone. */
   desc?: string;
@@ -83,16 +84,25 @@ export const schemaRows = <Shape extends SettingsShape>(
       : `settingsPanels.common.${setting}_${option}`;
   };
 
-  const useLabels = (setting: keyof Shape & string): Labels => {
+  /** Reads the labels of any setting — for a panel that lists several. */
+  const useLabelReader = () => {
     const { t, i18n } = useTranslation('widgets');
-    const labelKey = labelKeyOf(setting);
-    const descKey = `${labelKey}Desc`;
 
-    return {
-      title: t(labelKey),
-      desc: i18n.exists(descKey, { ns: 'widgets' }) ? t(descKey) : undefined,
+    return (setting: keyof Shape & string): Labels => {
+      const labelKey = labelKeyOf(setting);
+      const descKey = `${labelKey}Desc`;
+
+      return {
+        title: t(labelKey),
+        desc: i18n.exists(descKey, { ns: 'widgets' }) ? t(descKey) : undefined,
+      };
     };
   };
+
+  const useLabels = (setting: keyof Shape & string): Labels =>
+    useLabelReader()(setting);
+
+  const ColumnRows = columnRows(schema, useLabelReader);
 
   const ValueRow = observer(
     ({
@@ -216,5 +226,5 @@ export const schemaRows = <Shape extends SettingsShape>(
     }
   );
 
-  return { Row, useLabels };
+  return { Row, ColumnRows, useLabels };
 };

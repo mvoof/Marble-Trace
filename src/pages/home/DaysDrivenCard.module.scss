@@ -1,0 +1,191 @@
+$cell-size: rem(12);
+$cell-gap: rem(3);
+$weekday-width: rem(22);
+$legend-cell-size: rem(10);
+
+// A window narrower than the year scrolls the card, never squeezes the cells.
+.card {
+  min-width: 0;
+  max-width: 100%;
+  overflow-x: auto;
+  padding: rem(14) rem(16);
+  background: $sys-bg-card;
+  border: 1px solid $sys-border-sub;
+  border-radius: rem(10);
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  gap: rem(6);
+  margin-bottom: rem(10);
+  font-size: rem(12);
+  color: $sys-text-muted;
+}
+
+// The year shown, between its arrows, at the right of the heading.
+.years {
+  display: flex;
+  align-items: center;
+  gap: rem(4);
+  margin-left: auto;
+}
+
+.year {
+  min-width: rem(36);
+  text-align: center;
+  font-family: $font-mono;
+  font-variant-numeric: tabular-nums;
+  color: $sys-text-primary;
+}
+
+.yearButton {
+  display: grid;
+  place-items: center;
+  padding: rem(2);
+  color: $sys-text-secondary;
+  cursor: pointer;
+  background: none;
+  border: 0;
+  border-radius: rem(4);
+
+  &:hover:not(:disabled) {
+    color: $sys-text-primary;
+    background: $sys-bg-raised;
+  }
+
+  &:disabled {
+    color: $sys-text-muted;
+    cursor: default;
+    opacity: 0.4;
+  }
+}
+
+// Weekday labels in the first column, month labels over the cells; the
+// cells keep their size, the calendar centred in a card wider than it.
+.calendar {
+  display: grid;
+  grid-template-columns: $weekday-width auto;
+  gap: $cell-gap rem(6);
+  justify-content: center;
+}
+
+.months {
+  display: grid;
+  grid-column: 2;
+  grid-template-columns: repeat(var(--weeks), $cell-size);
+  gap: $cell-gap;
+  height: rem(13);
+  font-size: rem(10);
+  color: $sys-text-muted;
+}
+
+// A label may run past its own column, over the next ones.
+.month {
+  white-space: nowrap;
+}
+
+.weekdays {
+  display: grid;
+  grid-template-rows: repeat(7, $cell-size);
+  align-items: center;
+  gap: $cell-gap;
+  font-size: rem(9);
+  color: $sys-text-muted;
+}
+
+.grid {
+  display: grid;
+  grid-auto-flow: column;
+  grid-template-rows: repeat(7, $cell-size);
+  grid-template-columns: repeat(var(--weeks), $cell-size);
+  gap: $cell-gap;
+}
+
+.cell,
+.future {
+  display: block;
+  width: $cell-size;
+  height: $cell-size;
+  border-radius: rem(2);
+}
+
+// Shades of white, from a day not driven to the longest one.
+.cell {
+  background: $sys-bg-raised;
+
+  &[data-level='1'] {
+    background: color-mix(in srgb, $sys-text-primary 22%, $sys-bg-raised);
+  }
+
+  &[data-level='2'] {
+    background: color-mix(in srgb, $sys-text-primary 45%, $sys-bg-raised);
+  }
+
+  &[data-level='3'] {
+    background: color-mix(in srgb, $sys-text-primary 72%, $sys-bg-raised);
+  }
+
+  &[data-level='4'] {
+    background: $sys-text-primary;
+  }
+}
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: rem(6) rem(16);
+  margin-top: rem(8);
+  font-size: rem(11);
+  color: $sys-text-muted;
+}
+
+.scale {
+  display: flex;
+  align-items: center;
+  gap: $cell-gap;
+
+  .cell {
+    width: $legend-cell-size;
+    height: $legend-cell-size;
+  }
+}
+
+.tooltip {
+  display: flex;
+  flex-direction: column;
+  gap: rem(4);
+  min-width: rem(200);
+  font-size: rem(12);
+}
+
+.tooltipHead,
+.tooltipSession {
+  display: flex;
+  justify-content: space-between;
+  gap: rem(12);
+}
+
+.tooltipHead {
+  padding-bottom: rem(4);
+  border-bottom: 1px solid $sys-border-main;
+  font-weight: 600;
+}
+
+.tooltipNames {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mono {
+  flex: none;
+  font-family: $font-mono;
+  font-variant-numeric: tabular-nums;
+}
+
+.muted {
+  color: $sys-text-secondary;
+}

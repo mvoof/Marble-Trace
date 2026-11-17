@@ -1,0 +1,53 @@
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: rem(8);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: rem(12);
+  margin-bottom: rem(4);
+}
+
+.shared {
+  font-size: rem(12);
+  color: $sys-text-secondary;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: rem(12);
+}
+
+.action {
+  font-size: rem(13);
+  color: $sys-text-primary;
+  min-width: 0;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: rem(6);
+}
+
+.chip {
+  padding: rem(2) rem(8);
+  border: 1px solid $sys-border-main;
+  border-radius: 4px;
+  background: $sys-bg-main;
+  font-family: $font-mono;
+  font-size: rem(11);
+  color: $sys-text-primary;
+}
+
+.unbound {
+  font-size: rem(12);
+  color: $sys-text-muted;
+}

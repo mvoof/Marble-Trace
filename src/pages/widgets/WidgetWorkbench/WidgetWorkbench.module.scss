@@ -1,60 +1,112 @@
+// Below this the preview always goes on top, whatever the switch says.
+$narrow-window: 1100px;
+
+// The settings' width beside the preview: the preview takes the rest.
+$settings-beside-width: rem(440);
+
+// The column's padding above and below the pane, and the pane's border: what
+// the page's height loses before the preview gets it.
+$column-padding-top: rem(8);
+$column-padding-bottom: rem(12);
+$pane-border: 1px;
+
+// The page scrolls as a whole: the preview stays in view while the settings
+// pass under (on top) or beside it (on the left). `cqh` is the page body's
+// height: the page is a size container (SectionedPage, pinned title).
 .root {
   display: flex;
+  flex-direction: column;
   width: 100%;
-  height: 100%;
-  min-height: 0;
-  gap: sp(lg);
+  gap: rem(16);
+  // On top, a tall widget takes most of the window, leaving the settings a
+  // strip to scroll.
+  --preview-room: 60cqh;
+}
+
+// Modifier declared after its base class.
+.rootPreviewLeft {
+  @extend .root;
+
+  flex-direction: row;
+  align-items: flex-start;
+  --preview-room: calc(
+    100cqh - #{$column-padding-top + $column-padding-bottom} -
+      #{2 * $pane-border}
+  );
+
+  @media (max-width: $narrow-window) {
+    flex-direction: column;
+    align-items: stretch;
+    --preview-room: 60cqh;
+  }
 }
 
 .previewColumn {
+  position: sticky;
+  // Right under the page's pinned title row.
+  top: 0;
+  z-index: 1;
   display: flex;
-  flex: 1 1 0;
-  min-width: 0;
   flex-direction: column;
-  gap: sp(sm);
+  gap: rem(8);
+  // Opaque, so the settings scrolling under it do not show through.
+  padding: $column-padding-top 0 $column-padding-bottom;
+  background: $sys-bg-main;
+
+  .rootPreviewLeft & {
+    flex: 1 1 0;
+    min-width: 0;
+
+    @media (max-width: $narrow-window) {
+      flex: none;
+    }
+  }
 }
 
-.scenarioBar {
-  display: flex;
-  align-items: center;
-  gap: sp(sm);
-  flex: 0 0 auto;
-}
-
-.scenarioLabel {
-  color: #8b8e98;
-  font-family: $font-widget;
-  font-size: fs(sm);
-}
-
+// The stage the widget stands on, like the mockup's: a quiet checkerboard in
+// a framed box, so the widget reads as an overlay over something. Its height
+// is the stage's (WidgetPreview).
 .previewPane {
-  flex: 1 1 0;
+  position: relative;
   min-width: 0;
-  border-radius: radius(lg);
+  border-radius: rem(10);
   overflow: hidden;
-  background:
-    radial-gradient(
-      circle at 30% 20%,
-      rgba(80, 90, 120, 0.25),
-      transparent 60%
-    ),
-    linear-gradient(135deg, #1a1c22 0%, #0d0e12 100%);
-  border: 1px solid #2a2c32;
+  background: repeating-conic-gradient(
+    $sys-bg-sunken 0 25%,
+    $sys-bg-main 0 50%
+  );
+  background-size: rem(16) rem(16);
+  border: $pane-border solid $sys-border-sub;
+}
+
+// Never seen: sized as the most the stage may be, so its content box is the
+// room the widget is fitted to. Padded as the stage is (WidgetPreview).
+.room {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: var(--preview-room);
+  padding: #{rem(16)};
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.zoomSwitch {
+  position: absolute;
+  top: rem(8);
+  right: rem(8);
 }
 
 .settingsPane {
-  flex: 0 0 360px;
+  flex: 1;
   min-width: 0;
-  overflow-y: auto;
-  padding-right: sp(xs);
-}
 
-.empty {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  height: 100%;
-  color: #8b8e98;
-  font-family: $font-widget;
+  .rootPreviewLeft & {
+    flex: 0 0 $settings-beside-width;
+
+    @media (max-width: $narrow-window) {
+      flex: 1;
+    }
+  }
 }

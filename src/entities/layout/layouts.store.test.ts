@@ -8,8 +8,10 @@ import { deleteLayout } from '@features/layout-editor/layout-gestures';
 import { layoutGestureStores } from '@features/layout-editor/layout-gestures';
 import { SettingsMutationLog } from './mutation-log.store';
 import type {
+  AutoSwitchRule,
   LayoutMonitor,
   SavedLayout,
+  SessionContext,
 } from '@shared/contracts/widget-settings';
 
 const DISPLAY: LayoutMonitor = {
@@ -21,6 +23,17 @@ const SECOND_DISPLAY: LayoutMonitor = {
   name: 'DISPLAY2',
   bounds: { x: 1920, y: 0, width: 1920, height: 1080 },
 };
+
+const sessionRule = (
+  context: SessionContext | null,
+  layoutId: string
+): AutoSwitchRule => ({
+  id: `${context ?? 'any'}-${layoutId}`,
+  context,
+  carClass: null,
+  carId: null,
+  layoutId,
+});
 
 const layoutNamed = (id: string, monitors: LayoutMonitor[]): SavedLayout => ({
   id,
@@ -53,13 +66,103 @@ describe('LayoutsStore', () => {
     expect(store.byId('layout-race')?.monitors).toEqual([DISPLAY]);
   });
 
-  it('maps a session to a layout, and leaves the rest unmapped', () => {
+  it('adds a rule for any situation, then narrows it', () => {
     const { store } = freshStore();
 
-    store.setSessionLayout('Race', 'layout-race');
+    store.addAutoSwitchRule('layout-race');
+    const [rule] = store.autoSwitchRules;
+    store.updateAutoSwitchRule(rule.id, { context: 'Race', carClass: 'GT3' });
 
-    expect(store.sessionLayouts.Race).toBe('layout-race');
-    expect(store.sessionLayouts.Qualify).toBeNull();
+    expect(store.autoSwitchRules).toEqual([
+      {
+        id: rule.id,
+        context: 'Race',
+        carClass: 'GT3',
+        carId: null,
+        layoutId: 'layout-race',
+      },
+    ]);
+  });
+
+  it('clears the class when a rule is given a car', () => {
+    const { store } = freshStore();
+
+    store.setAutoSwitchRules([
+      { ...sessionRule('Race', 'layout-race'), carClass: 'GT3' },
+    ]);
+    store.updateAutoSwitchRule('Race-layout-race', { carId: 156 });
+
+    expect(store.autoSwitchRules[0]).toMatchObject({
+      context: 'Race',
+      carClass: null,
+      carId: 156,
+    });
+  });
+
+  it('adds a rule naming both a class and a car as a car rule', () => {
+    const { store } = freshStore();
+
+    store.addAutoSwitchRule('layout-race', { carClass: 'GT3', carId: 156 });
+
+    expect(store.autoSwitchRules[0]).toMatchObject({
+      carClass: null,
+      carId: 156,
+    });
+  });
+
+  it('clears the car when a rule is given a class', () => {
+    const { store } = freshStore();
+
+    store.setAutoSwitchRules([
+      { ...sessionRule('Race', 'layout-race'), carId: 156 },
+    ]);
+    store.updateAutoSwitchRule('Race-layout-race', { carClass: 'GT3' });
+
+    expect(store.autoSwitchRules[0]).toMatchObject({
+      carClass: 'GT3',
+      carId: null,
+    });
+  });
+
+  it('refuses a rule repeating the situation of a rule on another layout', () => {
+    const { store } = freshStore();
+    const rules = [
+      sessionRule('Race', 'layout-race'),
+      sessionRule('Qualify', 'layout-quali'),
+    ];
+
+    store.setAutoSwitchRules(rules.map((entry) => ({ ...entry })));
+
+    expect(
+      store.updateAutoSwitchRule('Qualify-layout-quali', { context: 'Race' })
+    ).toBe(false);
+    expect(store.addAutoSwitchRule('layout-quali', { context: 'Race' })).toBe(
+      false
+    );
+    expect(store.autoSwitchRules).toEqual(rules);
+  });
+
+  it('refuses a rule repeating the situation of a rule on the same layout', () => {
+    const { store } = freshStore();
+
+    store.setAutoSwitchRules([sessionRule(null, 'layout-race')]);
+
+    expect(store.addAutoSwitchRule('layout-race')).toBe(false);
+    expect(store.autoSwitchRules).toHaveLength(1);
+  });
+
+  it('lets a rule be updated into its own situation', () => {
+    const { store } = freshStore();
+
+    store.setAutoSwitchRules([sessionRule('Race', 'layout-race')]);
+
+    expect(
+      store.updateAutoSwitchRule('Race-layout-race', {
+        context: 'Race',
+        layoutId: 'layout-quali',
+      })
+    ).toBe(true);
+    expect(store.autoSwitchRules[0].layoutId).toBe('layout-quali');
   });
 
   it('spans every monitor of the active layout', () => {
@@ -86,6 +189,49 @@ describe('LayoutsStore', () => {
  * marks the whole widget map — the records are what the widgets stand on, and
  * once one of them moves no patch describes where they are.
  */
+describe('an imported layout', () => {
+  it('joins the list under an id of its own, without the backgrounds of the PC it came from', () => {
+    const { store } = freshStore();
+    const imported: SavedLayout = {
+      ...layoutNamed('layout-race', [DISPLAY]),
+      name: 'From a friend',
+      createdAt: 1,
+      backgroundImages: { DISPLAY1: 'C:/Users/friend/race.png' },
+    };
+
+    const id = store.addImportedLayout(imported);
+    const added = store.byId(id)!;
+
+    expect(id).not.toBe('layout-race');
+    expect(store.layouts).toHaveLength(2);
+    expect(added.name).toBe('From a friend');
+    expect(added.backgroundImages).toEqual({});
+    expect(added.createdAt).toBeGreaterThan(1);
+  });
+});
+
+describe('a removed layout', () => {
+  it('is no longer what any session switches to', () => {
+    const { store } = freshStore();
+
+    store.setLayouts([
+      layoutNamed('layout-race', [DISPLAY]),
+      layoutNamed('layout-quali', [DISPLAY]),
+    ]);
+    store.setAutoSwitchRules([
+      sessionRule('Race', 'layout-race'),
+      sessionRule('Qualify', 'layout-quali'),
+      sessionRule('Practice', 'layout-race'),
+    ]);
+
+    store.removeLayout('layout-race');
+
+    expect(store.autoSwitchRules).toEqual([
+      sessionRule('Qualify', 'layout-quali'),
+    ]);
+  });
+});
+
 describe('every layout record write leaves its mark', () => {
   type RecordWrite = {
     name: string;
@@ -105,12 +251,26 @@ describe('every layout record write leaves its mark', () => {
       run: (store) => store.setEditingLayoutId(null),
     },
     {
-      name: 'setSessionLayout',
-      run: (store) => store.setSessionLayout('Race', 'layout-race'),
+      name: 'setAutoSwitchRules',
+      run: (store) =>
+        store.setAutoSwitchRules([sessionRule('Race', 'layout-race')]),
     },
     {
-      name: 'setSessionLayouts',
-      run: (store) => store.setSessionLayouts({ Race: 'layout-race' }),
+      name: 'addAutoSwitchRule',
+      run: (store) => store.addAutoSwitchRule('layout-race'),
+    },
+    {
+      name: 'updateAutoSwitchRule',
+      setup: (store) =>
+        store.setAutoSwitchRules([sessionRule('Race', 'layout-race')]),
+      run: (store) =>
+        store.updateAutoSwitchRule('Race-layout-race', { carId: 156 }),
+    },
+    {
+      name: 'removeAutoSwitchRule',
+      setup: (store) =>
+        store.setAutoSwitchRules([sessionRule('Race', 'layout-race')]),
+      run: (store) => store.removeAutoSwitchRule('Race-layout-race'),
     },
     {
       name: 'addLayout',
@@ -123,6 +283,11 @@ describe('every layout record write leaves its mark', () => {
     {
       name: 'removeLayout',
       run: (store) => store.removeLayout('layout-race'),
+    },
+    {
+      name: 'addImportedLayout',
+      run: (store) =>
+        store.addImportedLayout(layoutNamed('layout-quali', [DISPLAY])),
     },
     {
       name: 'setLayoutWidgets',
@@ -513,8 +678,11 @@ describe('a screen added to a layout', () => {
     rootStore.layouts.setEditingLayoutId(layout2Id);
     rootStore.layouts.addRemoteScreen('LapScreen', 1920, 1080);
 
-    rootStore.layouts.setSessionLayout('Race', layout1Id);
-    rootStore.layouts.setSessionLayout('Qualify', layout2Id);
+    rootStore.layouts.setAutoSwitchRules([
+      sessionRule('Race', layout1Id),
+      sessionRule('Qualify', layout2Id),
+      sessionRule(null, layout2Id),
+    ]);
     rootStore.layouts.setPinnedLiveLayoutId(layout1Id);
 
     const all = rootStore.layouts.allRemoteScreens;

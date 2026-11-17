@@ -62,10 +62,14 @@
   padding-inline: sp(xxs);
 }
 
-// Position cell — reaches the row's left edge so the class marker sits on it
 .posCell {
+  padding: 0 sp(xs) 0 0;
+}
+
+// Leading the row, it reaches the row's left edge so the class marker sits on it
+.posCell:first-child {
   margin-left: calc(-1 * sp(md));
-  padding: 0 sp(xs) 0 sp(md);
+  padding-left: sp(md);
 }
 
 // Car number cell

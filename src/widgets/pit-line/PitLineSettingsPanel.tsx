@@ -42,7 +42,7 @@ export const PitLineSettingsPanel = observer(() => {
 
   return (
     <>
-      <Card title={t('settingsPanels.pitLine.sections')}>
+      <Card group="content">
         <Row setting="showPitSpeed" />
 
         <Row setting="showLimitPlate" dependsOn="showPitSpeed" />
@@ -54,7 +54,7 @@ export const PitLineSettingsPanel = observer(() => {
         <Row setting="showUnits" />
       </Card>
 
-      <Card title={t('settingsPanels.pitLine.visibility')}>
+      <Card group="behaviour">
         <Row setting="alwaysVisible" />
 
         <div className={styles.fieldGroup}>

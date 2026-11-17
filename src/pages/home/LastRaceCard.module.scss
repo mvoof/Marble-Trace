@@ -1,0 +1,118 @@
+.card {
+  min-width: 0;
+  padding: rem(14) rem(16);
+  background: $sys-bg-card;
+  border: 1px solid $sys-border-sub;
+  border-radius: rem(10);
+}
+
+.label {
+  display: flex;
+  align-items: center;
+  gap: rem(6);
+  font-size: rem(12);
+  color: $sys-text-muted;
+}
+
+// The outline on the left, the race beside it.
+.body {
+  display: flex;
+  align-items: center;
+  gap: rem(14);
+  margin-top: rem(8);
+}
+
+.outline {
+  flex: none;
+  box-sizing: border-box;
+  width: rem(96);
+  height: rem(70);
+  padding: rem(6);
+  overflow: hidden;
+  background: $sys-bg-sunken;
+  border-radius: rem(8);
+}
+
+.outlineSvg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  fill: none;
+  stroke: $sys-accent;
+  stroke-width: 2;
+  stroke-linejoin: round;
+}
+
+.details {
+  min-width: 0;
+}
+
+.flag {
+  width: rem(18);
+  height: rem(13);
+  margin-right: rem(8);
+  vertical-align: rem(-1);
+  border-radius: 1px;
+
+  // The sprite is a background image; the package's `:before` spacer would
+  // widen the box by a space.
+  &::before {
+    content: none;
+  }
+}
+
+.track {
+  overflow: hidden;
+  font-size: rem(14);
+  font-weight: 600;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  color: $sys-text-primary;
+}
+
+.config {
+  font-weight: 400;
+  color: $sys-text-secondary;
+}
+
+.carLine {
+  overflow: hidden;
+  font-size: rem(12);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  color: $sys-text-secondary;
+}
+
+.figures {
+  display: flex;
+  flex-wrap: wrap;
+  gap: rem(6) rem(18);
+  margin-top: rem(6);
+}
+
+.figure {
+  display: flex;
+  flex-direction: column;
+}
+
+.figureLabel {
+  font-size: rem(11);
+  color: $sys-text-muted;
+}
+
+.figureValue {
+  font-family: $font-mono;
+  font-size: rem(13);
+  font-variant-numeric: tabular-nums;
+  color: $sys-text-primary;
+}
+
+.field {
+  color: $sys-text-muted;
+}
+
+// The sim's purple: a best lap.
+.best {
+  color: $sys-best;
+}

@@ -1239,6 +1239,17 @@ export class VoiceCrewStore {
     return done ? { action: 'exported', path } : null;
   }
 
+  /** The cheat sheet of the pack as it stands, labelled in the pack's language. */
+  commandSheet(labelsFor: (language: string) => TFunction): string | null {
+    const pack = this.pack;
+
+    if (!pack) {
+      return null;
+    }
+
+    return buildCommandSheet(toJS(pack), labelsFor(pack.language), new Date());
+  }
+
   /**
    * The saved pack's commands as a printable page, labelled in the pack's
    * language by `labelsFor`, opened in the browser once written. `null`
@@ -1261,11 +1272,12 @@ export class VoiceCrewStore {
       return null;
     }
 
-    const html = buildCommandSheet(
-      toJS(pack),
-      labelsFor(pack.language),
-      new Date()
-    );
+    const html = this.commandSheet(labelsFor);
+
+    if (html === null) {
+      return null;
+    }
+
     const done = await this.runPackFile('sheet', () =>
       exportVoiceSheet(path, html)
     );

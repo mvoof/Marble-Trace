@@ -1,0 +1,23 @@
+$tops-min-width: rem(420);
+
+// The calendar keeps its own width; the two tops beside it narrow first and,
+// once they would be narrower than $tops-min-width, wrap under it together.
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: rem(12);
+
+  > :first-child {
+    flex: 1 0 auto;
+  }
+}
+
+// Takes nearly all the room the calendar leaves, so on one row the calendar
+// stays at its size; alone on a row the calendar card fills it.
+.tops {
+  flex: 1000 1 $tops-min-width;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: rem(12);
+  min-width: 0;
+}

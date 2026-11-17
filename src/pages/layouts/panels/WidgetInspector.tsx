@@ -24,6 +24,8 @@ import { SettingRow } from '@features/widget-settings/SettingRow';
 import type { SnapPosition } from '@features/layout-editor/snap-position';
 import { useMainLiveWidgetsStore } from '@entities/layout/main-live-widgets-context';
 import { useLayoutEditorUiStore } from '@features/layout-editor/layout-editor-ui-context';
+import { WidgetBindingsSummary } from '@features/hotkey-bindings/WidgetBindingsSummary';
+import { useMainNavigationStore } from '@features/main-navigation/main-navigation-context';
 
 import { useSnapWidget } from './use-snap-widget';
 import styles from './WidgetInspector.module.scss';
@@ -61,6 +63,7 @@ export const WidgetInspector = observer(() => {
   const liveWidgets = useMainLiveWidgetsStore();
   const editorUi = useLayoutEditorUiStore();
   const snapWidget = useSnapWidget();
+  const navigation = useMainNavigationStore();
   const { t } = useTranslation('main-app');
   const selectedWidgetId = editorUi.selectedWidgetId;
 
@@ -126,20 +129,6 @@ export const WidgetInspector = observer(() => {
                 size="small"
                 checked={editorUi.isSelectedRatioLocked}
                 onChange={() => editorUi.toggleRatioLock(widget.id)}
-              />
-            </SettingRow>
-
-            <SettingRow
-              stacked
-              title={t('layoutEditor.hotkeysActOn')}
-              desc={t('layoutEditor.hotkeysActOnDesc')}
-            >
-              <Switch
-                size="small"
-                checked={liveWidgets.hotkeysActOnWidget(widget.id)}
-                onChange={(checked) =>
-                  liveWidgets.setHotkeysActOn(widget.id, checked)
-                }
               />
             </SettingRow>
 
@@ -250,7 +239,34 @@ export const WidgetInspector = observer(() => {
           </Card>
         </PanelWidgetProvider>
 
-        <WidgetSettings widgetId={selectedWidgetId} hideHeader />
+        <WidgetSettings
+          widgetId={selectedWidgetId}
+          hideHeader
+          hotkeys={
+            <>
+              <WidgetBindingsSummary
+                widgetType={widget.type}
+                onOpenHotkeys={() => navigation.openHotkeys(widget.type)}
+              />
+
+              {/* The bindings are the widget's; whether they act on this copy
+                  is the copy's own. */}
+              <SettingRow
+                stacked
+                title={t('layoutEditor.hotkeysActOn')}
+                desc={t('layoutEditor.hotkeysActOnDesc')}
+              >
+                <Switch
+                  size="small"
+                  checked={liveWidgets.hotkeysActOnWidget(widget.id)}
+                  onChange={(checked) =>
+                    liveWidgets.setHotkeysActOn(widget.id, checked)
+                  }
+                />
+              </SettingRow>
+            </>
+          }
+        />
       </div>
     </div>
   );

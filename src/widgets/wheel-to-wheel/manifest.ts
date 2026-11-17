@@ -22,6 +22,9 @@ const wheelToWheelDesignWidth = (settings: WheelToWheelWidgetSettings) =>
 export const WHEEL_TO_WHEEL_MANIFEST: WidgetManifest = {
   id: 'wheel-to-wheel',
   previewScenarios: ['field-close-pack'],
+  // The baseline has nobody fighting you, so the widget correctly draws nothing
+  // against it and the picker would be offering an empty pane.
+  previewBaseline: false,
   telemetryEvents: ['relative'],
   requiredCapabilities: ['relative'],
   label: 'Wheel to Wheel',

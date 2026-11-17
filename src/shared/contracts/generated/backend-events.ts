@@ -98,6 +98,12 @@ export const CREW_RADIO_EVENT = 'crew://radio';
 export const CREW_DOWNLOAD_EVENT = 'crew://download';
 
 /**
+ * The stats import's phase and progress, on every change: a file read,
+ * a pause for the sim, the end of a pass.
+ */
+export const STATS_IMPORT_EVENT = 'stats://import';
+
+/**
  * The set of attached game controllers changed.
  */
 export const INPUT_DEVICES_EVENT = 'input://devices';

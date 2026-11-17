@@ -1,0 +1,127 @@
+.map {
+  position: relative;
+  padding: rem(8);
+  background: $sys-bg-card;
+  border: 1px solid $sys-border-sub;
+  border-radius: rem(10);
+}
+
+.tools {
+  position: absolute;
+  top: rem(10);
+  right: rem(10);
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  gap: rem(2);
+  padding: rem(2);
+  background: $sys-bg-raised;
+  border: 1px solid $sys-border-main;
+  border-radius: rem(7);
+
+  button {
+    display: grid;
+    place-items: center;
+    width: rem(24);
+    height: rem(24);
+    padding: 0;
+    color: $sys-text-secondary;
+    cursor: pointer;
+    background: none;
+    border: 0;
+    border-radius: rem(5);
+
+    &:hover {
+      color: $sys-text-primary;
+      background: $sys-bg-card;
+    }
+  }
+}
+
+.svg {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1.15;
+  user-select: none;
+}
+
+// The track the laps run on: wide, grey, under them.
+.band {
+  fill: none;
+  stroke: $sys-bg-raised;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.tick {
+  stroke: $sys-text-muted;
+  stroke-width: 1.5px;
+  vector-effect: non-scaling-stroke;
+}
+
+.label {
+  fill: $sys-text-muted;
+  text-anchor: middle;
+  dominant-baseline: middle;
+}
+
+// Outside the charts' stretch a lap is faint; inside it, bright.
+.faint,
+.bright {
+  fill: none;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+}
+
+.faint {
+  stroke-width: 1px;
+  opacity: 0.22;
+}
+
+.bright {
+  stroke-width: 1.5px;
+}
+
+// The start/finish line, checkered across the track.
+.finish {
+  stroke: $sys-bg-main;
+  stroke-width: 1px;
+  vector-effect: non-scaling-stroke;
+}
+
+.finishLight {
+  fill: $sys-text-primary;
+}
+
+.finishDark {
+  fill: $sys-bg-main;
+}
+
+// The cursor: a dot where the car was, a thin line and a chevron where its
+// nose pointed.
+.dot {
+  stroke: $sys-bg-main;
+  stroke-width: 1.5px;
+  vector-effect: non-scaling-stroke;
+}
+
+.stem {
+  fill: none;
+  stroke-width: 1px;
+  vector-effect: non-scaling-stroke;
+}
+
+.chevron {
+  fill: none;
+  stroke-width: 2px;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+}
+
+.select {
+  fill: rgba(255, 255, 255, 0.07);
+  stroke: $sys-text-muted;
+  stroke-width: 1px;
+  vector-effect: non-scaling-stroke;
+}

@@ -17,36 +17,16 @@ use mt_model::sim::session::{
 };
 use mt_source::ParsedSession;
 
-enum IracingSessionType {
-    Practice,
-    LoneQualify,
-    OpenQualify,
-    Race,
-    OfflineTesting,
-    Warmup,
-    Unknown,
-}
-
-impl IracingSessionType {
-    fn from_str(s: &str) -> Self {
-        match s {
-            "Practice" => Self::Practice,
-            "Lone Qualify" => Self::LoneQualify,
-            "Open Qualify" => Self::OpenQualify,
-            "Race" => Self::Race,
-            "Offline Testing" => Self::OfflineTesting,
-            "Warmup" => Self::Warmup,
-            _ => Self::Unknown,
-        }
-    }
-
-    fn to_session_type(&self) -> SessionType {
-        match self {
-            Self::Practice | Self::OfflineTesting | Self::Warmup => SessionType::Practice,
-            Self::LoneQualify | Self::OpenQualify => SessionType::Qualify,
-            Self::Race => SessionType::Race,
-            Self::Unknown => SessionType::Unknown,
-        }
+/// The session context of one `SessionInfo.Sessions[]` entry, by its
+/// `SessionType` alone — the same value the widgets show. Heats and
+/// consolations arrive as `Race`, told apart only by `SessionSubType`.
+fn session_context(session_type: &str) -> SessionType {
+    match session_type {
+        "Practice" | "Lone Practice" | "Open Practice" | "Warmup" | "Testing"
+        | "Offline Testing" => SessionType::Practice,
+        "Qualify" | "Lone Qualify" | "Open Qualify" | "Time Trial" => SessionType::Qualify,
+        "Race" | "Heat" | "Consolation" => SessionType::Race,
+        _ => SessionType::Unknown,
     }
 }
 
@@ -77,7 +57,7 @@ fn is_allowed_yaml_char(c: char) -> bool {
 
 /// Quote the values of free-text keys so arbitrary driver/team names cannot
 /// break the YAML document structure.
-fn sanitize_session_yaml(yaml: &str) -> String {
+pub(crate) fn sanitize_session_yaml(yaml: &str) -> String {
     let cleaned: String = yaml.chars().filter(|&c| is_allowed_yaml_char(c)).collect();
     let mut sanitized = String::with_capacity(cleaned.len() + 256);
 
@@ -154,9 +134,8 @@ pub fn parse_session(yaml: &str) -> Option<ParsedSession> {
         .into_iter()
         .map(|raw_session| {
             let raw_label = raw_session.session_type.unwrap_or_default();
-            let iracing_type = IracingSessionType::from_str(&raw_label);
             SessionEntry {
-                session_type: iracing_type.to_session_type(),
+                session_type: session_context(&raw_label),
                 session_type_label: raw_label,
                 session_laps: raw_session.session_laps.unwrap_or_default(),
                 results_positions: raw_session
@@ -903,5 +882,60 @@ QualifyResultsInfo:
         let parsed = parse_session(yaml).expect("parses");
 
         assert!(!parsed.snapshot.cars[0].is_pace_car);
+    }
+
+    #[test]
+    fn practice_kinds_land_in_practice() {
+        for kind in [
+            "Practice",
+            "Lone Practice",
+            "Open Practice",
+            "Warmup",
+            "Testing",
+            "Offline Testing",
+        ] {
+            assert_eq!(session_context(kind), SessionType::Practice, "{kind}");
+        }
+    }
+
+    #[test]
+    fn qualify_kinds_land_in_qualify() {
+        for kind in ["Qualify", "Lone Qualify", "Open Qualify", "Time Trial"] {
+            assert_eq!(session_context(kind), SessionType::Qualify, "{kind}");
+        }
+    }
+
+    #[test]
+    fn race_kinds_land_in_race() {
+        for kind in ["Race", "Heat", "Consolation"] {
+            assert_eq!(session_context(kind), SessionType::Race, "{kind}");
+        }
+    }
+
+    #[test]
+    fn an_unrecognised_kind_stays_unknown() {
+        assert_eq!(session_context("Drift Show"), SessionType::Unknown);
+        assert_eq!(session_context(""), SessionType::Unknown);
+    }
+
+    #[test]
+    fn a_lone_practice_named_time_trial_stays_practice() {
+        let yaml = r#"
+SessionInfo:
+ Sessions:
+ - SessionNum: 0
+   SessionType: Lone Practice
+   SessionName: TIME TRIAL
+"#;
+        let parsed = parse_session(yaml).expect("parses");
+
+        assert_eq!(
+            parsed.snapshot.sessions[0].session_type,
+            SessionType::Practice
+        );
+        assert_eq!(
+            parsed.snapshot.sessions[0].session_type_label,
+            "Lone Practice"
+        );
     }
 }

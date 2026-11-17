@@ -1,0 +1,93 @@
+// Below this window width the top bar drops its collapsible labels and keeps
+// to one row; the tooltips carry them.
+$labels-collapse-below: 1280px;
+
+.button {
+  position: relative;
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  gap: rem(5);
+  height: rem(26);
+  padding: 0 rem(8);
+  background: transparent;
+  border: 0;
+  border-radius: rem(6);
+  color: $sys-text-secondary;
+  font-size: rem(12);
+  white-space: nowrap;
+  font-family: inherit;
+  cursor: pointer;
+  transition:
+    color 0.12s ease,
+    background 0.12s ease;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: $sys-text-primary;
+  }
+
+  &:disabled {
+    opacity: 0.35;
+    pointer-events: none;
+  }
+}
+
+.select {
+  padding: 0 rem(7);
+  color: $sys-text-primary;
+  font-weight: 500;
+
+  &::after {
+    content: '▾';
+    color: $sys-text-muted;
+    font-size: rem(10);
+  }
+}
+
+.iconOnly {
+  width: rem(26);
+  padding: 0;
+}
+
+.on {
+  background: $sys-bg-raised;
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.4),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+  color: $sys-text-primary;
+  font-weight: 500;
+
+  &:hover {
+    background: $sys-bg-raised;
+  }
+}
+
+.accent {
+  background: $sys-accent;
+  color: $sys-bg-main;
+  font-weight: 600;
+
+  &:hover {
+    background: #fff;
+    color: #000;
+  }
+}
+
+.label {
+  overflow: hidden;
+  max-width: rem(180);
+  text-overflow: ellipsis;
+}
+
+@media (max-width: $labels-collapse-below) {
+  .labelCollapsible {
+    display: none;
+  }
+
+  .button:not(.select):has(> .labelCollapsible) {
+    width: rem(26);
+    padding: 0;
+  }
+}

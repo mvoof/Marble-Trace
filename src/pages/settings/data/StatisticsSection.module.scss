@@ -1,0 +1,63 @@
+.path {
+  font-family: $font-mono;
+  word-break: break-all;
+}
+
+.state {
+  display: inline-flex;
+  align-items: center;
+  gap: rem(8);
+  font-size: rem(13);
+  color: $sys-text-secondary;
+  white-space: nowrap;
+}
+
+.dot {
+  width: rem(8);
+  height: rem(8);
+  border-radius: 50%;
+  background: $sys-text-muted;
+}
+
+.dotOn {
+  background: $sys-accent;
+}
+
+.count {
+  color: $sys-text-muted;
+  font-weight: 400;
+}
+
+.scroll {
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: rem(13);
+  color: $sys-text-primary;
+
+  th {
+    padding: rem(6) rem(10);
+    border-bottom: 1px solid $sys-border-sub;
+    text-align: left;
+    font-size: rem(12);
+    font-weight: 500;
+    color: $sys-text-muted;
+  }
+
+  td {
+    padding: rem(8) rem(10);
+    border-bottom: 1px solid $sys-border-sub;
+    vertical-align: top;
+  }
+
+  tbody tr:last-child td {
+    border-bottom: 0;
+  }
+}
+
+.reason {
+  color: $sys-text-secondary;
+}

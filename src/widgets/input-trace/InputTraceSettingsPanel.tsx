@@ -70,7 +70,7 @@ export const InputTraceSettingsPanel = observer(() => {
 
   return (
     <>
-      <Card title={t('settingsPanels.inputTrace.layout')}>
+      <Card group="content">
         <div className={styles.fieldGroup}>
           <Row setting="showTrace" />
         </div>
@@ -84,7 +84,7 @@ export const InputTraceSettingsPanel = observer(() => {
         <Row setting="showInputValues" dependsOn="showBars" />
       </Card>
 
-      <Card title={t('settingsPanels.inputTrace.graphSettings')}>
+      <Card title={t('settingsPanels.inputTrace.graph')}>
         <div className={styles.fieldGroup}>
           <ColorToggleRow
             title={t('settingsPanels.inputTrace.showThrottle')}

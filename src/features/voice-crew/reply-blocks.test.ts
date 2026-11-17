@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { movedBefore } from './block-order';
+import { movedBefore } from '@shared/lib/moved-before';
 import {
   parseReplyBlocks,
   replyFromBlocks,

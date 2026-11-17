@@ -44,6 +44,7 @@
     "@tauri-apps/plugin-process": "^2.4.0",
     "@tauri-apps/plugin-updater": "^2.14.0",
     "antd": "^6.6.6",
+    "dayjs": "1.11.23",
     "flag-icons": "^7.5.0",
     "i18next": "^26.4.6",
     "lucide-react": "^1.57.0",
@@ -53,6 +54,7 @@
     "react-dom": "^19.3.1",
     "react-i18next": "^17.0.17",
     "sass": "^1.105.1",
+    "uplot": "1.6.32",
     "vite-plugin-svgr": "^5.2.0"
   },
   "devDependencies": {

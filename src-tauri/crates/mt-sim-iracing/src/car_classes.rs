@@ -8,22 +8,23 @@
 //! driver's `CarID` and `CarClassID`, so a class is badged from the cars in it,
 //! in this order:
 //!
-//! 1. [`badge_for_car`] — the map in `car_badges.rs`, when **every** car of the
+//! 1. [`badge_for_car`] — the car badge table, when **every** car of the
 //!    class has an entry and they all agree ("Ferrari 296 GT3" + "Lamborghini
 //!    GT3" → `GT3`);
 //! 2. `CarClassShortName` — the sim's own class name, as it is;
 //! 3. `CarScreenNameShort` — the car name, when the class holds one model;
 //! 4. `Class <CarClassID>` — a multi-model class nothing above could name.
 //!
-//! The map comes ahead of the sim's name, which would otherwise print "GT3
-//! Class" into a badge column sized for `GT3`.
+//! The table comes ahead of the sim's name, which would otherwise print "GT3
+//! Class" into a badge column sized for `GT3`. It covers iRacing's whole car
+//! catalogue, so steps 2–4 run for a car released after it was last generated.
 //!
-//! # Adding a car
+//! # Reading real ids
 //!
-//! Only the map is hand-maintained — see `car_badges.rs` for what goes in. To
-//! read real ids, dump the session YAML while the sim is running —
-//! `kerb::save_session(&conn, path)`, or `cargo run --example test` in
-//! `kerb/examples`, which writes `session.yaml` — then grep it:
+//! The table is generated — see `car_badges.rs`. To check an id, dump the
+//! session YAML while the sim is running — `kerb::save_session(&conn, path)`, or
+//! `cargo run --example test` in `kerb/examples`, which writes `session.yaml` —
+//! then grep it:
 //!
 //! ```text
 //! grep -o "CarID: [0-9]*\|CarClassID: [0-9]*\|CarScreenName: .*" session.yaml | paste - - - | sort -u
@@ -189,7 +190,7 @@ mod tests {
 
         assert_eq!(
             badges(&cars),
-            ["GT3", "GT3", "GT4", "GTP", "GR86", "MX-5", "M2", "CTS-V", "F1"]
+            ["GT3", "GT3", "GT4", "GTP", "GR86", "MX-5", "M2", "CTSVR", "F1"]
         );
     }
 
@@ -211,7 +212,7 @@ mod tests {
 
         assert_eq!(
             badges(&cars),
-            ["GTE", "GT4", "GTP", "F3", "F1", "PCup", "Street Stock"]
+            ["GTE", "GT4", "GTP", "F3", "F1", "PCup", "SSD"]
         );
     }
 
@@ -231,6 +232,21 @@ mod tests {
         apply_class_badges(&mut cars);
 
         assert_eq!(badges(&cars), ["GT4"; 6]);
+    }
+
+    /// A class no hand-kept entry covered: the three Next Gen Cup makes, unnamed
+    /// by the sim in an AI race, had read "Class 2978".
+    #[test]
+    fn badges_a_class_the_catalogue_covers() {
+        let mut cars = vec![
+            make_car(0, 2978, 139, "Next Gen Chevrolet Camaro ZL1", ""),
+            make_car(1, 2978, 140, "Next Gen Ford Mustang", ""),
+            make_car(2, 2978, 141, "Next Gen Toyota Camry", ""),
+        ];
+
+        apply_class_badges(&mut cars);
+
+        assert_eq!(badges(&cars), ["Cup"; 3]);
     }
 
     #[test]

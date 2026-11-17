@@ -1,0 +1,79 @@
+// One line across the page; on a narrow window the items wrap, each keeping
+// its divider on the left.
+.strip {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  row-gap: rem(8);
+  padding: rem(10) rem(16);
+  background: $sys-bg-card;
+  border: 1px solid $sys-border-sub;
+  border-radius: rem(10);
+}
+
+.title {
+  margin-right: rem(18);
+  font-size: rem(12);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: $sys-text-secondary;
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  gap: rem(8);
+  min-width: 0;
+  padding: 0 rem(18);
+  font-size: rem(13);
+  border-left: 1px solid $sys-border-main;
+}
+
+.label {
+  white-space: nowrap;
+  color: $sys-text-muted;
+}
+
+.value {
+  display: inline-flex;
+  align-items: center;
+  gap: rem(6);
+  white-space: nowrap;
+  color: $sys-text-primary;
+}
+
+.number {
+  font-family: $font-mono;
+  font-variant-numeric: tabular-nums;
+  color: $sys-text-primary;
+}
+
+.layout {
+  max-width: rem(240);
+  padding: 0;
+  overflow: hidden;
+  font: inherit;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  color: $sys-text-primary;
+  cursor: pointer;
+  background: none;
+  border: 0;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.dot {
+  flex: none;
+  width: rem(7);
+  height: rem(7);
+  border-radius: 50%;
+  background: $sys-text-muted;
+}
+
+.dotOn {
+  background: $sys-up;
+  box-shadow: 0 0 rem(6) $sys-up;
+}

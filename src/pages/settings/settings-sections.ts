@@ -1,56 +1,92 @@
+import {
+  MENU_SEPARATOR,
+  type SectionMenuEntry,
+} from '@shared/ui/SectionedPage/section-menu';
 import { hasDevTools } from './dev-tools';
 
-/**
- * The settings navigation tree. One flat page of eleven cards made everything
- * equally hard to find, so the cards are split into sections and the sections
- * grouped; the nav shows the groups, the pane shows one section.
- */
+/** Every section the Settings page draws. */
 export type SettingsSectionId =
   | 'general'
   | 'updates'
   | 'about'
-  | 'companionApps'
   | 'overlay'
   | 'interaction'
-  | 'bindings'
-  | 'devices'
-  | 'trackMap'
-  | 'sharedValues'
+  | 'hotkeys'
+  | 'browserScreens'
   | 'streamChat'
-  | 'remoteScreens'
+  | 'otherApps'
+  | 'tracks'
+  | 'widgetSettings'
+  | 'telemetryFiles'
   | 'maintenance'
   | 'telemetryInspector';
 
-export interface SettingsGroup {
-  /** i18n key under `settingsPage.nav.groups`. */
-  id: string;
-  sections: SettingsSectionId[];
-}
+/** What sets up the app and how it is driven. */
+const APP_SECTIONS = [
+  'general',
+  'overlay',
+  'interaction',
+  'hotkeys',
+] as const satisfies readonly SettingsSectionId[];
 
-export const SETTINGS_GROUPS: SettingsGroup[] = [
-  {
-    id: 'application',
-    sections: ['general', 'companionApps', 'updates', 'about'],
-  },
-  { id: 'overlay', sections: ['overlay', 'interaction'] },
-  { id: 'controls', sections: ['bindings', 'devices'] },
-  // Widget data: what the widgets draw from, and the values several of them
-  // read at once. The chat is not either of those — it is a source of its own,
-  // wired to an account rather than to a session, so it keeps its own group.
-  { id: 'data', sections: ['trackMap', 'sharedValues'] },
-  { id: 'chat', sections: ['streamChat'] },
-  { id: 'remote', sections: ['remoteScreens'] },
-  // The inspector is a developer tool and is left out of a release build.
-  {
-    id: 'maintenance',
-    sections: hasDevTools
-      ? ['maintenance', 'telemetryInspector']
-      : ['maintenance'],
-  },
-];
+/** What reaches outside the PC's own screens. */
+const CONNECTION_SECTIONS = [
+  'browserScreens',
+  'streamChat',
+  'otherApps',
+] as const satisfies readonly SettingsSectionId[];
 
-export const DEFAULT_SECTION: SettingsSectionId = 'general';
+/** What the app holds for the driver: recorded tracks, widget settings, telemetry files. */
+const DATA_SECTIONS = [
+  'tracks',
+  'widgetSettings',
+  'telemetryFiles',
+] as const satisfies readonly SettingsSectionId[];
 
-export const groupOfSection = (section: SettingsSectionId): string =>
-  SETTINGS_GROUPS.find((group) => group.sections.includes(section))?.id ??
-  SETTINGS_GROUPS[0].id;
+/** Keeping the app itself: updates, resets, what it is. */
+const UPKEEP_SECTIONS = [
+  'updates',
+  'maintenance',
+  'about',
+] as const satisfies readonly SettingsSectionId[];
+
+/** What the Settings page shows in its menu. */
+export type SettingsMenuSectionId =
+  | (typeof APP_SECTIONS)[number]
+  | (typeof CONNECTION_SECTIONS)[number]
+  | (typeof DATA_SECTIONS)[number]
+  | (typeof UPKEEP_SECTIONS)[number]
+  | 'telemetryInspector';
+
+/**
+ * The Settings page's inner menu, four groups apart. The telemetry inspector
+ * is a developer tool: set apart below a separator, and left out of a release
+ * build.
+ */
+export const settingsMenu = (
+  withDevTools: boolean
+): SectionMenuEntry<SettingsMenuSectionId>[] => {
+  const menu: SectionMenuEntry<SettingsMenuSectionId>[] = [
+    ...APP_SECTIONS,
+    MENU_SEPARATOR,
+    ...CONNECTION_SECTIONS,
+    MENU_SEPARATOR,
+    ...DATA_SECTIONS,
+    MENU_SEPARATOR,
+    ...UPKEEP_SECTIONS,
+  ];
+
+  return withDevTools ? [...menu, MENU_SEPARATOR, 'telemetryInspector'] : menu;
+};
+
+export const SETTINGS_MENU = settingsMenu(hasDevTools);
+
+export const DEFAULT_SETTINGS_SECTION: SettingsMenuSectionId = 'general';
+
+/** A section the navigation names, if the menu has it; else the first. */
+export const settingsSectionOf = (
+  section: string | null
+): SettingsMenuSectionId =>
+  SETTINGS_MENU.find(
+    (entry): entry is SettingsMenuSectionId => entry === section
+  ) ?? DEFAULT_SETTINGS_SECTION;

@@ -31,6 +31,7 @@ export const RELATIVE_MANIFEST: WidgetManifest = {
   id: 'relative',
   previewScenarios: ['field-close-pack'],
   telemetryEvents: ['carPositions', 'relative'],
+  tier: 'core',
   label: 'Relative',
   description: 'Gaps to cars ahead and behind you.',
   resolveLayoutChange: resolveRelativeLayout,

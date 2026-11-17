@@ -1,3 +1,4 @@
+import { Fragment, type ReactNode } from 'react';
 import { observer } from 'mobx-react-lite';
 
 import { useWidgetSettings } from '@entities/layout/useWidgetSettings';
@@ -6,7 +7,7 @@ import { CarNumberBadge } from '@entities/cars/driver-table/CarNumberBadge';
 import { DriverNameContent } from '@entities/cars/driver-table/DriverNameContent';
 import { driverRowStateOf } from '@entities/cars/driver-table/driver-row-state';
 import { DriverRowShell } from '@entities/cars/driver-table/DriverRowShell';
-import { RatingCells } from '@entities/cars/driver-table/RatingCells';
+import { RatingCell } from '@entities/cars/driver-table/RatingCell';
 import { usePlayerStore } from '@entities/player/player-context';
 import { TowTime } from '@entities/player/TowTime/TowTime';
 import { useSessionStore } from '@entities/session/session-context';
@@ -32,10 +33,11 @@ import {
   getStandingsInterval,
   isPersonalBestLastLap,
   resolveBestLapDisplay,
+  visibleStandingsColumns,
   type LapDeltaTone,
-  type StandingsColumn,
   type StandingsGapInfo,
 } from '@widgets/standings/standings-utils';
+import type { StandingsColumn } from '@widgets/standings/standings-columns';
 import { useStandingsWidgetStore } from '@widgets/standings/standings.store';
 
 import type { StandingsWidgetSettings } from '../settings-schema';
@@ -232,6 +234,148 @@ export const DriverRow = observer(
       return isPitStatus(status) ? <PitStopTime carIdx={carIdx} /> : undefined;
     };
 
+    // One cell per visible column, drawn in the order the settings give.
+    const renderCell = (column: StandingsColumn): ReactNode => {
+      switch (column) {
+        case 'pos':
+          return (
+            <PositionCell carIdx={carIdx} endsBlock={blockEnds.has('pos')} />
+          );
+        case 'carNumber':
+          return (
+            <div className={cellClass('carNumber', styles.carNumberCell)}>
+              <CarNumberBadge
+                carNumber={driver.carNumber}
+                classColor={driver.carClassColor}
+              />
+            </div>
+          );
+        case 'posChange':
+          return (
+            <div className={cellClass('posChange', styles.cellCenter)}>
+              <PosChange carIdx={carIdx} />
+            </div>
+          );
+        case 'countryFlag':
+          return (
+            <div className={cellClass('countryFlag', styles.cellCenter)}>
+              <CountryFlag flairId={driver.flairId} isAi={driver.isAi} />
+            </div>
+          );
+        case 'name':
+          return (
+            <div className={cellClass('name', styles.nameCell)}>
+              <DriverNameContent
+                driver={driver}
+                state={state}
+                abbreviate={settings.abbreviateNames}
+                showDriverFlags={settings.showDriverFlags}
+                showRadioMark={settings.showRadioMark}
+                showPitIndicator={settings.showPitIndicator}
+                teamName={showsTeamNames ? driver.teamName : undefined}
+                chipDetail={chipDetail}
+              />
+            </div>
+          );
+        case 'sr':
+        case 'ir':
+          return (
+            <RatingCell
+              column={column}
+              driver={driver}
+              settings={settings}
+              className={cellClass(column, styles.cellCenter)}
+            />
+          );
+        case 'irChange':
+          return (
+            <div className={cellClass('irChange', styles.cellCenter)}>
+              <IrChangeCell carIdx={carIdx} />
+            </div>
+          );
+        case 'laps':
+          return (
+            <div className={cellClass('laps', styles.cellCenter)}>
+              <span className={`${styles.lapsCompleted} ${dimClass}`}>
+                {driver.lap}
+              </span>
+            </div>
+          );
+        case 'gap':
+          return (
+            <div className={cellClass('gap', styles.cellRight)}>
+              <span ref={gapRef} />
+            </div>
+          );
+        case 'interval':
+          return (
+            <div className={cellClass('interval', styles.cellRight)}>
+              <span ref={intervalRef} />
+            </div>
+          );
+        case 'lastLap':
+          return (
+            <div className={cellClass('lastLap', styles.cellRight)}>
+              <span
+                className={`${styles.lastLap} ${isPersonalBest ? styles.lastLapPersonalBest : ''} ${dimClass} ${lastLapText === EMPTY_VALUE ? styles.cellEmpty : ''}`}
+              >
+                {lastLapText}
+              </span>
+            </div>
+          );
+        case 'lapDelta':
+          return (
+            <div className={cellClass('lapDelta', styles.cellRight)}>
+              <span
+                className={`${styles.lastLapDelta} ${LAP_DELTA_TONE_CLASS[lapDeltaDisplay.tone]} ${lapDeltaDisplay.value === EMPTY_VALUE ? styles.cellEmpty : ''}`}
+              >
+                {lapDeltaDisplay.value}
+              </span>
+            </div>
+          );
+        case 'bestLap':
+          return (
+            <div className={cellClass('bestLap', styles.cellRight)}>
+              {bestLapText === EMPTY_VALUE ? (
+                <span className={`${styles.bestLap} ${styles.cellEmpty}`}>
+                  {bestLapText}
+                </span>
+              ) : isClassBestLap ? (
+                <StatChip lead={bestLapText} leadKind="number" tone="special" />
+              ) : (
+                <StatChip
+                  lead={bestLapText}
+                  leadKind="number"
+                  tone={bestLap.isQualifying ? 'muted' : 'neutral'}
+                  className={
+                    isPersonalBest ? styles.bestLapPersonalBest : undefined
+                  }
+                />
+              )}
+            </div>
+          );
+        case 'brand':
+          return (
+            <div className={cellClass('brand', styles.cellCenter)}>
+              <span title={driver.carScreenName}>
+                <StatChip
+                  lead={formatBrand(driver.carScreenName)}
+                  leadKind="number"
+                  tone="muted"
+                  className={styles.brandChip}
+                />
+              </span>
+            </div>
+          );
+        case 'tire':
+          return (
+            <div className={cellClass('tire', styles.cellCenter)}>
+              <TireBadge tire={driver.tireCompound} />
+            </div>
+          );
+      }
+    };
+
     return (
       <DriverRowShell
         classes={styles}
@@ -246,131 +390,9 @@ export const DriverRow = observer(
         data-driver-row
         data-row-key={carIdx}
       >
-        <PositionCell carIdx={carIdx} />
-
-        <div className={cellClass('carNumber', styles.carNumberCell)}>
-          <CarNumberBadge
-            carNumber={driver.carNumber}
-            classColor={driver.carClassColor}
-          />
-        </div>
-
-        {settings.showPosChange && (
-          <div className={cellClass('posChange', styles.cellCenter)}>
-            <PosChange carIdx={carIdx} />
-          </div>
-        )}
-
-        {settings.showCountryFlag && (
-          <div className={cellClass('countryFlag', styles.cellCenter)}>
-            <CountryFlag flairId={driver.flairId} isAi={driver.isAi} />
-          </div>
-        )}
-
-        <div className={cellClass('name', styles.nameCell)}>
-          <DriverNameContent
-            driver={driver}
-            state={state}
-            abbreviate={settings.abbreviateNames}
-            showDriverFlags={settings.showDriverFlags}
-            showRadioMark={settings.showRadioMark}
-            showPitIndicator={settings.showPitIndicator}
-            teamName={showsTeamNames ? driver.teamName : undefined}
-            chipDetail={chipDetail}
-          />
-        </div>
-
-        <RatingCells
-          driver={driver}
-          settings={settings}
-          cellClassName={(column) => cellClass(column, styles.cellCenter)}
-        />
-
-        {settings.showIrChange && (
-          <div className={cellClass('irChange', styles.cellCenter)}>
-            <IrChangeCell carIdx={carIdx} />
-          </div>
-        )}
-
-        {settings.showLapsCompleted && (
-          <div className={cellClass('laps', styles.cellCenter)}>
-            <span className={`${styles.lapsCompleted} ${dimClass}`}>
-              {driver.lap}
-            </span>
-          </div>
-        )}
-
-        {settings.showGap && (
-          <div className={cellClass('gap', styles.cellRight)}>
-            <span ref={gapRef} />
-          </div>
-        )}
-
-        {settings.showInterval && (
-          <div className={cellClass('interval', styles.cellRight)}>
-            <span ref={intervalRef} />
-          </div>
-        )}
-
-        {settings.showLastLap && (
-          <div className={cellClass('lastLap', styles.cellRight)}>
-            <span
-              className={`${styles.lastLap} ${isPersonalBest ? styles.lastLapPersonalBest : ''} ${dimClass} ${lastLapText === EMPTY_VALUE ? styles.cellEmpty : ''}`}
-            >
-              {lastLapText}
-            </span>
-          </div>
-        )}
-
-        {settings.showLapDelta && (
-          <div className={cellClass('lapDelta', styles.cellRight)}>
-            <span
-              className={`${styles.lastLapDelta} ${LAP_DELTA_TONE_CLASS[lapDeltaDisplay.tone]} ${lapDeltaDisplay.value === EMPTY_VALUE ? styles.cellEmpty : ''}`}
-            >
-              {lapDeltaDisplay.value}
-            </span>
-          </div>
-        )}
-
-        {settings.showBestLap && (
-          <div className={cellClass('bestLap', styles.cellRight)}>
-            {bestLapText === EMPTY_VALUE ? (
-              <span className={`${styles.bestLap} ${styles.cellEmpty}`}>
-                {bestLapText}
-              </span>
-            ) : isClassBestLap ? (
-              <StatChip lead={bestLapText} leadKind="number" tone="special" />
-            ) : (
-              <StatChip
-                lead={bestLapText}
-                leadKind="number"
-                tone={bestLap.isQualifying ? 'muted' : 'neutral'}
-                className={
-                  isPersonalBest ? styles.bestLapPersonalBest : undefined
-                }
-              />
-            )}
-          </div>
-        )}
-
-        {settings.showBrand && (
-          <div className={cellClass('brand', styles.cellCenter)}>
-            <span title={driver.carScreenName}>
-              <StatChip
-                lead={formatBrand(driver.carScreenName)}
-                leadKind="number"
-                tone="muted"
-                className={styles.brandChip}
-              />
-            </span>
-          </div>
-        )}
-
-        {settings.showTire && (
-          <div className={cellClass('tire', styles.cellCenter)}>
-            <TireBadge tire={driver.tireCompound} />
-          </div>
-        )}
+        {visibleStandingsColumns(settings).map((column) => (
+          <Fragment key={column}>{renderCell(column)}</Fragment>
+        ))}
       </DriverRowShell>
     );
   }

@@ -1,0 +1,19 @@
+.cluster {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: rem(2);
+  padding: rem(2);
+  background: $sys-bg-sunken;
+  border: 1px solid $sys-border-sub;
+  border-radius: rem(8);
+}
+
+.separator {
+  flex: none;
+  width: 1px;
+  height: rem(18);
+  margin: 0 rem(2);
+  background: $sys-border-main;
+  opacity: 0.65;
+}
