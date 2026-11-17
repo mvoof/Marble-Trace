@@ -94,7 +94,7 @@ const meta: Meta<StoryArgs> = {
   title: 'Widgets/StreamChatWidget',
   ...defineWidgetStories<StoryArgs>({
     widget: StreamChatWidget,
-    size: { width: 380, height: 340, background: '#12141a' },
+    size: { width: 380, height: 236, background: '#12141a' },
     seed: (store, args) => {
       store.chat.messages = args.messages;
       store.chat.presence.clear();
@@ -114,6 +114,9 @@ type Story = StoryObj<StoryArgs>;
 export const Default: Story = {};
 
 export const TwitchOnly: Story = {
+  // Half the messages: the chat is drawn from the bottom, so a shorter frame
+  // instead of an empty top
+  parameters: { widgetFrame: { height: 168 } },
   args: {
     messages: MESSAGES.filter((message) => message.platform === 'twitch'),
     presence: PRESENCE.filter((entry) => entry.platform === 'twitch'),

@@ -153,6 +153,8 @@ export const ClosePack: Story = {
 };
 
 export const MinimalView: Story = {
+  // Three columns fewer: the frame narrows with them
+  parameters: { widgetFrame: { width: 346 } },
   args: {
     settings: {
       showLicBadge: false,

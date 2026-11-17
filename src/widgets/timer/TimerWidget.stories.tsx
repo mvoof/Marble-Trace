@@ -199,6 +199,8 @@ export const SessionEnded: Story = {
 };
 
 export const WithClocks: Story = {
+  // One column of clocks: narrower than the default frame's two
+  parameters: { widgetFrame: { width: 222 } },
   args: {
     ...RaceGreen.args,
     showWallClock: true,
@@ -208,6 +210,7 @@ export const WithClocks: Story = {
 };
 
 export const MinimalView: Story = {
+  parameters: { widgetFrame: { width: 222 } },
   args: { ...RaceGreen.args, showLaps: false, showPosition: false },
 };
 

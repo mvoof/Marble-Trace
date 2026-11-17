@@ -30,7 +30,7 @@ const meta: Meta<StoryArgs> = {
   title: 'Widgets/BatteryWidget',
   ...defineWidgetStories<StoryArgs>({
     widget: BatteryWidget,
-    size: { width: 280, height: 120 },
+    size: { width: 280 },
     seed: (store, args) => {
       store.player.updateCarStatus(
         args.noHybrid

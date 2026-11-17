@@ -70,7 +70,7 @@ interface StoryArgs {
 
 // The horizontal layout is drawn at its own design width, so the stories that
 // show it resize the frame instead of clipping the row.
-const HORIZONTAL_FRAME = { widgetFrame: { width: 380, height: 280 } };
+const HORIZONTAL_FRAME = { widgetFrame: { width: 366 } };
 
 // Only the knobs a story actually turned reach the frame; everything else is
 // left to the scenario or to the builder's dry track underneath.
@@ -87,7 +87,7 @@ const meta: Meta<StoryArgs> = {
   title: 'Widgets/WeatherWidget',
   ...defineWidgetStories<StoryArgs>({
     widget: WeatherWidget,
-    size: { width: 200, height: 440 },
+    size: { width: 200 },
     seedSnapshot: true,
     seed: (store, args, scenarioId) => {
       store.units.setSystem(args.system);

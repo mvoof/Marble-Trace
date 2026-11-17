@@ -20,6 +20,7 @@ const BRIGHT_SIM_FRAME = { width: 320, background: '#e8edf2' };
 
 interface StoryArgs {
   reference: LapDeltaReference;
+  showGauge?: boolean;
   showLapFlash: boolean;
   previewAnnouncement: boolean;
 }
@@ -69,6 +70,12 @@ type Story = StoryObj<StoryArgs>;
 
 export const Default: Story = {
   parameters: previewScenario('delta-ahead'),
+};
+
+/** The number alone, with the gauge under it switched off. */
+export const NoGauge: Story = {
+  parameters: previewScenario('delta-ahead'),
+  args: { showGauge: false },
 };
 
 export const Behind: Story = {

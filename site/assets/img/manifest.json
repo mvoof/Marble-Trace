@@ -1,4 +1,14 @@
 {
+  "assets/widgets/abs-idle.png": {
+    "width": 450,
+    "height": 156,
+    "variants": [
+      {
+        "width": 450,
+        "path": "assets/img/widgets/abs-idle-450.webp"
+      }
+    ]
+  },
   "assets/widgets/abs.png": {
     "width": 450,
     "height": 156,
@@ -9,9 +19,37 @@
       }
     ]
   },
+  "assets/widgets/battery-compact.png": {
+    "width": 840,
+    "height": 162,
+    "variants": [
+      {
+        "width": 480,
+        "path": "assets/img/widgets/battery-compact-480.webp"
+      },
+      {
+        "width": 840,
+        "path": "assets/img/widgets/battery-compact-840.webp"
+      }
+    ]
+  },
+  "assets/widgets/battery-lap-deploy.png": {
+    "width": 840,
+    "height": 372,
+    "variants": [
+      {
+        "width": 480,
+        "path": "assets/img/widgets/battery-lap-deploy-480.webp"
+      },
+      {
+        "width": 840,
+        "path": "assets/img/widgets/battery-lap-deploy-840.webp"
+      }
+    ]
+  },
   "assets/widgets/battery.png": {
     "width": 840,
-    "height": 366,
+    "height": 372,
     "variants": [
       {
         "width": 480,
@@ -23,9 +61,45 @@
       }
     ]
   },
+  "assets/widgets/close-battle-axis.png": {
+    "width": 1002,
+    "height": 1272,
+    "variants": [
+      {
+        "width": 480,
+        "path": "assets/img/widgets/close-battle-axis-480.webp"
+      },
+      {
+        "width": 960,
+        "path": "assets/img/widgets/close-battle-axis-960.webp"
+      },
+      {
+        "width": 1002,
+        "path": "assets/img/widgets/close-battle-axis-1002.webp"
+      }
+    ]
+  },
+  "assets/widgets/close-battle-full-names.png": {
+    "width": 1302,
+    "height": 1272,
+    "variants": [
+      {
+        "width": 480,
+        "path": "assets/img/widgets/close-battle-full-names-480.webp"
+      },
+      {
+        "width": 960,
+        "path": "assets/img/widgets/close-battle-full-names-960.webp"
+      },
+      {
+        "width": 1302,
+        "path": "assets/img/widgets/close-battle-full-names-1302.webp"
+      }
+    ]
+  },
   "assets/widgets/close-battle.png": {
-    "width": 1320,
-    "height": 1740,
+    "width": 1326,
+    "height": 1272,
     "variants": [
       {
         "width": 480,
@@ -36,8 +110,62 @@
         "path": "assets/img/widgets/close-battle-960.webp"
       },
       {
-        "width": 1320,
-        "path": "assets/img/widgets/close-battle-1320.webp"
+        "width": 1326,
+        "path": "assets/img/widgets/close-battle-1326.webp"
+      }
+    ]
+  },
+  "assets/widgets/coach-brake-channel.png": {
+    "width": 1080,
+    "height": 588,
+    "variants": [
+      {
+        "width": 480,
+        "path": "assets/img/widgets/coach-brake-channel-480.webp"
+      },
+      {
+        "width": 960,
+        "path": "assets/img/widgets/coach-brake-channel-960.webp"
+      },
+      {
+        "width": 1080,
+        "path": "assets/img/widgets/coach-brake-channel-1080.webp"
+      }
+    ]
+  },
+  "assets/widgets/coach-no-readouts.png": {
+    "width": 1080,
+    "height": 588,
+    "variants": [
+      {
+        "width": 480,
+        "path": "assets/img/widgets/coach-no-readouts-480.webp"
+      },
+      {
+        "width": 960,
+        "path": "assets/img/widgets/coach-no-readouts-960.webp"
+      },
+      {
+        "width": 1080,
+        "path": "assets/img/widgets/coach-no-readouts-1080.webp"
+      }
+    ]
+  },
+  "assets/widgets/coach-no-trace.png": {
+    "width": 1080,
+    "height": 264,
+    "variants": [
+      {
+        "width": 480,
+        "path": "assets/img/widgets/coach-no-trace-480.webp"
+      },
+      {
+        "width": 960,
+        "path": "assets/img/widgets/coach-no-trace-960.webp"
+      },
+      {
+        "width": 1080,
+        "path": "assets/img/widgets/coach-no-trace-1080.webp"
       }
     ]
   },
@@ -59,9 +187,45 @@
       }
     ]
   },
+  "assets/widgets/crew-radio-listening.png": {
+    "width": 972,
+    "height": 558,
+    "variants": [
+      {
+        "width": 480,
+        "path": "assets/img/widgets/crew-radio-listening-480.webp"
+      },
+      {
+        "width": 960,
+        "path": "assets/img/widgets/crew-radio-listening-960.webp"
+      },
+      {
+        "width": 972,
+        "path": "assets/img/widgets/crew-radio-listening-972.webp"
+      }
+    ]
+  },
+  "assets/widgets/crew-radio-refused.png": {
+    "width": 972,
+    "height": 378,
+    "variants": [
+      {
+        "width": 480,
+        "path": "assets/img/widgets/crew-radio-refused-480.webp"
+      },
+      {
+        "width": 960,
+        "path": "assets/img/widgets/crew-radio-refused-960.webp"
+      },
+      {
+        "width": 972,
+        "path": "assets/img/widgets/crew-radio-refused-972.webp"
+      }
+    ]
+  },
   "assets/widgets/crew-radio.png": {
-    "width": 960,
-    "height": 366,
+    "width": 972,
+    "height": 378,
     "variants": [
       {
         "width": 480,
@@ -70,26 +234,44 @@
       {
         "width": 960,
         "path": "assets/img/widgets/crew-radio-960.webp"
+      },
+      {
+        "width": 972,
+        "path": "assets/img/widgets/crew-radio-972.webp"
       }
     ]
   },
   "assets/widgets/delta-best.png": {
-    "width": 636,
-    "height": 300,
+    "width": 648,
+    "height": 282,
     "variants": [
       {
         "width": 480,
         "path": "assets/img/widgets/delta-best-480.webp"
       },
       {
-        "width": 636,
-        "path": "assets/img/widgets/delta-best-636.webp"
+        "width": 648,
+        "path": "assets/img/widgets/delta-best-648.webp"
+      }
+    ]
+  },
+  "assets/widgets/delta-no-gauge.png": {
+    "width": 495,
+    "height": 183,
+    "variants": [
+      {
+        "width": 480,
+        "path": "assets/img/widgets/delta-no-gauge-480.webp"
+      },
+      {
+        "width": 495,
+        "path": "assets/img/widgets/delta-no-gauge-495.webp"
       }
     ]
   },
   "assets/widgets/delta.png": {
-    "width": 1560,
-    "height": 300,
+    "width": 2412,
+    "height": 225,
     "variants": [
       {
         "width": 480,
@@ -104,8 +286,40 @@
         "path": "assets/img/widgets/delta-1440.webp"
       },
       {
-        "width": 1560,
-        "path": "assets/img/widgets/delta-1560.webp"
+        "width": 1920,
+        "path": "assets/img/widgets/delta-1920.webp"
+      },
+      {
+        "width": 2412,
+        "path": "assets/img/widgets/delta-2412.webp"
+      }
+    ]
+  },
+  "assets/widgets/drs-armed.png": {
+    "width": 648,
+    "height": 168,
+    "variants": [
+      {
+        "width": 480,
+        "path": "assets/img/widgets/drs-armed-480.webp"
+      },
+      {
+        "width": 648,
+        "path": "assets/img/widgets/drs-armed-648.webp"
+      }
+    ]
+  },
+  "assets/widgets/drs-ready.png": {
+    "width": 648,
+    "height": 168,
+    "variants": [
+      {
+        "width": 480,
+        "path": "assets/img/widgets/drs-ready-480.webp"
+      },
+      {
+        "width": 648,
+        "path": "assets/img/widgets/drs-ready-648.webp"
       }
     ]
   },
@@ -120,6 +334,42 @@
       {
         "width": 648,
         "path": "assets/img/widgets/drs-648.webp"
+      }
+    ]
+  },
+  "assets/widgets/engine-formula.png": {
+    "width": 996,
+    "height": 480,
+    "variants": [
+      {
+        "width": 480,
+        "path": "assets/img/widgets/engine-formula-480.webp"
+      },
+      {
+        "width": 960,
+        "path": "assets/img/widgets/engine-formula-960.webp"
+      },
+      {
+        "width": 996,
+        "path": "assets/img/widgets/engine-formula-996.webp"
+      }
+    ]
+  },
+  "assets/widgets/engine-minimal.png": {
+    "width": 996,
+    "height": 300,
+    "variants": [
+      {
+        "width": 480,
+        "path": "assets/img/widgets/engine-minimal-480.webp"
+      },
+      {
+        "width": 960,
+        "path": "assets/img/widgets/engine-minimal-960.webp"
+      },
+      {
+        "width": 996,
+        "path": "assets/img/widgets/engine-minimal-996.webp"
       }
     ]
   },
@@ -142,7 +392,7 @@
     ]
   },
   "assets/widgets/flat-flag.png": {
-    "width": 900,
+    "width": 486,
     "height": 396,
     "variants": [
       {
@@ -150,14 +400,56 @@
         "path": "assets/img/widgets/flat-flag-480.webp"
       },
       {
-        "width": 900,
-        "path": "assets/img/widgets/flat-flag-900.webp"
+        "width": 486,
+        "path": "assets/img/widgets/flat-flag-486.webp"
+      }
+    ]
+  },
+  "assets/widgets/fuel-forecast.png": {
+    "width": 918,
+    "height": 714,
+    "variants": [
+      {
+        "width": 480,
+        "path": "assets/img/widgets/fuel-forecast-480.webp"
+      },
+      {
+        "width": 918,
+        "path": "assets/img/widgets/fuel-forecast-918.webp"
+      }
+    ]
+  },
+  "assets/widgets/fuel-line.png": {
+    "width": 918,
+    "height": 1080,
+    "variants": [
+      {
+        "width": 480,
+        "path": "assets/img/widgets/fuel-line-480.webp"
+      },
+      {
+        "width": 918,
+        "path": "assets/img/widgets/fuel-line-918.webp"
+      }
+    ]
+  },
+  "assets/widgets/fuel-no-chart.png": {
+    "width": 918,
+    "height": 714,
+    "variants": [
+      {
+        "width": 480,
+        "path": "assets/img/widgets/fuel-no-chart-480.webp"
+      },
+      {
+        "width": 918,
+        "path": "assets/img/widgets/fuel-no-chart-918.webp"
       }
     ]
   },
   "assets/widgets/fuel-pit-stop.png": {
     "width": 918,
-    "height": 1050,
+    "height": 876,
     "variants": [
       {
         "width": 480,
@@ -171,7 +463,7 @@
   },
   "assets/widgets/fuel.png": {
     "width": 918,
-    "height": 1071,
+    "height": 1080,
     "variants": [
       {
         "width": 480,
@@ -180,6 +472,48 @@
       {
         "width": 918,
         "path": "assets/img/widgets/fuel-918.webp"
+      }
+    ]
+  },
+  "assets/widgets/g-metr-fading.png": {
+    "width": 720,
+    "height": 720,
+    "variants": [
+      {
+        "width": 480,
+        "path": "assets/img/widgets/g-metr-fading-480.webp"
+      },
+      {
+        "width": 720,
+        "path": "assets/img/widgets/g-metr-fading-720.webp"
+      }
+    ]
+  },
+  "assets/widgets/g-metr-peak.png": {
+    "width": 720,
+    "height": 720,
+    "variants": [
+      {
+        "width": 480,
+        "path": "assets/img/widgets/g-metr-peak-480.webp"
+      },
+      {
+        "width": 720,
+        "path": "assets/img/widgets/g-metr-peak-720.webp"
+      }
+    ]
+  },
+  "assets/widgets/g-metr-trail.png": {
+    "width": 720,
+    "height": 720,
+    "variants": [
+      {
+        "width": 480,
+        "path": "assets/img/widgets/g-metr-trail-480.webp"
+      },
+      {
+        "width": 720,
+        "path": "assets/img/widgets/g-metr-trail-720.webp"
       }
     ]
   },
@@ -197,17 +531,111 @@
       }
     ]
   },
+  "assets/widgets/incident-tracker-clean.png": {
+    "width": 756,
+    "height": 213,
+    "variants": [
+      {
+        "width": 480,
+        "path": "assets/img/widgets/incident-tracker-clean-480.webp"
+      },
+      {
+        "width": 756,
+        "path": "assets/img/widgets/incident-tracker-clean-756.webp"
+      }
+    ]
+  },
+  "assets/widgets/incident-tracker-penalty.png": {
+    "width": 756,
+    "height": 213,
+    "variants": [
+      {
+        "width": 480,
+        "path": "assets/img/widgets/incident-tracker-penalty-480.webp"
+      },
+      {
+        "width": 756,
+        "path": "assets/img/widgets/incident-tracker-penalty-756.webp"
+      }
+    ]
+  },
   "assets/widgets/incident-tracker.png": {
-    "width": 744,
-    "height": 204,
+    "width": 756,
+    "height": 213,
     "variants": [
       {
         "width": 480,
         "path": "assets/img/widgets/incident-tracker-480.webp"
       },
       {
-        "width": 744,
-        "path": "assets/img/widgets/incident-tracker-744.webp"
+        "width": 756,
+        "path": "assets/img/widgets/incident-tracker-756.webp"
+      }
+    ]
+  },
+  "assets/widgets/input-trace-corner-speeds.png": {
+    "width": 1578,
+    "height": 396,
+    "variants": [
+      {
+        "width": 480,
+        "path": "assets/img/widgets/input-trace-corner-speeds-480.webp"
+      },
+      {
+        "width": 960,
+        "path": "assets/img/widgets/input-trace-corner-speeds-960.webp"
+      },
+      {
+        "width": 1440,
+        "path": "assets/img/widgets/input-trace-corner-speeds-1440.webp"
+      },
+      {
+        "width": 1578,
+        "path": "assets/img/widgets/input-trace-corner-speeds-1578.webp"
+      }
+    ]
+  },
+  "assets/widgets/input-trace-no-wheel.png": {
+    "width": 1560,
+    "height": 360,
+    "variants": [
+      {
+        "width": 480,
+        "path": "assets/img/widgets/input-trace-no-wheel-480.webp"
+      },
+      {
+        "width": 960,
+        "path": "assets/img/widgets/input-trace-no-wheel-960.webp"
+      },
+      {
+        "width": 1440,
+        "path": "assets/img/widgets/input-trace-no-wheel-1440.webp"
+      },
+      {
+        "width": 1560,
+        "path": "assets/img/widgets/input-trace-no-wheel-1560.webp"
+      }
+    ]
+  },
+  "assets/widgets/input-trace-throttle-brake.png": {
+    "width": 1578,
+    "height": 396,
+    "variants": [
+      {
+        "width": 480,
+        "path": "assets/img/widgets/input-trace-throttle-brake-480.webp"
+      },
+      {
+        "width": 960,
+        "path": "assets/img/widgets/input-trace-throttle-brake-960.webp"
+      },
+      {
+        "width": 1440,
+        "path": "assets/img/widgets/input-trace-throttle-brake-1440.webp"
+      },
+      {
+        "width": 1578,
+        "path": "assets/img/widgets/input-trace-throttle-brake-1578.webp"
       }
     ]
   },
@@ -233,9 +661,79 @@
       }
     ]
   },
+  "assets/widgets/invisible-dash-backdrop.png": {
+    "width": 2277,
+    "height": 324,
+    "variants": [
+      {
+        "width": 480,
+        "path": "assets/img/widgets/invisible-dash-backdrop-480.webp"
+      },
+      {
+        "width": 960,
+        "path": "assets/img/widgets/invisible-dash-backdrop-960.webp"
+      },
+      {
+        "width": 1440,
+        "path": "assets/img/widgets/invisible-dash-backdrop-1440.webp"
+      },
+      {
+        "width": 1920,
+        "path": "assets/img/widgets/invisible-dash-backdrop-1920.webp"
+      },
+      {
+        "width": 2277,
+        "path": "assets/img/widgets/invisible-dash-backdrop-2277.webp"
+      }
+    ]
+  },
+  "assets/widgets/invisible-dash-compact.png": {
+    "width": 1041,
+    "height": 216,
+    "variants": [
+      {
+        "width": 480,
+        "path": "assets/img/widgets/invisible-dash-compact-480.webp"
+      },
+      {
+        "width": 960,
+        "path": "assets/img/widgets/invisible-dash-compact-960.webp"
+      },
+      {
+        "width": 1041,
+        "path": "assets/img/widgets/invisible-dash-compact-1041.webp"
+      }
+    ]
+  },
+  "assets/widgets/invisible-dash-contour.png": {
+    "width": 2106,
+    "height": 249,
+    "variants": [
+      {
+        "width": 480,
+        "path": "assets/img/widgets/invisible-dash-contour-480.webp"
+      },
+      {
+        "width": 960,
+        "path": "assets/img/widgets/invisible-dash-contour-960.webp"
+      },
+      {
+        "width": 1440,
+        "path": "assets/img/widgets/invisible-dash-contour-1440.webp"
+      },
+      {
+        "width": 1920,
+        "path": "assets/img/widgets/invisible-dash-contour-1920.webp"
+      },
+      {
+        "width": 2106,
+        "path": "assets/img/widgets/invisible-dash-contour-2106.webp"
+      }
+    ]
+  },
   "assets/widgets/invisible-dash.png": {
-    "width": 2700,
-    "height": 600,
+    "width": 2106,
+    "height": 249,
     "variants": [
       {
         "width": 480,
@@ -254,60 +752,114 @@
         "path": "assets/img/widgets/invisible-dash-1920.webp"
       },
       {
-        "width": 2560,
-        "path": "assets/img/widgets/invisible-dash-2560.webp"
+        "width": 2106,
+        "path": "assets/img/widgets/invisible-dash-2106.webp"
+      }
+    ]
+  },
+  "assets/widgets/lap-log-pace-loss.png": {
+    "width": 804,
+    "height": 1164,
+    "variants": [
+      {
+        "width": 480,
+        "path": "assets/img/widgets/lap-log-pace-loss-480.webp"
       },
       {
-        "width": 2560,
-        "path": "assets/img/widgets/invisible-dash-2560.webp"
+        "width": 804,
+        "path": "assets/img/widgets/lap-log-pace-loss-804.webp"
       }
     ]
   },
   "assets/widgets/lap-log.png": {
-    "width": 792,
-    "height": 1158,
+    "width": 804,
+    "height": 1164,
     "variants": [
       {
         "width": 480,
         "path": "assets/img/widgets/lap-log-480.webp"
       },
       {
-        "width": 792,
-        "path": "assets/img/widgets/lap-log-792.webp"
+        "width": 804,
+        "path": "assets/img/widgets/lap-log-804.webp"
       }
     ]
   },
   "assets/widgets/led-flag-dual.png": {
-    "width": 900,
-    "height": 900,
+    "width": 816,
+    "height": 816,
     "variants": [
       {
         "width": 480,
         "path": "assets/img/widgets/led-flag-dual-480.webp"
       },
       {
-        "width": 900,
-        "path": "assets/img/widgets/led-flag-dual-900.webp"
+        "width": 816,
+        "path": "assets/img/widgets/led-flag-dual-816.webp"
       }
     ]
   },
   "assets/widgets/led-flag-one.png": {
-    "width": 600,
-    "height": 600,
+    "width": 492,
+    "height": 492,
     "variants": [
       {
         "width": 480,
         "path": "assets/img/widgets/led-flag-one-480.webp"
       },
       {
-        "width": 600,
-        "path": "assets/img/widgets/led-flag-one-600.webp"
+        "width": 492,
+        "path": "assets/img/widgets/led-flag-one-492.webp"
+      }
+    ]
+  },
+  "assets/widgets/map-class-shapes.png": {
+    "width": 1812,
+    "height": 1812,
+    "variants": [
+      {
+        "width": 480,
+        "path": "assets/img/widgets/map-class-shapes-480.webp"
+      },
+      {
+        "width": 960,
+        "path": "assets/img/widgets/map-class-shapes-960.webp"
+      },
+      {
+        "width": 1440,
+        "path": "assets/img/widgets/map-class-shapes-1440.webp"
+      },
+      {
+        "width": 1812,
+        "path": "assets/img/widgets/map-class-shapes-1812.webp"
+      }
+    ]
+  },
+  "assets/widgets/map-incidents.png": {
+    "width": 1812,
+    "height": 1812,
+    "variants": [
+      {
+        "width": 480,
+        "path": "assets/img/widgets/map-incidents-480.webp"
+      },
+      {
+        "width": 960,
+        "path": "assets/img/widgets/map-incidents-960.webp"
+      },
+      {
+        "width": 1440,
+        "path": "assets/img/widgets/map-incidents-1440.webp"
+      },
+      {
+        "width": 1812,
+        "path": "assets/img/widgets/map-incidents-1812.webp"
       }
     ]
   },
   "assets/widgets/map-record.png": {
-    "width": 1800,
-    "height": 1800,
+    "width": 1377,
+    "height": 408,
     "variants": [
       {
         "width": 480,
@@ -318,18 +870,14 @@
         "path": "assets/img/widgets/map-record-960.webp"
       },
       {
-        "width": 1440,
-        "path": "assets/img/widgets/map-record-1440.webp"
-      },
-      {
-        "width": 1800,
-        "path": "assets/img/widgets/map-record-1800.webp"
+        "width": 1377,
+        "path": "assets/img/widgets/map-record-1377.webp"
       }
     ]
   },
   "assets/widgets/map.png": {
-    "width": 1800,
-    "height": 1800,
+    "width": 1812,
+    "height": 1812,
     "variants": [
       {
         "width": 480,
@@ -344,8 +892,28 @@
         "path": "assets/img/widgets/map-1440.webp"
       },
       {
-        "width": 1800,
-        "path": "assets/img/widgets/map-1800.webp"
+        "width": 1812,
+        "path": "assets/img/widgets/map-1812.webp"
+      }
+    ]
+  },
+  "assets/widgets/pit-line-brake.png": {
+    "width": 240,
+    "height": 1140,
+    "variants": [
+      {
+        "width": 240,
+        "path": "assets/img/widgets/pit-line-brake-240.webp"
+      }
+    ]
+  },
+  "assets/widgets/pit-line-over-limit.png": {
+    "width": 240,
+    "height": 1140,
+    "variants": [
+      {
+        "width": 240,
+        "path": "assets/img/widgets/pit-line-over-limit-240.webp"
       }
     ]
   },
@@ -356,6 +924,34 @@
       {
         "width": 288,
         "path": "assets/img/widgets/pit-line-288.webp"
+      }
+    ]
+  },
+  "assets/widgets/pit-service-interact.png": {
+    "width": 708,
+    "height": 918,
+    "variants": [
+      {
+        "width": 480,
+        "path": "assets/img/widgets/pit-service-interact-480.webp"
+      },
+      {
+        "width": 708,
+        "path": "assets/img/widgets/pit-service-interact-708.webp"
+      }
+    ]
+  },
+  "assets/widgets/pit-service-no-footer.png": {
+    "width": 708,
+    "height": 822,
+    "variants": [
+      {
+        "width": 480,
+        "path": "assets/img/widgets/pit-service-no-footer-480.webp"
+      },
+      {
+        "width": 708,
+        "path": "assets/img/widgets/pit-service-no-footer-708.webp"
       }
     ]
   },
@@ -373,23 +969,105 @@
       }
     ]
   },
+  "assets/widgets/proximity-radar-both.png": {
+    "width": 552,
+    "height": 552,
+    "variants": [
+      {
+        "width": 480,
+        "path": "assets/img/widgets/proximity-radar-both-480.webp"
+      },
+      {
+        "width": 552,
+        "path": "assets/img/widgets/proximity-radar-both-552.webp"
+      }
+    ]
+  },
+  "assets/widgets/proximity-radar-left.png": {
+    "width": 552,
+    "height": 552,
+    "variants": [
+      {
+        "width": 480,
+        "path": "assets/img/widgets/proximity-radar-left-480.webp"
+      },
+      {
+        "width": 552,
+        "path": "assets/img/widgets/proximity-radar-left-552.webp"
+      }
+    ]
+  },
   "assets/widgets/proximity-radar.png": {
-    "width": 540,
-    "height": 540,
+    "width": 552,
+    "height": 552,
     "variants": [
       {
         "width": 480,
         "path": "assets/img/widgets/proximity-radar-480.webp"
       },
       {
-        "width": 540,
-        "path": "assets/img/widgets/proximity-radar-540.webp"
+        "width": 552,
+        "path": "assets/img/widgets/proximity-radar-552.webp"
+      }
+    ]
+  },
+  "assets/widgets/race-dash-comb.png": {
+    "width": 1266,
+    "height": 324,
+    "variants": [
+      {
+        "width": 480,
+        "path": "assets/img/widgets/race-dash-comb-480.webp"
+      },
+      {
+        "width": 960,
+        "path": "assets/img/widgets/race-dash-comb-960.webp"
+      },
+      {
+        "width": 1266,
+        "path": "assets/img/widgets/race-dash-comb-1266.webp"
+      }
+    ]
+  },
+  "assets/widgets/race-dash-no-ring.png": {
+    "width": 1266,
+    "height": 324,
+    "variants": [
+      {
+        "width": 480,
+        "path": "assets/img/widgets/race-dash-no-ring-480.webp"
+      },
+      {
+        "width": 960,
+        "path": "assets/img/widgets/race-dash-no-ring-960.webp"
+      },
+      {
+        "width": 1266,
+        "path": "assets/img/widgets/race-dash-no-ring-1266.webp"
+      }
+    ]
+  },
+  "assets/widgets/race-dash-pit-limiter.png": {
+    "width": 1266,
+    "height": 354,
+    "variants": [
+      {
+        "width": 480,
+        "path": "assets/img/widgets/race-dash-pit-limiter-480.webp"
+      },
+      {
+        "width": 960,
+        "path": "assets/img/widgets/race-dash-pit-limiter-960.webp"
+      },
+      {
+        "width": 1266,
+        "path": "assets/img/widgets/race-dash-pit-limiter-1266.webp"
       }
     ]
   },
   "assets/widgets/race-dash.png": {
-    "width": 1254,
-    "height": 312,
+    "width": 1266,
+    "height": 324,
     "variants": [
       {
         "width": 480,
@@ -400,8 +1078,34 @@
         "path": "assets/img/widgets/race-dash-960.webp"
       },
       {
-        "width": 1254,
-        "path": "assets/img/widgets/race-dash-1254.webp"
+        "width": 1266,
+        "path": "assets/img/widgets/race-dash-1266.webp"
+      }
+    ]
+  },
+  "assets/widgets/radar-bar-left.png": {
+    "width": 2400,
+    "height": 1140,
+    "variants": [
+      {
+        "width": 480,
+        "path": "assets/img/widgets/radar-bar-left-480.webp"
+      },
+      {
+        "width": 960,
+        "path": "assets/img/widgets/radar-bar-left-960.webp"
+      },
+      {
+        "width": 1440,
+        "path": "assets/img/widgets/radar-bar-left-1440.webp"
+      },
+      {
+        "width": 1920,
+        "path": "assets/img/widgets/radar-bar-left-1920.webp"
+      },
+      {
+        "width": 2400,
+        "path": "assets/img/widgets/radar-bar-left-2400.webp"
       }
     ]
   },
@@ -431,17 +1135,77 @@
       }
     ]
   },
+  "assets/widgets/radio-race-control.png": {
+    "width": 552,
+    "height": 348,
+    "variants": [
+      {
+        "width": 480,
+        "path": "assets/img/widgets/radio-race-control-480.webp"
+      },
+      {
+        "width": 552,
+        "path": "assets/img/widgets/radio-race-control-552.webp"
+      }
+    ]
+  },
   "assets/widgets/radio.png": {
-    "width": 540,
-    "height": 336,
+    "width": 552,
+    "height": 348,
     "variants": [
       {
         "width": 480,
         "path": "assets/img/widgets/radio-480.webp"
       },
       {
-        "width": 540,
-        "path": "assets/img/widgets/radio-540.webp"
+        "width": 552,
+        "path": "assets/img/widgets/radio-552.webp"
+      }
+    ]
+  },
+  "assets/widgets/relative-abbreviated.png": {
+    "width": 1386,
+    "height": 1200,
+    "variants": [
+      {
+        "width": 480,
+        "path": "assets/img/widgets/relative-abbreviated-480.webp"
+      },
+      {
+        "width": 960,
+        "path": "assets/img/widgets/relative-abbreviated-960.webp"
+      },
+      {
+        "width": 1386,
+        "path": "assets/img/widgets/relative-abbreviated-1386.webp"
+      }
+    ]
+  },
+  "assets/widgets/relative-driver-flags.png": {
+    "width": 1386,
+    "height": 1200,
+    "variants": [
+      {
+        "width": 480,
+        "path": "assets/img/widgets/relative-driver-flags-480.webp"
+      },
+      {
+        "width": 960,
+        "path": "assets/img/widgets/relative-driver-flags-960.webp"
+      },
+      {
+        "width": 1386,
+        "path": "assets/img/widgets/relative-driver-flags-1386.webp"
+      }
+    ]
+  },
+  "assets/widgets/relative-map-vertical.png": {
+    "width": 168,
+    "height": 900,
+    "variants": [
+      {
+        "width": 168,
+        "path": "assets/img/widgets/relative-map-vertical-168.webp"
       }
     ]
   },
@@ -463,6 +1227,24 @@
       }
     ]
   },
+  "assets/widgets/relative-minimal.png": {
+    "width": 1038,
+    "height": 1200,
+    "variants": [
+      {
+        "width": 480,
+        "path": "assets/img/widgets/relative-minimal-480.webp"
+      },
+      {
+        "width": 960,
+        "path": "assets/img/widgets/relative-minimal-960.webp"
+      },
+      {
+        "width": 1038,
+        "path": "assets/img/widgets/relative-minimal-1038.webp"
+      }
+    ]
+  },
   "assets/widgets/relative.png": {
     "width": 1386,
     "height": 1200,
@@ -478,6 +1260,42 @@
       {
         "width": 1386,
         "path": "assets/img/widgets/relative-1386.webp"
+      }
+    ]
+  },
+  "assets/widgets/rpm-lights-circle.png": {
+    "width": 1080,
+    "height": 108,
+    "variants": [
+      {
+        "width": 480,
+        "path": "assets/img/widgets/rpm-lights-circle-480.webp"
+      },
+      {
+        "width": 960,
+        "path": "assets/img/widgets/rpm-lights-circle-960.webp"
+      },
+      {
+        "width": 1080,
+        "path": "assets/img/widgets/rpm-lights-circle-1080.webp"
+      }
+    ]
+  },
+  "assets/widgets/rpm-lights-parallelogram.png": {
+    "width": 1080,
+    "height": 108,
+    "variants": [
+      {
+        "width": 480,
+        "path": "assets/img/widgets/rpm-lights-parallelogram-480.webp"
+      },
+      {
+        "width": 960,
+        "path": "assets/img/widgets/rpm-lights-parallelogram-960.webp"
+      },
+      {
+        "width": 1080,
+        "path": "assets/img/widgets/rpm-lights-parallelogram-1080.webp"
       }
     ]
   },
@@ -499,6 +1317,42 @@
       }
     ]
   },
+  "assets/widgets/sector-matrix-behind.png": {
+    "width": 990,
+    "height": 528,
+    "variants": [
+      {
+        "width": 480,
+        "path": "assets/img/widgets/sector-matrix-behind-480.webp"
+      },
+      {
+        "width": 960,
+        "path": "assets/img/widgets/sector-matrix-behind-960.webp"
+      },
+      {
+        "width": 990,
+        "path": "assets/img/widgets/sector-matrix-behind-990.webp"
+      }
+    ]
+  },
+  "assets/widgets/sector-matrix-four.png": {
+    "width": 990,
+    "height": 696,
+    "variants": [
+      {
+        "width": 480,
+        "path": "assets/img/widgets/sector-matrix-four-480.webp"
+      },
+      {
+        "width": 960,
+        "path": "assets/img/widgets/sector-matrix-four-960.webp"
+      },
+      {
+        "width": 990,
+        "path": "assets/img/widgets/sector-matrix-four-990.webp"
+      }
+    ]
+  },
   "assets/widgets/sector-matrix.png": {
     "width": 990,
     "height": 696,
@@ -514,6 +1368,126 @@
       {
         "width": 990,
         "path": "assets/img/widgets/sector-matrix-990.webp"
+      }
+    ]
+  },
+  "assets/widgets/standings-all-columns.png": {
+    "width": 3030,
+    "height": 1500,
+    "variants": [
+      {
+        "width": 480,
+        "path": "assets/img/widgets/standings-all-columns-480.webp"
+      },
+      {
+        "width": 960,
+        "path": "assets/img/widgets/standings-all-columns-960.webp"
+      },
+      {
+        "width": 1440,
+        "path": "assets/img/widgets/standings-all-columns-1440.webp"
+      },
+      {
+        "width": 1920,
+        "path": "assets/img/widgets/standings-all-columns-1920.webp"
+      },
+      {
+        "width": 2560,
+        "path": "assets/img/widgets/standings-all-columns-2560.webp"
+      },
+      {
+        "width": 2560,
+        "path": "assets/img/widgets/standings-all-columns-2560.webp"
+      }
+    ]
+  },
+  "assets/widgets/standings-grouped.png": {
+    "width": 3030,
+    "height": 1500,
+    "variants": [
+      {
+        "width": 480,
+        "path": "assets/img/widgets/standings-grouped-480.webp"
+      },
+      {
+        "width": 960,
+        "path": "assets/img/widgets/standings-grouped-960.webp"
+      },
+      {
+        "width": 1440,
+        "path": "assets/img/widgets/standings-grouped-1440.webp"
+      },
+      {
+        "width": 1920,
+        "path": "assets/img/widgets/standings-grouped-1920.webp"
+      },
+      {
+        "width": 2560,
+        "path": "assets/img/widgets/standings-grouped-2560.webp"
+      },
+      {
+        "width": 2560,
+        "path": "assets/img/widgets/standings-grouped-2560.webp"
+      }
+    ]
+  },
+  "assets/widgets/standings-minimal.png": {
+    "width": 3030,
+    "height": 1500,
+    "variants": [
+      {
+        "width": 480,
+        "path": "assets/img/widgets/standings-minimal-480.webp"
+      },
+      {
+        "width": 960,
+        "path": "assets/img/widgets/standings-minimal-960.webp"
+      },
+      {
+        "width": 1440,
+        "path": "assets/img/widgets/standings-minimal-1440.webp"
+      },
+      {
+        "width": 1920,
+        "path": "assets/img/widgets/standings-minimal-1920.webp"
+      },
+      {
+        "width": 2560,
+        "path": "assets/img/widgets/standings-minimal-2560.webp"
+      },
+      {
+        "width": 2560,
+        "path": "assets/img/widgets/standings-minimal-2560.webp"
+      }
+    ]
+  },
+  "assets/widgets/standings-team.png": {
+    "width": 3030,
+    "height": 1500,
+    "variants": [
+      {
+        "width": 480,
+        "path": "assets/img/widgets/standings-team-480.webp"
+      },
+      {
+        "width": 960,
+        "path": "assets/img/widgets/standings-team-960.webp"
+      },
+      {
+        "width": 1440,
+        "path": "assets/img/widgets/standings-team-1440.webp"
+      },
+      {
+        "width": 1920,
+        "path": "assets/img/widgets/standings-team-1920.webp"
+      },
+      {
+        "width": 2560,
+        "path": "assets/img/widgets/standings-team-2560.webp"
+      },
+      {
+        "width": 2560,
+        "path": "assets/img/widgets/standings-team-2560.webp"
       }
     ]
   },
@@ -547,9 +1521,27 @@
       }
     ]
   },
+  "assets/widgets/stream-chat-twitch.png": {
+    "width": 1140,
+    "height": 504,
+    "variants": [
+      {
+        "width": 480,
+        "path": "assets/img/widgets/stream-chat-twitch-480.webp"
+      },
+      {
+        "width": 960,
+        "path": "assets/img/widgets/stream-chat-twitch-960.webp"
+      },
+      {
+        "width": 1140,
+        "path": "assets/img/widgets/stream-chat-twitch-1140.webp"
+      }
+    ]
+  },
   "assets/widgets/stream-chat.png": {
     "width": 1140,
-    "height": 1020,
+    "height": 708,
     "variants": [
       {
         "width": 480,
@@ -562,6 +1554,48 @@
       {
         "width": 1140,
         "path": "assets/img/widgets/stream-chat-1140.webp"
+      }
+    ]
+  },
+  "assets/widgets/timer-clocks.png": {
+    "width": 666,
+    "height": 546,
+    "variants": [
+      {
+        "width": 480,
+        "path": "assets/img/widgets/timer-clocks-480.webp"
+      },
+      {
+        "width": 666,
+        "path": "assets/img/widgets/timer-clocks-666.webp"
+      }
+    ]
+  },
+  "assets/widgets/timer-dates.png": {
+    "width": 720,
+    "height": 666,
+    "variants": [
+      {
+        "width": 480,
+        "path": "assets/img/widgets/timer-dates-480.webp"
+      },
+      {
+        "width": 720,
+        "path": "assets/img/widgets/timer-dates-720.webp"
+      }
+    ]
+  },
+  "assets/widgets/timer-minimal.png": {
+    "width": 666,
+    "height": 264,
+    "variants": [
+      {
+        "width": 480,
+        "path": "assets/img/widgets/timer-minimal-480.webp"
+      },
+      {
+        "width": 666,
+        "path": "assets/img/widgets/timer-minimal-666.webp"
       }
     ]
   },
@@ -579,9 +1613,51 @@
       }
     ]
   },
+  "assets/widgets/weather-forecast.png": {
+    "width": 600,
+    "height": 1422,
+    "variants": [
+      {
+        "width": 480,
+        "path": "assets/img/widgets/weather-forecast-480.webp"
+      },
+      {
+        "width": 600,
+        "path": "assets/img/widgets/weather-forecast-600.webp"
+      }
+    ]
+  },
+  "assets/widgets/weather-rain.png": {
+    "width": 600,
+    "height": 1014,
+    "variants": [
+      {
+        "width": 480,
+        "path": "assets/img/widgets/weather-rain-480.webp"
+      },
+      {
+        "width": 600,
+        "path": "assets/img/widgets/weather-rain-600.webp"
+      }
+    ]
+  },
+  "assets/widgets/weather-vertical.png": {
+    "width": 600,
+    "height": 1014,
+    "variants": [
+      {
+        "width": 480,
+        "path": "assets/img/widgets/weather-vertical-480.webp"
+      },
+      {
+        "width": 600,
+        "path": "assets/img/widgets/weather-vertical-600.webp"
+      }
+    ]
+  },
   "assets/widgets/weather.png": {
-    "width": 1140,
-    "height": 840,
+    "width": 1098,
+    "height": 762,
     "variants": [
       {
         "width": 480,
@@ -592,14 +1668,36 @@
         "path": "assets/img/widgets/weather-960.webp"
       },
       {
-        "width": 1140,
-        "path": "assets/img/widgets/weather-1140.webp"
+        "width": 1098,
+        "path": "assets/img/widgets/weather-1098.webp"
+      }
+    ]
+  },
+  "assets/widgets/wheel-to-wheel-rows.png": {
+    "width": 1656,
+    "height": 738,
+    "variants": [
+      {
+        "width": 480,
+        "path": "assets/img/widgets/wheel-to-wheel-rows-480.webp"
+      },
+      {
+        "width": 960,
+        "path": "assets/img/widgets/wheel-to-wheel-rows-960.webp"
+      },
+      {
+        "width": 1440,
+        "path": "assets/img/widgets/wheel-to-wheel-rows-1440.webp"
+      },
+      {
+        "width": 1656,
+        "path": "assets/img/widgets/wheel-to-wheel-rows-1656.webp"
       }
     ]
   },
   "assets/widgets/wheel-to-wheel.png": {
-    "width": 1860,
-    "height": 390,
+    "width": 1656,
+    "height": 396,
     "variants": [
       {
         "width": 480,
@@ -614,8 +1712,8 @@
         "path": "assets/img/widgets/wheel-to-wheel-1440.webp"
       },
       {
-        "width": 1860,
-        "path": "assets/img/widgets/wheel-to-wheel-1860.webp"
+        "width": 1656,
+        "path": "assets/img/widgets/wheel-to-wheel-1656.webp"
       }
     ]
   },

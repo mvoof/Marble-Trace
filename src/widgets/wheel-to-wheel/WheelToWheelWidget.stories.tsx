@@ -24,7 +24,7 @@ const meta: Meta<StoryArgs> = {
   title: 'Widgets/WheelToWheelWidget',
   ...defineWidgetStories<StoryArgs>({
     widget: WheelToWheelWidget,
-    size: { width: 620, height: 130, background: '#0e0f12' },
+    size: { width: 552, background: '#0e0f12' },
     seedSnapshot: true,
     seed: (store, args) => {
       const settings: Partial<WheelToWheelWidgetSettings> = {

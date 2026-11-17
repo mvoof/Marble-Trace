@@ -7,6 +7,7 @@ import { useStore } from '@app/roots/root-store-context';
 import { MPS_PER_KMH, mockCarDynamics } from '@features/preview/mocks/dynamics';
 import { mockPitCarStatus } from '@features/preview/mocks/pit';
 import { RpmLightsWidget } from './RpmLightsWidget';
+import type { LedShape } from './settings-schema';
 import { defineWidgetStories } from '@/storybook/define-widget-stories';
 import { seedFromSnapshot } from '@/storybook/seed-from-snapshot';
 
@@ -42,6 +43,7 @@ const seedDynamics = (store: RendererCore, rpm: number, gear: number) =>
 
 interface StoryArgs {
   rpm: number;
+  ledShape?: LedShape;
 }
 
 const meta: Meta<StoryArgs> = {
@@ -68,6 +70,12 @@ export const LowRpm: Story = { args: { rpm: 3200 } };
 export const MidRpm: Story = { args: { rpm: 5400 } };
 export const ShiftLight: Story = { args: { rpm: 8050 } };
 export const BlinkLight: Story = { args: { rpm: 8300 } };
+
+/** The same strip lit to mid range, in each of the other LED shapes. */
+export const CircleLeds: Story = { args: { rpm: 5400, ledShape: 'circle' } };
+export const ParallelogramLeds: Story = {
+  args: { rpm: 5400, ledShape: 'parallelogram' },
+};
 
 // ── Sweeping RPM (animated shift lights) ─────────────────────
 
