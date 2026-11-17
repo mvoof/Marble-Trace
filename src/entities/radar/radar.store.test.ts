@@ -19,6 +19,8 @@ vi.mock('@shared/api/telemetry.service', () => ({
   getConnectionStatus: vi.fn().mockResolvedValue(false),
   getLastSessionInfo: vi.fn().mockResolvedValue(null),
   setActiveEventsSilent: vi.fn(),
+  setRemoteActiveEventsSilent: vi.fn(),
+  clearRemoteActiveEventsSilent: vi.fn(),
 }));
 vi.mock('@shared/api/settings.service', () => ({
   setTelemetrySettingsSilent: vi.fn(),
