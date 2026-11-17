@@ -1,0 +1,361 @@
+/* ==========================================================================
+   Widget gallery (section 02)
+
+   Groups across the top, the widgets of the open group down the side, and
+   the stage: one widget on a blurred cockpit with the setups it switches to
+   under it. Every widget is drawn at one shared scale (widget-gallery.js sets
+   --wg-scale and each picture's --shot-w), so a small widget reads small
+   beside a large one, as it does on the screen - the stage never blows a
+   badge up to the size of the standings.
+   ========================================================================== */
+
+.gallery-lede {
+  max-width: 46ch;
+  margin: 0 0 clamp(1.5rem, 3vw, 2.5rem);
+}
+
+.wg {
+  display: grid;
+  grid-template-columns: minmax(12rem, 15rem) minmax(0, 1fr);
+  grid-template-areas:
+    'tabs tabs'
+    'list stage';
+  gap: 1.25rem clamp(1.25rem, 2.5vw, 2.25rem);
+  align-items: start;
+}
+
+/* ---- Groups ------------------------------------------------------------- */
+
+.wg-tabs {
+  grid-area: tabs;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.wg-tab {
+  position: relative;
+  padding: 0.85rem 1rem;
+  border: 0;
+  background: none;
+  font-family: var(--font-family);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #8a939e;
+  cursor: pointer;
+  transition: color var(--transition-fast);
+}
+
+.wg-tab:hover {
+  color: #ffffff;
+}
+
+.wg-tab::after {
+  content: '';
+  position: absolute;
+  left: 1rem;
+  right: 1rem;
+  bottom: -1px;
+  height: 2px;
+  background-color: var(--livery-blue);
+  transform: scaleX(0);
+  transition: transform var(--transition-normal);
+}
+
+.wg-tab.is-active {
+  color: #ffffff;
+}
+
+.wg-tab.is-active::after {
+  transform: none;
+}
+
+.wg-tab:focus-visible,
+.wg-item:focus-visible,
+.wg-setup:focus-visible {
+  outline: 2px solid var(--livery-blue);
+  outline-offset: 2px;
+}
+
+/* ---- Widgets of the group ------------------------------------------------ */
+
+.wg-list {
+  grid-area: list;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.wg-list > li[hidden] {
+  display: none;
+}
+
+.wg-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 0.7rem 0.9rem;
+  border: 0;
+  border-radius: 6px;
+  background: none;
+  font-family: var(--font-family);
+  font-size: 0.95rem;
+  font-weight: 600;
+  text-align: left;
+  color: #9aa2ad;
+  cursor: pointer;
+  transition:
+    background-color var(--transition-fast),
+    color var(--transition-fast);
+}
+
+.wg-item:hover {
+  background-color: rgba(255, 255, 255, 0.04);
+  color: #ffffff;
+}
+
+.wg-item.is-active {
+  background-color: rgba(255, 255, 255, 0.07);
+  box-shadow: inset 3px 0 0 var(--livery-blue);
+  color: #ffffff;
+}
+
+.wg-item-count {
+  margin-left: auto;
+  min-width: 1.4rem;
+  padding: 0.1rem 0.35rem;
+  border-radius: 4px;
+  background-color: rgba(255, 255, 255, 0.07);
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  text-align: center;
+  color: #8a939e;
+}
+
+/* ---- Stage ----------------------------------------------------------------- */
+
+/* The setups sit on the scene, over its foot, so the widget and what it
+   can be switched to are seen together; the caption comes under both. */
+.wg-stage {
+  grid-area: stage;
+  display: grid;
+  grid-template-areas:
+    'scene'
+    'caption';
+  min-width: 0;
+}
+
+/* A cockpit out of focus: the widgets are drawn for one, and a transparent
+   capture on a flat ground reads as a sticker. */
+.wg-scene {
+  grid-area: scene;
+  position: relative;
+  display: grid;
+  place-items: center;
+  height: clamp(20rem, 34vw, 30rem);
+  padding: 1.25rem 1.25rem 4.75rem;
+  overflow: hidden;
+  border-radius: 10px;
+  background-color: #0b0e12;
+  box-shadow:
+    0 1.6rem 3.2rem -1.4rem rgba(0, 0, 0, 0.8),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+}
+
+.wg-scene::before {
+  content: '';
+  position: absolute;
+  inset: -2rem;
+  background: url('../../assets/img/why/cockpit-bg-960.webp') center / cover
+    no-repeat;
+  filter: blur(16px) brightness(0.5) saturate(0.7);
+}
+
+.wg-figure {
+  position: relative;
+  z-index: 1;
+  margin: 0;
+}
+
+.wg-shot {
+  display: block;
+  width: calc(var(--shot-w, 300) * var(--wg-scale, 1) * 1px);
+  max-width: none;
+  height: auto;
+  filter: drop-shadow(0 0.6rem 1.4rem rgba(0, 0, 0, 0.45));
+  transition: opacity 0.2s ease;
+}
+
+.wg-stage.is-swapping .wg-shot {
+  opacity: 0;
+}
+
+.wg-caption {
+  grid-area: caption;
+  margin-top: 1.1rem;
+}
+
+.wg-group-name {
+  margin: 0 0 0.35rem;
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--livery-blue);
+}
+
+.wg-name {
+  margin: 0;
+  font-family: var(--font-family);
+  font-size: clamp(1.3rem, 2vw, 1.6rem);
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.wg-desc {
+  max-width: 62ch;
+  margin: 0.4rem 0 0;
+  font-size: 0.95rem;
+  line-height: 1.55;
+  color: #9aa2ad;
+}
+
+/* ---- Setups ------------------------------------------------------------ */
+
+.wg-setups {
+  grid-area: scene;
+  align-self: end;
+  justify-self: center;
+  z-index: 2;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 0.4rem;
+  max-width: calc(100% - 2rem);
+  margin-bottom: 1rem;
+  padding: 0.35rem 0.4rem 0.35rem 0.9rem;
+  border-radius: 999px;
+  background-color: rgba(11, 14, 18, 0.72);
+  backdrop-filter: blur(8px);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+}
+
+.wg-setups[hidden] {
+  display: none;
+}
+
+.wg-setups-label {
+  margin-right: 0.35rem;
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #8a939e;
+}
+
+.wg-setup {
+  padding: 0.45rem 0.9rem;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 999px;
+  background: none;
+  font-family: var(--font-family);
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #c9ced5;
+  cursor: pointer;
+  transition:
+    background-color var(--transition-fast),
+    border-color var(--transition-fast),
+    color var(--transition-fast);
+}
+
+.wg-setup:hover {
+  border-color: rgba(255, 255, 255, 0.4);
+  color: #ffffff;
+}
+
+.wg-setup.is-active {
+  border-color: var(--livery-blue);
+  background-color: var(--livery-blue);
+  color: var(--color-btn-download-text);
+}
+
+/* One setup only: a label, not a control */
+.wg-setups:not(:has(.wg-setup + .wg-setup)) .wg-setup {
+  pointer-events: none;
+}
+
+/* ---- Narrow ---------------------------------------------------------------- */
+
+@media (max-width: 860px) {
+  .wg {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      'tabs'
+      'list'
+      'stage';
+  }
+
+  .wg-tabs {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .wg-tab {
+    flex: none;
+  }
+
+  /* The widgets of the group as a strip of chips */
+  .wg-list {
+    flex-direction: row;
+    overflow-x: auto;
+    scrollbar-width: none;
+    gap: 0.35rem;
+  }
+
+  .wg-list > li {
+    flex: none;
+  }
+
+  .wg-item {
+    width: auto;
+    padding: 0.5rem 0.8rem;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 999px;
+    font-size: 0.82rem;
+  }
+
+  .wg-item.is-active {
+    box-shadow: none;
+    border-color: var(--livery-blue);
+  }
+
+  .wg-item-count {
+    display: none;
+  }
+
+  .wg-scene {
+    height: 20rem;
+    padding: 1rem 1rem 5.5rem;
+  }
+
+  .wg-setups {
+    border-radius: 12px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wg-shot,
+  .wg-tab::after {
+    transition: none;
+  }
+}
