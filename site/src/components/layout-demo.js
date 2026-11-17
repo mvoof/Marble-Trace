@@ -17,6 +17,7 @@
   const STEP_MS = 3600;
   const HOLD_AFTER_CLICK_MS = 7000;
   const ACTIVE_CLASS = 'is-active';
+  const TIMING_CLASS = 'is-timing';
 
   const initLayoutDemo = () => {
     const screen = document.querySelector('[data-layout-screen]');
@@ -30,6 +31,9 @@
       .map((button) => ({
         button,
         shot: screen.querySelector(`[data-shot="${button.dataset.session}"]`),
+        hotspots: screen.querySelector(
+          `[data-hotspots-for="${button.dataset.session}"]`
+        ),
       }))
       .filter((entry) => entry.shot);
 
@@ -53,6 +57,10 @@
           isActive ? 'true' : 'false'
         );
         candidate.shot.classList.toggle(ACTIVE_CLASS, isActive);
+
+        if (candidate.hotspots) {
+          candidate.hotspots.hidden = !isActive;
+        }
       });
 
       if (label) {
@@ -60,14 +68,34 @@
       }
     };
 
+    const stopTiming = () => {
+      entries.forEach((entry) => entry.button.classList.remove(TIMING_CLASS));
+    };
+
+    const startTiming = (delay) => {
+      stopTiming();
+
+      if (!active) {
+        return;
+      }
+
+      // Restart the line even when the same step stays active
+      void active.button.offsetWidth;
+      active.button.style.setProperty('--step-ms', `${delay}ms`);
+      active.button.classList.add(TIMING_CLASS);
+    };
+
     const schedule = (delay) => {
       window.clearTimeout(timer);
+      stopTiming();
 
       const offered = available();
 
       if (!visible || offered.length < 2) {
         return;
       }
+
+      startTiming(delay);
 
       timer = window.setTimeout(() => {
         const next = offered[(offered.indexOf(active) + 1) % offered.length];
@@ -80,6 +108,7 @@
     const dropSession = (entry) => {
       entry.button.hidden = true;
       entry.shot.remove();
+      entry.hotspots?.remove();
 
       if (entry === active && available().length > 0) {
         show(available()[available().length - 1]);
@@ -116,6 +145,25 @@
     if (active) {
       show(active);
     }
+
+    // A reader on the screen is reading its notes: the strip waits for them
+    // and moves on once the pointer or the focus has left.
+    const pause = () => {
+      window.clearTimeout(timer);
+      stopTiming();
+    };
+    const resume = (event) => {
+      if (event.relatedTarget && screen.contains(event.relatedTarget)) {
+        return;
+      }
+
+      schedule(STEP_MS);
+    };
+
+    screen.addEventListener('pointerenter', pause);
+    screen.addEventListener('pointerleave', () => schedule(STEP_MS));
+    screen.addEventListener('focusin', pause);
+    screen.addEventListener('focusout', resume);
 
     const reducedMotion = window.matchMedia(
       '(prefers-reduced-motion: reduce)'

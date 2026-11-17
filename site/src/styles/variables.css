@@ -38,14 +38,17 @@
   --livery-blue: #4f8fe3;
   --livery-sky: #72aaec;
   --livery-deep: #2f6fd0;
+  --accent-rgb: 79, 143, 227;
+  --accent-ink: #2a5aa6;
+  --accent-bright: #3b82f6;
 
   /* Brand accent - the blue of the logo and the livery. Dark text on it
      (5.8:1); white would not pass. */
   --color-btn-download-bg: var(--livery-blue);
   --color-btn-download-bg-hover: var(--livery-sky);
   --color-btn-download-text: #0b1015;
-  --color-btn-download-shadow: 0 3px 12px rgba(79, 143, 227, 0.35);
-  --color-btn-download-shadow-hover: 0 6px 18px rgba(79, 143, 227, 0.5);
+  --color-btn-download-shadow: 0 3px 12px rgba(var(--accent-rgb), 0.35);
+  --color-btn-download-shadow-hover: 0 6px 18px rgba(var(--accent-rgb), 0.5);
 
   /* Social Icons */
   --color-social: #1d2124;
@@ -72,4 +75,37 @@
   --transition-fast: 0.15s ease;
   --transition-normal: 0.25s cubic-bezier(0.16, 1, 0.3, 1);
   --transition-smooth: 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* TEMPORARY - the red livery accent, compared against the blue through the
+   dev-only switch (src/components/accent-switch.js). One of the two goes once
+   the choice is made. */
+:root[data-accent='red'] {
+  --livery-graphite: #0f1115;
+  --livery-steel: #2a2e34;
+  --livery-grey: #a0a4ab;
+  --livery-silver: #d6d8dc;
+  --livery-blue: #e10600;
+  --livery-sky: #ff2b24;
+  --livery-deep: #b00500;
+  --accent-rgb: 225, 6, 0;
+  --accent-ink: #b00500;
+  --accent-bright: #e10600;
+  --color-btn-download-text: #ffffff;
+}
+
+/* On the red bands near-black text falls to 4:1; white reads at 4.8:1. */
+:root[data-accent='red'] :is(.interact-band, .download-band),
+:root[data-accent='red'] :is(.interact-band, .download-band) :is(
+    .interact-kicker,
+    .interact-title,
+    .interact-key dd,
+    .interact-note,
+    .download-kicker,
+    .download-title,
+    .download-lede,
+    .download-meta,
+    .download-links a
+  ) {
+  color: #ffffff;
 }

@@ -277,6 +277,7 @@
     <link rel="stylesheet" href="src/styles/background.css" />
     <link rel="stylesheet" href="src/styles/navbar.css" />
     <link rel="stylesheet" href="src/styles/main.css" />
+    <link rel="stylesheet" href="src/styles/hotspots.css" />
   </head>
   <body
     data-edit-note="Edit mode · drag any framed block · "
@@ -2471,6 +2472,72 @@
                 decoding="async"
               />
 
+              <div class="hotspots" data-hotspots-for="garage" hidden>
+                <button class="hotspot" type="button" style="--x: 12%; --y: 22%">
+                  <span class="hotspot-note"><strong>Standings</strong>The whole field by class before you leave the garage: licence, iRating, who is fast.</span>
+                </button>
+                <button class="hotspot" type="button" style="--x: 77%; --y: 5%">
+                  <span class="hotspot-note"><strong>Timer</strong>Session time left, the sim clock and your own.</span>
+                </button>
+                <button class="hotspot" type="button" style="--x: 94%; --y: 13%">
+                  <span class="hotspot-note"><strong>Track map</strong>Where every car is, in its class colour.</span>
+                </button>
+                <button class="hotspot" type="button" style="--x: 96%; --y: 88%">
+                  <span class="hotspot-note"><strong>Weather</strong>Air and track temperature, wind and how wet the surface is.</span>
+                </button>
+              </div>
+              <div class="hotspots" data-hotspots-for="practice" hidden>
+                <button class="hotspot" type="button" style="--x: 3%; --y: 45%">
+                  <span class="hotspot-note"><strong>Lap log</strong>Every lap with its delta to your best; the best one is marked.</span>
+                </button>
+                <button class="hotspot" type="button" style="--x: 50%; --y: 8%">
+                  <span class="hotspot-note"><strong>Delta</strong>Gain or loss against your best lap, right under the mirror.</span>
+                </button>
+                <button class="hotspot" type="button" style="--x: 38%; --y: 85%">
+                  <span class="hotspot-note"><strong>Coach</strong>Where your fastest lap braked and got back on the throttle, called before the corner.</span>
+                </button>
+                <button class="hotspot" type="button" style="--x: 96%; --y: 51%">
+                  <span class="hotspot-note"><strong>Fuel</strong>Litres per lap, laps left and the next pit window.</span>
+                </button>
+                <button class="hotspot" type="button" style="--x: 16%; --y: 90%">
+                  <span class="hotspot-note"><strong>G-meter</strong>Lateral and longitudinal G with a trail.</span>
+                </button>
+              </div>
+              <div class="hotspots" data-hotspots-for="qualify" hidden>
+                <button class="hotspot" type="button" style="--x: 11%; --y: 12%">
+                  <span class="hotspot-note"><strong>Standings</strong>Trimmed to your class and the cars around you.</span>
+                </button>
+                <button class="hotspot" type="button" style="--x: 95%; --y: 48%">
+                  <span class="hotspot-note"><strong>Sectors</strong>Every sector of the lap against your best.</span>
+                </button>
+                <button class="hotspot" type="button" style="--x: 50%; --y: 64%">
+                  <span class="hotspot-note"><strong>RPM lights</strong>Shift lights that follow the car’s own redline.</span>
+                </button>
+                <button class="hotspot" type="button" style="--x: 48%; --y: 96%">
+                  <span class="hotspot-note"><strong>Input trace</strong>Throttle, brake and steering as a moving trace.</span>
+                </button>
+              </div>
+              <div class="hotspots" data-hotspots-for="race">
+                <button class="hotspot" type="button" style="--x: 10%; --y: 17%">
+                  <span class="hotspot-note"><strong>Standings</strong>The whole field, gaps, intervals and best laps.</span>
+                </button>
+                <button class="hotspot" type="button" style="--x: 50%; --y: 9%">
+                  <span class="hotspot-note"><strong>Delta</strong>Gain or loss against your best lap, right under the mirror.</span>
+                </button>
+                <button class="hotspot" type="button" style="--x: 95%; --y: 9%">
+                  <span class="hotspot-note"><strong>Track map</strong>Every car on the circuit; your class leader marked.</span>
+                </button>
+                <button class="hotspot" type="button" style="--x: 96%; --y: 52%">
+                  <span class="hotspot-note"><strong>Fuel</strong>Laps left, what you need to the flag and the pit window.</span>
+                </button>
+                <button class="hotspot" type="button" style="--x: 50%; --y: 68%">
+                  <span class="hotspot-note"><strong>Race dash</strong>Speed, gear, RPM, position and lap in one strip.</span>
+                </button>
+                <button class="hotspot" type="button" style="--x: 6%; --y: 92%">
+                  <span class="hotspot-note"><strong>Relative</strong>The cars around you on track, with the gap to each.</span>
+                </button>
+              </div>
+
               <p class="layout-screen-label" aria-hidden="true">
                 <span data-layout-label>Race</span> layout
               </p>
@@ -3569,6 +3636,8 @@
     <script type="module" src="src/components/interact-demo.js"></script>
     <script type="module" src="src/components/crew-demo.js"></script>
     <script type="module" src="src/components/rate-demo.js"></script>
+    <script type="module" src="src/components/hotspots.js"></script>
+    <script type="module" src="src/components/accent-switch.js"></script>
     <script type="module" src="src/components/page-modes.js"></script>
     <script type="module" src="src/components/release.js"></script>
     <script type="module" src="src/components/copyright-year.js"></script>
