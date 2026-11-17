@@ -17,22 +17,10 @@ use mt_model::sim::session::{
 };
 use mt_source::ParsedSession;
 
-/// The `SessionName` iRacing gives a Time Trial, whose `SessionType` reads
-/// `Lone Practice`.
-const TIME_TRIAL_SESSION_NAME: &str = "TIME TRIAL";
-
-/// The session context of one `SessionInfo.Sessions[]` entry. Recorded
-/// sessions show a Time Trial as `Lone Practice` named `TIME TRIAL`, and heats
-/// and consolations as `Race` told apart only by `SessionSubType`; the other
-/// strings are matched in case iRacing writes them as named.
-fn session_context(session_type: &str, session_name: &str) -> SessionType {
-    let is_time_trial = session_type == "Lone Practice"
-        && session_name.eq_ignore_ascii_case(TIME_TRIAL_SESSION_NAME);
-
-    if is_time_trial {
-        return SessionType::Qualify;
-    }
-
+/// The session context of one `SessionInfo.Sessions[]` entry, by its
+/// `SessionType` alone — the same value the widgets show. Heats and
+/// consolations arrive as `Race`, told apart only by `SessionSubType`.
+fn session_context(session_type: &str) -> SessionType {
     match session_type {
         "Practice" | "Lone Practice" | "Open Practice" | "Warmup" | "Testing"
         | "Offline Testing" => SessionType::Practice,
@@ -146,9 +134,8 @@ pub fn parse_session(yaml: &str) -> Option<ParsedSession> {
         .into_iter()
         .map(|raw_session| {
             let raw_label = raw_session.session_type.unwrap_or_default();
-            let raw_name = raw_session.session_name.unwrap_or_default();
             SessionEntry {
-                session_type: session_context(&raw_label, &raw_name),
+                session_type: session_context(&raw_label),
                 session_type_label: raw_label,
                 session_laps: raw_session.session_laps.unwrap_or_default(),
                 results_positions: raw_session
@@ -443,7 +430,6 @@ struct RawSessionInfo {
 #[serde(rename_all = "PascalCase")]
 struct RawSessionEntry {
     session_type: Option<String>,
-    session_name: Option<String>,
     session_laps: Option<String>,
     results_positions: Option<Vec<RawResultPosition>>,
 }
@@ -908,40 +894,32 @@ QualifyResultsInfo:
             "Testing",
             "Offline Testing",
         ] {
-            assert_eq!(session_context(kind, ""), SessionType::Practice, "{kind}");
+            assert_eq!(session_context(kind), SessionType::Practice, "{kind}");
         }
     }
 
     #[test]
     fn qualify_kinds_land_in_qualify() {
         for kind in ["Qualify", "Lone Qualify", "Open Qualify", "Time Trial"] {
-            assert_eq!(session_context(kind, ""), SessionType::Qualify, "{kind}");
+            assert_eq!(session_context(kind), SessionType::Qualify, "{kind}");
         }
-    }
-
-    #[test]
-    fn a_time_trial_reported_as_lone_practice_lands_in_qualify() {
-        assert_eq!(
-            session_context("Lone Practice", "TIME TRIAL"),
-            SessionType::Qualify
-        );
     }
 
     #[test]
     fn race_kinds_land_in_race() {
         for kind in ["Race", "Heat", "Consolation"] {
-            assert_eq!(session_context(kind, ""), SessionType::Race, "{kind}");
+            assert_eq!(session_context(kind), SessionType::Race, "{kind}");
         }
     }
 
     #[test]
     fn an_unrecognised_kind_stays_unknown() {
-        assert_eq!(session_context("Drift Show", ""), SessionType::Unknown);
-        assert_eq!(session_context("", ""), SessionType::Unknown);
+        assert_eq!(session_context("Drift Show"), SessionType::Unknown);
+        assert_eq!(session_context(""), SessionType::Unknown);
     }
 
     #[test]
-    fn a_session_named_time_trial_parses_to_qualify() {
+    fn a_lone_practice_named_time_trial_stays_practice() {
         let yaml = r#"
 SessionInfo:
  Sessions:
@@ -953,7 +931,7 @@ SessionInfo:
 
         assert_eq!(
             parsed.snapshot.sessions[0].session_type,
-            SessionType::Qualify
+            SessionType::Practice
         );
         assert_eq!(
             parsed.snapshot.sessions[0].session_type_label,
