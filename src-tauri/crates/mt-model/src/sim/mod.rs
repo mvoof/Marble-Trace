@@ -1,5 +1,6 @@
 //! What a sim reports, normalized: the raw frames and the session.
 
+pub mod car_catalogue;
 pub mod cars;
 pub mod enums;
 pub mod environment;

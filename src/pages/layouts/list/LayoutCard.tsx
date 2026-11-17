@@ -11,6 +11,7 @@ import { useLayoutGestureStores } from '@features/layout-editor/layout-editor-co
 import { deleteLayoutAndBackgrounds } from '@features/layout-editor/layout-gestures';
 import { useLayoutFilesStore } from '@features/layout-files/layout-files-context';
 import { useSessionStore } from '@entities/session/session-context';
+import { useCarCatalogueStore } from '@entities/cars/car-catalogue-context';
 import { useStatisticsStore } from '@features/statistics/statistics-context';
 import type {
   AutoSwitchRule,
@@ -20,7 +21,7 @@ import { cx } from '@shared/lib/class-names';
 
 import { LayoutPreview } from './LayoutPreview';
 import { SESSION_LOOKS } from './session-labels';
-import { carNameOf, ruleCars } from './rule-options';
+import { ruleCarName } from './rule-options';
 import styles from './LayoutCard.module.scss';
 
 interface LayoutCardProps {
@@ -51,7 +52,8 @@ export const LayoutCard = observer(
     const isOnScreen = layout.id === layouts.liveLayoutId;
     const session = useSessionStore();
     const statistics = useStatisticsStore();
-    const cars = ruleCars(session.fieldCars, statistics.knownCars);
+    const catalogue = useCarCatalogueStore();
+    const liveCars = [...session.fieldCars, ...statistics.knownCars];
     const layoutRules = layouts.autoSwitchRules.filter(
       (rule) => rule.layoutId === layout.id
     );
@@ -60,7 +62,7 @@ export const LayoutCard = observer(
       const carName =
         rule.carId === null
           ? null
-          : (carNameOf(cars, rule.carId) ??
+          : (ruleCarName(catalogue.cars, liveCars, rule.carId) ??
             t('layoutList.autoSwitch.carById', { id: rule.carId }));
       const parts = [
         rule.context === null ? null : t(SESSION_LOOKS[rule.context].labelKey),

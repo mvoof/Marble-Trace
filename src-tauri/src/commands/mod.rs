@@ -5,6 +5,7 @@
 //! broadcast makes every one of them harder to find, and hides that they need
 //! entirely different state.
 
+pub mod cars;
 pub mod chat;
 pub mod companions;
 pub mod displays;
@@ -138,6 +139,7 @@ pub fn invoke_handler() -> impl Fn(Invoke<Wry>) -> bool + Send + Sync + 'static 
         stats::reimport_stats,
         stats::get_skipped_files,
         stats::get_known_cars,
-        stats::export_sessions_csv
+        stats::export_sessions_csv,
+        cars::get_car_catalogue
     ]
 }

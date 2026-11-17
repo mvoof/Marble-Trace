@@ -185,7 +185,7 @@ export type CarEntry = {
   teamName: string;
   carNumber: string;
   /**
-   * iRacing's `CarID` — the car model. Keys the class badge map
+   * iRacing's `CarID` — the car model. Keys the car badge table
    * (`mt-sim-iracing/src/car_badges.rs`).
    */
   carId: number;
@@ -623,6 +623,25 @@ export type CarTarget =
    * The car at the class place the phrase's `{classPosition}` slot heard.
    */
   | 'byClassPosition';
+
+/**
+ * One car of the sim's catalogue and the class badge it is shown under.
+ */
+export type CatalogueCar = {
+  /**
+   * The car model (`CarID`), never a class id.
+   */
+  carId: number;
+  name: string;
+  /**
+   * The badge the class badge column shows for the car.
+   */
+  badge: string;
+  /**
+   * The car is no longer sold or raced.
+   */
+  retired: boolean;
+};
 
 /**
  * Chassis telemetry — per-wheel tire and suspension data.

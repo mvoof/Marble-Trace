@@ -21,6 +21,7 @@ import { DiagnosticsExportStore } from '@features/diagnostics/diagnostics-export
 import { TelemetryInspectorStore } from '@features/telemetry-inspector/telemetry-inspector.store';
 import { TrackRotationStore } from '@entities/track/track-rotation.store';
 import { DisplaysStore } from '@entities/layout/displays.store';
+import { CarCatalogueStore } from '@entities/cars/car-catalogue.store';
 import { MainNavigationStore } from '@features/main-navigation/main-navigation.store';
 import { AppLinksStore } from '@features/app-links/app-links.store';
 import { LayoutFilesStore } from '@features/layout-files/layout-files.store';
@@ -54,6 +55,7 @@ export class MainRoot extends RendererCore implements AppWindowStores {
   telemetryInspector: TelemetryInspectorStore;
   trackRotation: TrackRotationStore;
   displays: DisplaysStore;
+  carCatalogue: CarCatalogueStore;
   voiceCrew: VoiceCrewStore;
   navigation: MainNavigationStore;
   appLinks: AppLinksStore;
@@ -88,6 +90,7 @@ export class MainRoot extends RendererCore implements AppWindowStores {
     });
     this.trackRotation = new TrackRotationStore();
     this.displays = new DisplaysStore(this.liveWidgets);
+    this.carCatalogue = new CarCatalogueStore();
     this.voiceCrew = new VoiceCrewStore(this);
     this.navigation = new MainNavigationStore(this);
     this.appLinks = new AppLinksStore(this);
@@ -98,6 +101,7 @@ export class MainRoot extends RendererCore implements AppWindowStores {
       void this.twitchAuth.init();
       this.appUpdate.init();
       void this.statistics.start();
+      void this.carCatalogue.load();
       void this.lapAnalysis.load();
     }
   }

@@ -1,49 +1,146 @@
-import type { KnownCar } from '@shared/contracts/generated/bindings';
+import type {
+  CatalogueCar,
+  KnownCar,
+} from '@shared/contracts/generated/bindings';
 import type { AutoSwitchRule } from '@shared/contracts/widget-settings';
 
+export interface RuleOptionsInput {
+  catalogue: readonly CatalogueCar[];
+  /** The live field's cars, then the recorded ones: the first entry wins. */
+  liveCars: readonly KnownCar[];
+  /** The rule being edited. */
+  rule: AutoSwitchRule;
+  rules: readonly AutoSwitchRule[];
+}
+
+/** A car a rule can name. */
+export interface RuleCar {
+  carId: number;
+  name: string | null;
+  badge: string | null;
+}
+
+/** The cars of one badge; `null` holds the cars nothing badges. */
+export interface RuleCarGroup {
+  badge: string | null;
+  cars: RuleCar[];
+}
+
+export interface RuleOptions {
+  classes: string[];
+  carGroups: RuleCarGroup[];
+}
+
+const byText = (left: string, right: string): number =>
+  left.localeCompare(right);
+
+const groupByBadge = (cars: readonly RuleCar[]): RuleCarGroup[] => {
+  const groups = new Map<string | null, RuleCar[]>();
+
+  for (const car of cars) {
+    groups.set(car.badge, [...(groups.get(car.badge) ?? []), car]);
+  }
+
+  return [...groups.entries()]
+    .map(([badge, members]) => ({
+      badge,
+      cars: members.sort((left, right) =>
+        byText(left.name ?? '', right.name ?? '')
+      ),
+    }))
+    .sort((left, right) => {
+      if (left.badge === null || right.badge === null) {
+        return left.badge === null ? 1 : -1;
+      }
+
+      return byText(left.badge, right.badge);
+    });
+};
+
 /**
- * The cars a rule can name, by name: the live field's and the session
- * records', once each. Where both know a car, the live field's entry wins —
- * its class is the one a rule will be matched against.
+ * The catalogue's cars with the live ones over them: a car the catalogue lacks
+ * still comes from the live field, and for a car both know the live entry's
+ * name and class win — its class is the one a rule is matched against. A car
+ * the catalogue calls retired stays out even when a record still names it,
+ * unless the rule being edited names it.
  */
-export const ruleCars = (
-  fieldCars: readonly KnownCar[],
-  recordedCars: readonly KnownCar[]
-): KnownCar[] => {
-  const byId = new Map<number, KnownCar>();
-
-  for (const car of [...fieldCars, ...recordedCars]) {
-    if (!byId.has(car.carId)) {
-      byId.set(car.carId, car);
-    }
-  }
-
-  return [...byId.values()].sort((left, right) =>
-    (left.carName ?? '').localeCompare(right.carName ?? '')
+const mergeCars = (
+  catalogue: readonly CatalogueCar[],
+  liveCars: readonly KnownCar[],
+  namedCarId: number | null
+): RuleCar[] => {
+  const hiddenIds = new Set(
+    catalogue
+      .filter((car) => car.retired && car.carId !== namedCarId)
+      .map((car) => car.carId)
   );
-};
+  const byId = new Map<number, RuleCar>();
 
-/** The car's name as the lists know it, or `null` for a car they do not. */
-export const carNameOf = (
-  cars: readonly KnownCar[],
-  carId: number
-): string | null => cars.find((car) => car.carId === carId)?.carName ?? null;
-
-/** Every class of the cars and of the rules, so a rule's own class stays listed. */
-export const ruleClasses = (
-  cars: readonly KnownCar[],
-  rules: readonly AutoSwitchRule[]
-): string[] => {
-  const classes = new Set<string>();
-
-  for (const name of [
-    ...cars.map((car) => car.carClass),
-    ...rules.map((rule) => rule.carClass),
-  ]) {
-    if (name !== null) {
-      classes.add(name);
-    }
+  // Reversed, so the first live entry is written last and wins.
+  for (const car of [...liveCars].reverse()) {
+    byId.set(car.carId, {
+      carId: car.carId,
+      name: car.carName,
+      badge: car.carClass,
+    });
   }
 
-  return [...classes].sort((left, right) => left.localeCompare(right));
+  for (const car of catalogue) {
+    const live = byId.get(car.carId);
+
+    byId.set(car.carId, {
+      carId: car.carId,
+      name: live?.name ?? car.name,
+      badge: live?.badge ?? car.badge,
+    });
+  }
+
+  return [...byId.values()].filter((car) => !hiddenIds.has(car.carId));
 };
+
+/**
+ * What the class and car lists of a rule offer: every car still raced, grouped
+ * by its badge, and every badge among them. The class and the car narrow each
+ * other, so a rule cannot name a car of another class.
+ */
+export const ruleOptions = ({
+  catalogue,
+  liveCars,
+  rule,
+}: RuleOptionsInput): RuleOptions => {
+  const cars = mergeCars(catalogue, liveCars, rule.carId);
+  const chosenCar = cars.find((car) => car.carId === rule.carId);
+  // The rule's own class stays listed, though no car carries it any more.
+  const classes = new Set(
+    [...cars.map((car) => car.badge), rule.carClass].filter(
+      (badge): badge is string => badge !== null
+    )
+  );
+  const chosenBadge = chosenCar?.badge ?? null;
+  const offeredClasses =
+    chosenBadge === null ? [...classes].sort(byText) : [chosenBadge];
+  const offeredCars = cars.filter(
+    (car) =>
+      rule.carClass === null ||
+      car.badge === rule.carClass ||
+      car.carId === rule.carId
+  );
+
+  return {
+    classes: offeredClasses,
+    carGroups: groupByBadge(offeredCars),
+  };
+};
+
+/**
+ * A rule's car by name — the live field's or the records' first, then the
+ * catalogue's, retired cars included; `null` for a car no list knows.
+ */
+export const ruleCarName = (
+  catalogue: readonly CatalogueCar[],
+  liveCars: readonly KnownCar[],
+  carId: number
+): string | null =>
+  liveCars.find((car) => car.carId === carId)?.carName ??
+  catalogue.find((car) => car.carId === carId)?.name ??
+  null;

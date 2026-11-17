@@ -35,6 +35,7 @@
 
 mod table;
 
+use mt_model::sim::car_catalogue::CatalogueCar;
 use table::CAR_BADGES;
 
 /// One car of iRacing's catalogue and the badge the class badge column shows
@@ -86,6 +87,20 @@ pub fn badge_for_car(car_id: i32) -> Option<&'static str> {
         .map(|index| CAR_BADGES[index].badge)
 }
 
+/// Every car of the table, as the auto-switch rule picker lists it. Whether a
+/// badge was reviewed stays here: the picker shows a draft like any other.
+pub fn car_catalogue() -> Vec<CatalogueCar> {
+    CAR_BADGES
+        .iter()
+        .map(|car| CatalogueCar {
+            car_id: car.car_id,
+            name: car.name.to_string(),
+            badge: car.badge.to_string(),
+            retired: car.retired,
+        })
+        .collect()
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -132,5 +147,17 @@ mod tests {
     fn looks_up_a_mapped_and_an_unmapped_car() {
         assert_eq!(badge_for_car(173), Some("GT3"));
         assert_eq!(badge_for_car(-1), None);
+    }
+
+    #[test]
+    fn the_catalogue_lists_every_car_with_its_badge() {
+        let catalogue = car_catalogue();
+
+        assert_eq!(catalogue.len(), CAR_BADGES.len());
+
+        let gt3_car = catalogue.iter().find(|car| car.car_id == 173);
+
+        assert_eq!(gt3_car.map(|car| car.badge.as_str()), Some("GT3"));
+        assert!(catalogue.iter().any(|car| car.retired));
     }
 }

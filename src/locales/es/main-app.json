@@ -230,6 +230,7 @@
       "car": "Coche",
       "layout": "Diseño",
       "carById": "Coche {{id}}",
+      "noClass": "Sin clase",
       "addRule": "Añadir regla",
       "removeRule": "Eliminar regla",
       "noRules": "Aún no hay reglas. Añade una para mostrar un diseño según la sesión, la clase o el coche."

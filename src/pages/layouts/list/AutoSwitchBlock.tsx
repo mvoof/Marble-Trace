@@ -6,15 +6,19 @@ import { Plus, Trash2 } from 'lucide-react';
 import { useAppSettingsStore } from '@entities/app-settings/app-settings-context';
 import { useLayoutsStore } from '@entities/layout/layouts-context';
 import { useSessionStore } from '@entities/session/session-context';
+import { useCarCatalogueStore } from '@entities/cars/car-catalogue-context';
 import { useStatisticsStore } from '@features/statistics/statistics-context';
-import type { KnownCar } from '@shared/contracts/generated/bindings';
+import type {
+  CatalogueCar,
+  KnownCar,
+} from '@shared/contracts/generated/bindings';
 import type {
   AutoSwitchRule,
   SessionContext,
 } from '@shared/contracts/widget-settings';
 
 import { SESSION_CONTEXTS, SESSION_LOOKS } from './session-labels';
-import { carNameOf, ruleCars, ruleClasses } from './rule-options';
+import { ruleOptions } from './rule-options';
 import { SettingsCard } from '@shared/ui/SettingsCard/SettingsCard';
 
 import styles from './AutoSwitchBlock.module.scss';
@@ -27,15 +31,21 @@ const fromSelect = (value: string): string | null =>
 
 interface RuleRowProps {
   rule: AutoSwitchRule;
-  cars: KnownCar[];
-  classes: string[];
+  catalogue: readonly CatalogueCar[];
+  liveCars: readonly KnownCar[];
   layoutOptions: { value: string; label: string }[];
 }
 
 const RuleRow = observer(
-  ({ rule, cars, classes, layoutOptions }: RuleRowProps) => {
+  ({ rule, catalogue, liveCars, layoutOptions }: RuleRowProps) => {
     const layouts = useLayoutsStore();
     const { t } = useTranslation('main-app');
+    const { classes, carGroups } = ruleOptions({
+      catalogue,
+      liveCars,
+      rule,
+      rules: layouts.autoSwitchRules,
+    });
 
     const contextOptions = [
       { value: ANY, label: t('layoutList.autoSwitch.anySession') },
@@ -48,28 +58,36 @@ const RuleRow = observer(
       { value: ANY, label: t('layoutList.autoSwitch.anyClass') },
       ...classes.map((name) => ({ value: name, label: name })),
     ];
-    const carLabel = (carId: number): string =>
-      carNameOf(cars, carId) ??
-      t('layoutList.autoSwitch.carById', { id: carId });
-    const carsOfClass = cars.filter(
-      (car) => rule.carClass === null || car.carClass === rule.carClass
-    );
-    const hasOwnCar =
-      rule.carId === null ||
-      carsOfClass.some((car) => car.carId === rule.carId);
+    const carLabel = (carId: number, name: string | null): string =>
+      name ?? t('layoutList.autoSwitch.carById', { id: carId });
+    const unknownCarId =
+      rule.carId !== null &&
+      !carGroups.some((group) =>
+        group.cars.some((car) => car.carId === rule.carId)
+      )
+        ? rule.carId
+        : null;
     const carOptions = [
       { value: ANY, label: t('layoutList.autoSwitch.anyCar') },
-      ...carsOfClass.map((car) => ({
-        value: String(car.carId),
-        label: carLabel(car.carId),
-      })),
-      // A car of no recorded session, or of another class, stays readable.
-      ...(hasOwnCar
+      ...carGroups.map((group) => {
+        const groupLabel = group.badge ?? t('layoutList.autoSwitch.noClass');
+
+        return {
+          label: groupLabel,
+          title: groupLabel,
+          options: group.cars.map((car) => ({
+            value: String(car.carId),
+            label: carLabel(car.carId, car.name),
+          })),
+        };
+      }),
+      // A car no list knows stays readable by its id.
+      ...(unknownCarId === null
         ? []
         : [
             {
-              value: String(rule.carId),
-              label: carLabel(rule.carId as number),
+              value: String(unknownCarId),
+              label: carLabel(unknownCarId, null),
             },
           ]),
     ];
@@ -156,11 +174,11 @@ export const AutoSwitchBlock = observer(() => {
   const appSettings = useAppSettingsStore();
   const session = useSessionStore();
   const statistics = useStatisticsStore();
+  const catalogue = useCarCatalogueStore();
   const { t } = useTranslation('main-app');
   const isEnabled = appSettings.appSettings.autoSwitchLayouts;
 
-  const cars = ruleCars(session.fieldCars, statistics.knownCars);
-  const classes = ruleClasses(cars, layouts.autoSwitchRules);
+  const liveCars = [...session.fieldCars, ...statistics.knownCars];
   const layoutOptions = layouts.layouts.map((layout) => ({
     value: layout.id,
     label: layout.name,
@@ -195,8 +213,8 @@ export const AutoSwitchBlock = observer(() => {
             <RuleRow
               key={rule.id}
               rule={rule}
-              cars={cars}
-              classes={classes}
+              catalogue={catalogue.cars}
+              liveCars={liveCars}
               layoutOptions={layoutOptions}
             />
           ))

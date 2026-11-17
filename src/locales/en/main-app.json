@@ -230,6 +230,7 @@
       "car": "Car",
       "layout": "Layout",
       "carById": "Car {{id}}",
+      "noClass": "No class",
       "addRule": "Add rule",
       "removeRule": "Remove rule",
       "noRules": "No rules yet. Add one to put a layout on screen by session, car class or car."
