@@ -1,4 +1,4 @@
-import { useLayoutEffect } from 'react';
+import { useLayoutEffect, useState, type CSSProperties } from 'react';
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
 import { useSeededPreviewWorld } from '@features/preview/use-seeded-preview-world';
@@ -15,10 +15,37 @@ import {
 import { DEFAULT_PREVIEW_SCENARIO_ID } from '@features/preview/scenarios';
 import styles from './WidgetPreview.module.scss';
 
+export interface PreviewRoom {
+  width: number;
+  height: number;
+}
+
 interface WidgetPreviewProps {
   widgetId: string;
   scenarioId?: string;
+  /** The most the widget may take, the stage's padding left out. */
+  room?: PreviewRoom | null;
+  /** Shrinks a widget bigger than the room to fit it; off, it scrolls at 1:1. */
+  fit?: boolean;
+  /** The stage takes the whole room rather than the widget's height. */
+  fillRoom?: boolean;
 }
+
+/** How far a widget this big shrinks to fit the room; never enlarged. */
+const fitScaleOf = (
+  room: PreviewRoom | null | undefined,
+  naturalSize: PreviewRoom | null
+): number => {
+  if (!room || !naturalSize || naturalSize.width === 0) {
+    return 1;
+  }
+
+  return Math.min(
+    1,
+    room.width / naturalSize.width,
+    naturalSize.height === 0 ? 1 : room.height / naturalSize.height
+  );
+};
 
 // Renders a single widget the way the overlay would, but inside the main window
 // against a seeded sample scenario. Settings are mirrored live from the main
@@ -27,8 +54,36 @@ export const WidgetPreview = observer(
   ({
     widgetId,
     scenarioId = DEFAULT_PREVIEW_SCENARIO_ID,
+    room = null,
+    fit = false,
+    fillRoom = false,
   }: WidgetPreviewProps) => {
     const editor = useWidgetEditor();
+    // A state, not a ref: the box mounts only once the widget is found.
+    const [widgetBox, setWidgetBox] = useState<HTMLDivElement | null>(null);
+    // The widget's own size, unscaled: a transform does not touch the layout
+    // box this reads, so fitting never feeds back into what is fitted.
+    const [naturalSize, setNaturalSize] = useState<PreviewRoom | null>(null);
+
+    useLayoutEffect(() => {
+      if (!widgetBox) {
+        return;
+      }
+
+      const measure = () =>
+        setNaturalSize({
+          width: widgetBox.offsetWidth,
+          height: widgetBox.offsetHeight,
+        });
+
+      measure();
+
+      const resizeObserver = new ResizeObserver(measure);
+
+      resizeObserver.observe(widgetBox);
+
+      return () => resizeObserver.disconnect();
+    }, [widgetBox]);
     const { t } = useTranslation('main-app');
 
     const previewWorld = useSeededPreviewWorld(scenarioId);
@@ -96,30 +151,56 @@ export const WidgetPreview = observer(
       contentSized,
     });
 
+    const boxSize = widgetBoxSize({
+      width: userSettings.currentWidth,
+      height: userSettings.currentHeight,
+      autoHeight,
+      contentSized,
+    });
+    const fitScale = fitScaleOf(fit ? room : null, naturalSize);
+    const fittedSize = naturalSize && {
+      width: naturalSize.width * fitScale,
+      height: naturalSize.height * fitScale,
+    };
+
     return (
       <PreviewProvide>
-        <div className={styles.stage}>
-          <div
-            className={`${styles.widgetInner} ${
-              overflowVisible ? styles.overflowVisible : ''
-            }`}
-            style={{
-              ...widgetBoxSize({
-                width: userSettings.currentWidth,
-                height: userSettings.currentHeight,
-                autoHeight,
-                contentSized,
-              }),
-              ...frameStyle,
-            }}
-          >
-            <ErrorBoundary>
-              <WidgetIdContext.Provider value={previewId}>
-                <WidgetInstanceScope type={widget.type} instanceId={previewId}>
-                  <Widget />
-                </WidgetInstanceScope>
-              </WidgetIdContext.Provider>
-            </ErrorBoundary>
+        <div
+          className={fillRoom ? styles.stageFill : styles.stage}
+          style={
+            fittedSize
+              ? ({
+                  '--fitted-height': `${fittedSize.height}px`,
+                } as CSSProperties)
+              : undefined
+          }
+        >
+          <div className={styles.fitBox} style={fittedSize ?? undefined}>
+            <div
+              ref={setWidgetBox}
+              className={`${styles.widgetInner} ${
+                overflowVisible ? styles.overflowVisible : ''
+              }`}
+              style={{
+                ...boxSize,
+                // Absolute in a box of the fitted size, a widget that sizes
+                // itself would take that box's width and shrink to fit it.
+                width: boxSize.width === 'auto' ? 'max-content' : boxSize.width,
+                transform: fitScale < 1 ? `scale(${fitScale})` : undefined,
+                ...frameStyle,
+              }}
+            >
+              <ErrorBoundary>
+                <WidgetIdContext.Provider value={previewId}>
+                  <WidgetInstanceScope
+                    type={widget.type}
+                    instanceId={previewId}
+                  >
+                    <Widget />
+                  </WidgetInstanceScope>
+                </WidgetIdContext.Provider>
+              </ErrorBoundary>
+            </div>
           </div>
         </div>
       </PreviewProvide>

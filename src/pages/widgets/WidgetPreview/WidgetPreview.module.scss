@@ -1,21 +1,48 @@
+// The room the workbench fits the widget to is padded the same.
+$stage-padding: rem(16);
+
+// The stage is as tall as its widget, fitted, plus its padding: no taller than
+// the room the page gives it (`--preview-room`), no lower than a band a small
+// widget still reads in.
 .stage {
   width: 100%;
-  height: 100%;
+  height: clamp(
+    #{rem(220)},
+    calc(var(--fitted-height, #{rem(220)}) + #{2 * $stage-padding}),
+    var(--preview-room, #{rem(460)})
+  );
   display: flex;
   overflow: auto;
-  padding: sp(xl);
+  padding: $stage-padding;
 }
 
-// Centred by auto margins, not by the stage's alignment: a widget bigger than
-// the stage then starts at its top-left edge and scrolls, where centring
-// would push its top (a table's header) and left out of reach.
-.widgetInner {
+// Modifier declared after its base class: the whole room, whatever the widget.
+.stageFill {
+  @extend .stage;
+
+  height: var(--preview-room, #{rem(460)});
+}
+
+// The widget's fitted size, centred by auto margins, not by the stage's
+// alignment: a widget bigger than the stage then starts at its top-left edge
+// and scrolls, where centring would push its top (a table's header) and left
+// out of reach.
+.fitBox {
   margin: auto;
   position: relative;
+  flex: 0 0 auto;
+}
+
+// The widget at its own size, scaled down from its top-left corner into the
+// fitted box around it.
+.widgetInner {
+  position: absolute;
+  top: 0;
+  left: 0;
+  transform-origin: 0 0;
   border-radius: rem(6);
   border: 2px solid;
   overflow: hidden;
-  flex: 0 0 auto;
 }
 
 .overflowVisible {

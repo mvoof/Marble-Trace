@@ -12,6 +12,8 @@
     "widgetsCount_other": "{{count}} виджета",
     "previewTop": "Превью над настройками",
     "previewLeft": "Превью рядом с настройками",
+    "previewFit": "Вписать виджет в превью",
+    "previewActualSize": "Реальный размер",
     "addToLayout": "Добавить в раскладку",
     "onScreen": "На экране",
     "addToLayoutHint": "Ставит виджет на первый монитор раскладки, которая сейчас на экране"

@@ -141,6 +141,8 @@ $narrow-window: 900px;
   overflow-y: auto;
   scrollbar-gutter: stable;
   padding: 0 rem(24) rem(28);
+  // Its height, as `cqh`, is what a page may size a held-in-view block to.
+  container-type: size;
 }
 
 @media (max-width: $narrow-window) {

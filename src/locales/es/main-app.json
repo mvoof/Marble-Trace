@@ -10,6 +10,8 @@
     "widgetsCount_other": "{{count}} widgets",
     "previewTop": "Vista previa sobre los ajustes",
     "previewLeft": "Vista previa junto a los ajustes",
+    "previewFit": "Ajustar el widget a la vista previa",
+    "previewActualSize": "Tamaño real",
     "addToLayout": "Añadir al diseño",
     "onScreen": "En pantalla",
     "addToLayoutHint": "Pone el widget en el primer monitor del diseño en pantalla"

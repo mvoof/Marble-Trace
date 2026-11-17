@@ -9,6 +9,8 @@
     "widgetsCount_other": "{{count}} 个小组件",
     "previewTop": "预览在设置上方",
     "previewLeft": "预览在设置旁边",
+    "previewFit": "缩放以适应预览",
+    "previewActualSize": "实际大小",
     "addToLayout": "添加到布局",
     "onScreen": "显示中",
     "addToLayoutHint": "将小组件放到当前显示布局的第一个显示器上"

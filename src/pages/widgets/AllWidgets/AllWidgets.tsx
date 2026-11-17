@@ -1,4 +1,4 @@
-import { useLayoutEffect, useRef, useState } from 'react';
+import { useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import { observer } from 'mobx-react-lite';
 import { componentForWidget } from '@widgets/registry';
 import { WidgetInstanceScope } from '@widgets/instance-scope/WidgetInstanceScope';
@@ -16,6 +16,8 @@ import {
   tileSpan,
 } from './masonry';
 import { useCatalogPreviewWorld } from './use-catalog-preview-world';
+import { catalogScenarioFor } from '../WidgetWorkbench/widget-scenarios';
+import { DEFAULT_PREVIEW_SCENARIO_ID } from '@features/preview/scenarios';
 import styles from './AllWidgets.module.scss';
 
 /** The card's room around its miniature; its border is drawn inside it. */
@@ -80,6 +82,19 @@ const Miniature = observer(
   }
 );
 
+/** A world of its own, for a miniature the grid's shared baseline leaves blank. */
+const ScenarioWorld = ({
+  scenarioId,
+  children,
+}: {
+  scenarioId: string;
+  children: ReactNode;
+}) => {
+  const { Provide } = useCatalogPreviewWorld(scenarioId);
+
+  return <Provide>{children}</Provide>;
+};
+
 /**
  * One card of the grid: as many columns as its widget is wide, as many rows
  * as its miniature turns out tall — measured, since a widget that sizes
@@ -122,6 +137,15 @@ const CatalogTile = observer(
       return () => resizeObserver.disconnect();
     }, []);
 
+    const scenarioId = catalogScenarioFor(widget.type);
+    const miniature = (
+      <Miniature
+        widget={widget}
+        width={width - 2 * CARD_PADDING}
+        maxHeight={maxHeight}
+      />
+    );
+
     return (
       <div style={{ gridColumn: `span ${span}`, gridRowEnd: `span ${rows}` }}>
         <div
@@ -129,11 +153,11 @@ const CatalogTile = observer(
           className={styles.card}
           style={{ padding: CARD_PADDING }}
         >
-          <Miniature
-            widget={widget}
-            width={width - 2 * CARD_PADDING}
-            maxHeight={maxHeight}
-          />
+          {scenarioId === DEFAULT_PREVIEW_SCENARIO_ID ? (
+            miniature
+          ) : (
+            <ScenarioWorld scenarioId={scenarioId}>{miniature}</ScenarioWorld>
+          )}
           {/* Over the miniature, not around it: a widget may hold controls of
               its own, and a button cannot. */}
           <button

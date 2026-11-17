@@ -58,3 +58,11 @@ export const scenarioOptionsFor = (widgetId: string): ScenarioOption[] => {
 export const openingScenarioFor = (widgetId: string): string =>
   WIDGET_BY_ID.get(widgetId)?.previewScenarios?.[0] ??
   DEFAULT_PREVIEW_SCENARIO_ID;
+
+// The state a widget's All widgets miniature draws in: the baseline the grid
+// shares, unless the widget draws nothing there — then its opening state, so
+// the card is not an empty frame.
+export const catalogScenarioFor = (widgetId: string): string =>
+  WIDGET_BY_ID.get(widgetId)?.previewBaseline === false
+    ? openingScenarioFor(widgetId)
+    : DEFAULT_PREVIEW_SCENARIO_ID;

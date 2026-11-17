@@ -6,12 +6,15 @@ import { DEFAULT_PREVIEW_SCENARIO_ID } from '@features/preview/scenarios';
 import { useSeededPreviewWorld } from '@features/preview/use-seeded-preview-world';
 
 /**
- * One sample world every miniature of All widgets draws in, holding the
- * Widgets page's records, so a miniature shows the widget as it is set up.
+ * A sample world All widgets' miniatures draw in, holding the Widgets page's
+ * records, so a miniature shows the widget as it is set up. The grid shares
+ * one on the baseline; a widget the baseline leaves blank gets its own.
  */
-export const useCatalogPreviewWorld = () => {
+export const useCatalogPreviewWorld = (
+  scenarioId: string = DEFAULT_PREVIEW_SCENARIO_ID
+) => {
   const widgetDefaults = useWidgetDefaultsStore();
-  const previewWorld = useSeededPreviewWorld(DEFAULT_PREVIEW_SCENARIO_ID);
+  const previewWorld = useSeededPreviewWorld(scenarioId);
   const previewStore = previewWorld.core;
 
   useLayoutEffect(

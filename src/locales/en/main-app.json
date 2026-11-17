@@ -10,6 +10,8 @@
     "widgetsCount_other": "{{count}} widgets",
     "previewTop": "Preview above the settings",
     "previewLeft": "Preview beside the settings",
+    "previewFit": "Fit the widget to the preview",
+    "previewActualSize": "Actual size",
     "addToLayout": "Add to layout",
     "onScreen": "On screen",
     "addToLayoutHint": "Puts the widget on the first monitor of the layout on screen"
