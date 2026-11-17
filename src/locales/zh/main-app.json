@@ -232,7 +232,9 @@
       "add": "添加",
       "onLayout": "在布局 {{name}}",
       "now": "当前：",
-      "noLayout": "此情况没有布局"
+      "noLayout": "此情况没有布局",
+      "redundant": "无作用：没有它，“{{rules}}”也会显示此布局",
+      "shadowed": "无作用：其他布局更具体的情况已完全覆盖它"
     },
     "exported": "布局已保存到 {{path}}",
     "exportFailed": "无法保存布局文件",

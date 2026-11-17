@@ -60,7 +60,12 @@ const specificity = (
 export const ruleLayoutFor = (
   rules: readonly AutoSwitchRule[],
   situation: AutoSwitchSituation
-): string | null => {
+): string | null => winningRule(rules, situation)?.layoutId ?? null;
+
+const winningRule = (
+  rules: readonly AutoSwitchRule[],
+  situation: AutoSwitchSituation
+): AutoSwitchRule | null => {
   let best: AutoSwitchRule | null = null;
   let bestSpecificity = NO_MATCH;
 
@@ -73,7 +78,87 @@ export const ruleLayoutFor = (
     }
   }
 
-  return best?.layoutId ?? null;
+  return best;
+};
+
+const SESSION_CONTEXTS: readonly SessionContext[] = [
+  'Practice',
+  'Qualify',
+  'Race',
+  'Garage',
+];
+
+// A car the catalogue does not list: no car rule names it.
+const UNLISTED_CAR_ID = -1;
+
+/** The car-side halves of the situations a rule matches, as far as they differ for rules. */
+const carsMatchedBy = (
+  rule: AutoSwitchRule,
+  catalogue: readonly CatalogueCar[]
+): Pick<AutoSwitchSituation, 'carClass' | 'carId'>[] => {
+  if (rule.carId !== null) {
+    const listed = catalogue.find((car) => car.carId === rule.carId);
+
+    return listed ? [{ carClass: listed.badge, carId: listed.carId }] : [];
+  }
+
+  if (rule.carClass !== null) {
+    return [
+      ...catalogue
+        .filter((car) => car.badge === rule.carClass)
+        .map((car) => ({ carClass: car.badge, carId: car.carId })),
+      { carClass: rule.carClass, carId: UNLISTED_CAR_ID },
+    ];
+  }
+
+  return [
+    ...catalogue.map((car) => ({ carClass: car.badge, carId: car.carId })),
+    { carClass: null, carId: UNLISTED_CAR_ID },
+    { carClass: null, carId: null },
+  ];
+};
+
+/**
+ * The rules that put the same layout on screen in every situation `rule`
+ * matches were it gone — `rule` then changes nothing — or `null` when it
+ * decides at least one situation. Empty when more specific rules take every
+ * situation it names. A car rule for a car the catalogue lacks always decides:
+ * its class is unknown.
+ */
+export const rulesTakingOver = (
+  rules: readonly AutoSwitchRule[],
+  rule: AutoSwitchRule,
+  catalogue: readonly CatalogueCar[]
+): AutoSwitchRule[] | null => {
+  const cars = carsMatchedBy(rule, catalogue);
+
+  if (cars.length === 0) {
+    return null;
+  }
+
+  const others = rules.filter((other) => other.id !== rule.id);
+  const contexts = rule.context === null ? SESSION_CONTEXTS : [rule.context];
+  const takingOver = new Set<AutoSwitchRule>();
+
+  for (const context of contexts) {
+    for (const car of cars) {
+      const situation = { context, ...car };
+
+      if (winningRule(rules, situation) !== rule) {
+        continue;
+      }
+
+      const next = winningRule(others, situation);
+
+      if (next?.layoutId !== rule.layoutId) {
+        return null;
+      }
+
+      takingOver.add(next);
+    }
+  }
+
+  return [...takingOver];
 };
 
 /** What the sim says about the driver: what the auto-switch target is read from. */

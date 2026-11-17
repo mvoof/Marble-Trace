@@ -236,7 +236,9 @@
       "add": "Añadir",
       "onLayout": "en el diseño {{name}}",
       "now": "Ahora:",
-      "noLayout": "Ningún diseño para esta situación"
+      "noLayout": "Ningún diseño para esta situación",
+      "redundant": "No cambia nada: «{{rules}}» ya muestra este diseño sin ella",
+      "shadowed": "No cambia nada: situaciones más precisas de otros diseños la cubren entera"
     },
     "exported": "Diseño guardado en {{path}}",
     "exportFailed": "No se pudo guardar el archivo del diseño",

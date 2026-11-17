@@ -1,12 +1,15 @@
 import { useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
-import { Button, Popover } from 'antd';
+import { Button, Popover, Tooltip } from 'antd';
 import { Plus, X } from 'lucide-react';
 
 import { useAppSettingsStore } from '@entities/app-settings/app-settings-context';
+import { useCarCatalogueStore } from '@entities/cars/car-catalogue-context';
+import { rulesTakingOver } from '@entities/layout/auto-switch-rules';
 import { useLayoutsStore } from '@entities/layout/layouts-context';
 import { cx } from '@shared/lib/class-names';
+import type { AutoSwitchRule } from '@shared/contracts/widget-settings';
 
 import { SituationPicker } from './SituationPicker';
 import { useSituationLabel } from './use-situation-label';
@@ -16,6 +19,66 @@ interface ShowWhenBlockProps {
   layoutId: string;
 }
 
+interface SituationChipProps {
+  rule: AutoSwitchRule;
+  isAutoSwitchEnabled: boolean;
+}
+
+/**
+ * One situation of the layout. A situation that changes nothing — other
+ * situations put the same layout on without it — is marked, and says why on
+ * hover.
+ */
+const SituationChip = observer(
+  ({ rule, isAutoSwitchEnabled }: SituationChipProps) => {
+    const layouts = useLayoutsStore();
+    const catalogue = useCarCatalogueStore();
+    const situationLabel = useSituationLabel();
+    const { t } = useTranslation('main-app');
+
+    const takingOver = rulesTakingOver(
+      layouts.autoSwitchRules,
+      rule,
+      catalogue.cars
+    );
+    let redundantHint: string | null = null;
+
+    if (takingOver === null) {
+      redundantHint = null;
+    } else if (takingOver.length === 0) {
+      redundantHint = t('layoutList.autoSwitch.shadowed');
+    } else {
+      redundantHint = t('layoutList.autoSwitch.redundant', {
+        rules: takingOver.map(situationLabel).join(', '),
+      });
+    }
+
+    return (
+      <Tooltip title={redundantHint}>
+        <span
+          className={cx(
+            styles.chip,
+            !isAutoSwitchEnabled && styles.chipOff,
+            redundantHint !== null && styles.chipRedundant
+          )}
+        >
+          {situationLabel(rule)}
+
+          <button
+            type="button"
+            className={styles.removeChip}
+            onClick={() => layouts.removeAutoSwitchRule(rule.id)}
+            aria-label={t('layoutList.autoSwitch.removeSituation')}
+            title={t('layoutList.autoSwitch.removeSituation')}
+          >
+            <X size={12} />
+          </button>
+        </span>
+      </Tooltip>
+    );
+  }
+);
+
 /**
  * The situations that put a layout on screen, as chips: removed by their
  * cross, added through the `+` picker.
@@ -23,11 +86,10 @@ interface ShowWhenBlockProps {
 export const ShowWhenBlock = observer(({ layoutId }: ShowWhenBlockProps) => {
   const layouts = useLayoutsStore();
   const appSettings = useAppSettingsStore();
-  const situationLabel = useSituationLabel();
   const { t } = useTranslation('main-app');
   const [isPicking, setIsPicking] = useState(false);
 
-  const autoSwitchEnabled = appSettings.appSettings.autoSwitchLayouts;
+  const isAutoSwitchEnabled = appSettings.appSettings.autoSwitchLayouts;
   const layoutRules = layouts.autoSwitchRules.filter(
     (rule) => rule.layoutId === layoutId
   );
@@ -46,22 +108,11 @@ export const ShowWhenBlock = observer(({ layoutId }: ShowWhenBlockProps) => {
         )}
 
         {layoutRules.map((rule) => (
-          <span
+          <SituationChip
             key={rule.id}
-            className={cx(styles.chip, !autoSwitchEnabled && styles.chipOff)}
-          >
-            {situationLabel(rule)}
-
-            <button
-              type="button"
-              className={styles.removeChip}
-              onClick={() => layouts.removeAutoSwitchRule(rule.id)}
-              aria-label={t('layoutList.autoSwitch.removeSituation')}
-              title={t('layoutList.autoSwitch.removeSituation')}
-            >
-              <X size={12} />
-            </button>
-          </span>
+            rule={rule}
+            isAutoSwitchEnabled={isAutoSwitchEnabled}
+          />
         ))}
 
         <Popover

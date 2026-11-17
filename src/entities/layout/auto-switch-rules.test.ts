@@ -8,6 +8,7 @@ import {
   layoutHolding,
   playerCarClass,
   ruleLayoutFor,
+  rulesTakingOver,
   type AutoSwitchSituation,
 } from './auto-switch-rules';
 
@@ -235,6 +236,89 @@ describe('autoSwitchTarget', () => {
   it('is nothing while the sim is not connected', () => {
     expect(
       autoSwitchTarget(rules, { ...simState, isConnected: false })
+    ).toBeNull();
+  });
+});
+
+describe('rulesTakingOver', () => {
+  const MCLAREN_GT3 = 188;
+  const catalogue: CatalogueCar[] = [
+    { carId: MERCEDES_GT3, name: 'Mercedes', badge: 'GT3', retired: false },
+    { carId: MCLAREN_GT3, name: 'McLaren', badge: 'GT3', retired: false },
+    { carId: PORSCHE_CUP, name: 'Porsche', badge: 'Cup', retired: false },
+  ];
+  const named = (
+    id: string,
+    layoutId: string,
+    conditions: Partial<Omit<AutoSwitchRule, 'id' | 'layoutId'>> = {}
+  ): AutoSwitchRule => ({ ...rule(layoutId, conditions), id });
+
+  const practice = named('practice', 'one', { context: 'Practice' });
+  const practiceMclaren = named('practice-mclaren', 'one', {
+    context: 'Practice',
+    carId: MCLAREN_GT3,
+  });
+  const practiceMercedes = named('practice-mercedes', 'two', {
+    context: 'Practice',
+    carId: MERCEDES_GT3,
+  });
+
+  it('names the rule that puts the same layout on in its place', () => {
+    const rules = [practiceMclaren, practice, practiceMercedes];
+
+    expect(rulesTakingOver(rules, practiceMclaren, catalogue)).toEqual([
+      practice,
+    ]);
+  });
+
+  it('is null for a rule that puts another layout on than the one below it', () => {
+    const rules = [practiceMclaren, practice, practiceMercedes];
+
+    expect(rulesTakingOver(rules, practiceMercedes, catalogue)).toBeNull();
+  });
+
+  it('is null for a rule nothing else would cover', () => {
+    const rules = [practiceMclaren, practice, practiceMercedes];
+
+    expect(rulesTakingOver(rules, practice, catalogue)).toBeNull();
+  });
+
+  it('is null for a class rule while a car of another class could fall back elsewhere', () => {
+    const gt3 = named('gt3', 'one', { carClass: 'GT3' });
+    const rules = [gt3, practice];
+
+    expect(rulesTakingOver(rules, gt3, catalogue)).toBeNull();
+  });
+
+  it('counts a class rule redundant under a wider rule of the same layout', () => {
+    const practiceGt3 = named('practice-gt3', 'one', {
+      context: 'Practice',
+      carClass: 'GT3',
+    });
+    const rules = [practiceGt3, practice];
+
+    expect(rulesTakingOver(rules, practiceGt3, catalogue)).toEqual([practice]);
+  });
+
+  it('is empty for a rule more specific rules take every situation of', () => {
+    const mercedes = named('mercedes', 'one', { carId: MERCEDES_GT3 });
+    const perSession = (['Practice', 'Qualify', 'Race', 'Garage'] as const).map(
+      (context) => named(context, 'two', { context, carId: MERCEDES_GT3 })
+    );
+
+    expect(
+      rulesTakingOver([mercedes, ...perSession], mercedes, catalogue)
+    ).toEqual([]);
+  });
+
+  it('is null for a car rule of a car the catalogue lacks', () => {
+    const unlisted = named('unlisted', 'one', {
+      context: 'Practice',
+      carId: 9999,
+    });
+
+    expect(
+      rulesTakingOver([unlisted, practice], unlisted, catalogue)
     ).toBeNull();
   });
 });

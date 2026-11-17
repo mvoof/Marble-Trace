@@ -41,6 +41,14 @@
   border-style: dashed;
 }
 
+// Changes nothing: other situations put the same layout on without it.
+.chipRedundant {
+  color: $sys-text-muted;
+  border-color: $sys-warning;
+  border-style: dashed;
+  cursor: help;
+}
+
 .removeChip {
   display: inline-flex;
   align-items: center;

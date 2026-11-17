@@ -236,7 +236,9 @@
       "add": "Add",
       "onLayout": "on layout {{name}}",
       "now": "Now:",
-      "noLayout": "No layout for this situation"
+      "noLayout": "No layout for this situation",
+      "redundant": "Changes nothing: “{{rules}}” puts this layout on without it",
+      "shadowed": "Changes nothing: more specific situations of other layouts take all of it"
     },
     "exported": "Layout saved to {{path}}",
     "exportFailed": "Could not save the layout file",
