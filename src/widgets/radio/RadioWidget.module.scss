@@ -62,7 +62,7 @@
   height: ws(32);
   padding: 0 sp(md);
   border-bottom-right-radius: radius(lg);
-  font-size: fs(xl);
+  font-size: fs(lg);
   font-weight: 700;
   line-height: 1;
 }
@@ -96,7 +96,7 @@
 
 .channelLabel {
   overflow: hidden;
-  font-size: fs(sm);
+  font-size: fs(xs);
   font-weight: 700;
   letter-spacing: 0.08em;
   line-height: 1;
@@ -204,7 +204,7 @@ $wave-quiet: 0.25;
 
 .nameLine {
   overflow: hidden;
-  font-size: fs(xxl);
+  font-size: fs(xl);
   font-weight: 700;
   line-height: 1.05;
   color: $widget-text-primary;
@@ -233,7 +233,7 @@ $wave-quiet: 0.25;
 }
 
 .idleLabel {
-  font-size: fs(xl);
+  font-size: fs(lg);
   font-weight: 700;
   letter-spacing: 0.08em;
   line-height: 1;

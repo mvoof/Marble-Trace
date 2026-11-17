@@ -54,6 +54,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Relative — Finished and Retired Cars:** The Relative reads a car's state as Standings does. A car that took the checkered flag shows the checkered flag and is no longer greyed out once it parks in the garage, a retired car is greyed out, and after the session ends nobody is greyed out for being in the garage.
 - **Voice Crew — Car Numbers:** A car number is said and heard as a number — "thirty three", "zero seven", "five hundred twelve" — instead of digit by digit, and any car in the session can be asked about, up to 999. The crew listens for the numbers of the cars in the session only, so a number no car wears is not heard. Who is ahead or behind is answered without the driver's name. In Chinese, 200–299 are said with 两.
 - **Track Map — Start/Finish Line:** The start/finish is a checkered bar across the track, as on the Analysis map, in place of the flag on a callout line. It keeps its size on screen when the map follows your car.
+- **Radio — Smaller Text:** The speaker's name, car number and channel are a size smaller, so the plate takes less of the screen.
+- **Fuel — Larger Consumption Figures:** The consumption in the stats row (AVG, LAST and the rest) and the laps it lasts are bigger and easier to read at a glance.
 - **Voice Crew — Tyre Words:** Russian hears софт, медиум, хард and слик, "мягкую", "среднюю", "жёсткую" and "меняем на …"; English hears "softs".
 
 ### Removed

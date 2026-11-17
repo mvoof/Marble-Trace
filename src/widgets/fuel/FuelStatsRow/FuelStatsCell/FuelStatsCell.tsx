@@ -31,7 +31,7 @@ export const FuelStatsCell = observer(
           text={consumption}
         />
 
-        <StatChip size="xs" className={styles.lapsChip}>
+        <StatChip size="sm" className={styles.lapsChip}>
           <FixedDigits text={laps} /> lap
         </StatChip>
       </div>
