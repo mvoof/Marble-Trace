@@ -43,6 +43,30 @@ Most iRacing overlays are either bloated desktop apps or locked behind subscript
 
 ---
 
+## Main Window
+
+The main window is where everything is set up, with **Home**, **Widgets**, **Layouts**, **Crew** and **Analysis** across its header and Settings beside them.
+
+### Home — Your Statistics
+
+Marble Trace reads the sim's telemetry files (`.ibt`) into a statistics database of its own, while the sim is closed. Home shows what is on right now, your last race with its finish, incidents and best lap, this week's time in the car, distance, clean laps and podium rate against the week before, a year of the days you drove, the cars and tracks you drove longest, and every session — filtered by period, track, car, session type and bots.
+
+![Home](docs/assets/screenshots/main/home.png)
+
+### Analysis — Compare Laps
+
+Open a session, pick its laps and lay them over each other: delta to the reference lap, speed, throttle, brake, gear, steering, RPM and any other channel the sim records, with one cursor across every chart and the track map. Zoom by wheel or drag, on the map and the charts alike; the Setup tab shows the garage setup each lap was driven with. Laps are kept in the database, so the analysis still works after the `.ibt` is gone.
+
+![Analysis](docs/assets/screenshots/main/analysis.png)
+
+### Widgets
+
+Every widget opens on a grid of live miniatures. A widget's page shows its preview — fitted or at its real size, on a scenario you pick — beside settings grouped the same way for every widget.
+
+![Widgets](docs/assets/screenshots/main/widgets.png)
+
+---
+
 ## Widgets
 
 Every widget is independently positioned, resized, and styled — drag it anywhere on screen, scale it to taste, adjust opacity so it never blocks your view. Each one ships with its own set of options: toggle individual data fields, switch layouts, pick colours, set visibility rules. You only see what you actually need, exactly where you want it.
@@ -338,31 +362,31 @@ Viewers can ask the sim themselves: `!pos`, `!gap`, `!lap`, `!best`, `!sof`, `!c
 
 ### Layout Editor
 
-Every layout is arranged in a visual editor that mirrors your actual desktop: each monitor is drawn to scale in its Windows position and has its own widget list — switch a widget on for the screen you want it on, run a second instance of it on another screen with its own settings, or move one over with every setting it has. Zoom out for the whole desktop when you are moving things around, or into a single screen for detail work. Each monitor can carry its own background image so you can place widgets against a screenshot of the cockpit instead of an empty rectangle, and everything follows along if you rearrange your displays in Windows.
+Every layout is arranged in a visual editor that mirrors your actual desktop: a monitor map shows your monitors as they stand on the desk, with their model and resolution, and **Identify** puts each one's number on the screen itself. Each monitor has its own widget list — add a widget to the screen you want it on, run a second instance of it on another screen with its own settings, or move one over with every setting it has. Edit all monitors at once, one monitor full size in the window, or right on the monitor itself. Each monitor can carry its own background image so you can place widgets against a screenshot of the cockpit instead of an empty rectangle, and everything follows along if you rearrange your displays in Windows.
 
 ![Layout Editor](docs/assets/screenshots/overlay/layout-editor.png)
 
-Layouts are independent of each other — build one for endurance, one for qualifying, one for ovals. Each remembers which screens it uses and which widgets sit on them. Switch between them from the toolbar, by a key or wheel button, or let the app switch automatically by session type.
+Layouts are independent of each other — build one for endurance, one for qualifying, one for ovals. Each remembers which screens it uses and which widgets sit on them, and can be exported to a file and imported on another PC. Switch between them by a key or wheel button, or let the app switch automatically: each layout says when it is shown — a session, a car class or a single car — and the most specific rule wins.
 
-### Remote Screens
+### Browser Screens
 
 A layout can also contain screens with **no monitor behind them**. Marble Trace serves those screens over your local network, so a phone, a tablet or a second PC opens one in its browser and shows live widgets — the same widgets, settings and telemetry as the overlay, with nothing to install on the device.
 
-- **Scan and go** — every remote screen has a QR code in Settings. Point the device's camera at it instead of typing an IP by hand, then add it to the home screen to run it full-screen.
+- **Scan and go** — every browser screen has a QR code in Settings. Point the device's camera at it instead of typing an IP by hand, then add it to the home screen to run it full-screen.
 - **Fit to the device** — the device reports the viewport it actually has, and one click resizes the screen to match, carrying its widgets with it.
 - **Token protected** — the link carries an access token, hidden until you ask for it (so a window capture on stream never puts it on air), copyable while covered, and regenerable at any time. Serving to the network is a separate switch; with it off nothing leaves this machine.
 - **Read-only by protocol** — a connected device paints what it is sent and cannot write anything back into your settings.
 - **Tunable** — the port and the telemetry push rate (5–60 Hz) are configurable, so a phone on weak Wi-Fi can be given less to chew on.
 
-![Remote Screens](docs/assets/screenshots/overlay/remote-screens.png)
+![Browser Screens](docs/assets/screenshots/overlay/remote-screens.png)
 
-Remote screens appear on the layout canvas next to your monitors, can be dragged anywhere on it, and a **Tidy remote screens** button lays them out in rows under the desktop.
+Browser screens appear on the layout canvas next to your monitors, can be dragged anywhere on it, and a **Tidy browser screens** button lays them out in rows under the desktop.
 
 ---
 
 ## Input Devices
 
-Every action can be bound to a keyboard key **or** to a button on your wheel, button box, joystick or handbrake — read straight from the device, so bindings still fire while iRacing has focus. All of them live in one **Input bindings** screen in Settings, grouped by widget, with search and a warning next to any button used twice; one action can carry several bindings at once.
+Every action can be bound to a keyboard key **or** to a button on your wheel, button box, joystick or handbrake — read straight from the device, so bindings still fire while iRacing has focus. All of them live in one **Hotkeys** screen in Settings, grouped by widget, with search and a warning next to any button used twice; one action can carry several bindings at once.
 
 Bindings are app-wide, not per layout. Devices are matched by their DirectInput instance GUID, so replugging or moving to another USB port keeps your bindings; a driver reinstall that regenerates the GUID is re-matched by vendor and product. A device that is currently unplugged keeps its bindings too, shown greyed out until it comes back.
 

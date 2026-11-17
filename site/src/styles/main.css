@@ -2080,13 +2080,13 @@ button:focus-visible {
 
 /* ---- Crops of the real window ------------------------------------------------
 
-   A crop is a window onto one box of a 1595x969 capture: the frame takes the
+   A crop is a window onto one box of a 1600x970 capture: the frame takes the
    box's aspect ratio, and the image is scaled and shifted so exactly that box
    fills it. Clicking one opens the whole capture. */
 
 .shot-crop {
-  --cap-w: 1595;
-  --cap-h: 969;
+  --cap-w: 1600;
+  --cap-h: 970;
 
   position: relative;
   display: block;
@@ -2129,8 +2129,9 @@ button:focus-visible {
   padding-bottom: 3rem;
 }
 
+/* The Devices card is a narrow column of the capture: kept near its own size */
 .shot-devices {
-  width: 88%;
+  width: 60%;
   margin-left: auto;
 }
 

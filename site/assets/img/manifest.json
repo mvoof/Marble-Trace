@@ -620,8 +620,8 @@
     ]
   },
   "assets/control/bindings.png": {
-    "width": 1595,
-    "height": 969,
+    "width": 1600,
+    "height": 970,
     "variants": [
       {
         "width": 480,
@@ -636,14 +636,14 @@
         "path": "assets/img/control/bindings-1440.webp"
       },
       {
-        "width": 1595,
-        "path": "assets/img/control/bindings-1595.webp"
+        "width": 1600,
+        "path": "assets/img/control/bindings-1600.webp"
       }
     ]
   },
   "assets/control/devices.png": {
-    "width": 1595,
-    "height": 969,
+    "width": 1600,
+    "height": 970,
     "variants": [
       {
         "width": 480,
@@ -658,14 +658,14 @@
         "path": "assets/img/control/devices-1440.webp"
       },
       {
-        "width": 1595,
-        "path": "assets/img/control/devices-1595.webp"
+        "width": 1600,
+        "path": "assets/img/control/devices-1600.webp"
       }
     ]
   },
   "assets/control/widget-config.png": {
-    "width": 1595,
-    "height": 969,
+    "width": 1600,
+    "height": 970,
     "variants": [
       {
         "width": 480,
@@ -680,8 +680,8 @@
         "path": "assets/img/control/widget-config-1440.webp"
       },
       {
-        "width": 1595,
-        "path": "assets/img/control/widget-config-1595.webp"
+        "width": 1600,
+        "path": "assets/img/control/widget-config-1600.webp"
       }
     ]
   },
@@ -890,8 +890,8 @@
     ]
   },
   "assets/crew/commands.png": {
-    "width": 1523,
-    "height": 1109,
+    "width": 1600,
+    "height": 970,
     "variants": [
       {
         "width": 480,
@@ -906,8 +906,8 @@
         "path": "assets/img/crew/commands-1440.webp"
       },
       {
-        "width": 1523,
-        "path": "assets/img/crew/commands-1523.webp"
+        "width": 1600,
+        "path": "assets/img/crew/commands-1600.webp"
       }
     ]
   }
