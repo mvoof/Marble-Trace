@@ -259,9 +259,6 @@
     "hotkeysOn": "Los atajos actúan sobre este widget — pulsa para excluirlo",
     "hotkeysOff": "Los atajos omiten este widget — pulsa para incluirlo"
   },
-  "widgetWorkbench": {
-    "scenario": "Escenario"
-  },
   "layoutCanvas": {
     "move": "Mover",
     "stepSize": "paso de {{size}}",

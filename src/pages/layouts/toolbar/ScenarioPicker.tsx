@@ -5,9 +5,9 @@ import { Clapperboard } from 'lucide-react';
 import { useLayoutEditorUiStore } from '@features/layout-editor/layout-editor-ui-context';
 import { SESSION_PREVIEW_SCENARIOS } from '@features/preview/scenarios';
 
-import { ToolbarButton } from './ToolbarButton';
-import { ToolbarMenuItem } from './ToolbarMenuItem';
-import { ToolbarPopover } from './ToolbarPopover';
+import { ToolbarButton } from '@shared/ui/Toolbar/ToolbarButton';
+import { ToolbarMenuItem } from '@shared/ui/Toolbar/ToolbarMenuItem';
+import { ToolbarPopover } from '@shared/ui/Toolbar/ToolbarPopover';
 
 /**
  * The moment the canvas draws its widgets against. The canvas is seeded as a

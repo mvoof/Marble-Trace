@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
 import { Button, Segmented } from 'antd';
@@ -19,7 +20,12 @@ import { useWidgetDefaultsStore } from '@entities/widget/widget-defaults-context
 import { getWidgetLabel } from '@entities/widget/widget-i18n';
 import { useMainNavigationStore } from '@features/main-navigation/main-navigation-context';
 import { AllWidgets } from './AllWidgets/AllWidgets';
+import { WidgetScenarioPicker } from './WidgetWorkbench/WidgetScenarioPicker';
 import { WidgetWorkbench } from './WidgetWorkbench/WidgetWorkbench';
+import {
+  openingScenarioFor,
+  scenarioOptionsFor,
+} from './WidgetWorkbench/widget-scenarios';
 import { widgetMenuRuns } from './widget-menu';
 import styles from './WidgetsPage.module.scss';
 
@@ -43,6 +49,13 @@ export const WidgetsPage = observer(() => {
   const widgetDefaults = useWidgetDefaultsStore();
   const navigation = useMainNavigationStore();
   const liveWidgets = useMainLiveWidgetsStore();
+  // Pinned to the widget it was picked on: a pick says "show me this state of
+  // this widget", and carrying it to the next widget shows another domain's
+  // state or, on a widget that cannot draw it, nothing at all.
+  const [pickedScenario, setPickedScenario] = useState<{
+    widgetId: string;
+    scenarioId: string;
+  } | null>(null);
 
   const sort = sortOf(appSettings.appSettings.widgetMenuSort);
   const runs = widgetMenuRuns(widgetDefaults.catalogWidgets, sort);
@@ -100,8 +113,34 @@ export const WidgetsPage = observer(() => {
     appSettings.appSettings.widgetPreviewPosition
   );
 
+  const scenarioOptions =
+    activeWidgetId === null ? [] : scenarioOptionsFor(activeWidgetId);
+  const isPickedHere =
+    pickedScenario !== null &&
+    pickedScenario.widgetId === activeWidgetId &&
+    scenarioOptions.some(
+      (option) => option.value === pickedScenario.scenarioId
+    );
+  let activeScenarioId: string | null = null;
+
+  if (isPickedHere) {
+    activeScenarioId = pickedScenario.scenarioId;
+  } else if (activeWidgetId !== null) {
+    activeScenarioId = openingScenarioFor(activeWidgetId);
+  }
+
   const widgetActions = activeWidgetId !== null && (
     <>
+      {scenarioOptions.length > 0 && activeScenarioId !== null && (
+        <WidgetScenarioPicker
+          options={scenarioOptions}
+          value={activeScenarioId}
+          onChange={(scenarioId) =>
+            setPickedScenario({ widgetId: activeWidgetId, scenarioId })
+          }
+        />
+      )}
+
       <Segmented<WidgetPreviewPosition>
         value={previewPosition}
         onChange={(next) => appSettings.update({ widgetPreviewPosition: next })}
@@ -155,7 +194,7 @@ export const WidgetsPage = observer(() => {
       titleActions={widgetActions || undefined}
       pinnedTitle={activeWidgetId !== null}
     >
-      {activeWidgetId === null ? (
+      {activeWidgetId === null || activeScenarioId === null ? (
         <AllWidgets
           widgets={catalogOrder.flat()}
           isAvailable={(widgetId) => available.has(widgetId)}
@@ -165,6 +204,7 @@ export const WidgetsPage = observer(() => {
       ) : (
         <WidgetWorkbench
           widgetId={activeWidgetId}
+          scenarioId={activeScenarioId}
           previewPosition={previewPosition}
         />
       )}

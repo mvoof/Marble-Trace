@@ -5,7 +5,10 @@ import { Grid3x3, Magnet } from 'lucide-react';
 import { useAppSettingsStore } from '@entities/app-settings/app-settings-context';
 import { cx } from '@shared/lib/class-names';
 
-import { ToolbarMenuItem, ToolbarMenuSection } from './ToolbarMenuItem';
+import {
+  ToolbarMenuItem,
+  ToolbarMenuSection,
+} from '@shared/ui/Toolbar/ToolbarMenuItem';
 import styles from './GridControls.module.scss';
 
 const GRID_SIZES = [10, 15, 20, 30, 40];

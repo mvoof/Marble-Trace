@@ -9,9 +9,12 @@ import { isRemoteMonitor } from '@shared/lib/remote-screen';
 import { AddRemoteScreenButton } from './AddRemoteScreenButton';
 import { BackgroundControls } from './BackgroundControls';
 import { GridControls } from './GridControls';
-import { ToolbarButton } from './ToolbarButton';
-import { ToolbarMenuItem, ToolbarMenuSection } from './ToolbarMenuItem';
-import { ToolbarPopover } from './ToolbarPopover';
+import { ToolbarButton } from '@shared/ui/Toolbar/ToolbarButton';
+import {
+  ToolbarMenuItem,
+  ToolbarMenuSection,
+} from '@shared/ui/Toolbar/ToolbarMenuItem';
+import { ToolbarPopover } from '@shared/ui/Toolbar/ToolbarPopover';
 
 /**
  * The bar's "…": what is set once and left — the grid, the background — and

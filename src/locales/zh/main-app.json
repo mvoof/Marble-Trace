@@ -255,9 +255,6 @@
     "hotkeysOn": "快捷键作用于此小组件 — 点击排除",
     "hotkeysOff": "快捷键跳过此小组件 — 点击加入"
   },
-  "widgetWorkbench": {
-    "scenario": "场景"
-  },
   "layoutCanvas": {
     "move": "移动",
     "stepSize": "步长 {{size}}",

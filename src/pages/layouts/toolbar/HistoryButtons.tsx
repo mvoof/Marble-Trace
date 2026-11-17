@@ -4,7 +4,7 @@ import { Redo2, Undo2 } from 'lucide-react';
 
 import { useMainLiveWidgetsStore } from '@entities/layout/main-live-widgets-context';
 
-import { ToolbarButton } from './ToolbarButton';
+import { ToolbarButton } from '@shared/ui/Toolbar/ToolbarButton';
 import { ToolbarCluster } from './ToolbarCluster';
 
 /** Undo and redo of the editor's edits. */

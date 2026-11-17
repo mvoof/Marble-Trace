@@ -259,9 +259,6 @@
     "hotkeysOn": "Hotkeys act on this widget — click to exclude it",
     "hotkeysOff": "Hotkeys skip this widget — click to include it"
   },
-  "widgetWorkbench": {
-    "scenario": "Scenario"
-  },
   "layoutCanvas": {
     "move": "Move",
     "stepSize": "{{size}} step",

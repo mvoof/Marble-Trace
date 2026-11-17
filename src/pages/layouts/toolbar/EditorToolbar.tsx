@@ -26,9 +26,9 @@ import { HistoryButtons } from './HistoryButtons';
 import { MonitorPicker } from './MonitorPicker';
 import { MoreMenu } from './MoreMenu';
 import { ScenarioPicker } from './ScenarioPicker';
-import { ToolbarButton } from './ToolbarButton';
+import { ToolbarButton } from '@shared/ui/Toolbar/ToolbarButton';
 import { ToolbarCluster, ToolbarSeparator } from './ToolbarCluster';
-import { ToolbarCompactContext } from './toolbar-compact-context';
+import { ToolbarCompactContext } from '@shared/ui/Toolbar/toolbar-compact-context';
 import { useDockDrag } from './use-dock-drag';
 import styles from './EditorToolbar.module.scss';
 

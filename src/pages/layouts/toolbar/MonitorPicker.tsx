@@ -10,9 +10,9 @@ import { useLayoutEditorUiStore } from '@features/layout-editor/layout-editor-ui
 import { removeMonitor } from '@features/layout-editor/layout-gestures';
 import { isRemoteMonitor } from '@shared/lib/remote-screen';
 
-import { ToolbarButton } from './ToolbarButton';
-import { ToolbarMenuItem } from './ToolbarMenuItem';
-import { ToolbarPopover } from './ToolbarPopover';
+import { ToolbarButton } from '@shared/ui/Toolbar/ToolbarButton';
+import { ToolbarMenuItem } from '@shared/ui/Toolbar/ToolbarMenuItem';
+import { ToolbarPopover } from '@shared/ui/Toolbar/ToolbarPopover';
 import styles from './MonitorPicker.module.scss';
 
 interface MonitorPickerProps {

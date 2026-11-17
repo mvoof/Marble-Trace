@@ -46,18 +46,6 @@ $narrow-window: 1100px;
   }
 }
 
-.scenarioBar {
-  display: flex;
-  align-items: center;
-  gap: rem(8);
-  flex: 0 0 auto;
-}
-
-.scenarioLabel {
-  color: $sys-text-secondary;
-  font-size: rem(12);
-}
-
 // The stage the widget stands on, like the mockup's: a quiet checkerboard in
 // a framed box, so the widget reads as an overlay over something.
 .previewPane {

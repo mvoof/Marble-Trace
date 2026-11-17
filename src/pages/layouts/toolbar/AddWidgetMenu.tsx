@@ -14,8 +14,8 @@ import {
   addWidgetTargetOf,
   type AddWidgetEntry,
 } from './add-widget-menu';
-import { ToolbarButton } from './ToolbarButton';
-import { ToolbarPopover } from './ToolbarPopover';
+import { ToolbarButton } from '@shared/ui/Toolbar/ToolbarButton';
+import { ToolbarPopover } from '@shared/ui/Toolbar/ToolbarPopover';
 import styles from './AddWidgetMenu.module.scss';
 
 const SEARCH_ICON_SIZE = 14;

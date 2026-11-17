@@ -6,7 +6,10 @@ import { Image, ImageOff } from 'lucide-react';
 import { useLayoutsStore } from '@entities/layout/layouts-context';
 import { useLayoutEditorUiStore } from '@features/layout-editor/layout-editor-ui-context';
 
-import { ToolbarMenuItem, ToolbarMenuSection } from './ToolbarMenuItem';
+import {
+  ToolbarMenuItem,
+  ToolbarMenuSection,
+} from '@shared/ui/Toolbar/ToolbarMenuItem';
 
 const ACCEPTED_IMAGES = 'image/png,image/jpeg,image/webp,image/avif,image/gif';
 

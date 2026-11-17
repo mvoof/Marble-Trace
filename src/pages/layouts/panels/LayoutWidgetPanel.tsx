@@ -27,7 +27,7 @@ import { useMainLiveWidgetsStore } from '@entities/layout/main-live-widgets-cont
 import { useLayoutEditorUiStore } from '@features/layout-editor/layout-editor-ui-context';
 
 import { AddWidgetPanel } from '../toolbar/AddWidgetMenu';
-import { ToolbarPopover } from '../toolbar/ToolbarPopover';
+import { ToolbarPopover } from '@shared/ui/Toolbar/ToolbarPopover';
 import {
   isPanelSearchShown,
   panelLineCountOf,
