@@ -23,6 +23,8 @@ export const WidgetScenarioPicker = observer(
     return (
       <ToolbarPopover
         align="end"
+        // The pinned title row sits under the sticky preview's layer.
+        isDetached
         trigger={({ isOpen, toggle }) => (
           <ToolbarButton
             icon={Clapperboard}
