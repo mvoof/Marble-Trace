@@ -392,7 +392,7 @@
     ]
   },
   "assets/widgets/flat-flag.png": {
-    "width": 486,
+    "width": 900,
     "height": 396,
     "variants": [
       {
@@ -400,8 +400,8 @@
         "path": "assets/img/widgets/flat-flag-480.webp"
       },
       {
-        "width": 486,
-        "path": "assets/img/widgets/flat-flag-486.webp"
+        "width": 900,
+        "path": "assets/img/widgets/flat-flag-900.webp"
       }
     ]
   },

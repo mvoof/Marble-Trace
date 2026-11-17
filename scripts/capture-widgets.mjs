@@ -268,11 +268,13 @@ const clipOf = (page, overhang = OVERHANG_PX) =>
 // Returns the room on each side (negative: drawn past the frame), the drawn
 // box itself, and whether the frame is bare - no ground and no border of its
 // own, the widget floating on nothing as it does on the overlay.
-const roomOf = (page) =>
+// `groundless`: the shot drops the frame's ground (`ground: false`), so its
+// painted boxes are the widget, as on a bare frame (Flat Flags' plates).
+const roomOf = (page, groundless = false) =>
   page
     .locator(WIDGET_FRAME)
     .first()
-    .evaluate((frame) => {
+    .evaluate((frame, groundlessShot) => {
       const own = frame.getBoundingClientRect();
       const frameStyle = getComputedStyle(frame);
       const bare =
@@ -305,7 +307,10 @@ const roomOf = (page) =>
         // On a bare frame a box that paints is part of the widget even with
         // children (Delta's gauge track under its fill); on a grounded one a
         // plate filling the frame would hide the room around the content
-        .filter((element) => isLeaf(element) || (bare && paints(element)))
+        .filter(
+          (element) =>
+            isLeaf(element) || ((bare || groundlessShot) && paints(element))
+        )
         .filter((element) => element.checkVisibility({ opacityProperty: true }))
         .filter(drawsSomething)
         .map((element) => element.getBoundingClientRect())
@@ -331,7 +336,7 @@ const roomOf = (page) =>
         right: Math.round(own.right - box.right),
         bottom: Math.round(own.bottom - box.bottom),
       };
-    });
+    }, groundless);
 
 const audit = async (page, fileName, story) => {
   const id = storyId(story);
@@ -346,7 +351,7 @@ const audit = async (page, fileName, story) => {
   await page.evaluate(() => document.fonts.ready);
   await page.waitForTimeout(settle);
 
-  const room = await roomOf(page);
+  const room = await roomOf(page, !ground);
 
   if (!room) {
     console.log(`? ${fileName}  draws nothing measurable`);
@@ -384,7 +389,7 @@ const shoot = async (page, fileName, story) => {
   await page.waitForTimeout(settle);
 
   // Measured before the ground is cleared: after it every frame looks bare
-  const drawn = await roomOf(page);
+  const drawn = await roomOf(page, !ground);
 
   await clearGround(page, KEEP_BORDER, ground);
 
