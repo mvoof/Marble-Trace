@@ -13,6 +13,7 @@ import {
   widgetScaleOf,
 } from '@entities/widget/widget-frame';
 import { DEFAULT_PREVIEW_SCENARIO_ID } from '@features/preview/scenarios';
+import { useDragToPan } from './use-drag-to-pan';
 import styles from './WidgetPreview.module.scss';
 
 export interface PreviewRoom {
@@ -64,6 +65,7 @@ export const WidgetPreview = observer(
     // The widget's own size, unscaled: a transform does not touch the layout
     // box this reads, so fitting never feeds back into what is fitted.
     const [naturalSize, setNaturalSize] = useState<PreviewRoom | null>(null);
+    const { isPanning, panHandlers } = useDragToPan();
 
     useLayoutEffect(() => {
       if (!widgetBox) {
@@ -162,11 +164,22 @@ export const WidgetPreview = observer(
       width: naturalSize.width * fitScale,
       height: naturalSize.height * fitScale,
     };
+    // At 1:1 a widget bigger than the room scrolls, and the hand drags it.
+    const overflowsRoom = Boolean(
+      room &&
+      fittedSize &&
+      (fittedSize.width > room.width + 1 || fittedSize.height > room.height + 1)
+    );
 
     return (
       <PreviewProvide>
         <div
-          className={fillRoom ? styles.stageFill : styles.stage}
+          className={[
+            fillRoom ? styles.stageFill : styles.stage,
+            overflowsRoom ? styles.pannable : '',
+            isPanning ? styles.panning : '',
+          ].join(' ')}
+          {...panHandlers}
           style={
             fittedSize
               ? ({

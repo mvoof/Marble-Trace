@@ -23,6 +23,30 @@ $stage-padding: rem(16);
   height: var(--preview-room, #{rem(460)});
 }
 
+// A widget bigger than the stage, at 1:1: scrollbars that stay in sight —
+// the window's own hide until scrolled — and a hand to drag it by.
+.pannable {
+  cursor: grab;
+
+  &::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: $sys-border-strong;
+  }
+
+  &::-webkit-scrollbar-thumb:hover {
+    background: $sys-text-muted;
+  }
+}
+
+.panning {
+  cursor: grabbing;
+  user-select: none;
+}
+
 // The widget's fitted size, centred by auto margins, not by the stage's
 // alignment: a widget bigger than the stage then starts at its top-left edge
 // and scrolls, where centring would push its top (a table's header) and left
