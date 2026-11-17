@@ -11,6 +11,16 @@
   padding-right: sp(sm);
 }
 
+// Without the speed and gear, entry over apex over exit: a column one cell
+// wide, with the same air on both sides of it.
+.column {
+  flex-direction: column;
+  align-items: center;
+  gap: ws(6);
+  width: ws(38);
+  padding-right: 0;
+}
+
 .cell {
   display: flex;
   justify-content: center;

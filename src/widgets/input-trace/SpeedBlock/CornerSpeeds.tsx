@@ -13,8 +13,13 @@ import { useReactiveDomWrite } from '@shared/hooks/useReactiveDomWrite';
 import { writeStatChip } from '@shared/ui/StatChip/StatChip';
 import { useLiveParts } from '@shared/ui/live/live-parts';
 
+import { cx } from '@shared/lib/class-names';
+
 import styles from './CornerSpeeds.module.scss';
-import type { InputTraceSettings } from '../settings-schema';
+import {
+  isCornerSpeedsColumn,
+  type InputTraceSettings,
+} from '../settings-schema';
 
 const EMPTY_VALUE = '—';
 
@@ -85,8 +90,13 @@ export const CornerSpeeds = observer(() => {
     return null;
   }
 
+  const cornersClassName = cx(
+    styles.corners,
+    isCornerSpeedsColumn(settings) && styles.column
+  );
+
   return (
-    <div ref={rootRef} className={styles.corners}>
+    <div ref={rootRef} className={cornersClassName}>
       {CORNER_SPEED_POINTS.map((point, index) => (
         <div
           key={point}

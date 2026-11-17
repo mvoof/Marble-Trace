@@ -43,6 +43,13 @@ export type SteeringWheelStyle = (typeof STEERING_WHEEL_STYLE)[number];
 export const SPEED_BLOCK_SIDE = ['right', 'left'] as const;
 export type SpeedBlockSide = (typeof SPEED_BLOCK_SIDE)[number];
 
+/**
+ * Where the corner speeds sit against the speed and gear: in a row under or
+ * over them, or in a column beside them.
+ */
+export const CORNER_SPEEDS_PLACEMENT = ['below', 'above', 'beside'] as const;
+export type CornerSpeedsPlacement = (typeof CORNER_SPEEDS_PLACEMENT)[number];
+
 export const INPUT_TRACE_SETTINGS = defineSettings('inputTrace', {
   showTrace: bool(true),
   showSteering: bool(true),
@@ -124,6 +131,14 @@ export const INPUT_TRACE_SETTINGS = defineSettings('inputTrace', {
   entrySpeedColor: color('#3b82f6', { label: 'common.entrySpeedColor' }),
   apexSpeedColor: color('#ef4444', { label: 'common.apexSpeedColor' }),
   exitSpeedColor: color('#10b981', { label: 'common.exitSpeedColor' }),
+  /** Below, above or beside the speed and gear, when both are shown. */
+  cornerSpeedsPlacement: choice(CORNER_SPEEDS_PLACEMENT, 'below'),
+  /**
+   * Entry, apex and exit stacked in a column. Only without the speed and
+   * gear — beside them the row keeps their width. Read it through
+   * `isCornerSpeedsColumn`.
+   */
+  cornerSpeedsVertical: bool(false),
 });
 
 export type InputTraceSettings = SettingsOf<typeof INPUT_TRACE_SETTINGS.shape>;
@@ -131,3 +146,29 @@ export type InputTraceSettings = SettingsOf<typeof INPUT_TRACE_SETTINGS.shape>;
 export const isSteeringTraceShown = (
   settings: Pick<InputTraceSettings, 'showSteeringTrace' | 'showSteering'>
 ): boolean => settings.showSteeringTrace ?? settings.showSteering;
+
+/** The corner speeds stand in a column beside the speed and gear. */
+export const isCornerSpeedsBeside = (
+  settings: Pick<
+    InputTraceSettings,
+    'showCornerSpeeds' | 'showSpeedGear' | 'cornerSpeedsPlacement'
+  >
+): boolean =>
+  settings.showCornerSpeeds &&
+  settings.showSpeedGear &&
+  settings.cornerSpeedsPlacement === 'beside';
+
+/** The corner speeds are drawn as a column — beside the speed and gear, or alone. */
+export const isCornerSpeedsColumn = (
+  settings: Pick<
+    InputTraceSettings,
+    | 'showCornerSpeeds'
+    | 'showSpeedGear'
+    | 'cornerSpeedsPlacement'
+    | 'cornerSpeedsVertical'
+  >
+): boolean =>
+  isCornerSpeedsBeside(settings) ||
+  (settings.showCornerSpeeds &&
+    !settings.showSpeedGear &&
+    settings.cornerSpeedsVertical);

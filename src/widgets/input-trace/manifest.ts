@@ -9,6 +9,8 @@ import {
 } from '@widgets/widget-manifest';
 import {
   INPUT_TRACE_SETTINGS,
+  isCornerSpeedsBeside,
+  isCornerSpeedsColumn,
   type InputTraceSettings,
 } from './settings-schema';
 
@@ -29,6 +31,10 @@ const INPUT_TRACE_CHART_DESIGN_PX = 324;
 // The speed block: the speed and gear over the corner speeds, one width for
 // either or both — SpeedBlock/*.module.scss.
 const INPUT_TRACE_SPEED_BLOCK_PX = 116;
+// The corner speeds alone, stacked: one cell wide — CornerSpeeds.module.scss.
+const INPUT_TRACE_CORNER_COLUMN_PX = 38;
+// Between the speed and gear and the column beside them — .speedBlock's gap.
+const INPUT_TRACE_SPEED_BLOCK_GAP_PX = 6;
 
 const computeInputTraceDesignWidth = (settings: InputTraceSettings): number => {
   const barCount = [
@@ -52,7 +58,15 @@ const computeInputTraceDesignWidth = (settings: InputTraceSettings): number => {
     sections.push(barsWidth);
   }
 
-  if (settings.showSpeedGear || settings.showCornerSpeeds) {
+  if (isCornerSpeedsBeside(settings)) {
+    sections.push(
+      INPUT_TRACE_SPEED_BLOCK_PX +
+        INPUT_TRACE_SPEED_BLOCK_GAP_PX +
+        INPUT_TRACE_CORNER_COLUMN_PX
+    );
+  } else if (isCornerSpeedsColumn(settings)) {
+    sections.push(INPUT_TRACE_CORNER_COLUMN_PX);
+  } else if (settings.showSpeedGear || settings.showCornerSpeeds) {
     sections.push(INPUT_TRACE_SPEED_BLOCK_PX);
   }
 
@@ -80,6 +94,8 @@ const INPUT_TRACE_LAYOUT_KEYS: (keyof InputTraceSettings)[] = [
   'showCornerSpeeds',
   'showSpeedGear',
   'showBars',
+  'cornerSpeedsPlacement',
+  'cornerSpeedsVertical',
 ];
 
 /**

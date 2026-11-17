@@ -61,6 +61,60 @@ describe('input trace layout', () => {
     expect(result?.currentWidth).toBe(designWidth - 22 + 300);
   });
 
+  it('narrows the corner speeds to a column when they stand alone', () => {
+    const rowWidth = INPUT_TRACE_MANIFEST.deriveDesignWidth!({
+      ...DEFAULTS,
+      showCornerSpeeds: true,
+    });
+
+    const result = resolve(
+      { showCornerSpeeds: true, cornerSpeedsVertical: true },
+      {
+        designWidth: rowWidth,
+        currentWidth: rowWidth,
+        currentHeight: DESIGN_HEIGHT,
+      }
+    );
+
+    expect(result?.designWidth).toBe(rowWidth - 116 + 38);
+  });
+
+  it('keeps the row beside the speed and gear, whatever the column setting says', () => {
+    const withSpeedGear = { showSpeedGear: true, showCornerSpeeds: true };
+    const rowWidth = INPUT_TRACE_MANIFEST.deriveDesignWidth!({
+      ...DEFAULTS,
+      ...withSpeedGear,
+    });
+
+    expect(
+      INPUT_TRACE_MANIFEST.deriveDesignWidth!({
+        ...DEFAULTS,
+        ...withSpeedGear,
+        cornerSpeedsVertical: true,
+      })
+    ).toBe(rowWidth);
+  });
+
+  it('widens the speed block by the column set beside the speed and gear', () => {
+    const withSpeedGear = { showSpeedGear: true, showCornerSpeeds: true };
+    const rowWidth = INPUT_TRACE_MANIFEST.deriveDesignWidth!({
+      ...DEFAULTS,
+      ...withSpeedGear,
+    });
+
+    const result = resolve(
+      { ...withSpeedGear, cornerSpeedsPlacement: 'beside' },
+      {
+        designWidth: rowWidth,
+        currentWidth: rowWidth,
+        currentHeight: DESIGN_HEIGHT,
+      }
+    );
+
+    // The gap inside the block and the column.
+    expect(result?.designWidth).toBe(rowWidth + 6 + 38);
+  });
+
   it('keeps the width when only the speed block changes sides', () => {
     const result = resolve(
       { speedBlockSide: 'left' },
