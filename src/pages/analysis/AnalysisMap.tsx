@@ -1,12 +1,10 @@
 import { useEffect, useRef } from 'react';
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
-import { Maximize2, Minus, Plus } from 'lucide-react';
 
 import { useLapAnalysisStore } from '@features/lap-analysis/lap-analysis-context';
 import {
   boundsOf,
-  headingDegreesAt,
   svgPathOf,
   tangentAt,
   type ProjectedPath,
@@ -21,9 +19,9 @@ import {
   paddedBox,
   type ViewBox,
 } from './map-gestures';
+import { FinishLine, MapTools } from './AnalysisMapParts';
 import styles from './AnalysisMap.module.scss';
 
-const ICON_SIZE = 14;
 /** The track band's width, metres. */
 const TRACK_WIDTH_M = 14;
 /** Sector ticks reach this far either side of the track, metres. */
@@ -31,11 +29,6 @@ const TICK_REACH_M = 16;
 /** Sector labels sit this far outside the track, metres. */
 const LABEL_OFFSET_M = 38;
 const SECTOR_PREFIX = 'S';
-/** The start/finish line: a checkered bar across the track, metres. */
-const FINISH_SQUARE_M = 3;
-const FINISH_ROWS = 2;
-const FINISH_REACH_M = TICK_REACH_M;
-const FINISH_PATTERN_ID = 'analysis-map-finish';
 
 /** The direction across the track at `index`: the normal of its tangent. */
 const normalAt = (path: ProjectedPath, index: number): [number, number] => {
@@ -128,29 +121,7 @@ const MapView = observer(
 
     return (
       <div className={styles.map}>
-        <div className={styles.tools} data-map-tools>
-          <button
-            type="button"
-            data-map-action="in"
-            title={t('dataPage.analysis.zoomIn')}
-          >
-            <Plus size={ICON_SIZE} />
-          </button>
-          <button
-            type="button"
-            data-map-action="out"
-            title={t('dataPage.analysis.zoomOut')}
-          >
-            <Minus size={ICON_SIZE} />
-          </button>
-          <button
-            type="button"
-            data-map-action="fit"
-            title={t('dataPage.analysis.wholeLap')}
-          >
-            <Maximize2 size={ICON_SIZE} />
-          </button>
-        </div>
+        <MapTools />
 
         <svg
           ref={svgRef}
@@ -224,42 +195,7 @@ const MapView = observer(
             )
           )}
 
-          <defs>
-            <pattern
-              id={FINISH_PATTERN_ID}
-              patternUnits="userSpaceOnUse"
-              width={FINISH_SQUARE_M * 2}
-              height={FINISH_SQUARE_M * 2}
-            >
-              <rect
-                className={styles.finishLight}
-                width={FINISH_SQUARE_M * 2}
-                height={FINISH_SQUARE_M * 2}
-              />
-              <rect
-                className={styles.finishDark}
-                width={FINISH_SQUARE_M}
-                height={FINISH_SQUARE_M}
-              />
-              <rect
-                className={styles.finishDark}
-                x={FINISH_SQUARE_M}
-                y={FINISH_SQUARE_M}
-                width={FINISH_SQUARE_M}
-                height={FINISH_SQUARE_M}
-              />
-            </pattern>
-          </defs>
-
-          <rect
-            className={styles.finish}
-            x={-FINISH_SQUARE_M}
-            y={-FINISH_REACH_M}
-            width={FINISH_SQUARE_M * FINISH_ROWS}
-            height={FINISH_REACH_M * 2}
-            fill={`url(#${FINISH_PATTERN_ID})`}
-            transform={`translate(${referencePath.xs[0]} ${referencePath.ys[0]}) rotate(${headingDegreesAt(referencePath, 0)})`}
-          />
+          <FinishLine path={referencePath} reachM={TICK_REACH_M} />
 
           {markerOrder.map((index) =>
             paths[index] === null || !visible[index] ? null : (
