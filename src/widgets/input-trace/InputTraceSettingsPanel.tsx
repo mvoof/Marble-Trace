@@ -50,6 +50,14 @@ const hasCustomWheel = (settings: InputTraceSettings): boolean =>
 const hasSpeedBlockSide = (settings: InputTraceSettings): boolean =>
   settings.showTrace && (settings.showSpeedGear || settings.showCornerSpeeds);
 
+// Above or below only means something with the speed and gear to sit against.
+const hasCornerSpeedsPlacement = (settings: InputTraceSettings): boolean =>
+  settings.showCornerSpeeds && settings.showSpeedGear;
+
+// A column only alone — beside the speed and gear the row keeps their width.
+const hasCornerSpeedsColumnChoice = (settings: InputTraceSettings): boolean =>
+  settings.showCornerSpeeds && !settings.showSpeedGear;
+
 const hasSpeedTargetColor = (settings: InputTraceSettings): boolean =>
   settings.showSpeedGear && settings.showSpeedTargetColor;
 
@@ -266,6 +274,15 @@ export const InputTraceSettingsPanel = observer(() => {
         <Row setting="entrySpeedColor" dependsOn="showCornerSpeeds" />
         <Row setting="apexSpeedColor" dependsOn="showCornerSpeeds" />
         <Row setting="exitSpeedColor" dependsOn="showCornerSpeeds" />
+
+        <Row
+          setting="cornerSpeedsPlacement"
+          dependsOn={hasCornerSpeedsPlacement}
+        />
+        <Row
+          setting="cornerSpeedsVertical"
+          dependsOn={hasCornerSpeedsColumnChoice}
+        />
       </Card>
 
       <Card title={t('settingsPanels.common.steeringCard')}>

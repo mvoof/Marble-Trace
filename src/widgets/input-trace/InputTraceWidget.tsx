@@ -9,7 +9,10 @@ import { SpeedGear } from './SpeedBlock/SpeedGear';
 import { SteeringWheel } from './SteeringWheel/SteeringWheel';
 
 import styles from './InputTraceWidget.module.scss';
-import type { InputTraceSettings } from './settings-schema';
+import {
+  isCornerSpeedsBeside,
+  type InputTraceSettings,
+} from './settings-schema';
 import { cx } from '@shared/lib/class-names';
 
 export const InputTraceWidget = observer(() => {
@@ -41,11 +44,22 @@ export const InputTraceWidget = observer(() => {
   // Without the graph there is no left of it: the block keeps its place.
   const speedBlockOnLeft = showTrace && settings.speedBlockSide === 'left';
 
+  // Beside the speed and gear the column faces the graph: before them on the
+  // right of it, after them on its left.
+  const cornerSpeedsBeside = isCornerSpeedsBeside(settings);
+  const cornerSpeedsFirst = cornerSpeedsBeside
+    ? !speedBlockOnLeft
+    : settings.cornerSpeedsPlacement === 'above';
+
   const speedBlock = (settings.showSpeedGear || settings.showCornerSpeeds) && (
-    <div className={styles.speedBlock}>
+    <div
+      className={cx(styles.speedBlock, cornerSpeedsBeside && styles.besideRow)}
+    >
+      {cornerSpeedsFirst && <CornerSpeeds />}
+
       <SpeedGear />
 
-      <CornerSpeeds />
+      {!cornerSpeedsFirst && <CornerSpeeds />}
     </div>
   );
 

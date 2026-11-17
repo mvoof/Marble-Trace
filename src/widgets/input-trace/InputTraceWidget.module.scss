@@ -43,3 +43,10 @@ section.panel {
   height: 100%;
   min-height: 0;
 }
+
+// The corner speeds in a column beside the speed and gear, both on the
+// block's centre line.
+.besideRow {
+  flex-direction: row;
+  align-items: center;
+}
