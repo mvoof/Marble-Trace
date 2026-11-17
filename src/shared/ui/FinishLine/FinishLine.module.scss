@@ -1,0 +1,15 @@
+// A checkered bar across the track, outlined so it stays apart from the
+// surface under it.
+.finish {
+  stroke: $sys-bg-main;
+  stroke-width: 1px;
+  vector-effect: non-scaling-stroke;
+}
+
+.finishLight {
+  fill: $sys-text-primary;
+}
+
+.finishDark {
+  fill: $sys-bg-main;
+}

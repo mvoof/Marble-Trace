@@ -1,4 +1,4 @@
-import { useRef, useState, useEffect, useMemo } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import type { CSSProperties } from 'react';
 import { observer } from 'mobx-react-lite';
 
@@ -15,7 +15,7 @@ import { PaceCarMarker } from '@shared/ui/PaceCarMarker/PaceCarMarker';
 import { FlagZones } from './FlagZones/FlagZones';
 
 import { getSectorColor } from '@shared/lib/colors';
-import { StartFinishMarker } from './StartFinishMarker/StartFinishMarker';
+import { FinishLine } from '@shared/ui/FinishLine/FinishLine';
 
 import styles from './TrackMapSvg.module.scss';
 import type { TrackMapLeaderLabelMode } from '../settings-schema';
@@ -53,9 +53,6 @@ const MIN_ZOOM_LEVEL = 1;
 const HEADING_SAMPLE_PCT = 0.004;
 /** Screen "up" in SVG coordinates, where the Y axis grows downwards. */
 const SCREEN_UP_DEG = -90;
-
-/** How much the whole drawing is turned, for anything that must stay upright. */
-const SCREEN_ROTATION_PROPERTY = '--screen-rotation';
 
 /** Ground of the follow circle, when the user asks for one. */
 const CIRCLE_COLOR_PROPERTY = '--follow-circle-color';
@@ -244,10 +241,6 @@ export const TrackMapSvg = observer(
 
         scheduleWrite(() => {
           element.setAttribute('viewBox', nextViewBox);
-          element.style.setProperty(
-            SCREEN_ROTATION_PROPERTY,
-            `${screenRotation}deg`
-          );
 
           const content = element.getElementsByClassName(styles.content)[0];
 
@@ -348,23 +341,6 @@ export const TrackMapSvg = observer(
       }
     }, [svgPath]);
 
-    const trackCenter = useMemo(() => {
-      if (points.length === 0) return { x: 0, y: 0 };
-
-      let sumX = 0;
-      let sumY = 0;
-
-      for (const p of points) {
-        sumX += p.x;
-        sumY += p.y;
-      }
-
-      return {
-        x: sumX / points.length,
-        y: sumY / points.length,
-      };
-    }, [points]);
-
     // Magnifier view: shrink the visible window around the player. Stroke and
     // dot sizes are divided by the same factor so they keep their on-screen
     // size — only the covered track area changes, not the drawing itself.
@@ -457,17 +433,15 @@ export const TrackMapSvg = observer(
             (() => {
               const { x, y } = getPointAtPct(points, 0);
               const next = getPointAtPct(points, 0.01);
-              const angle =
+              const headingDeg =
                 Math.atan2(next.y - y, next.x - x) * (180 / Math.PI);
 
               return (
-                <StartFinishMarker
+                <FinishLine
                   x={x}
                   y={y}
-                  angle={angle}
-                  trackCenterX={trackCenter.x}
-                  trackCenterY={trackCenter.y}
-                  scale={zoomActive ? 1 / zoomLevel : 1}
+                  headingDeg={headingDeg}
+                  trackWidth={trackStrokePx * renderScale}
                 />
               );
             })()}
