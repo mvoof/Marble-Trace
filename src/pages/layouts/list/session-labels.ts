@@ -21,17 +21,17 @@ export const SESSION_LOOKS: Record<
   Garage: {
     labelKey: 'layoutList.sessions.garage',
     icon: Warehouse,
-    tone: 'info',
+    tone: 'accent',
   },
   Practice: {
     labelKey: 'layoutList.sessions.practice',
     icon: Route,
-    tone: 'positive',
+    tone: 'info',
   },
   Qualify: {
     labelKey: 'layoutList.sessions.qualify',
     icon: Timer,
     tone: 'special',
   },
-  Race: { labelKey: 'layoutList.sessions.race', icon: Flag, tone: 'accent' },
+  Race: { labelKey: 'layoutList.sessions.race', icon: Flag, tone: 'positive' },
 };
