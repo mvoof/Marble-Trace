@@ -5,11 +5,13 @@ import { useTranslation } from 'react-i18next';
 import { useLapAnalysisStore } from '@features/lap-analysis/lap-analysis-context';
 import {
   boundsOf,
+  headingDegreesAt,
   svgPathOf,
   tangentAt,
   type ProjectedPath,
 } from '@features/lap-analysis/map-projection';
 import type { ChartViewport } from '@shared/lib/chart-viewport';
+import { FinishLine } from '@shared/ui/FinishLine/FinishLine';
 import {
   attachMapGestures,
   LABEL_SCALE,
@@ -19,7 +21,7 @@ import {
   paddedBox,
   type ViewBox,
 } from './map-gestures';
-import { FinishLine, MapTools } from './AnalysisMapParts';
+import { MapTools } from './AnalysisMapParts';
 import styles from './AnalysisMap.module.scss';
 
 /** The track band's width, metres. */
@@ -195,7 +197,12 @@ const MapView = observer(
             )
           )}
 
-          <FinishLine path={referencePath} reachM={TICK_REACH_M} />
+          <FinishLine
+            x={referencePath.xs[0]}
+            y={referencePath.ys[0]}
+            headingDeg={headingDegreesAt(referencePath, 0)}
+            trackWidth={TRACK_WIDTH_M}
+          />
 
           {markerOrder.map((index) =>
             paths[index] === null || !visible[index] ? null : (
