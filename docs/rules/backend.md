@@ -84,11 +84,12 @@ _Held by: clippy (`[workspace.lints]` in `src-tauri/Cargo.toml`, `src-tauri/clip
 
 ## Car class badges and colors
 
-_Held by: test (a badge longer than `MAX_BADGE_LENGTH`); review (what goes in the map, and when an id is `verified`)._
+_Held by: test (a badge longer than `MAX_BADGE_LENGTH`, rows out of `CarID` order); review (a draft turned `reviewed`, and when an id is `verified`)._
 
-Two files in `mt-sim-iracing/src/`: `car_badges.rs` is the **map** — `CarID → badge`,
-the only hand-maintained list — and `car_classes.rs` holds the resolution and
-the colors. `session_parse.rs` only calls `apply_class_badges()` /
+Two files in `mt-sim-iracing/src/`: `car_badges.rs` is the **table** — `CarID →
+(badge, name, retired)` for every car of iRacing's catalogue, rows in
+`car_badges/table.rs` — and `car_classes.rs` holds the resolution and the
+colors. `session_parse.rs` only calls `apply_class_badges()` /
 `normalize_class_color()`; nothing on the frontend derives a class name, every
 widget reads `carClassShortName` as the backend resolved it.
 
@@ -97,26 +98,31 @@ hosted sessions** (verified on a dump), and in official ones reads "GT3 Class" o
 the car name. What it always sends is each driver's `CarID` and `CarClassID`, so
 one badge per class is resolved from the cars in it:
 
-| #   | Source               | Notes                                                            |
-| --- | -------------------- | ---------------------------------------------------------------- |
-| 1   | `car_badges.rs`      | when **every** car of the class is in the map and they all agree |
-| 2   | `CarClassShortName`  | the sim's class name, as it is                                   |
-| 3   | `CarScreenNameShort` | the car name, when the class holds one model                     |
-| 4   | `Class <CarClassID>` | a multi-model class nothing above could name                     |
+| #   | Source               | Notes                                                          |
+| --- | -------------------- | -------------------------------------------------------------- |
+| 1   | `car_badges.rs`      | when **every** car of the class is in the table and they agree |
+| 2   | `CarClassShortName`  | the sim's class name, as it is                                 |
+| 3   | `CarScreenNameShort` | the car name, when the class holds one model                   |
+| 4   | `Class <CarClassID>` | a multi-model class nothing above could name                   |
 
-The map comes ahead of the sim's name, so "GT3 Class" never reaches a badge
-column sized for `GT3`. The map is
+The table comes ahead of the sim's name, so "GT3 Class" never reaches a badge
+column sized for `GT3`. The table is
 keyed by **car, not class**: a car keeps its category in whatever class a session
 puts it in (the Ferrari 296 GT3 is class 2708 in a multi-make field and 4036 in
 its own series), while iRacing mints a class id per series. No other derivation
-exists — no token matching on car names, no filler-word stripping; a car the map
-does not know shows its own name.
+exists — no token matching on car names, no filler-word stripping; a car the
+table does not know yet shows its own name.
 
-**Adding a car:** one line in `car_badges.rs`. A category car (GT3, GT4, GTP,
-LMP2, TCR…) gets the category constant; a single-make car whose name overflows
-the badge column gets a short label; anything else needs no entry. Badges are
-capped at `MAX_BADGE_LENGTH` (6) by a test. Mark an id `verified` only once it has
-been seen in a dump. Colors: `CLASS_COLOR_MAP` corrects known telemetry/in-game
+**Adding cars:** `node scripts/car-badges.mjs <Cars.json> <CarClasses.json>`
+with iRacing's Data API exports (kept outside the repo; the script's header
+names the API endpoints). It refreshes names and `retired`, adds new cars as
+`CarBadge::draft` and never touches a badge already in the table. Drafts are
+live; reviewing one means fixing the badge if needed and turning it into
+`CarBadge::reviewed`. A category car (GT3, GT4, GTP, LMP2, TCR…) gets the
+category, the makes of a series share one label, a single-make car gets a short
+label of its own. Badges are capped at `MAX_BADGE_LENGTH` (6) by a test. Mark an
+id `verified` only once it has been seen in a dump. Colors: `CLASS_COLOR_MAP`
+corrects known telemetry/in-game
 mismatches.
 
 To read real `CarID` values, dump the session YAML with iRacing running

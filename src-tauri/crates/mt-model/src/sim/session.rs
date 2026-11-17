@@ -194,7 +194,7 @@ pub struct CarEntry {
     /// of a car; only means something when `SessionSnapshot::team_racing` is set.
     pub team_name: String,
     pub car_number: String,
-    /// iRacing's `CarID` — the car model. Keys the class badge map
+    /// iRacing's `CarID` — the car model. Keys the car badge table
     /// (`mt-sim-iracing/src/car_badges.rs`).
     pub car_id: i32,
     pub car_class_id: i32,
