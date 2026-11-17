@@ -21,25 +21,6 @@
   font-weight: 600;
 }
 
-.hide {
-  display: inline-flex;
-  align-items: center;
-  gap: rem(5);
-  height: rem(26);
-  padding: 0 rem(8);
-  background: transparent;
-  border: 0;
-  border-radius: rem(6);
-  color: $sys-text-secondary;
-  font-size: rem(12);
-  cursor: pointer;
-
-  &:hover {
-    background: rgba(255, 255, 255, 0.05);
-    color: $sys-text-primary;
-  }
-}
-
 .columns {
   display: flex;
   gap: rem(16);

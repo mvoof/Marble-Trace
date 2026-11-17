@@ -184,9 +184,7 @@
     "browserScreens": "Browser screens",
     "identify": "Identify",
     "identifyTooltip": "Show each monitor’s number on the monitor itself",
-    "title": "Monitor arrangement and browser screens",
-    "hide": "Hide",
-    "show": "Show"
+    "title": "Monitor arrangement and browser screens"
   },
   "layoutList": {
     "newLayout": "New Layout",

@@ -9,7 +9,7 @@ import { cx } from '@shared/lib/class-names';
 
 import { LayoutCanvas } from './canvas/LayoutCanvas';
 import { LayoutList } from './list/LayoutList';
-import { MonitorMap, MonitorMapFolded } from './monitor-map/MonitorMap';
+import { MonitorMap } from './monitor-map/MonitorMap';
 import { EditorSidePanel } from './panels/EditorSidePanel';
 import { LayoutWidgetPanel } from './panels/LayoutWidgetPanel';
 import { WidgetInspector } from './panels/WidgetInspector';
@@ -123,12 +123,7 @@ export const LayoutEditor = observer(
               isCanvasOnly && styles.workspaceFullscreen
             )}
           >
-            {!isCanvasOnly &&
-              (editorUi.isArrangementShown ? (
-                <MonitorMap />
-              ) : (
-                <MonitorMapFolded />
-              ))}
+            {!isCanvasOnly && editorUi.isArrangementShown && <MonitorMap />}
 
             <div
               className={cx(styles.body, isCanvasOnly && styles.bodyFullscreen)}

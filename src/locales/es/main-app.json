@@ -184,9 +184,7 @@
     "browserScreens": "Pantallas en navegador",
     "identify": "Identificar",
     "identifyTooltip": "Mostrar el número de cada monitor en el propio monitor",
-    "title": "Disposición de monitores y pantallas de navegador",
-    "hide": "Ocultar",
-    "show": "Mostrar"
+    "title": "Disposición de monitores y pantallas de navegador"
   },
   "layoutList": {
     "newLayout": "Nuevo diseño",

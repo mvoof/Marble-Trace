@@ -183,9 +183,7 @@
     "browserScreens": "浏览器屏幕",
     "identify": "识别",
     "identifyTooltip": "在每台显示器上显示其编号",
-    "title": "显示器排列与浏览器屏幕",
-    "hide": "隐藏",
-    "show": "显示"
+    "title": "显示器排列与浏览器屏幕"
   },
   "layoutList": {
     "newLayout": "新建布局",

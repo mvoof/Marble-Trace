@@ -1,7 +1,7 @@
 import type { CSSProperties } from 'react';
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
-import { ChevronDown, ChevronUp, Monitor, Tablet } from 'lucide-react';
+import { Monitor, Tablet } from 'lucide-react';
 
 import { useDisplaysStore } from '@entities/layout/displays-context';
 import { useLayoutsStore } from '@entities/layout/layouts-context';
@@ -48,15 +48,9 @@ const extentOf = (tiles: MapTile[]): MonitorBounds => {
   return { x: left, y: top, width: right - left, height: bottom - top };
 };
 
-/**
- * The arrangement's title line, with the way to hide it — or, hidden, the way
- * back, in the same place.
- */
+/** The arrangement's title line; the toolbar hides and shows it. */
 const MonitorMapHeader = observer(() => {
-  const editorUi = useLayoutEditorUiStore();
   const { t } = useTranslation('main-app');
-  const isShown = editorUi.isArrangementShown;
-  const Chevron = isShown ? ChevronUp : ChevronDown;
 
   return (
     <header className={styles.header}>
@@ -64,31 +58,9 @@ const MonitorMapHeader = observer(() => {
         <Monitor size={14} />
         {t('monitorMap.title')}
       </span>
-
-      <button
-        type="button"
-        className={styles.hide}
-        title={
-          isShown
-            ? t('layoutEditor.hideArrangement')
-            : t('layoutEditor.showArrangement')
-        }
-        aria-expanded={isShown}
-        onClick={() => editorUi.setArrangementShown(!isShown)}
-      >
-        <Chevron size={14} />
-        {isShown ? t('monitorMap.hide') : t('monitorMap.show')}
-      </button>
     </header>
   );
 });
-
-/** The arrangement folded away: its title line alone, to bring it back. */
-export const MonitorMapFolded = observer(() => (
-  <section className={styles.root}>
-    <MonitorMapHeader />
-  </section>
-));
 
 /**
  * The physical monitors as they stand on the desk, each labelled the way the
