@@ -11,6 +11,7 @@ import { useLayoutsStore } from '@entities/layout/layouts-context';
 import { cx } from '@shared/lib/class-names';
 import type { AutoSwitchRule } from '@shared/contracts/widget-settings';
 
+import { SESSION_LOOKS } from './session-labels';
 import { SituationPicker } from './SituationPicker';
 import { useSituationLabel } from './use-situation-label';
 import styles from './ShowWhenBlock.module.scss';
@@ -58,6 +59,7 @@ const SituationChip = observer(
         <span
           className={cx(
             styles.chip,
+            rule.context !== null && styles[SESSION_LOOKS[rule.context].tone],
             !isAutoSwitchEnabled && styles.chipOff,
             redundantHint !== null && styles.chipRedundant
           )}

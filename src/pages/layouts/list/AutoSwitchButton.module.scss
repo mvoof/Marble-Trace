@@ -28,3 +28,14 @@
 .noLayout {
   font-style: italic;
 }
+
+// On reads as green, not as the near-white primary fill.
+.enabled:global(.ant-btn) {
+  &,
+  &:not(:disabled):hover,
+  &:not(:disabled):active {
+    background: $chip-positive-bg;
+    border-color: rgba($chip-positive, 0.6);
+    color: $chip-positive;
+  }
+}

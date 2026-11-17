@@ -11,12 +11,27 @@ export const SESSION_CONTEXTS: SessionContext[] = [
   'Race',
 ];
 
+/** A session's chip colour, one of the design guide's tones. */
+export type SessionTone = 'info' | 'positive' | 'special' | 'accent';
+
 export const SESSION_LOOKS: Record<
   SessionContext,
-  { labelKey: string; icon: LucideIcon }
+  { labelKey: string; icon: LucideIcon; tone: SessionTone }
 > = {
-  Garage: { labelKey: 'layoutList.sessions.garage', icon: Warehouse },
-  Practice: { labelKey: 'layoutList.sessions.practice', icon: Route },
-  Qualify: { labelKey: 'layoutList.sessions.qualify', icon: Timer },
-  Race: { labelKey: 'layoutList.sessions.race', icon: Flag },
+  Garage: {
+    labelKey: 'layoutList.sessions.garage',
+    icon: Warehouse,
+    tone: 'info',
+  },
+  Practice: {
+    labelKey: 'layoutList.sessions.practice',
+    icon: Route,
+    tone: 'positive',
+  },
+  Qualify: {
+    labelKey: 'layoutList.sessions.qualify',
+    icon: Timer,
+    tone: 'special',
+  },
+  Race: { labelKey: 'layoutList.sessions.race', icon: Flag, tone: 'accent' },
 };

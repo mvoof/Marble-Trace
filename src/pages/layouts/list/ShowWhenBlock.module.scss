@@ -35,17 +35,39 @@
   color: $sys-text-secondary;
 }
 
+// The session's tone, quiet: a deep fill, the text stays neutral.
+@mixin session-tone($ground, $tone) {
+  background: $ground;
+  border-color: rgba($tone, 0.4);
+  color: $chip-text;
+}
+
+.info {
+  @include session-tone($chip-info-bg, $chip-info);
+}
+
+.positive {
+  @include session-tone($chip-positive-bg, $chip-positive);
+}
+
+.special {
+  @include session-tone($chip-special-bg, $chip-special);
+}
+
+.accent {
+  @include session-tone($chip-accent-bg, $chip-accent);
+}
+
 // Assigned, but auto-switch is off: the assignment waits.
 .chipOff {
-  color: $sys-text-muted;
   border-style: dashed;
+  opacity: 0.55;
 }
 
 // Changes nothing: other situations put the same layout on without it.
 .chipRedundant {
-  color: $sys-text-muted;
-  border-color: $sys-warning;
   border-style: dashed;
+  opacity: 0.55;
   cursor: help;
 }
 

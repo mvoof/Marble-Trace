@@ -99,8 +99,7 @@ export const AutoSwitchButton = observer(() => {
   return (
     <Tooltip title={hint} placement="bottomRight">
       <Button
-        color={isEnabled ? 'primary' : 'default'}
-        variant={isEnabled ? 'filled' : 'outlined'}
+        className={cx(isEnabled && styles.enabled)}
         icon={<Repeat size={ICON_SIZE} />}
         aria-pressed={isEnabled}
         onClick={() => appSettings.update({ autoSwitchLayouts: !isEnabled })}
