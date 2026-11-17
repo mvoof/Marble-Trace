@@ -78,6 +78,10 @@ export const MainWindow = observer(() => {
           Button: {
             primaryColor: '#15161a',
           },
+          // Same for a checked CheckableTag: its fill is colorPrimary.
+          Tag: {
+            colorTextLightSolid: '#15161a',
+          },
           Layout: {
             siderBg: '#111216',
             bodyBg: '#0d0e12',
