@@ -16,8 +16,46 @@
   margin: 0 0 clamp(1.5rem, 3vw, 2.5rem);
 }
 
+/* The cockpit runs edge to edge under the whole gallery - stage, groups and
+   strip - darkened on the left where the words are and at the foot where
+   the strip is, and left clear where the widget stands. */
 .wg {
   --wg-panel: min(27rem, 34%);
+
+  position: relative;
+  isolation: isolate;
+  padding: clamp(1rem, 2.5vw, 2rem) 0 clamp(1.5rem, 3vw, 2.5rem);
+  background: #0b0e12 url('../../assets/img/why/cockpit-bg-1920.webp') center
+    38% / cover no-repeat;
+}
+
+@media (min-width: 1700px) {
+  .wg {
+    background-image: url('../../assets/img/why/cockpit-bg-2560.webp');
+  }
+}
+
+.wg::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background:
+    linear-gradient(
+      90deg,
+      rgba(9, 11, 14, 0.93) 0%,
+      rgba(9, 11, 14, 0.8) 24%,
+      rgba(9, 11, 14, 0.25) 50%,
+      rgba(9, 11, 14, 0.35) 100%
+    ),
+    linear-gradient(
+      180deg,
+      #0d1014 0%,
+      rgba(13, 16, 20, 0) 12%,
+      rgba(13, 16, 20, 0) 58%,
+      rgba(13, 16, 20, 0.9) 82%,
+      #0d1014 100%
+    );
 }
 
 /* ---- Stage ------------------------------------------------------------------ */
@@ -26,7 +64,7 @@
   position: relative;
   display: grid;
   grid-template-columns: var(--wg-panel) minmax(0, 1fr);
-  max-width: calc(var(--container-width) + 12rem);
+  max-width: var(--container-width);
   margin: 0 auto;
   padding: 0 var(--container-padding);
 }
@@ -43,32 +81,9 @@
   position: relative;
   display: grid;
   place-items: center;
-  height: clamp(32rem, 78vh, 52rem);
-  padding: clamp(1.5rem, 3vw, 3rem) clamp(1.5rem, 3vw, 3rem)
-    clamp(1.5rem, 3vw, 3rem) calc(var(--wg-panel) + clamp(1.5rem, 3vw, 3rem));
-  overflow: hidden;
-  border-radius: 14px;
-  background: #0b0e12 url('../../assets/img/why/cockpit-bg-1920.webp') center /
-    cover no-repeat;
-  box-shadow:
-    0 2.4rem 4.8rem -2rem rgba(0, 0, 0, 0.85),
-    inset 0 0 0 1px rgba(255, 255, 255, 0.08);
-}
-
-.wg-scene::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background:
-    linear-gradient(
-      90deg,
-      rgba(9, 11, 14, 0.94) 0%,
-      rgba(9, 11, 14, 0.82) 26%,
-      rgba(9, 11, 14, 0.3) 52%,
-      rgba(9, 11, 14, 0.42) 100%
-    ),
-    linear-gradient(180deg, rgba(9, 11, 14, 0) 55%, rgba(9, 11, 14, 0.55));
-  backdrop-filter: blur(2px);
+  height: clamp(30rem, 72vh, 48rem);
+  padding: clamp(1.5rem, 3vw, 3rem) 0 clamp(1.5rem, 3vw, 3rem)
+    calc(var(--wg-panel) + clamp(1.5rem, 3vw, 3rem));
 }
 
 .wg-figure {
@@ -102,7 +117,8 @@
   display: flex;
   flex-direction: column;
   min-width: 0;
-  padding: clamp(1.75rem, 3.5vw, 3.25rem);
+  padding: clamp(1.75rem, 3.5vw, 3.25rem) clamp(1.5rem, 3vw, 2.5rem)
+    clamp(1.75rem, 3.5vw, 3.25rem) 0;
   color: #ffffff;
 }
 
@@ -330,9 +346,10 @@
   gap: 0.6rem;
   width: 100%;
   padding: 0.6rem;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 10px;
-  background-color: rgba(255, 255, 255, 0.03);
+  background-color: rgba(13, 16, 20, 0.72);
+  backdrop-filter: blur(6px);
   font-family: var(--font-family);
   text-align: left;
   color: #9aa2ad;
@@ -407,14 +424,17 @@
 
   .wg-scene {
     height: clamp(18rem, 62vw, 26rem);
-    padding: 1.25rem;
+    padding: 1.25rem 0;
   }
 
-  .wg-scene::before {
+  .wg::before {
     background: linear-gradient(
       180deg,
-      rgba(9, 11, 14, 0.25),
-      rgba(9, 11, 14, 0.55)
+      #0d1014 0%,
+      rgba(13, 16, 20, 0.2) 8%,
+      rgba(13, 16, 20, 0.35) 30%,
+      rgba(13, 16, 20, 0.92) 48%,
+      #0d1014 100%
     );
   }
 
