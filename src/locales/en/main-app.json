@@ -234,7 +234,9 @@
       "addSituation": "Add a situation",
       "removeSituation": "Remove this situation",
       "add": "Add",
-      "onLayout": "on layout {{name}}"
+      "onLayout": "on layout {{name}}",
+      "now": "Now:",
+      "noLayout": "No layout for this situation"
     },
     "exported": "Layout saved to {{path}}",
     "exportFailed": "Could not save the layout file",

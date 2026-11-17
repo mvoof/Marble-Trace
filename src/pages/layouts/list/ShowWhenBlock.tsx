@@ -6,14 +6,10 @@ import { Plus, X } from 'lucide-react';
 
 import { useAppSettingsStore } from '@entities/app-settings/app-settings-context';
 import { useLayoutsStore } from '@entities/layout/layouts-context';
-import { useCarCatalogueStore } from '@entities/cars/car-catalogue-context';
-import type { AutoSwitchRule } from '@shared/contracts/widget-settings';
 import { cx } from '@shared/lib/class-names';
 
-import { SESSION_LOOKS } from './session-labels';
-import { ruleCarName } from './rule-options';
 import { SituationPicker } from './SituationPicker';
-import { useLiveCars } from './use-live-cars';
+import { useSituationLabel } from './use-situation-label';
 import styles from './ShowWhenBlock.module.scss';
 
 interface ShowWhenBlockProps {
@@ -27,8 +23,7 @@ interface ShowWhenBlockProps {
 export const ShowWhenBlock = observer(({ layoutId }: ShowWhenBlockProps) => {
   const layouts = useLayoutsStore();
   const appSettings = useAppSettingsStore();
-  const catalogue = useCarCatalogueStore();
-  const liveCars = useLiveCars();
+  const situationLabel = useSituationLabel();
   const { t } = useTranslation('main-app');
   const [isPicking, setIsPicking] = useState(false);
 
@@ -36,23 +31,6 @@ export const ShowWhenBlock = observer(({ layoutId }: ShowWhenBlockProps) => {
   const layoutRules = layouts.autoSwitchRules.filter(
     (rule) => rule.layoutId === layoutId
   );
-
-  const ruleLabel = (rule: AutoSwitchRule): string => {
-    const carName =
-      rule.carId === null
-        ? null
-        : (ruleCarName(catalogue.cars, liveCars, rule.carId) ??
-          t('layoutList.autoSwitch.carById', { id: rule.carId }));
-    const sessionName =
-      rule.context === null
-        ? t('layoutList.autoSwitch.anySession')
-        : t(SESSION_LOOKS[rule.context].labelKey);
-    const parts = [sessionName, rule.carClass, carName].filter(
-      (part): part is string => part !== null
-    );
-
-    return parts.join(' · ');
-  };
 
   return (
     <section className={styles.block}>
@@ -72,7 +50,7 @@ export const ShowWhenBlock = observer(({ layoutId }: ShowWhenBlockProps) => {
             key={rule.id}
             className={cx(styles.chip, !autoSwitchEnabled && styles.chipOff)}
           >
-            {ruleLabel(rule)}
+            {situationLabel(rule)}
 
             <button
               type="button"

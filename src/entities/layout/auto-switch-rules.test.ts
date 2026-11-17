@@ -4,6 +4,7 @@ import type { CatalogueCar } from '@shared/contracts/generated/bindings';
 import type { AutoSwitchRule } from '@shared/contracts/widget-settings';
 
 import {
+  autoSwitchTarget,
   layoutHolding,
   playerCarClass,
   ruleLayoutFor,
@@ -169,5 +170,71 @@ describe('playerCarClass', () => {
 
   it('is null with no car', () => {
     expect(playerCarClass(catalogue, null)).toBeNull();
+  });
+});
+
+describe('autoSwitchTarget', () => {
+  const catalogue: CatalogueCar[] = [
+    {
+      carId: MERCEDES_GT3,
+      name: 'Mercedes-AMG GT3 2020',
+      badge: 'GT3',
+      retired: false,
+    },
+  ];
+  const mercedes = {
+    carId: MERCEDES_GT3,
+    carName: 'Mercedes-AMG GT3 2020',
+    carClass: 'All Cars',
+  };
+  const rules = [
+    rule('garage', { context: 'Garage' }),
+    rule('gt3-race', { context: 'Race', carClass: 'GT3' }),
+  ];
+  const simState = {
+    isConnected: true,
+    isOnTrack: true,
+    sessionType: 'Race' as const,
+    catalogue,
+    playerCar: mercedes,
+  };
+
+  it('names the situation and the layout its most specific rule puts on', () => {
+    expect(autoSwitchTarget(rules, simState)).toEqual({
+      situation: { context: 'Race', carClass: 'GT3', carId: MERCEDES_GT3 },
+      layoutId: 'gt3-race',
+    });
+  });
+
+  it('is the garage while the car is off track, whatever the session', () => {
+    expect(autoSwitchTarget(rules, { ...simState, isOnTrack: false })).toEqual({
+      situation: { context: 'Garage', carClass: 'GT3', carId: MERCEDES_GT3 },
+      layoutId: 'garage',
+    });
+  });
+
+  it('keeps the situation with no layout when no rule matches it', () => {
+    expect(
+      autoSwitchTarget(rules, { ...simState, sessionType: 'Practice' })
+    ).toEqual({
+      situation: {
+        context: 'Practice',
+        carClass: 'GT3',
+        carId: MERCEDES_GT3,
+      },
+      layoutId: null,
+    });
+  });
+
+  it('has no situation in a session of unknown kind', () => {
+    expect(
+      autoSwitchTarget(rules, { ...simState, sessionType: 'Unknown' })
+    ).toEqual({ situation: null, layoutId: null });
+  });
+
+  it('is nothing while the sim is not connected', () => {
+    expect(
+      autoSwitchTarget(rules, { ...simState, isConnected: false })
+    ).toBeNull();
   });
 });

@@ -230,7 +230,9 @@
       "addSituation": "添加情况",
       "removeSituation": "移除此情况",
       "add": "添加",
-      "onLayout": "在布局 {{name}}"
+      "onLayout": "在布局 {{name}}",
+      "now": "当前：",
+      "noLayout": "此情况没有布局"
     },
     "exported": "布局已保存到 {{path}}",
     "exportFailed": "无法保存布局文件",

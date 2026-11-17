@@ -1,6 +1,7 @@
 import type {
   CatalogueCar,
   KnownCar,
+  SessionType,
 } from '@shared/contracts/generated/bindings';
 import type {
   AutoSwitchRule,
@@ -73,6 +74,70 @@ export const ruleLayoutFor = (
   }
 
   return best?.layoutId ?? null;
+};
+
+/** What the sim says about the driver: what the auto-switch target is read from. */
+export interface AutoSwitchSimState {
+  isConnected: boolean;
+  isOnTrack: boolean;
+  sessionType: SessionType | null;
+  catalogue: readonly CatalogueCar[];
+  playerCar: KnownCar | null;
+}
+
+/** The situation the driver is in, and the layout it puts on screen. */
+export interface AutoSwitchTarget {
+  /** `null` in a session of a kind no rule names. */
+  situation: AutoSwitchSituation | null;
+  /** `null` when no rule matches the situation: the screen stays as it is. */
+  layoutId: string | null;
+}
+
+const SESSION_CONTEXT_BY_TYPE: Partial<Record<SessionType, SessionContext>> = {
+  Practice: 'Practice',
+  Qualify: 'Qualify',
+  Race: 'Race',
+};
+
+const sessionContextOf = (
+  isOnTrack: boolean,
+  sessionType: SessionType | null
+): SessionContext | null => {
+  if (!isOnTrack) {
+    return 'Garage';
+  }
+
+  return sessionType === null
+    ? null
+    : (SESSION_CONTEXT_BY_TYPE[sessionType] ?? null);
+};
+
+/**
+ * Where the driver is and the layout auto-switch puts on screen for it — the
+ * one answer both the switch and the main window's "Now" line read. `null`
+ * while the sim is not connected.
+ */
+export const autoSwitchTarget = (
+  rules: readonly AutoSwitchRule[],
+  sim: AutoSwitchSimState
+): AutoSwitchTarget | null => {
+  if (!sim.isConnected) {
+    return null;
+  }
+
+  const context = sessionContextOf(sim.isOnTrack, sim.sessionType);
+
+  if (context === null) {
+    return { situation: null, layoutId: null };
+  }
+
+  const situation: AutoSwitchSituation = {
+    context,
+    carClass: playerCarClass(sim.catalogue, sim.playerCar),
+    carId: sim.playerCar?.carId ?? null,
+  };
+
+  return { situation, layoutId: ruleLayoutFor(rules, situation) };
 };
 
 /** The layout of the rule naming exactly this situation, or `null`. */

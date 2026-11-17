@@ -234,7 +234,9 @@
       "addSituation": "Añadir una situación",
       "removeSituation": "Quitar esta situación",
       "add": "Añadir",
-      "onLayout": "en el diseño {{name}}"
+      "onLayout": "en el diseño {{name}}",
+      "now": "Ahora:",
+      "noLayout": "Ningún diseño para esta situación"
     },
     "exported": "Diseño guardado en {{path}}",
     "exportFailed": "No se pudo guardar el archivo del diseño",

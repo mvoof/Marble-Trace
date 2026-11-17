@@ -33,11 +33,7 @@ import {
 } from '@shared/api/overlay-resolution';
 import { setUpFirstRun } from '@entities/layout/first-run';
 import { watchMonitorArrangement } from './monitor-watch';
-import type { SessionContext } from '@shared/contracts/widget-settings';
-import {
-  playerCarClass,
-  ruleLayoutFor,
-} from '@entities/layout/auto-switch-rules';
+import { autoSwitchTarget } from '@entities/layout/auto-switch-rules';
 import type { MainRoot } from '@app/roots/main-root';
 
 let mainSyncInitPromise: Promise<() => void> | null = null;
@@ -53,51 +49,25 @@ export const registerLayoutAutoSwitchReaction = (
 ): IReactionDisposer =>
   reaction(
     () => ({
-      isConnected: root.sim.isConnected,
-      isOnTrack: root.player.isOnTrack,
-      sessionType: root.session.currentSessionType,
-      carId: root.session.playerCar?.carId ?? null,
-      carClass: playerCarClass(root.carCatalogue.cars, root.session.playerCar),
+      target: autoSwitchTarget(root.layouts.autoSwitchRules, {
+        isConnected: root.sim.isConnected,
+        isOnTrack: root.player.isOnTrack,
+        sessionType: root.session.currentSessionType,
+        catalogue: root.carCatalogue.cars,
+        playerCar: root.session.playerCar,
+      }),
       autoSwitchLayouts: root.appSettings.appSettings.autoSwitchLayouts,
       autoSwitchRules: JSON.stringify(root.layouts.autoSwitchRules),
     }),
-    ({
-      isConnected,
-      isOnTrack,
-      sessionType,
-      carId,
-      carClass,
-      autoSwitchLayouts,
-    }) => {
-      if (!autoSwitchLayouts) return;
-      if (!isConnected) return;
-
-      let context: SessionContext | null = null;
-
-      if (!isOnTrack) {
-        context = 'Garage';
-      } else if (sessionType === 'Practice') {
-        context = 'Practice';
-      } else if (sessionType === 'Qualify') {
-        context = 'Qualify';
-      } else if (sessionType === 'Race') {
-        context = 'Race';
+    ({ target, autoSwitchLayouts }) => {
+      if (!autoSwitchLayouts || !target?.layoutId) {
+        return;
       }
-
-      if (!context) return;
-
-      const layoutId = ruleLayoutFor(root.layouts.autoSwitchRules, {
-        context,
-        carClass,
-        carId,
-      });
-
-      if (!layoutId) return;
 
       // The screen follows the session whatever the editor is doing: while it
       // is open this moves the live layout only, leaving the one being edited
       // where the user put it.
-      root.layoutEditor.applySessionLayout(layoutId);
+      root.layoutEditor.applySessionLayout(target.layoutId);
     },
     { fireImmediately: true }
   );
