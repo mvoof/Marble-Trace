@@ -62,15 +62,7 @@ $narrow-window: 1000px;
   color: $sys-text-muted;
 }
 
-.tracks {
-  display: block;
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-  color: $sys-text-secondary;
-}
-
-// Wins, top 3, top 10 and races of the week, in a row under the bests.
+// Wins, top 3, top 10 and races of the week, in a row under the rate.
 .results {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));

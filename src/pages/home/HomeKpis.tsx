@@ -8,7 +8,7 @@ import {
   changeBetween,
   cleanLapsPercent,
   directionOf,
-  personalBestTracks,
+  podiumPercent,
 } from '@features/statistics/home-stats';
 import { cx } from '@shared/lib/class-names';
 import type { WeekStats } from '@shared/contracts/generated/bindings';
@@ -104,7 +104,7 @@ const WeekKpis = observer(({ week, previousWeek }: WeekKpisProps) => {
   const formatKm = (km: number) => kmFormat.format(km);
   const formatPercent = (percent: number) => `${percent}${PERCENT_SIGN}`;
   const clean = cleanLapsPercent(week);
-  const bestTracks = personalBestTracks(week);
+  const podiums = podiumPercent(week);
 
   return (
     <>
@@ -146,15 +146,14 @@ const WeekKpis = observer(({ week, previousWeek }: WeekKpisProps) => {
 
       <KpiCard
         icon={<Trophy size={ICON_SIZE} />}
-        label={t('homePage.kpi.personalBests')}
-        value={String(week.personalBests.length)}
+        label={t('homePage.kpi.podiumRate')}
+        value={podiums === null ? DASH : formatPercent(podiums)}
         detail={
           <>
-            <span className={styles.tracks} title={bestTracks.join(', ')}>
-              {bestTracks.length > 0
-                ? bestTracks.join(', ')
-                : t('homePage.kpi.noPersonalBests')}
-            </span>
+            <WeekChange
+              change={changeBetween(podiums, podiumPercent(previousWeek))}
+              format={formatPercent}
+            />
 
             <RaceResults week={week} />
           </>

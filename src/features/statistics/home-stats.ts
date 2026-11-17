@@ -25,11 +25,6 @@ export const changeBetween = (
 ): number | null =>
   current === null || previous === null ? null : current - previous;
 
-/** The tracks of the span's personal bests, each once, in the order driven. */
-export const personalBestTracks = (week: WeekStats): string[] => [
-  ...new Set(
-    week.personalBests
-      .map((best) => best.trackName)
-      .filter((name): name is string => name !== null)
-  ),
-];
+/** Races finished in the top three, a whole percent; `null` with no race. */
+export const podiumPercent = (week: WeekStats): number | null =>
+  week.races === 0 ? null : Math.round((week.podiums / week.races) * PERCENT);

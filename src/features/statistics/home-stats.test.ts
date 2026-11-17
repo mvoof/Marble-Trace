@@ -5,7 +5,7 @@ import {
   changeBetween,
   cleanLapsPercent,
   directionOf,
-  personalBestTracks,
+  podiumPercent,
 } from './home-stats';
 
 const EMPTY_WEEK: WeekStats = {
@@ -48,19 +48,9 @@ describe('changeBetween', () => {
   });
 });
 
-describe('personalBestTracks', () => {
-  it('names each track once, in the order driven', () => {
-    const best = (trackName: string | null) => ({
-      trackName,
-      carName: 'Car',
-      lapTimeS: 100,
-    });
-
-    expect(
-      personalBestTracks({
-        ...EMPTY_WEEK,
-        personalBests: [best('Spa'), best('Monza'), best('Spa'), best(null)],
-      })
-    ).toEqual(['Spa', 'Monza']);
+describe('podiumPercent', () => {
+  it('is the top-three share of the races, none without a race', () => {
+    expect(podiumPercent({ ...EMPTY_WEEK, races: 3, podiums: 1 })).toBe(33);
+    expect(podiumPercent(EMPTY_WEEK)).toBeNull();
   });
 });

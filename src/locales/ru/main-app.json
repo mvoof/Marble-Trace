@@ -1561,10 +1561,9 @@
       "timeWeek": "Время за неделю",
       "kmWeek": "Км за неделю",
       "cleanLaps": "Чистые круги",
-      "personalBests": "Личные рекорды",
+      "podiumRate": "Гонки в топ-3",
       "vsLastWeek": "{{change}} к прошлой",
       "thisWeek": "за неделю",
-      "noPersonalBests": "нет на этой неделе",
       "results": {
         "wins": "Победы",
         "podiums": "Топ-3",

@@ -1543,10 +1543,9 @@
       "timeWeek": "本周时长",
       "kmWeek": "本周公里",
       "cleanLaps": "干净圈",
-      "personalBests": "个人最佳",
+      "podiumRate": "领奖台率",
       "vsLastWeek": "较上周 {{change}}",
       "thisWeek": "本周",
-      "noPersonalBests": "本周没有",
       "results": {
         "wins": "冠军",
         "podiums": "前三",
