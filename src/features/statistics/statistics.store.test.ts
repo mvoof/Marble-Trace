@@ -46,6 +46,7 @@ const EMPTY_HOME: HomeStats = {
   topCars: [],
   topTracks: [],
   lastRace: null,
+  driverName: null,
 };
 
 const api = vi.hoisted(() => ({
@@ -179,6 +180,19 @@ describe('StatisticsStore last race and autolog', () => {
     await store.start();
 
     expect(store.lastRace).toEqual(lastRace);
+  });
+
+  it.each([
+    ['  Jane   Driver ', 'Jane'],
+    ['Jane', 'Jane'],
+    ['   ', null],
+    [null, null],
+  ])('greets %j as %j', async (driverName, firstName) => {
+    api.home = { ...EMPTY_HOME, driverName };
+    const store = new StatisticsStore(deps());
+    await store.start();
+
+    expect(store.driverFirstName).toBe(firstName);
   });
 
   it('reads whether the game logs telemetry on start', async () => {

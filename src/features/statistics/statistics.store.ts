@@ -170,6 +170,13 @@ export class StatisticsStore {
     return this.homeStats?.lastRace ?? null;
   }
 
+  /** The first word of the name the latest session was driven under. */
+  get driverFirstName(): string | null {
+    const [firstName] = (this.homeStats?.driverName ?? '').trim().split(/\s+/);
+
+    return firstName === undefined || firstName === '' ? null : firstName;
+  }
+
   async start() {
     const unlisten = await listenStatsImport((status) =>
       this.applyStatus(status)

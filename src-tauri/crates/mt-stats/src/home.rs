@@ -3,7 +3,7 @@
 
 use std::collections::HashMap;
 
-use rusqlite::params;
+use rusqlite::{params, OptionalExtension};
 
 use mt_model::app::stats::{
     DrivenSession, HomeStats, LastRace, PersonalBest, TimeDriven, WeekStats,
@@ -51,7 +51,25 @@ impl StatsDb {
             top_cars: top_by_time(&sessions, |session| session.car_name.as_deref()),
             top_tracks: top_by_time(&sessions, |session| session.track_name.as_deref()),
             last_race: self.last_race(&sessions)?,
+            driver_name: self.driver_name()?,
         })
+    }
+
+    /// The name the latest session read was driven under.
+    fn driver_name(&self) -> Result<Option<String>, String> {
+        self.connection
+            .query_row(
+                "SELECT s.user_name
+                 FROM session s
+                 JOIN ibt_file f ON f.session_key = s.key AND f.status = ?1
+                 WHERE s.user_name IS NOT NULL AND TRIM(s.user_name) <> ''
+                 ORDER BY f.started_at DESC
+                 LIMIT 1",
+                params![STATUS_READ],
+                |row| row.get(0),
+            )
+            .optional()
+            .map_err(to_message)
     }
 
     /// Every session read, oldest first.
@@ -682,6 +700,34 @@ mod tests {
         let none = db_with(&[online(1, NOW - DAY_S, "Sports Car", 2000)]);
 
         assert_eq!(none.home_stats(NOW).unwrap().last_race, None);
+    }
+
+    fn driven_by(subsession_id: i64, started_at: i64, user_name: Option<&str>) -> SessionFile {
+        SessionFile {
+            user_name: user_name.map(Into::into),
+            ..online(subsession_id, started_at, "Sports Car", 2000)
+        }
+    }
+
+    #[test]
+    fn the_driver_is_named_by_the_latest_session_with_a_name() {
+        let db = db_with(&[
+            driven_by(1, NOW - 3 * DAY_S, Some("Old Name")),
+            driven_by(2, NOW - 2 * DAY_S, Some("Jane Driver")),
+            driven_by(3, NOW - DAY_S, None),
+        ]);
+
+        assert_eq!(
+            db.home_stats(NOW).unwrap().driver_name.as_deref(),
+            Some("Jane Driver")
+        );
+    }
+
+    #[test]
+    fn no_sessions_no_name() {
+        let db = db_with(&[]);
+
+        assert_eq!(db.home_stats(NOW).unwrap().driver_name, None);
     }
 
     #[test]

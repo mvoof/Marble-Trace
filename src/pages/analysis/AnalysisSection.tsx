@@ -1,7 +1,7 @@
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
 import { ColorPicker, Spin, Tabs, Tooltip } from 'antd';
-import { Eye, EyeOff, Flag, PauseCircle, Plus, Star, X } from 'lucide-react';
+import { Eye, EyeOff, PauseCircle, Plus, Star, X } from 'lucide-react';
 
 import { useLapAnalysisStore } from '@features/lap-analysis/lap-analysis-context';
 import {
@@ -13,11 +13,9 @@ import { formatLapTimeOrDash } from '@shared/lib/telemetry-format';
 import type { AnalysisLap } from '@shared/contracts/generated/bindings';
 import { AnalysisCharts } from './AnalysisCharts';
 import { AnalysisMap } from './AnalysisMap';
-import { AnalysisSettings } from './AnalysisSettings';
 import { AnalysisSetup } from './AnalysisSetup';
 import styles from './AnalysisSection.module.scss';
 
-const MS_PER_SECOND = 1000;
 const ICON_SIZE = 14;
 const GATE_ICON_SIZE = 28;
 const BEST_STAR = '★';
@@ -129,7 +127,7 @@ const TelemetryArea = observer(() => {
 
 /** The laps picked for the analysis, from one session, and their telemetry. */
 export const AnalysisSection = observer(() => {
-  const { t, i18n } = useTranslation('main-app');
+  const { t } = useTranslation('main-app');
   const analysis = useLapAnalysisStore();
   const session = analysis.set.session;
 
@@ -137,36 +135,8 @@ export const AnalysisSection = observer(() => {
     return null;
   }
 
-  const date = new Intl.DateTimeFormat(i18n.language, {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  }).format(new Date(session.startedAt * MS_PER_SECOND));
-
   return (
     <div className={styles.section}>
-      <div className={styles.session}>
-        <Flag size={ICON_SIZE} />
-        <span>
-          <b className={styles.track}>
-            {session.trackName ?? DASH}
-            {session.trackConfig !== null && ` · ${session.trackConfig}`}
-          </b>
-          {' · '}
-          {session.carName ?? DASH}
-          {' · '}
-          {t(`homePage.recentSessions.kind.${session.kind}`)}
-          {' · '}
-          {date}
-        </span>
-
-        <span className={styles.sessionActions}>
-          <AnalysisSettings />
-        </span>
-      </div>
-
       <Tabs
         className={styles.tabs}
         activeKey={analysis.tab}

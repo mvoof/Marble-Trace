@@ -1471,6 +1471,11 @@ export type HomeStats = {
    * The latest session that held a race; `None` before the first.
    */
   lastRace: LastRace | null;
+  /**
+   * The driver's name as the latest session file wrote it; `None` before
+   * the first file that has one.
+   */
+  driverName: string | null;
 };
 
 /**

@@ -26,7 +26,14 @@ export const HomePage = observer(() => {
 
   return (
     <div className={styles.page}>
-      <PageTitle title={t('homePage.title')} actions={<ImportNote />} />
+      <PageTitle
+        title={
+          statistics.driverFirstName === null
+            ? t('homePage.greetingNoName')
+            : t('homePage.greeting', { name: statistics.driverFirstName })
+        }
+        actions={<ImportNote />}
+      />
 
       <NowStrip />
 

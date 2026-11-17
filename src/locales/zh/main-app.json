@@ -216,7 +216,6 @@
     "autoSwitch": {
       "title": "自动切换",
       "description": "当模拟器中的情况变化时切换显示的布局。每个布局卡片注明何时显示：会话、车辆组别或车辆。一种情况只属于一个布局；最具体的优先：车辆优先于组别，组别优先于会话。",
-      "enabled": "开启",
       "anySession": "任意会话",
       "anySessionShort": "任意",
       "anyClass": "任意组别",
@@ -1530,7 +1529,8 @@
     }
   },
   "homePage": {
-    "title": "首页",
+    "greeting": "你好，{{name}}！",
+    "greetingNoName": "你好！",
     "emptyTitle": "还没有会话",
     "emptyText": "每次上车时，iRacing 都会在 DocumentsiRacing\telemetry 中写入一个遥测文件。Marble Trace 会在游戏关闭时读取这些文件，整理出你的会话、圈数、事故和 iRating。",
     "emptyKept": "读取的内容会被保留，即使删除了这些文件。",

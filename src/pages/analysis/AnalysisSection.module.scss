@@ -1,4 +1,4 @@
-// The title row, then the analysis or the sessions to pick from.
+// The session's title row, then the analysis or the sessions to pick from.
 .page {
   display: flex;
   flex-direction: column;
@@ -11,23 +11,6 @@
   flex-direction: column;
   gap: rem(12);
   min-width: 0;
-}
-
-.session {
-  display: flex;
-  align-items: center;
-  gap: rem(10);
-  font-size: rem(13);
-  color: $sys-text-secondary;
-}
-
-.track {
-  font-weight: 600;
-  color: $sys-text-primary;
-}
-
-.sessionActions {
-  margin-left: auto;
 }
 
 // The tab bar sits in the section's own gap.

@@ -220,7 +220,6 @@
     "autoSwitch": {
       "title": "Auto-switch",
       "description": "Put a layout on screen when the situation in the sim changes. Each layout card says when it is shown: a session, a car class or a car. A situation belongs to one layout; the most specific one wins: a car over a class, a class over a session.",
-      "enabled": "On",
       "anySession": "Any session",
       "anySessionShort": "Any",
       "anyClass": "Any class",
@@ -1536,7 +1535,8 @@
     }
   },
   "homePage": {
-    "title": "Home",
+    "greeting": "Hello, {{name}}!",
+    "greetingNoName": "Hello!",
     "emptyTitle": "No sessions yet",
     "emptyText": "Each time you get in the car, iRacing writes a telemetry file to DocumentsiRacing\telemetry. Marble Trace reads these files while the game is closed and turns them into your sessions, laps, incidents and iRating.",
     "emptyKept": "What it reads is kept, even after you delete the files.",

@@ -8,7 +8,7 @@ import styles from './AnalysisSection.module.scss';
 
 const ICON_SIZE = 14;
 
-/** The gear in the Analysis header: keep the telemetry while the game runs. */
+/** The gear in the Analysis title row: keep the telemetry while the game runs. */
 export const AnalysisSettings = observer(() => {
   const { t } = useTranslation('main-app');
   const appSettings = useAppSettingsStore();

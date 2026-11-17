@@ -297,6 +297,9 @@ pub struct HomeStats {
     pub top_tracks: Vec<TimeDriven>,
     /// The latest session that held a race; `None` before the first.
     pub last_race: Option<LastRace>,
+    /// The driver's name as the latest session file wrote it; `None` before
+    /// the first file that has one.
+    pub driver_name: Option<String>,
 }
 
 /// The latest race, as Home's last-race card shows it.

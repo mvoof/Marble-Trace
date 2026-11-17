@@ -7,7 +7,7 @@ import { useLayoutEditorStore } from '@features/layout-editor/layout-editor-cont
 
 import { PageTitle } from '@shared/ui/PageTitle/PageTitle';
 
-import { AutoSwitchBlock } from './AutoSwitchBlock';
+import { AutoSwitchButton } from './AutoSwitchButton';
 import { CreateLayoutButton } from './CreateLayoutButton';
 import { ImportLayoutButton } from './ImportLayoutButton';
 import { LayoutCard } from './LayoutCard';
@@ -18,8 +18,8 @@ interface LayoutListProps {
 }
 
 /**
- * The Layouts page before a layout is opened: every layout as a card, the
- * Auto-switch block in a column beside them.
+ * The Layouts page before a layout is opened: every layout as a card under a
+ * row of the count, the auto-switch toggle, import and a new layout.
  */
 export const LayoutList = observer(({ onOpenEditor }: LayoutListProps) => {
   const layouts = useLayoutsStore();
@@ -33,12 +33,13 @@ export const LayoutList = observer(({ onOpenEditor }: LayoutListProps) => {
   return (
     <div className={styles.page}>
       <PageTitle
-        title={t('appHeader.sections.layouts')}
         subtitle={t('layoutList.layoutsCount', {
           count: layouts.layouts.length,
         })}
         actions={
           <>
+            <AutoSwitchButton />
+
             <ImportLayoutButton />
 
             <CreateLayoutButton />
@@ -46,20 +47,14 @@ export const LayoutList = observer(({ onOpenEditor }: LayoutListProps) => {
         }
       />
 
-      <div className={styles.body}>
-        <div className={styles.grid}>
-          {layouts.layouts.map((layout) => (
-            <LayoutCard
-              key={layout.id}
-              layout={layout}
-              onOpenEditor={() => onOpenEditor(layout.id)}
-            />
-          ))}
-        </div>
-
-        <aside className={styles.rules}>
-          <AutoSwitchBlock />
-        </aside>
+      <div className={styles.grid}>
+        {layouts.layouts.map((layout) => (
+          <LayoutCard
+            key={layout.id}
+            layout={layout}
+            onOpenEditor={() => onOpenEditor(layout.id)}
+          />
+        ))}
       </div>
     </div>
   );
