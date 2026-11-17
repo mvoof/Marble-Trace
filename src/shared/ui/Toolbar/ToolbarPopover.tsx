@@ -36,9 +36,24 @@ interface ToolbarPopoverProps {
   isDetached?: boolean;
 }
 
-/** Under the trigger, kept inside the window. */
-const detachedPlacementOf = (trigger: HTMLElement): CSSProperties => {
+/**
+ * Under the trigger, kept inside the window: lined up with its left edge, or
+ * with its right edge for an `end` panel.
+ */
+const detachedPlacementOf = (
+  trigger: HTMLElement,
+  align: 'start' | 'end'
+): CSSProperties => {
   const bounds = trigger.getBoundingClientRect();
+
+  if (align === 'end') {
+    return {
+      top: bounds.bottom + DETACHED_GAP_PX,
+      right: Math.max(DETACHED_GAP_PX, window.innerWidth - bounds.right),
+      left: 'auto',
+    };
+  }
+
   const rightmostLeft =
     window.innerWidth - DETACHED_WIDE_WIDTH_PX - DETACHED_GAP_PX;
 
@@ -71,7 +86,7 @@ export const ToolbarPopover = observer(
       isOpen,
       toggle: () => {
         if (!isOpen && isDetached && rootRef.current) {
-          setPlacement(detachedPlacementOf(rootRef.current));
+          setPlacement(detachedPlacementOf(rootRef.current, align));
         }
 
         setIsOpen(!isOpen);
