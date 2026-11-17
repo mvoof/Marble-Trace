@@ -10,18 +10,11 @@ import { useMainLiveWidgetsStore } from '@entities/layout/main-live-widgets-cont
 import { useLayoutGestureStores } from '@features/layout-editor/layout-editor-context';
 import { deleteLayoutAndBackgrounds } from '@features/layout-editor/layout-gestures';
 import { useLayoutFilesStore } from '@features/layout-files/layout-files-context';
-import { useSessionStore } from '@entities/session/session-context';
-import { useCarCatalogueStore } from '@entities/cars/car-catalogue-context';
-import { useStatisticsStore } from '@features/statistics/statistics-context';
-import type {
-  AutoSwitchRule,
-  SavedLayout,
-} from '@shared/contracts/widget-settings';
+import type { SavedLayout } from '@shared/contracts/widget-settings';
 import { cx } from '@shared/lib/class-names';
 
 import { LayoutPreview } from './LayoutPreview';
-import { SESSION_LOOKS } from './session-labels';
-import { ruleCarName } from './rule-options';
+import { ShowWhenBlock } from './ShowWhenBlock';
 import styles from './LayoutCard.module.scss';
 
 interface LayoutCardProps {
@@ -30,9 +23,8 @@ interface LayoutCardProps {
 }
 
 /**
- * One layout: its miniature, name, what it holds and the situations it is
- * auto-switched to (shown, never edited here — that is the Auto-switch
- * block's), with what can be done to it along the bottom.
+ * One layout: its miniature, name, what it holds, the situations that put it
+ * on screen, and what can be done to it along the bottom.
  */
 export const LayoutCard = observer(
   ({ layout, onOpenEditor }: LayoutCardProps) => {
@@ -50,30 +42,6 @@ export const LayoutCard = observer(
 
     const autoSwitchEnabled = appSettings.appSettings.autoSwitchLayouts;
     const isOnScreen = layout.id === layouts.liveLayoutId;
-    const session = useSessionStore();
-    const statistics = useStatisticsStore();
-    const catalogue = useCarCatalogueStore();
-    const liveCars = [...session.fieldCars, ...statistics.knownCars];
-    const layoutRules = layouts.autoSwitchRules.filter(
-      (rule) => rule.layoutId === layout.id
-    );
-
-    const ruleLabel = (rule: AutoSwitchRule): string => {
-      const carName =
-        rule.carId === null
-          ? null
-          : (ruleCarName(catalogue.cars, liveCars, rule.carId) ??
-            t('layoutList.autoSwitch.carById', { id: rule.carId }));
-      const parts = [
-        rule.context === null ? null : t(SESSION_LOOKS[rule.context].labelKey),
-        rule.carClass,
-        carName,
-      ].filter((part): part is string => part !== null);
-
-      return parts.length > 0
-        ? parts.join(' · ')
-        : t('layoutList.autoSwitch.anySituation');
-    };
     const monitorCount = layout.monitors.length;
     const enabledWidgetsCount = layout.widgets.filter(
       (widget) => widget.userSettings.enabled
@@ -143,27 +111,9 @@ export const LayoutCard = observer(
             {' · '}
             {t('layoutList.widgetsCount', { count: enabledWidgetsCount })}
           </span>
-
-          <span className={styles.chips}>
-            {layoutRules.length > 0 ? (
-              layoutRules.map((rule) => (
-                <span
-                  key={rule.id}
-                  className={cx(
-                    styles.chip,
-                    !autoSwitchEnabled && styles.chipOff
-                  )}
-                >
-                  {ruleLabel(rule)}
-                </span>
-              ))
-            ) : (
-              <span className={styles.notAssigned}>
-                {t('layoutList.notAutoSwitched')}
-              </span>
-            )}
-          </span>
         </button>
+
+        <ShowWhenBlock layoutId={layout.id} />
 
         <footer className={styles.actions}>
           <Button

@@ -3,13 +3,17 @@ import type {
   KnownCar,
 } from '@shared/contracts/generated/bindings';
 import type { AutoSwitchRule } from '@shared/contracts/widget-settings';
+import {
+  layoutHolding,
+  type RuleSituation,
+} from '@entities/layout/auto-switch-rules';
 
 export interface RuleOptionsInput {
   catalogue: readonly CatalogueCar[];
   /** The live field's cars, then the recorded ones: the first entry wins. */
   liveCars: readonly KnownCar[];
-  /** The rule being edited. */
-  rule: AutoSwitchRule;
+  /** The situation being picked, not yet a rule. */
+  draft: RuleSituation;
   rules: readonly AutoSwitchRule[];
 }
 
@@ -20,22 +24,33 @@ export interface RuleCar {
   badge: string | null;
 }
 
+/** An option of the picker: `heldBy` is the layout already holding it. */
+export type Held<Option> = Option & { heldBy: string | null };
+
+export interface RuleClass {
+  badge: string;
+}
+
 /** The cars of one badge; `null` holds the cars nothing badges. */
 export interface RuleCarGroup {
   badge: string | null;
-  cars: RuleCar[];
+  cars: Held<RuleCar>[];
 }
 
 export interface RuleOptions {
-  classes: string[];
+  classes: Held<RuleClass>[];
   carGroups: RuleCarGroup[];
+  /** The draft car's badge, shown in place of a class: `null` without a car. */
+  carBadge: string | null;
+  /** The layout already holding the whole draft. */
+  heldBy: string | null;
 }
 
 const byText = (left: string, right: string): number =>
   left.localeCompare(right);
 
-const groupByBadge = (cars: readonly RuleCar[]): RuleCarGroup[] => {
-  const groups = new Map<string | null, RuleCar[]>();
+const groupByBadge = (cars: readonly Held<RuleCar>[]): RuleCarGroup[] => {
+  const groups = new Map<string | null, Held<RuleCar>[]>();
 
   for (const car of cars) {
     groups.set(car.badge, [...(groups.get(car.badge) ?? []), car]);
@@ -99,36 +114,55 @@ const mergeCars = (
 };
 
 /**
- * What the class and car lists of a rule offer: every car still raced, grouped
- * by its badge, and every badge among them. The class and the car narrow each
- * other, so a rule cannot name a car of another class.
+ * What the picker offers for the draft: every car still raced, grouped by its
+ * badge, and every badge among them. The class and the car narrow each other,
+ * so a rule cannot name a car of another class. Each class and car carries the
+ * layout already holding it in the draft's session: one layout per situation.
  */
 export const ruleOptions = ({
   catalogue,
   liveCars,
-  rule,
+  draft,
+  rules,
 }: RuleOptionsInput): RuleOptions => {
-  const cars = mergeCars(catalogue, liveCars, rule.carId);
-  const chosenCar = cars.find((car) => car.carId === rule.carId);
-  // The rule's own class stays listed, though no car carries it any more.
-  const classes = new Set(
-    [...cars.map((car) => car.badge), rule.carClass].filter(
-      (badge): badge is string => badge !== null
-    )
+  const cars = mergeCars(catalogue, liveCars, draft.carId);
+  const chosenCar = cars.find((car) => car.carId === draft.carId);
+  const carBadge = chosenCar?.badge ?? null;
+  const badges = new Set(
+    cars
+      .map((car) => car.badge)
+      .filter((badge): badge is string => badge !== null)
   );
-  const chosenBadge = chosenCar?.badge ?? null;
-  const offeredClasses =
-    chosenBadge === null ? [...classes].sort(byText) : [chosenBadge];
+  const offeredBadges =
+    carBadge === null ? [...badges].sort(byText) : [carBadge];
   const offeredCars = cars.filter(
     (car) =>
-      rule.carClass === null ||
-      car.badge === rule.carClass ||
-      car.carId === rule.carId
+      draft.carClass === null ||
+      car.badge === draft.carClass ||
+      car.carId === draft.carId
   );
 
   return {
-    classes: offeredClasses,
-    carGroups: groupByBadge(offeredCars),
+    classes: offeredBadges.map((badge) => ({
+      badge,
+      heldBy: layoutHolding(rules, {
+        context: draft.context,
+        carClass: badge,
+        carId: null,
+      }),
+    })),
+    carGroups: groupByBadge(
+      offeredCars.map((car) => ({
+        ...car,
+        heldBy: layoutHolding(rules, {
+          context: draft.context,
+          carClass: null,
+          carId: car.carId,
+        }),
+      }))
+    ),
+    carBadge,
+    heldBy: layoutHolding(rules, draft),
   };
 };
 

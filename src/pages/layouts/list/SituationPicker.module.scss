@@ -1,0 +1,56 @@
+.picker {
+  display: flex;
+  flex-direction: column;
+  gap: rem(8);
+  // Wide enough for the five session names in Russian, the longest.
+  width: rem(400);
+}
+
+.carBadge {
+  display: flex;
+  align-items: center;
+  gap: rem(8);
+  min-height: rem(32);
+  font-size: rem(13);
+  font-weight: 600;
+  color: $sys-text-primary;
+}
+
+.carBadgeLabel {
+  font-weight: 400;
+  color: $sys-text-muted;
+}
+
+.option {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: rem(8);
+}
+
+.optionLabel {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.optionNote {
+  flex: 0 0 auto;
+  font-size: rem(11);
+  color: $sys-text-muted;
+}
+
+.pickerFooter {
+  display: flex;
+  align-items: center;
+  gap: rem(8);
+}
+
+.heldNote {
+  font-size: rem(12);
+  color: $sys-text-muted;
+}
+
+.addButton {
+  margin-left: auto;
+}

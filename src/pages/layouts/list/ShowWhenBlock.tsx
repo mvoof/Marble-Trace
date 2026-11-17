@@ -1,0 +1,114 @@
+import { useState } from 'react';
+import { observer } from 'mobx-react-lite';
+import { useTranslation } from 'react-i18next';
+import { Button, Popover } from 'antd';
+import { Plus, X } from 'lucide-react';
+
+import { useAppSettingsStore } from '@entities/app-settings/app-settings-context';
+import { useLayoutsStore } from '@entities/layout/layouts-context';
+import { useCarCatalogueStore } from '@entities/cars/car-catalogue-context';
+import type { AutoSwitchRule } from '@shared/contracts/widget-settings';
+import { cx } from '@shared/lib/class-names';
+
+import { SESSION_LOOKS } from './session-labels';
+import { ruleCarName } from './rule-options';
+import { SituationPicker } from './SituationPicker';
+import { useLiveCars } from './use-live-cars';
+import styles from './ShowWhenBlock.module.scss';
+
+interface ShowWhenBlockProps {
+  layoutId: string;
+}
+
+/**
+ * The situations that put a layout on screen, as chips: removed by their
+ * cross, added through the `+` picker.
+ */
+export const ShowWhenBlock = observer(({ layoutId }: ShowWhenBlockProps) => {
+  const layouts = useLayoutsStore();
+  const appSettings = useAppSettingsStore();
+  const catalogue = useCarCatalogueStore();
+  const liveCars = useLiveCars();
+  const { t } = useTranslation('main-app');
+  const [isPicking, setIsPicking] = useState(false);
+
+  const autoSwitchEnabled = appSettings.appSettings.autoSwitchLayouts;
+  const layoutRules = layouts.autoSwitchRules.filter(
+    (rule) => rule.layoutId === layoutId
+  );
+
+  const ruleLabel = (rule: AutoSwitchRule): string => {
+    const carName =
+      rule.carId === null
+        ? null
+        : (ruleCarName(catalogue.cars, liveCars, rule.carId) ??
+          t('layoutList.autoSwitch.carById', { id: rule.carId }));
+    const sessionName =
+      rule.context === null
+        ? t('layoutList.autoSwitch.anySession')
+        : t(SESSION_LOOKS[rule.context].labelKey);
+    const parts = [sessionName, rule.carClass, carName].filter(
+      (part): part is string => part !== null
+    );
+
+    return parts.join(' · ');
+  };
+
+  return (
+    <section className={styles.block}>
+      <span className={styles.title}>
+        {t('layoutList.autoSwitch.showWhen')}
+      </span>
+
+      <div className={styles.chips}>
+        {layoutRules.length === 0 && (
+          <span className={styles.notAssigned}>
+            {t('layoutList.notAutoSwitched')}
+          </span>
+        )}
+
+        {layoutRules.map((rule) => (
+          <span
+            key={rule.id}
+            className={cx(styles.chip, !autoSwitchEnabled && styles.chipOff)}
+          >
+            {ruleLabel(rule)}
+
+            <button
+              type="button"
+              className={styles.removeChip}
+              onClick={() => layouts.removeAutoSwitchRule(rule.id)}
+              aria-label={t('layoutList.autoSwitch.removeSituation')}
+              title={t('layoutList.autoSwitch.removeSituation')}
+            >
+              <X size={12} />
+            </button>
+          </span>
+        ))}
+
+        <Popover
+          trigger="click"
+          placement="bottomLeft"
+          open={isPicking}
+          onOpenChange={setIsPicking}
+          destroyOnHidden
+          content={
+            <SituationPicker
+              layoutId={layoutId}
+              onAdded={() => setIsPicking(false)}
+            />
+          }
+        >
+          <Button
+            size="small"
+            type="text"
+            className={styles.addChip}
+            icon={<Plus size={14} />}
+            aria-label={t('layoutList.autoSwitch.addSituation')}
+            title={t('layoutList.autoSwitch.addSituation')}
+          />
+        </Popover>
+      </div>
+    </section>
+  );
+});

@@ -69,35 +69,6 @@
   color: $sys-text-muted;
 }
 
-.chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: rem(4);
-  min-height: rem(22);
-  align-items: center;
-  margin-top: rem(4);
-}
-
-.chip {
-  font-size: rem(11);
-  line-height: rem(20);
-  padding: 0 rem(8);
-  border-radius: rem(10);
-  border: 1px solid $sys-border-main;
-  color: $sys-text-secondary;
-}
-
-// Assigned, but auto-switch is off: the assignment waits.
-.chipOff {
-  color: $sys-text-muted;
-  border-style: dashed;
-}
-
-.notAssigned {
-  font-size: rem(12);
-  color: $sys-text-muted;
-}
-
 .actions {
   display: flex;
   align-items: center;

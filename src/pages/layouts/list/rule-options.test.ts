@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
+import type { RuleSituation } from '@entities/layout/auto-switch-rules';
 import type {
   CatalogueCar,
   KnownCar,
@@ -21,13 +22,20 @@ const liveCar = (
   carClass: string | null
 ): KnownCar => ({ carId, carName, carClass });
 
-const rule = (patch: Partial<AutoSwitchRule> = {}): AutoSwitchRule => ({
-  id: 'rule',
+const draft = (patch: Partial<RuleSituation> = {}): RuleSituation => ({
   context: null,
   carClass: null,
   carId: null,
-  layoutId: 'layout',
   ...patch,
+});
+
+const heldRule = (
+  layoutId: string,
+  patch: Partial<RuleSituation>
+): AutoSwitchRule => ({
+  id: `${layoutId}-rule`,
+  layoutId,
+  ...draft(patch),
 });
 
 const CATALOGUE = [
@@ -37,29 +45,32 @@ const CATALOGUE = [
   catalogueCar(67, 'Global Mazda MX-5 Cup', 'MX-5'),
 ];
 
-const carIdsOf = (options: ReturnType<typeof ruleOptions>): number[][] =>
+type Options = ReturnType<typeof ruleOptions>;
+
+const carIdsOf = (options: Options): number[][] =>
   options.carGroups.map((group) => group.cars.map((car) => car.carId));
+
+const badgesOf = (options: Options): string[] =>
+  options.classes.map((option) => option.badge);
 
 describe('ruleOptions', () => {
   it('offers every badge of the catalogue as a class, once each', () => {
-    const editing = rule();
     const options = ruleOptions({
       catalogue: CATALOGUE,
       liveCars: [],
-      rule: editing,
-      rules: [editing],
+      draft: draft(),
+      rules: [],
     });
 
-    expect(options.classes).toEqual(['GT3', 'GT4', 'MX-5']);
+    expect(badgesOf(options)).toEqual(['GT3', 'GT4', 'MX-5']);
   });
 
   it('groups the cars by badge, by name, and leaves retired cars out', () => {
-    const editing = rule();
     const options = ruleOptions({
       catalogue: [...CATALOGUE, catalogueCar(1, 'Skip Barber', 'SBRS', true)],
       liveCars: [],
-      rule: editing,
-      rules: [editing],
+      draft: draft(),
+      rules: [],
     });
 
     expect(options.carGroups.map((group) => group.badge)).toEqual([
@@ -68,71 +79,56 @@ describe('ruleOptions', () => {
       'MX-5',
     ]);
     expect(carIdsOf(options)).toEqual([[173, 156], [150], [67]]);
-    expect(options.classes).not.toContain('SBRS');
+    expect(badgesOf(options)).not.toContain('SBRS');
   });
 
   it('narrows the cars to the chosen class', () => {
-    const editing = rule({ carClass: 'GT3' });
     const options = ruleOptions({
       catalogue: CATALOGUE,
       liveCars: [],
-      rule: editing,
-      rules: [editing],
+      draft: draft({ carClass: 'GT3' }),
+      rules: [],
     });
 
     expect(carIdsOf(options)).toEqual([[173, 156]]);
   });
 
   it("narrows the classes to the chosen car's badge", () => {
-    const editing = rule({ carId: 150 });
     const options = ruleOptions({
       catalogue: CATALOGUE,
       liveCars: [],
-      rule: editing,
-      rules: [editing],
+      draft: draft({ carId: 150 }),
+      rules: [],
     });
 
-    expect(options.classes).toEqual(['GT4']);
+    expect(badgesOf(options)).toEqual(['GT4']);
+    expect(options.carBadge).toBe('GT4');
   });
 
-  it("keeps the rule's own class listed though no car carries it", () => {
-    const editing = rule({ carClass: 'GT3 Class' });
-    const options = ruleOptions({
-      catalogue: CATALOGUE,
-      liveCars: [],
-      rule: editing,
-      rules: [editing],
-    });
-
-    expect(options.classes).toEqual(['GT3', 'GT3 Class', 'GT4', 'MX-5']);
-  });
-
-  it('keeps a retired car the rule already names, by its name', () => {
-    const editing = rule({ carId: 1 });
+  it('keeps a retired car the draft already names, by its name', () => {
     const options = ruleOptions({
       catalogue: [...CATALOGUE, catalogueCar(1, 'Skip Barber', 'SBRS', true)],
       liveCars: [],
-      rule: editing,
-      rules: [editing],
+      draft: draft({ carId: 1 }),
+      rules: [],
     });
 
     expect(options.carGroups.at(-1)).toEqual({
       badge: 'SBRS',
-      cars: [{ carId: 1, name: 'Skip Barber', badge: 'SBRS' }],
+      cars: [{ carId: 1, name: 'Skip Barber', badge: 'SBRS', heldBy: null }],
     });
-    expect(options.classes).toEqual(['SBRS']);
+    expect(badgesOf(options)).toEqual(['SBRS']);
   });
 
   it('adds a car only the live field knows, under its class', () => {
-    const editing = rule();
     const options = ruleOptions({
       catalogue: CATALOGUE,
       liveCars: [
         liveCar(999, 'Brand New GT3', 'GT3'),
         liveCar(998, 'Kart', null),
       ],
-      rule: editing,
-      rules: [editing],
+      draft: draft(),
+      rules: [],
     });
 
     expect(carIdsOf(options)).toEqual([[999, 173, 156], [150], [67], [998]]);
@@ -140,22 +136,65 @@ describe('ruleOptions', () => {
   });
 
   it('lets the first live entry win for a car the catalogue knows too', () => {
-    const editing = rule();
     const options = ruleOptions({
       catalogue: CATALOGUE,
       liveCars: [
         liveCar(67, 'Mazda MX-5 Cup', 'MX5 Cup'),
         liveCar(67, 'Mazda MX-5 (recorded)', 'MX-5 Class'),
       ],
-      rule: editing,
-      rules: [editing],
+      draft: draft(),
+      rules: [],
     });
 
-    expect(options.classes).toEqual(['GT3', 'GT4', 'MX5 Cup']);
+    expect(badgesOf(options)).toEqual(['GT3', 'GT4', 'MX5 Cup']);
     expect(options.carGroups.at(-1)).toEqual({
       badge: 'MX5 Cup',
-      cars: [{ carId: 67, name: 'Mazda MX-5 Cup', badge: 'MX5 Cup' }],
+      cars: [
+        { carId: 67, name: 'Mazda MX-5 Cup', badge: 'MX5 Cup', heldBy: null },
+      ],
     });
+  });
+
+  it('marks a class and a car held in the chosen session by their layout', () => {
+    const rules = [
+      heldRule('race-gt3', { context: 'Race', carClass: 'GT3' }),
+      heldRule('race-amg', { context: 'Race', carId: 156 }),
+      heldRule('any-gt4', { carClass: 'GT4' }),
+    ];
+    const options = ruleOptions({
+      catalogue: CATALOGUE,
+      liveCars: [],
+      draft: draft({ context: 'Race' }),
+      rules,
+    });
+
+    expect(options.classes).toEqual([
+      { badge: 'GT3', heldBy: 'race-gt3' },
+      { badge: 'GT4', heldBy: null },
+      { badge: 'MX-5', heldBy: null },
+    ]);
+    expect(
+      options.carGroups[0]?.cars.map((car) => [car.carId, car.heldBy])
+    ).toEqual([
+      [173, null],
+      [156, 'race-amg'],
+    ]);
+  });
+
+  it('names the layout holding the whole draft, or none', () => {
+    const rules = [heldRule('race-gt3', { context: 'Race', carClass: 'GT3' })];
+    const optionsFor = (situation: RuleSituation) =>
+      ruleOptions({
+        catalogue: CATALOGUE,
+        liveCars: [],
+        draft: situation,
+        rules,
+      });
+
+    expect(optionsFor(draft({ context: 'Race', carClass: 'GT3' })).heldBy).toBe(
+      'race-gt3'
+    );
+    expect(optionsFor(draft({ carClass: 'GT3' })).heldBy).toBeNull();
   });
 });
 
