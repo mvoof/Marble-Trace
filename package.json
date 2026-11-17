@@ -16,7 +16,7 @@
     "build": "tsc && vite build",
     "preview": "vite preview",
     "tauri": "tauri",
-    "pretauri:dev": "node scripts/free-dev-ports.mjs",
+    "pretauri:dev": "node scripts/stop-leftover-dev.mjs",
     "tauri:dev": "tauri dev --features dev",
     "version-bump": "node scripts/bump-version.mjs",
     "wheel:trace": "uv run --no-project scripts/trace-wheel-svg.py",
