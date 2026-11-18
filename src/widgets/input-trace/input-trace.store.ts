@@ -71,8 +71,7 @@ export class InputTraceWidgetStore {
 
   /**
    * Where the webview loads the user's own wheel picture from. `null` with no
-   * picture set, and on a remote screen, which cannot reach the app's files —
-   * the wheel then falls back to the drawn dial.
+   * picture set. Remote screens load it from the Remote Server.
    */
   customWheelSrc: string | null = null;
 
