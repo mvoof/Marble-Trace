@@ -3202,6 +3202,9 @@ body.is-viewer-open {
    ========================================================================== */
 
 .page-edit {
+  /* The overlay's own edit colour ($race-green), not the site accent */
+  --edit-mark: #10b981;
+
   position: fixed;
   inset: 0;
   z-index: 1050;
@@ -3240,9 +3243,8 @@ body.is-viewer-open {
   top: 0;
   left: 0;
   box-sizing: border-box;
-  border: 1px solid rgba(var(--accent-rgb), 0.75);
-  /* A dark rim around the light marks, so they still read on the page's own
-     graphite band */
+  border: 1px dashed var(--edit-mark);
+  /* A dark rim around the marks, so they still read on a light block */
   filter: drop-shadow(0 0 1px rgba(11, 16, 21, 0.85));
   pointer-events: auto;
   cursor: grab;
@@ -3250,14 +3252,14 @@ body.is-viewer-open {
 
 .page-edit-frame.is-grabbing {
   cursor: grabbing;
-  border-color: var(--color-btn-download-bg);
+  border-style: solid;
 }
 
 .page-edit-corner {
   position: absolute;
   width: 16px;
   height: 16px;
-  border: 0 solid var(--color-btn-download-bg);
+  border: 0 solid var(--edit-mark);
 }
 
 .page-edit-corner-tl {
@@ -3300,8 +3302,8 @@ body.is-viewer-open {
   letter-spacing: 0.1em;
   text-transform: uppercase;
   white-space: nowrap;
-  color: var(--color-btn-download-text);
-  background-color: var(--color-btn-download-bg);
+  color: #0b1015;
+  background-color: var(--edit-mark);
 }
 
 .page-edit-bar {
@@ -3338,7 +3340,7 @@ body.is-viewer-open {
   width: 0.5rem;
   height: 0.5rem;
   border-radius: 50%;
-  background-color: var(--accent-bright);
+  background-color: var(--edit-mark);
 }
 
 .page-edit-time {
