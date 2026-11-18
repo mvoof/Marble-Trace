@@ -1809,29 +1809,63 @@
       }
     ]
   },
-  "assets/why/scene.webp": {
-    "width": 2560,
-    "height": 1072,
+  "assets/why/hero-cockpit.webp": {
+    "width": 3440,
+    "height": 1440,
     "variants": [
       {
         "width": 480,
-        "path": "assets/img/why/scene-480.webp"
+        "path": "assets/img/why/hero-cockpit-480.webp"
       },
       {
         "width": 960,
-        "path": "assets/img/why/scene-960.webp"
+        "path": "assets/img/why/hero-cockpit-960.webp"
       },
       {
         "width": 1440,
-        "path": "assets/img/why/scene-1440.webp"
+        "path": "assets/img/why/hero-cockpit-1440.webp"
       },
       {
         "width": 1920,
-        "path": "assets/img/why/scene-1920.webp"
+        "path": "assets/img/why/hero-cockpit-1920.webp"
       },
       {
         "width": 2560,
-        "path": "assets/img/why/scene-2560.webp"
+        "path": "assets/img/why/hero-cockpit-2560.webp"
+      },
+      {
+        "width": 2560,
+        "path": "assets/img/why/hero-cockpit-2560.webp"
+      }
+    ]
+  },
+  "assets/why/hero-overlay.png": {
+    "width": 3440,
+    "height": 1440,
+    "variants": [
+      {
+        "width": 480,
+        "path": "assets/img/why/hero-overlay-480.webp"
+      },
+      {
+        "width": 960,
+        "path": "assets/img/why/hero-overlay-960.webp"
+      },
+      {
+        "width": 1440,
+        "path": "assets/img/why/hero-overlay-1440.webp"
+      },
+      {
+        "width": 1920,
+        "path": "assets/img/why/hero-overlay-1920.webp"
+      },
+      {
+        "width": 2560,
+        "path": "assets/img/why/hero-overlay-2560.webp"
+      },
+      {
+        "width": 2560,
+        "path": "assets/img/why/hero-overlay-2560.webp"
       }
     ]
   },

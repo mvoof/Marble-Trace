@@ -330,20 +330,142 @@ button:focus-visible {
   color: #a3abb5;
 }
 
-/* The blurred side dissolves into the hero ground along the same axis */
-.hero-fade-left {
+/* ---- The overlay switching on ---------------------------------------------
+
+   The widgets arrive over the bare cockpit with a short power-on flicker,
+   while a toast says what happened and leaves after three seconds. Runs once,
+   on load; with reduced motion the widgets are simply there. */
+.hero-overlay {
+  /* The capture is a transparent window: no tone-down, the widgets keep
+     their own colours over the held-down cockpit. */
+  filter: none;
+  opacity: 0;
+  animation: hero-overlay-on 0.9s steps(1, end) 0.7s forwards;
+}
+
+@keyframes hero-overlay-on {
+  0% {
+    opacity: 0.55;
+  }
+
+  12% {
+    opacity: 0.1;
+  }
+
+  24% {
+    opacity: 0.8;
+  }
+
+  36% {
+    opacity: 0.35;
+  }
+
+  100% {
+    opacity: 1;
+  }
+}
+
+.hero-overlay-toast {
   position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background: linear-gradient(
+  top: 46%;
+  left: 74%;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin: 0;
+  padding: 0.7rem 1.15rem;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 6px;
+  background: rgba(13, 16, 20, 0.86);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
+  color: #ffffff;
+  font-family: var(--font-hero-heading);
+  font-size: 0.95rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(0.96);
+  animation: hero-toast 3.6s ease 0.7s forwards;
+}
+
+.hero-overlay-dot {
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: 50%;
+  background: #22c55e;
+  box-shadow: 0 0 10px #22c55e;
+}
+
+@keyframes hero-toast {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.96);
+  }
+
+  8%,
+  88% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-overlay {
+    opacity: 1;
+    animation: none;
+  }
+
+  .hero-overlay-toast {
+    display: none;
+  }
+}
+
+/* The copy side: frosted windscreen glass. The picture blurs out under the
+   text along the slanted axis instead of washing to flat white, and two soft
+   glare bands cross it parallel to the cuts. Light enough for the dark copy. */
+.hero-fade-left {
+  --glass-mask: linear-gradient(
     var(--wash-angle),
-    rgba(227, 230, 234, 0.96) 0%,
-    rgba(227, 230, 234, 0.94) 38%,
-    rgba(227, 230, 234, 0.84) 50%,
-    rgba(227, 230, 234, 0.5) 58%,
-    rgba(227, 230, 234, 0.18) 65%,
+    #000 0%,
+    #000 44%,
+    rgba(0, 0, 0, 0.75) 54%,
+    rgba(0, 0, 0, 0.3) 63%,
     transparent 72%
   );
+
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+  background:
+    linear-gradient(
+      var(--wash-angle),
+      transparent 14%,
+      rgba(255, 255, 255, 0.35) 22%,
+      transparent 30%,
+      transparent 40%,
+      rgba(255, 255, 255, 0.28) 45%,
+      transparent 50%
+    ),
+    linear-gradient(
+      var(--wash-angle),
+      rgba(232, 236, 241, 0.86) 0%,
+      rgba(226, 231, 237, 0.8) 40%,
+      rgba(220, 226, 233, 0.62) 56%,
+      rgba(220, 226, 233, 0.3) 64%,
+      transparent 72%
+    );
+  -webkit-backdrop-filter: blur(14px) saturate(1.2);
+  backdrop-filter: blur(14px) saturate(1.2);
+  -webkit-mask-image: var(--glass-mask);
+  mask-image: var(--glass-mask);
 }
 
 /* Near-vertical slanted cut peeling a light strip off the right edge.
@@ -354,6 +476,7 @@ button:focus-visible {
 .cut-line {
   position: absolute;
   inset: 0;
+  z-index: 4;
   pointer-events: none;
 }
 
@@ -782,7 +905,8 @@ button:focus-visible {
   }
 
   .hero-visual .cut-line,
-  .hero-visual .cut-glare {
+  .hero-visual .cut-glare,
+  .hero-overlay-toast {
     display: none;
   }
 }

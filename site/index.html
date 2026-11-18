@@ -587,14 +587,29 @@
 
           <div class="hero-visual">
             <img
-              src="assets/why/scene.webp"
-              alt="Marble Trace widgets over the iRacing cockpit: standings, relative, track map, fuel, weather, radar and the race dash"
+              src="assets/why/hero-cockpit.webp"
+              alt=""
               class="hero-photo"
               fetchpriority="high"
               decoding="async"
             />
 
-            <!-- The blurred side dissolves into the hero ground along the same axis -->
+            <!-- The overlay switching on over the bare cockpit, once, on arrival.
+                 Same frame size as the cockpit, so both cover-fit identically. -->
+            <img
+              src="assets/why/hero-overlay.png"
+              alt="Marble Trace widgets over the iRacing cockpit: standings, lap log, relative, track map, fuel, weather, radar and the race dash"
+              class="hero-photo hero-overlay"
+              fetchpriority="high"
+              decoding="async"
+            />
+
+            <p class="hero-overlay-toast" aria-hidden="true">
+              <span class="hero-overlay-dot"></span>Overlay on
+            </p>
+
+            <!-- Frosted glass with a windscreen glare: the copy side, where the
+                 picture blurs out under the text instead of washing to white -->
             <div class="hero-fade-left"></div>
 
             <!-- Specular bloom and crisp hairlines riding the slanted cuts -->
