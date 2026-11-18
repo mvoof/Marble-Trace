@@ -918,12 +918,12 @@
     ]
   },
   "assets/widgets/pit-line.png": {
-    "width": 288,
-    "height": 1302,
+    "width": 240,
+    "height": 1254,
     "variants": [
       {
-        "width": 288,
-        "path": "assets/img/widgets/pit-line-288.webp"
+        "width": 240,
+        "path": "assets/img/widgets/pit-line-240.webp"
       }
     ]
   },

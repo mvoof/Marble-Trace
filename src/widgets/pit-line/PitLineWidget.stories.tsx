@@ -7,6 +7,7 @@ import {
   SAMPLE_PIT_IN_PCT,
 } from '@features/preview/sample-track';
 import { PitLineWidget } from './PitLineWidget';
+import { PIT_LINE_MANIFEST } from './manifest';
 import {
   defineWidgetStories,
   previewScenario,
@@ -27,9 +28,19 @@ interface StoryArgs {
   leavingBox?: boolean;
 }
 
-// The limit plate hangs above the frame, as `overflowVisible` lets it in the
-// overlay.
-const WIDGET_SIZE = { width: 80, height: 380, overflow: 'visible' };
+const { currentWidth: SHIPPED_WIDTH, currentHeight: SHIPPED_HEIGHT } =
+  PIT_LINE_MANIFEST.userSettings;
+
+// The shipped size, scaled the way the overlay scales it: the frame is
+// narrower than the design width, and without `--wfs` the numbers keep their
+// design size and run out of the columns. The limit plate hangs above the
+// frame, as `overflowVisible` lets it in the overlay.
+const WIDGET_SIZE = {
+  width: SHIPPED_WIDTH,
+  height: SHIPPED_HEIGHT,
+  overflow: 'visible',
+  scale: SHIPPED_WIDTH / PIT_LINE_MANIFEST.designWidth,
+};
 
 // The sample track's pit lane wraps the start/finish line, so the span and the
 // stall's place in it are measured the long way round.
