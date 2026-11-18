@@ -7,12 +7,13 @@
 //! in development, so
 //! `npm run tauri:dev` serves a remote screen without a separate build step.
 use std::net::{Ipv4Addr, SocketAddr};
+use std::path::PathBuf;
 use std::sync::atomic::Ordering;
 use std::sync::Arc;
 
 use axum::extract::ws::{CloseFrame, Message, WebSocket, WebSocketUpgrade};
 use axum::extract::{ConnectInfo, Path, Query, State};
-use axum::http::{header, HeaderMap, StatusCode};
+use axum::http::{header, HeaderMap, HeaderValue, StatusCode};
 use axum::middleware;
 use axum::response::{IntoResponse, Response};
 use axum::routing::get;
@@ -66,6 +67,7 @@ pub trait BundleAssets: Send + Sync {
 pub struct RemoteHost {
     pub sink: Arc<dyn EventSink>,
     pub assets: Arc<dyn BundleAssets>,
+    pub wheel_dir: PathBuf,
 }
 
 #[derive(Clone)]
@@ -169,6 +171,7 @@ pub async fn serve(
         .route("/ws", get(websocket))
         .route("/r/{slug}", get(remote_page))
         .route("/r/{slug}/", get(remote_page))
+        .route("/wheels/{name}", get(wheel_image))
         .fallback(get(asset))
         .layer(middleware::from_fn(csp::apply))
         .with_state(state);
@@ -198,6 +201,55 @@ pub async fn serve(
 
 async fn health() -> impl IntoResponse {
     (StatusCode::OK, "ok")
+}
+
+/// Serves a stored wheel image to authenticated remote screens.
+async fn wheel_image(
+    State(state): State<ServerState>,
+    ConnectInfo(peer): ConnectInfo<SocketAddr>,
+    Path(name): Path<String>,
+    Query(query): Query<AuthQuery>,
+) -> Response {
+    if !authorized(&state, &peer, query.token.as_deref()) {
+        return (StatusCode::UNAUTHORIZED, "unauthorized").into_response();
+    }
+
+    let Some(hash) = name.strip_suffix(".webp") else {
+        return (StatusCode::NOT_FOUND, "wheel image not found").into_response();
+    };
+
+    if hash.len() != 64
+        || !hash
+            .bytes()
+            .all(|byte| byte.is_ascii_hexdigit() && !byte.is_ascii_uppercase())
+    {
+        return (StatusCode::NOT_FOUND, "wheel image not found").into_response();
+    }
+
+    let path = state.host.wheel_dir.join(&name);
+
+    match tokio::fs::read(path).await {
+        Ok(bytes) => {
+            let mut headers = HeaderMap::new();
+            headers.insert(header::CONTENT_TYPE, HeaderValue::from_static("image/webp"));
+            headers.insert(
+                header::CACHE_CONTROL,
+                HeaderValue::from_static("private, max-age=31536000, immutable"),
+            );
+            (StatusCode::OK, headers, bytes).into_response()
+        }
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => {
+            (StatusCode::NOT_FOUND, "wheel image not found").into_response()
+        }
+        Err(error) => {
+            warn!("remote: failed to read wheel image '{}': {}", name, error);
+            (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                "failed to read wheel image",
+            )
+                .into_response()
+        }
+    }
 }
 
 /// Landing page listing the screens this server serves.

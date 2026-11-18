@@ -118,6 +118,7 @@ fn setup(app: &mut App) -> Result<(), Box<dyn Error>> {
     app.manage(RemoteHost {
         sink: Arc::new(TauriSink(app.handle().clone())),
         assets: Arc::new(TauriAssets(app.handle().clone())),
+        wheel_dir: app.path().app_data_dir()?.join("wheels"),
     });
     app.manage(Arc::clone(&hotkeys));
 

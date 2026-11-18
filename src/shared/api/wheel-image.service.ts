@@ -36,8 +36,8 @@ export const saveWheelImage = async (
 };
 
 /**
- * The URL a webview loads the picture from, or `null` where there is no Tauri
- * behind the page — a remote screen in a browser cannot reach the app's files.
+ * The URL a webview loads the picture from, or the Remote Server URL when
+ * running in a plain browser.
  */
 export const resolveWheelImageSrc = async (
   name: string
@@ -45,6 +45,9 @@ export const resolveWheelImageSrc = async (
   try {
     return convertFileSrc(await join(await appDataDir(), WHEELS_DIR, name));
   } catch {
-    return null;
+    const token = new URLSearchParams(window.location.search).get('t');
+    const query = token ? `?t=${encodeURIComponent(token)}` : '';
+
+    return `/wheels/${encodeURIComponent(name)}${query}`;
   }
 };
