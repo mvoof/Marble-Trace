@@ -1307,13 +1307,16 @@ button:focus-visible {
   position: absolute;
   left: var(--x);
   top: var(--y);
-  width: 1.1rem;
-  height: 1.1rem;
+  /* The same marker as the screenshots' hotspots (hotspots.css) */
+  width: 1.6rem;
+  height: 1.6rem;
   padding: 0;
-  border: 2px solid #fff;
+  border: 2px solid #0b1015;
   border-radius: 50%;
-  background-color: var(--color-btn-download-bg);
-  box-shadow: 0 0.2rem 0.6rem rgba(0, 0, 0, 0.35);
+  background-color: #ffffff;
+  color: #0b1015;
+  font: 700 0.9rem/1 var(--font-mono);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.45);
   transform: translate(-50%, -50%);
   cursor: pointer;
 }
@@ -1323,8 +1326,20 @@ button:focus-visible {
   position: absolute;
   inset: -2px;
   border-radius: 50%;
-  border: 2px solid var(--color-btn-download-bg);
+  border: 2px solid #ffffff;
   animation: screens-pulse 1.8s ease-out infinite;
+}
+
+.screens-spot::after {
+  content: '+';
+}
+
+@media (max-width: 640px) {
+  .screens-spot {
+    width: 1.25rem;
+    height: 1.25rem;
+    font-size: 0.75rem;
+  }
 }
 
 @keyframes screens-pulse {
@@ -1843,11 +1858,19 @@ button:focus-visible {
   position: relative;
   aspect-ratio: 43 / 18;
   cursor: zoom-in;
-  overflow: hidden;
   border-radius: 10px;
   border: 1px solid rgba(255, 255, 255, 0.12);
   background-color: #0b0e12;
   box-shadow: 0 1.8rem 3.6rem -1.2rem rgba(0, 0, 0, 0.6);
+}
+
+/* The clip lives on the pictures alone: a marker's note may run past the
+   frame instead of being cut by it. */
+.layout-frame {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  border-radius: inherit;
 }
 
 .layout-shot {
@@ -1868,16 +1891,18 @@ button:focus-visible {
   transform: none;
 }
 
+/* Under the screen, not on it: every corner of a shot holds a widget. */
+.layout-screen-foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem 1.5rem;
+  margin-top: 1rem;
+}
+
 .layout-screen-label {
-  position: absolute;
-  /* Bottom centre is the car's own dash in every shot: no widget there */
-  left: 50%;
-  bottom: 3%;
-  z-index: 2;
-  transform: translateX(-50%);
-  padding: 0.3rem 0.8rem;
-  border-radius: 999px;
-  background-color: rgba(11, 16, 21, 0.78);
+  margin: 0;
   font-family: var(--font-mono);
   font-size: 0.66rem;
   letter-spacing: 0.16em;
@@ -1893,7 +1918,6 @@ button:focus-visible {
 .layout-screen-proof {
   display: inline-flex;
   gap: 0.4rem;
-  margin-top: 1rem;
   padding: 0;
   border: 0;
   background: none;
@@ -1936,12 +1960,6 @@ button:focus-visible {
 
   .shot-devices {
     width: 100%;
-  }
-
-  /* The session strip above already names the layout, and at this width the
-     label covers a widget */
-  .layout-screen-label {
-    display: none;
   }
 }
 

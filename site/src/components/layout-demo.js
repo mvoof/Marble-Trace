@@ -28,9 +28,9 @@
       return;
     }
 
-    const sessionLabel = screen.querySelector('[data-layout-label]');
-    const classLabel = screen.querySelector('[data-layout-class]');
-    const classLabelPart = screen.querySelector('[data-layout-class-part]');
+    const sessionLabel = document.querySelector('[data-layout-label]');
+    const classLabel = document.querySelector('[data-layout-class]');
+    const classLabelPart = document.querySelector('[data-layout-class-part]');
     const classButtons = Array.from(
       document.querySelectorAll('[data-car-class]')
     );
