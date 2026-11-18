@@ -1466,7 +1466,8 @@ button:focus-visible {
 }
 
 .screens-net-sub-hub {
-  fill: var(--color-btn-download-bg);
+  /* The hub is a dark disc on the light page: the dark-ground accent */
+  fill: #e0e0e0;
 }
 
 .screens-net-flow {
@@ -1631,7 +1632,7 @@ button:focus-visible {
 }
 
 .pill-lit {
-  color: #0b1015;
+  color: var(--color-btn-download-text);
   background-color: var(--color-btn-download-bg);
   border-color: var(--color-btn-download-bg);
 }
@@ -1752,7 +1753,7 @@ button:focus-visible {
 }
 
 .session-step.is-active {
-  color: #0b1015;
+  color: var(--color-btn-download-text);
   background-color: var(--color-btn-download-bg);
 }
 
@@ -2349,7 +2350,7 @@ button:focus-visible {
 }
 
 .perf-rate-option[aria-pressed='true'] {
-  color: #0b1015;
+  color: var(--color-btn-download-text);
   background-color: var(--band-accent);
 }
 
@@ -3299,7 +3300,7 @@ body.is-viewer-open {
   letter-spacing: 0.1em;
   text-transform: uppercase;
   white-space: nowrap;
-  color: #0b1015;
+  color: var(--color-btn-download-text);
   background-color: var(--color-btn-download-bg);
 }
 
