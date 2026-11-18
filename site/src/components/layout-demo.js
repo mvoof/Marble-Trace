@@ -1,23 +1,25 @@
 /**
  * Marble Trace Site — Layouts demo
  *
- * The session strip and the screen beside it are the auto-switch acted out:
- * the strip steps through the sessions on its own and the screen crossfades
- * to the screenshot of that session's layout. A click on a session goes
- * straight there and holds it a little longer before the strip moves on.
+ * The auto-switch acted out: a car class and a session pick the layout, and
+ * the screen crossfades to its screenshot. The garage is one layout for every
+ * car; practice, qualifying and the race have one per class.
  *
- * A session is only offered once its screenshot has loaded: one that is
- * missing takes its button out of the strip, so a shot not taken yet never
- * shows up as an empty frame.
+ * Until the reader picks something, the demo steps through every shot on its
+ * own: the garage, then each class session by session. The first click on a
+ * class or a session hands the choice to the reader for good.
+ *
+ * A shot that fails to load leaves the demo: its session is hidden for that
+ * class, so a missing picture never shows up as an empty frame.
  */
 
 (() => {
   'use strict';
 
   const STEP_MS = 3600;
-  const HOLD_AFTER_CLICK_MS = 7000;
   const ACTIVE_CLASS = 'is-active';
   const TIMING_CLASS = 'is-timing';
+  const SHARED_SESSION = 'garage';
 
   const initLayoutDemo = () => {
     const screen = document.querySelector('[data-layout-screen]');
@@ -26,142 +28,225 @@
       return;
     }
 
-    const label = screen.querySelector('[data-layout-label]');
-    const entries = Array.from(document.querySelectorAll('[data-session]'))
-      .map((button) => ({
-        button,
-        shot: screen.querySelector(`[data-shot="${button.dataset.session}"]`),
-        hotspots: screen.querySelector(
-          `[data-hotspots-for="${button.dataset.session}"]`
-        ),
-      }))
-      .filter((entry) => entry.shot);
-
-    let active = entries.find((entry) =>
-      entry.shot.classList.contains(ACTIVE_CLASS)
+    const sessionLabel = screen.querySelector('[data-layout-label]');
+    const classLabel = screen.querySelector('[data-layout-class]');
+    const classLabelPart = screen.querySelector('[data-layout-class-part]');
+    const classButtons = Array.from(
+      document.querySelectorAll('[data-car-class]')
     );
+    const sessionButtons = Array.from(
+      document.querySelectorAll('[data-session]')
+    );
+    const shots = new Map(
+      Array.from(screen.querySelectorAll('[data-shot]')).map((shot) => [
+        shot.dataset.shot,
+        shot,
+      ])
+    );
+
+    const shotKey = (carClass, session) =>
+      session === SHARED_SESSION ? session : `${carClass}-${session}`;
+
+    const hasShot = (carClass, session) =>
+      shots.has(shotKey(carClass, session));
+
+    const activeButton = (buttons) =>
+      buttons.find((button) => button.classList.contains(ACTIVE_CLASS));
+
+    let carClass = activeButton(classButtons)?.dataset.carClass;
+    let session = activeButton(sessionButtons)?.dataset.session;
     let timer = 0;
     let visible = false;
+    let playing = true;
+    let hovered = false;
 
-    const available = () => entries.filter((entry) => !entry.button.hidden);
+    /** Every shot in the order the demo plays them. */
+    const playlist = () => {
+      const steps = [];
 
-    const show = (entry) => {
-      active = entry;
+      if (shots.has(SHARED_SESSION) && classButtons.length > 0) {
+        steps.push([classButtons[0].dataset.carClass, SHARED_SESSION]);
+      }
 
-      entries.forEach((candidate) => {
-        const isActive = candidate === entry;
+      classButtons.forEach((classButton) => {
+        sessionButtons.forEach((sessionButton) => {
+          const step = [
+            classButton.dataset.carClass,
+            sessionButton.dataset.session,
+          ];
 
-        candidate.button.classList.toggle(ACTIVE_CLASS, isActive);
-        candidate.button.setAttribute(
-          'aria-pressed',
-          isActive ? 'true' : 'false'
-        );
-        candidate.shot.classList.toggle(ACTIVE_CLASS, isActive);
-
-        if (candidate.hotspots) {
-          candidate.hotspots.hidden = !isActive;
-        }
+          if (step[1] !== SHARED_SESSION && hasShot(...step)) {
+            steps.push(step);
+          }
+        });
       });
 
-      if (label) {
-        label.textContent = entry.button.textContent.trim();
+      return steps;
+    };
+
+    const press = (buttons, isActive) => {
+      buttons.forEach((button) => {
+        const active = isActive(button);
+
+        button.classList.toggle(ACTIVE_CLASS, active);
+        button.setAttribute('aria-pressed', active ? 'true' : 'false');
+      });
+    };
+
+    const show = (nextClass, nextSession) => {
+      carClass = nextClass;
+      session = hasShot(carClass, nextSession)
+        ? nextSession
+        : sessionButtons
+            .map((button) => button.dataset.session)
+            .findLast((candidate) => hasShot(carClass, candidate));
+
+      const key = shotKey(carClass, session);
+
+      press(classButtons, (button) => button.dataset.carClass === carClass);
+      press(sessionButtons, (button) => button.dataset.session === session);
+
+      // A class without a shot for a session has no button for it
+      sessionButtons.forEach((button) => {
+        button.hidden = !hasShot(carClass, button.dataset.session);
+      });
+
+      shots.forEach((shot, shotName) => {
+        shot.classList.toggle(ACTIVE_CLASS, shotName === key);
+      });
+
+      screen.querySelectorAll('[data-hotspots-for]').forEach((hotspots) => {
+        hotspots.hidden = hotspots.dataset.hotspotsFor !== key;
+      });
+
+      const classButton = classButtons.find(
+        (button) => button.dataset.carClass === carClass
+      );
+      const sessionButton = sessionButtons.find(
+        (button) => button.dataset.session === session
+      );
+
+      if (classLabel && classButton) {
+        classLabel.textContent = classButton.textContent.trim();
+      }
+
+      // The garage is every class's: the label names the session alone
+      if (classLabelPart) {
+        classLabelPart.hidden = session === SHARED_SESSION;
+      }
+
+      if (sessionLabel && sessionButton) {
+        sessionLabel.textContent = sessionButton.textContent.trim();
       }
     };
 
     const stopTiming = () => {
-      entries.forEach((entry) => entry.button.classList.remove(TIMING_CLASS));
+      sessionButtons.forEach((button) => button.classList.remove(TIMING_CLASS));
     };
 
-    const startTiming = (delay) => {
+    const startTiming = () => {
+      const button = activeButton(sessionButtons);
+
       stopTiming();
 
-      if (!active) {
+      if (!button) {
         return;
       }
 
       // Restart the line even when the same step stays active
-      void active.button.offsetWidth;
-      active.button.style.setProperty('--step-ms', `${delay}ms`);
-      active.button.classList.add(TIMING_CLASS);
+      void button.offsetWidth;
+      button.style.setProperty('--step-ms', `${STEP_MS}ms`);
+      button.classList.add(TIMING_CLASS);
     };
 
-    const schedule = (delay) => {
+    const schedule = () => {
       window.clearTimeout(timer);
       stopTiming();
 
-      const offered = available();
+      const steps = playlist();
 
-      if (!visible || offered.length < 2) {
+      if (!playing || !visible || hovered || steps.length < 2) {
         return;
       }
 
-      startTiming(delay);
+      startTiming();
 
       timer = window.setTimeout(() => {
-        const next = offered[(offered.indexOf(active) + 1) % offered.length];
+        const current = steps.findIndex(
+          ([stepClass, stepSession]) =>
+            shotKey(stepClass, stepSession) === shotKey(carClass, session)
+        );
+        const [nextClass, nextSession] = steps[(current + 1) % steps.length];
 
-        show(next);
-        schedule(STEP_MS);
-      }, delay);
+        show(nextClass, nextSession);
+        schedule();
+      }, STEP_MS);
     };
 
-    const dropSession = (entry) => {
-      entry.button.hidden = true;
-      entry.shot.remove();
-      entry.hotspots?.remove();
-
-      if (entry === active && available().length > 0) {
-        show(available()[available().length - 1]);
-      }
-
-      schedule(STEP_MS);
+    const takeOver = () => {
+      playing = false;
+      schedule();
     };
 
-    entries.forEach((entry) => {
+    const dropShot = (key) => {
+      shots.get(key)?.remove();
+      shots.delete(key);
+      screen.querySelector(`[data-hotspots-for="${key}"]`)?.remove();
+      show(carClass, session);
+      schedule();
+    };
+
+    shots.forEach((shot, key) => {
       // Every shot is wanted as soon as the block is near, not only the one
       // on top: a lazy image that is never displayed would never load, and
-      // its session would never join the strip.
-      entry.shot.loading = 'eager';
+      // a missing one would never leave the demo.
+      shot.loading = 'eager';
 
       // A shot that already failed before this ran fires no error event.
-      if (
-        entry.shot.complete &&
-        entry.shot.naturalWidth === 0 &&
-        entry.shot.src
-      ) {
-        dropSession(entry);
+      if (shot.complete && shot.naturalWidth === 0 && shot.src) {
+        dropShot(key);
 
         return;
       }
 
-      entry.shot.addEventListener('error', () => dropSession(entry));
+      shot.addEventListener('error', () => dropShot(key));
+    });
 
-      entry.button.addEventListener('click', () => {
-        show(entry);
-        schedule(HOLD_AFTER_CLICK_MS);
+    classButtons.forEach((button) => {
+      button.addEventListener('click', () => {
+        takeOver();
+        show(button.dataset.carClass, session);
       });
     });
 
-    if (active) {
-      show(active);
+    sessionButtons.forEach((button) => {
+      button.addEventListener('click', () => {
+        takeOver();
+        show(carClass, button.dataset.session);
+      });
+    });
+
+    if (carClass && session) {
+      show(carClass, session);
     }
 
-    // A reader on the screen is reading its notes: the strip waits for them
+    // A reader on the screen is reading its notes: the demo waits for them
     // and moves on once the pointer or the focus has left.
     const pause = () => {
-      window.clearTimeout(timer);
-      stopTiming();
+      hovered = true;
+      schedule();
     };
     const resume = (event) => {
       if (event.relatedTarget && screen.contains(event.relatedTarget)) {
         return;
       }
 
-      schedule(STEP_MS);
+      hovered = false;
+      schedule();
     };
 
     screen.addEventListener('pointerenter', pause);
-    screen.addEventListener('pointerleave', () => schedule(STEP_MS));
+    screen.addEventListener('pointerleave', resume);
     screen.addEventListener('focusin', pause);
     screen.addEventListener('focusout', resume);
 
@@ -175,7 +260,7 @@
 
     const observer = new IntersectionObserver((observed) => {
       visible = observed.some((entry) => entry.isIntersecting);
-      schedule(STEP_MS);
+      schedule();
     });
 
     observer.observe(screen);

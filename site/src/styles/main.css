@@ -1730,6 +1730,51 @@ button:focus-visible {
   padding: 0.3rem;
 }
 
+/* The car class sits above the sessions as plain text tabs, so the two rows
+   read as "which car" and then "which session", not as one strip. */
+.class-track {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 1.4rem;
+  margin-top: 2rem;
+}
+
+.class-step {
+  position: relative;
+  font-family: var(--font-family);
+  font-weight: 700;
+  font-size: 0.82rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0.35rem 0;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  color: #7b8390;
+  background-color: transparent;
+  cursor: pointer;
+  transition:
+    color 0.3s ease,
+    border-color 0.3s ease;
+}
+
+.class-step:hover {
+  color: #eef0f2;
+}
+
+.class-step.is-active {
+  color: #eef0f2;
+  border-bottom-color: var(--color-btn-download-bg);
+}
+
+.class-step:focus-visible {
+  outline: 2px solid var(--color-btn-download-bg);
+  outline-offset: 2px;
+}
+
+.class-track + .session-track {
+  margin-top: 1rem;
+}
+
 .session-step {
   position: relative;
   font-family: var(--font-family);
@@ -1825,9 +1870,11 @@ button:focus-visible {
 
 .layout-screen-label {
   position: absolute;
-  right: 1.5%;
+  /* Bottom centre is the car's own dash in every shot: no widget there */
+  left: 50%;
   bottom: 3%;
   z-index: 2;
+  transform: translateX(-50%);
   padding: 0.3rem 0.8rem;
   border-radius: 999px;
   background-color: rgba(11, 16, 21, 0.78);

@@ -1917,6 +1917,84 @@
       }
     ]
   },
+  "assets/layouts/any-practice.webp": {
+    "width": 2560,
+    "height": 1072,
+    "variants": [
+      {
+        "width": 480,
+        "path": "assets/img/layouts/any-practice-480.webp"
+      },
+      {
+        "width": 960,
+        "path": "assets/img/layouts/any-practice-960.webp"
+      },
+      {
+        "width": 1440,
+        "path": "assets/img/layouts/any-practice-1440.webp"
+      },
+      {
+        "width": 1920,
+        "path": "assets/img/layouts/any-practice-1920.webp"
+      },
+      {
+        "width": 2560,
+        "path": "assets/img/layouts/any-practice-2560.webp"
+      }
+    ]
+  },
+  "assets/layouts/any-qualify.webp": {
+    "width": 2560,
+    "height": 1072,
+    "variants": [
+      {
+        "width": 480,
+        "path": "assets/img/layouts/any-qualify-480.webp"
+      },
+      {
+        "width": 960,
+        "path": "assets/img/layouts/any-qualify-960.webp"
+      },
+      {
+        "width": 1440,
+        "path": "assets/img/layouts/any-qualify-1440.webp"
+      },
+      {
+        "width": 1920,
+        "path": "assets/img/layouts/any-qualify-1920.webp"
+      },
+      {
+        "width": 2560,
+        "path": "assets/img/layouts/any-qualify-2560.webp"
+      }
+    ]
+  },
+  "assets/layouts/any-race.webp": {
+    "width": 2560,
+    "height": 1072,
+    "variants": [
+      {
+        "width": 480,
+        "path": "assets/img/layouts/any-race-480.webp"
+      },
+      {
+        "width": 960,
+        "path": "assets/img/layouts/any-race-960.webp"
+      },
+      {
+        "width": 1440,
+        "path": "assets/img/layouts/any-race-1440.webp"
+      },
+      {
+        "width": 1920,
+        "path": "assets/img/layouts/any-race-1920.webp"
+      },
+      {
+        "width": 2560,
+        "path": "assets/img/layouts/any-race-2560.webp"
+      }
+    ]
+  },
   "assets/layouts/garage.webp": {
     "width": 2560,
     "height": 1072,
@@ -1943,81 +2021,159 @@
       }
     ]
   },
-  "assets/layouts/practice.webp": {
+  "assets/layouts/gt3-practice.webp": {
     "width": 2560,
     "height": 1072,
     "variants": [
       {
         "width": 480,
-        "path": "assets/img/layouts/practice-480.webp"
+        "path": "assets/img/layouts/gt3-practice-480.webp"
       },
       {
         "width": 960,
-        "path": "assets/img/layouts/practice-960.webp"
+        "path": "assets/img/layouts/gt3-practice-960.webp"
       },
       {
         "width": 1440,
-        "path": "assets/img/layouts/practice-1440.webp"
+        "path": "assets/img/layouts/gt3-practice-1440.webp"
       },
       {
         "width": 1920,
-        "path": "assets/img/layouts/practice-1920.webp"
+        "path": "assets/img/layouts/gt3-practice-1920.webp"
       },
       {
         "width": 2560,
-        "path": "assets/img/layouts/practice-2560.webp"
+        "path": "assets/img/layouts/gt3-practice-2560.webp"
       }
     ]
   },
-  "assets/layouts/qualify.webp": {
+  "assets/layouts/gt3-qualify.webp": {
     "width": 2560,
     "height": 1072,
     "variants": [
       {
         "width": 480,
-        "path": "assets/img/layouts/qualify-480.webp"
+        "path": "assets/img/layouts/gt3-qualify-480.webp"
       },
       {
         "width": 960,
-        "path": "assets/img/layouts/qualify-960.webp"
+        "path": "assets/img/layouts/gt3-qualify-960.webp"
       },
       {
         "width": 1440,
-        "path": "assets/img/layouts/qualify-1440.webp"
+        "path": "assets/img/layouts/gt3-qualify-1440.webp"
       },
       {
         "width": 1920,
-        "path": "assets/img/layouts/qualify-1920.webp"
+        "path": "assets/img/layouts/gt3-qualify-1920.webp"
       },
       {
         "width": 2560,
-        "path": "assets/img/layouts/qualify-2560.webp"
+        "path": "assets/img/layouts/gt3-qualify-2560.webp"
       }
     ]
   },
-  "assets/layouts/race.webp": {
+  "assets/layouts/gt3-race.webp": {
     "width": 2560,
     "height": 1072,
     "variants": [
       {
         "width": 480,
-        "path": "assets/img/layouts/race-480.webp"
+        "path": "assets/img/layouts/gt3-race-480.webp"
       },
       {
         "width": 960,
-        "path": "assets/img/layouts/race-960.webp"
+        "path": "assets/img/layouts/gt3-race-960.webp"
       },
       {
         "width": 1440,
-        "path": "assets/img/layouts/race-1440.webp"
+        "path": "assets/img/layouts/gt3-race-1440.webp"
       },
       {
         "width": 1920,
-        "path": "assets/img/layouts/race-1920.webp"
+        "path": "assets/img/layouts/gt3-race-1920.webp"
       },
       {
         "width": 2560,
-        "path": "assets/img/layouts/race-2560.webp"
+        "path": "assets/img/layouts/gt3-race-2560.webp"
+      }
+    ]
+  },
+  "assets/layouts/open-wheel-practice.webp": {
+    "width": 2560,
+    "height": 1072,
+    "variants": [
+      {
+        "width": 480,
+        "path": "assets/img/layouts/open-wheel-practice-480.webp"
+      },
+      {
+        "width": 960,
+        "path": "assets/img/layouts/open-wheel-practice-960.webp"
+      },
+      {
+        "width": 1440,
+        "path": "assets/img/layouts/open-wheel-practice-1440.webp"
+      },
+      {
+        "width": 1920,
+        "path": "assets/img/layouts/open-wheel-practice-1920.webp"
+      },
+      {
+        "width": 2560,
+        "path": "assets/img/layouts/open-wheel-practice-2560.webp"
+      }
+    ]
+  },
+  "assets/layouts/open-wheel-qualify.webp": {
+    "width": 2560,
+    "height": 1072,
+    "variants": [
+      {
+        "width": 480,
+        "path": "assets/img/layouts/open-wheel-qualify-480.webp"
+      },
+      {
+        "width": 960,
+        "path": "assets/img/layouts/open-wheel-qualify-960.webp"
+      },
+      {
+        "width": 1440,
+        "path": "assets/img/layouts/open-wheel-qualify-1440.webp"
+      },
+      {
+        "width": 1920,
+        "path": "assets/img/layouts/open-wheel-qualify-1920.webp"
+      },
+      {
+        "width": 2560,
+        "path": "assets/img/layouts/open-wheel-qualify-2560.webp"
+      }
+    ]
+  },
+  "assets/layouts/open-wheel-race.webp": {
+    "width": 2560,
+    "height": 1072,
+    "variants": [
+      {
+        "width": 480,
+        "path": "assets/img/layouts/open-wheel-race-480.webp"
+      },
+      {
+        "width": 960,
+        "path": "assets/img/layouts/open-wheel-race-960.webp"
+      },
+      {
+        "width": 1440,
+        "path": "assets/img/layouts/open-wheel-race-1440.webp"
+      },
+      {
+        "width": 1920,
+        "path": "assets/img/layouts/open-wheel-race-1920.webp"
+      },
+      {
+        "width": 2560,
+        "path": "assets/img/layouts/open-wheel-race-2560.webp"
       }
     ]
   },

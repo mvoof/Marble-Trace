@@ -3954,10 +3954,11 @@
          ==================================================================== -->
 
       <!-- ---- Layouts --------------------------------------------------------
-           The session strip is the auto-switch acted out: the four sessions
-           a layout can be assigned to (the app tags a layout with the same four),
-           stepped through by layout-demo.js, which brings up that session's
-           screenshot on the screen beside it. -->
+           The auto-switch acted out: a car class picked above a session
+           strip, and the screen beside them showing the layout that class
+           and session put on screen. The garage is one layout for every car.
+           layout-demo.js steps through every shot until the reader picks one
+           and then leaves the choice to them. -->
       <section
         id="layouts"
         class="feature feature-dark"
@@ -3969,13 +3970,45 @@
 
             <h2 id="layouts-heading" class="feature-title">
               A layout for<br />
-              every session.
+              every car and session.
             </h2>
 
             <p class="feature-desc">
-              Which widgets, where, on which monitor. Give each session its own
-              layout and the overlay switches as the session changes.
+              Which widgets, where, on which monitor. Give a session, a car
+              class or a single car its own layout and the overlay switches on
+              its own: the most specific one wins.
             </p>
+
+            <div
+              class="class-track"
+              role="group"
+              aria-label="Show the layouts for a car class"
+            >
+              <button
+                class="class-step is-active"
+                type="button"
+                data-car-class="open-wheel"
+                aria-pressed="true"
+              >
+                Open-wheel
+              </button>
+              <button
+                class="class-step"
+                type="button"
+                data-car-class="gt3"
+                aria-pressed="false"
+              >
+                GT3
+              </button>
+              <button
+                class="class-step"
+                type="button"
+                data-car-class="any"
+                aria-pressed="false"
+              >
+                Any car
+              </button>
+            </div>
 
             <div
               class="session-track"
@@ -4017,12 +4050,10 @@
             </div>
           </div>
 
-          <!-- The screen. One screenshot per session, taken in the sim with
-               that session's layout on, crossfaded by layout-demo.js as the
-               strip steps through the sessions. The shots live in
-               assets/layouts/<session>.webp; a session whose shot is missing
-               drops out of the strip on its own, so the block never shows an
-               empty frame. -->
+          <!-- The screen. One screenshot per class and session, taken in the
+               sim with that layout on: assets/layouts/<class>-<session>.webp,
+               and garage.webp for every class. A shot that is missing takes
+               its session out of the strip for that class. -->
           <div class="feature-media">
             <div class="layout-screen" data-layout-screen data-zoom>
               <img
@@ -4030,106 +4061,274 @@
                 class="layout-shot"
                 data-shot="garage"
                 src="assets/layouts/garage.webp"
-                alt="iRacing overlay layout for the garage session"
+                alt="iRacing overlay layout for the garage, shared by every car"
                 loading="lazy"
                 decoding="async"
               />
               <img
                 sizes="(max-width: 1024px) 92vw, 56vw"
                 class="layout-shot"
-                data-shot="practice"
-                src="assets/layouts/practice.webp"
-                alt="iRacing overlay layout for the practice session"
+                data-shot="open-wheel-practice"
+                src="assets/layouts/open-wheel-practice.webp"
+                alt="iRacing overlay layout for practice in an open-wheel car"
                 loading="lazy"
                 decoding="async"
               />
               <img
                 sizes="(max-width: 1024px) 92vw, 56vw"
                 class="layout-shot"
-                data-shot="qualify"
-                src="assets/layouts/qualify.webp"
-                alt="iRacing overlay layout for the qualifying session"
+                data-shot="open-wheel-qualify"
+                src="assets/layouts/open-wheel-qualify.webp"
+                alt="iRacing overlay layout for qualifying in an open-wheel car"
                 loading="lazy"
                 decoding="async"
               />
               <img
                 sizes="(max-width: 1024px) 92vw, 56vw"
                 class="layout-shot is-active"
-                data-shot="race"
-                src="assets/layouts/race.webp"
-                alt="iRacing overlay layout for the race session"
+                data-shot="open-wheel-race"
+                src="assets/layouts/open-wheel-race.webp"
+                alt="iRacing overlay layout for the race in an open-wheel car"
+                loading="lazy"
+                decoding="async"
+              />
+              <img
+                sizes="(max-width: 1024px) 92vw, 56vw"
+                class="layout-shot"
+                data-shot="gt3-practice"
+                src="assets/layouts/gt3-practice.webp"
+                alt="iRacing overlay layout for practice in a GT3 car"
+                loading="lazy"
+                decoding="async"
+              />
+              <img
+                sizes="(max-width: 1024px) 92vw, 56vw"
+                class="layout-shot"
+                data-shot="gt3-qualify"
+                src="assets/layouts/gt3-qualify.webp"
+                alt="iRacing overlay layout for qualifying in a GT3 car"
+                loading="lazy"
+                decoding="async"
+              />
+              <img
+                sizes="(max-width: 1024px) 92vw, 56vw"
+                class="layout-shot"
+                data-shot="gt3-race"
+                src="assets/layouts/gt3-race.webp"
+                alt="iRacing overlay layout for the race in a GT3 car"
+                loading="lazy"
+                decoding="async"
+              />
+              <img
+                sizes="(max-width: 1024px) 92vw, 56vw"
+                class="layout-shot"
+                data-shot="any-practice"
+                src="assets/layouts/any-practice.webp"
+                alt="iRacing overlay layout for practice in any car"
+                loading="lazy"
+                decoding="async"
+              />
+              <img
+                sizes="(max-width: 1024px) 92vw, 56vw"
+                class="layout-shot"
+                data-shot="any-qualify"
+                src="assets/layouts/any-qualify.webp"
+                alt="iRacing overlay layout for qualifying in any car"
+                loading="lazy"
+                decoding="async"
+              />
+              <img
+                sizes="(max-width: 1024px) 92vw, 56vw"
+                class="layout-shot"
+                data-shot="any-race"
+                src="assets/layouts/any-race.webp"
+                alt="iRacing overlay layout for the race in any car"
                 loading="lazy"
                 decoding="async"
               />
 
               <div class="hotspots" data-hotspots-for="garage" hidden>
-                <button class="hotspot" type="button" style="--x: 12%; --y: 22%">
-                  <span class="hotspot-note"><strong>Standings</strong>The whole field by class before you leave the garage: licence, iRating, who is fast.</span>
+                <button class="hotspot" type="button" style="--x: 13%; --y: 20%">
+                  <span class="hotspot-note"><strong>Standings</strong>The whole field before you leave the garage: licence, iRating, who is fast.</span>
                 </button>
-                <button class="hotspot" type="button" style="--x: 77%; --y: 5%">
+                <button class="hotspot" type="button" style="--x: 76%; --y: 7%">
                   <span class="hotspot-note"><strong>Timer</strong>Session time left, the sim clock and your own.</span>
                 </button>
-                <button class="hotspot" type="button" style="--x: 94%; --y: 13%">
-                  <span class="hotspot-note"><strong>Track map</strong>Where every car is, in its class colour.</span>
+                <button class="hotspot" type="button" style="--x: 94%; --y: 11%">
+                  <span class="hotspot-note"><strong>Track map</strong>A track it has not seen yet is recorded on your first lap.</span>
                 </button>
-                <button class="hotspot" type="button" style="--x: 96%; --y: 88%">
+                <button class="hotspot" type="button" style="--x: 94%; --y: 85%">
+                  <span class="hotspot-note"><strong>Relative</strong>The cars around you, with the gap to each.</span>
+                </button>
+              </div>
+              <div class="hotspots" data-hotspots-for="open-wheel-practice" hidden>
+                <button class="hotspot" type="button" style="--x: 8%; --y: 16%">
+                  <span class="hotspot-note"><strong>Standings</strong>The whole field, laps and best times.</span>
+                </button>
+                <button class="hotspot" type="button" style="--x: 34%; --y: 38%">
+                  <span class="hotspot-note"><strong>DRS</strong>When the wing can open, and when it is open.</span>
+                </button>
+                <button class="hotspot" type="button" style="--x: 50%; --y: 74%">
+                  <span class="hotspot-note"><strong>Battery</strong>Charge, deploy mode and what is left to spend this lap.</span>
+                </button>
+                <button class="hotspot" type="button" style="--x: 50%; --y: 84%">
+                  <span class="hotspot-note"><strong>Wheel to Wheel</strong>The car ahead and behind, and the gap to each.</span>
+                </button>
+                <button class="hotspot" type="button" style="--x: 18%; --y: 94%">
+                  <span class="hotspot-note"><strong>Engine panel</strong>Brake bias, engine braking, differential and the rest of the wheel’s settings.</span>
+                </button>
+                <button class="hotspot" type="button" style="--x: 92%; --y: 10%">
+                  <span class="hotspot-note"><strong>Track map</strong>Every car on the circuit, in its class colour.</span>
+                </button>
+              </div>
+              <div class="hotspots" data-hotspots-for="open-wheel-qualify" hidden>
+                <button class="hotspot" type="button" style="--x: 8%; --y: 15%">
+                  <span class="hotspot-note"><strong>Standings</strong>Lone qualifying: who has set a time and who is still out.</span>
+                </button>
+                <button class="hotspot" type="button" style="--x: 34%; --y: 21%">
+                  <span class="hotspot-note"><strong>DRS</strong>When the wing can open, and when it is open.</span>
+                </button>
+                <button class="hotspot" type="button" style="--x: 4%; --y: 50%">
+                  <span class="hotspot-note"><strong>Sector matrix</strong>Every sector of the lap against your best.</span>
+                </button>
+                <button class="hotspot" type="button" style="--x: 50%; --y: 68%">
+                  <span class="hotspot-note"><strong>Race dash</strong>Speed, gear, RPM, position and lap in one strip.</span>
+                </button>
+                <button class="hotspot" type="button" style="--x: 92%; --y: 10%">
+                  <span class="hotspot-note"><strong>Track map</strong>Every car on the circuit, in its class colour.</span>
+                </button>
+              </div>
+              <div class="hotspots" data-hotspots-for="open-wheel-race">
+                <button class="hotspot" type="button" style="--x: 13%; --y: 16%">
+                  <span class="hotspot-note"><strong>Standings</strong>The whole field, gaps, intervals and best laps.</span>
+                </button>
+                <button class="hotspot" type="button" style="--x: 81%; --y: 3%">
+                  <span class="hotspot-note"><strong>Flat flags</strong>The flag the sim shows you, here a blue one.</span>
+                </button>
+                <button class="hotspot" type="button" style="--x: 50%; --y: 47%">
+                  <span class="hotspot-note"><strong>Close battle</strong>The car you fight with, the gap and how it changes.</span>
+                </button>
+                <button class="hotspot" type="button" style="--x: 49%; --y: 85%">
+                  <span class="hotspot-note"><strong>Wheel to Wheel</strong>The car ahead and behind, and the gap to each.</span>
+                </button>
+                <button class="hotspot" type="button" style="--x: 5%; --y: 91%">
+                  <span class="hotspot-note"><strong>Relative</strong>The cars around you on track, with the gap to each.</span>
+                </button>
+                <button class="hotspot" type="button" style="--x: 95%; --y: 94%">
                   <span class="hotspot-note"><strong>Weather</strong>Air and track temperature, wind and how wet the surface is.</span>
                 </button>
               </div>
-              <div class="hotspots" data-hotspots-for="practice" hidden>
-                <button class="hotspot" type="button" style="--x: 3%; --y: 45%">
+              <div class="hotspots" data-hotspots-for="gt3-practice" hidden>
+                <button class="hotspot" type="button" style="--x: 8%; --y: 13%">
+                  <span class="hotspot-note"><strong>Standings</strong>The field by class, laps and best times.</span>
+                </button>
+                <button class="hotspot" type="button" style="--x: 51%; --y: 67%">
+                  <span class="hotspot-note"><strong>Input trace</strong>Throttle, brake and steering as a moving trace.</span>
+                </button>
+                <button class="hotspot" type="button" style="--x: 4%; --y: 90%">
+                  <span class="hotspot-note"><strong>Sector matrix</strong>Every sector of the lap against your best.</span>
+                </button>
+                <button class="hotspot" type="button" style="--x: 92%; --y: 10%">
+                  <span class="hotspot-note"><strong>Track map</strong>Every car on the circuit, in its class colour.</span>
+                </button>
+              </div>
+              <div class="hotspots" data-hotspots-for="gt3-qualify" hidden>
+                <button class="hotspot" type="button" style="--x: 8%; --y: 15%">
+                  <span class="hotspot-note"><strong>Standings</strong>Lone qualifying: who has set a time and who is still out.</span>
+                </button>
+                <button class="hotspot" type="button" style="--x: 39%; --y: 5%">
+                  <span class="hotspot-note"><strong>LED flags</strong>The flag as a light board beside the mirror.</span>
+                </button>
+                <button class="hotspot" type="button" style="--x: 50%; --y: 8%">
+                  <span class="hotspot-note"><strong>Delta</strong>Gain or loss against your best lap, right under the mirror.</span>
+                </button>
+                <button class="hotspot" type="button" style="--x: 51%; --y: 67%">
+                  <span class="hotspot-note"><strong>Input trace</strong>Throttle, brake and steering as a moving trace.</span>
+                </button>
+                <button class="hotspot" type="button" style="--x: 4%; --y: 90%">
+                  <span class="hotspot-note"><strong>Sector matrix</strong>Every sector of the lap against your best.</span>
+                </button>
+              </div>
+              <div class="hotspots" data-hotspots-for="gt3-race" hidden>
+                <button class="hotspot" type="button" style="--x: 12%; --y: 16%">
+                  <span class="hotspot-note"><strong>Standings</strong>The whole field, gaps, intervals and best laps.</span>
+                </button>
+                <button class="hotspot" type="button" style="--x: 3%; --y: 41%">
                   <span class="hotspot-note"><strong>Lap log</strong>Every lap with its delta to your best; the best one is marked.</span>
                 </button>
                 <button class="hotspot" type="button" style="--x: 50%; --y: 8%">
                   <span class="hotspot-note"><strong>Delta</strong>Gain or loss against your best lap, right under the mirror.</span>
                 </button>
-                <button class="hotspot" type="button" style="--x: 38%; --y: 85%">
-                  <span class="hotspot-note"><strong>Coach</strong>Where your fastest lap braked and got back on the throttle, called before the corner.</span>
+                <button class="hotspot" type="button" style="--x: 5%; --y: 91%">
+                  <span class="hotspot-note"><strong>Relative</strong>The cars around you on track, with the gap to each.</span>
                 </button>
-                <button class="hotspot" type="button" style="--x: 96%; --y: 51%">
-                  <span class="hotspot-note"><strong>Fuel</strong>Litres per lap, laps left and the next pit window.</span>
+                <button class="hotspot" type="button" style="--x: 95%; --y: 94%">
+                  <span class="hotspot-note"><strong>Weather</strong>Air and track temperature, wind and how wet the surface is.</span>
                 </button>
-                <button class="hotspot" type="button" style="--x: 16%; --y: 90%">
-                  <span class="hotspot-note"><strong>G-meter</strong>Lateral and longitudinal G with a trail.</span>
-                </button>
-              </div>
-              <div class="hotspots" data-hotspots-for="qualify" hidden>
-                <button class="hotspot" type="button" style="--x: 11%; --y: 12%">
-                  <span class="hotspot-note"><strong>Standings</strong>Trimmed to your class and the cars around you.</span>
-                </button>
-                <button class="hotspot" type="button" style="--x: 95%; --y: 48%">
-                  <span class="hotspot-note"><strong>Sectors</strong>Every sector of the lap against your best.</span>
-                </button>
-                <button class="hotspot" type="button" style="--x: 50%; --y: 64%">
-                  <span class="hotspot-note"><strong>RPM lights</strong>Shift lights that follow the car’s own redline.</span>
-                </button>
-                <button class="hotspot" type="button" style="--x: 48%; --y: 96%">
-                  <span class="hotspot-note"><strong>Input trace</strong>Throttle, brake and steering as a moving trace.</span>
-                </button>
-              </div>
-              <div class="hotspots" data-hotspots-for="race">
-                <button class="hotspot" type="button" style="--x: 10%; --y: 17%">
-                  <span class="hotspot-note"><strong>Standings</strong>The whole field, gaps, intervals and best laps.</span>
-                </button>
-                <button class="hotspot" type="button" style="--x: 50%; --y: 9%">
-                  <span class="hotspot-note"><strong>Delta</strong>Gain or loss against your best lap, right under the mirror.</span>
-                </button>
-                <button class="hotspot" type="button" style="--x: 95%; --y: 9%">
+                <button class="hotspot" type="button" style="--x: 94%; --y: 7%">
                   <span class="hotspot-note"><strong>Track map</strong>Every car on the circuit; your class leader marked.</span>
                 </button>
-                <button class="hotspot" type="button" style="--x: 96%; --y: 52%">
-                  <span class="hotspot-note"><strong>Fuel</strong>Laps left, what you need to the flag and the pit window.</span>
+              </div>
+              <div class="hotspots" data-hotspots-for="any-practice" hidden>
+                <button class="hotspot" type="button" style="--x: 8%; --y: 15%">
+                  <span class="hotspot-note"><strong>Standings</strong>The field, laps and best times.</span>
                 </button>
-                <button class="hotspot" type="button" style="--x: 50%; --y: 68%">
-                  <span class="hotspot-note"><strong>Race dash</strong>Speed, gear, RPM, position and lap in one strip.</span>
+                <button class="hotspot" type="button" style="--x: 93%; --y: 10%">
+                  <span class="hotspot-note"><strong>Track map</strong>A new circuit is recorded on your first lap.</span>
                 </button>
-                <button class="hotspot" type="button" style="--x: 6%; --y: 92%">
+                <button class="hotspot" type="button" style="--x: 50%; --y: 62%">
+                  <span class="hotspot-note"><strong>RPM lights</strong>Shift lights that follow the car’s own redline.</span>
+                </button>
+                <button class="hotspot" type="button" style="--x: 5%; --y: 91%">
                   <span class="hotspot-note"><strong>Relative</strong>The cars around you on track, with the gap to each.</span>
+                </button>
+                <button class="hotspot" type="button" style="--x: 95%; --y: 93%">
+                  <span class="hotspot-note"><strong>Sector matrix</strong>Every sector of the lap against your best.</span>
+                </button>
+              </div>
+              <div class="hotspots" data-hotspots-for="any-qualify" hidden>
+                <button class="hotspot" type="button" style="--x: 8%; --y: 15%">
+                  <span class="hotspot-note"><strong>Standings</strong>Lone qualifying: who has set a time and who is still out.</span>
+                </button>
+                <button class="hotspot" type="button" style="--x: 39%; --y: 5%">
+                  <span class="hotspot-note"><strong>LED flags</strong>The flag as a light board beside the mirror.</span>
+                </button>
+                <button class="hotspot" type="button" style="--x: 81%; --y: 3%">
+                  <span class="hotspot-note"><strong>Flat flags</strong>The flag the sim shows you, here the chequered one.</span>
+                </button>
+                <button class="hotspot" type="button" style="--x: 4%; --y: 50%">
+                  <span class="hotspot-note"><strong>Sector matrix</strong>Every sector of the lap against your best.</span>
+                </button>
+                <button class="hotspot" type="button" style="--x: 50%; --y: 86%">
+                  <span class="hotspot-note"><strong>Engine panel</strong>Brake bias, traction control and ABS at a glance.</span>
+                </button>
+              </div>
+              <div class="hotspots" data-hotspots-for="any-race" hidden>
+                <button class="hotspot" type="button" style="--x: 13%; --y: 16%">
+                  <span class="hotspot-note"><strong>Standings</strong>The whole field, gaps, intervals and best laps.</span>
+                </button>
+                <button class="hotspot" type="button" style="--x: 3%; --y: 39%">
+                  <span class="hotspot-note"><strong>Lap log</strong>Every lap with its delta to your best; the best one is marked.</span>
+                </button>
+                <button class="hotspot" type="button" style="--x: 50%; --y: 7%">
+                  <span class="hotspot-note"><strong>Delta</strong>Gain or loss against your best lap, right under the mirror.</span>
+                </button>
+                <button class="hotspot" type="button" style="--x: 49%; --y: 67%">
+                  <span class="hotspot-note"><strong>Input trace</strong>Throttle, brake and steering as a moving trace.</span>
+                </button>
+                <button class="hotspot" type="button" style="--x: 5%; --y: 91%">
+                  <span class="hotspot-note"><strong>Relative</strong>The cars around you on track, with the gap to each.</span>
+                </button>
+                <button class="hotspot" type="button" style="--x: 95%; --y: 94%">
+                  <span class="hotspot-note"><strong>Weather</strong>Air and track temperature, wind and how wet the surface is.</span>
                 </button>
               </div>
 
               <p class="layout-screen-label" aria-hidden="true">
-                <span data-layout-label>Race</span> layout
+                <span data-layout-class-part
+                  ><span data-layout-class>Open-wheel</span> &middot;
+                </span>
+                <span data-layout-label>Race</span>
               </p>
             </div>
 
@@ -4145,6 +4344,7 @@
         </div>
 
         <ul class="container pill-list">
+          <li class="pill">By session, car class or car</li>
           <li class="pill">Every monitor on one canvas</li>
           <li class="pill">Browser screens too</li>
           <li class="pill">Live data while you place</li>
