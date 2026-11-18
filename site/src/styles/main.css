@@ -2598,7 +2598,7 @@ button:focus-visible {
 /* ==========================================================================
    Tapes - two crossed bands between the gallery and section 03
 
-   The blue tape is the loud one: what the app is, in the hero's own face.
+   The black tape is the loud one: what the app is, in the hero's own face.
    The dark tape crosses behind it the other way and carries the widgets as
    pill badges. Both lean off the page's axis by a few degrees - enough to
    read as tape laid across the page, not so much that the words are hard
@@ -2634,7 +2634,7 @@ button:focus-visible {
 .tape-front {
   z-index: 2;
   background-color: var(--color-btn-download-bg);
-  color: #0b1015;
+  color: var(--color-btn-download-text);
   transform: translateY(-50%) rotate(-3deg);
   box-shadow: 0 0.9rem 2rem -1rem rgba(11, 16, 21, 0.45);
 }
@@ -2688,7 +2688,7 @@ button:focus-visible {
   width: 0.55em;
   height: 0.55em;
   margin: 0 0.9em;
-  background-color: #0b1015;
+  background-color: currentColor;
   clip-path: polygon(0 0, 55% 0, 100% 50%, 55% 100%, 0 100%, 45% 50%);
 }
 
@@ -2747,7 +2747,7 @@ button:focus-visible {
 }
 
 /* ==========================================================================
-   Interact mode - one feature on blue
+   Interact mode - one feature on a graphite band
 
    A compact band: F8 and F9 on the left, pressed in turn, and what each one
    does on the right. The splash is a ring and a handful of drops thrown off
@@ -2757,8 +2757,8 @@ button:focus-visible {
 .interact-band {
   position: relative;
   padding: clamp(2.5rem, 4.5vw, 3.75rem) 0;
-  background-color: var(--livery-blue);
-  color: #0b1015;
+  background-color: var(--color-accent-band);
+  color: #eef0f2;
   overflow: hidden;
 }
 
@@ -2868,7 +2868,7 @@ button:focus-visible {
   top: -1.3rem;
   width: 17rem;
   height: 2.6rem;
-  border: 2px solid #0b1015;
+  border: 2px solid #e0e0e0;
   border-radius: 50%;
   opacity: 0;
 }
@@ -2886,7 +2886,7 @@ button:focus-visible {
 }
 
 .splash-drop-ink {
-  background-color: #0b1015;
+  background-color: #6b737d;
 }
 
 .keycap-slot.is-pressed .splash-ring {
@@ -2940,6 +2940,7 @@ button:focus-visible {
   padding: 0.5rem 1rem;
   border-radius: 999px;
   background-color: #0d1014;
+  border: 1px solid rgba(255, 255, 255, 0.14);
   color: #eef0f2;
   font-weight: 700;
   font-size: 0.72rem;
@@ -2967,7 +2968,7 @@ button:focus-visible {
   font-size: 0.8rem;
   letter-spacing: 0.28em;
   text-transform: uppercase;
-  color: rgba(11, 16, 21, 0.9);
+  color: rgba(238, 240, 242, 0.85);
   margin-bottom: 0.9rem;
 }
 
@@ -3022,13 +3023,13 @@ button:focus-visible {
   font-weight: 500;
   font-size: 1rem;
   line-height: 1.55;
-  color: rgba(11, 16, 21, 0.9);
+  color: rgba(238, 240, 242, 0.85);
 }
 
 .interact-note {
   margin-top: 1rem;
   font-size: 0.8rem;
-  color: rgba(11, 16, 21, 0.9);
+  color: rgba(238, 240, 242, 0.85);
 }
 
 @media (max-width: 720px) {
@@ -3239,8 +3240,8 @@ body.is-viewer-open {
   left: 0;
   box-sizing: border-box;
   border: 1px solid rgba(var(--accent-rgb), 0.75);
-  /* A dark rim around the blue marks, so they still read on the page's own
-     blue band */
+  /* A dark rim around the light marks, so they still read on the page's own
+     graphite band */
   filter: drop-shadow(0 0 1px rgba(11, 16, 21, 0.85));
   pointer-events: auto;
   cursor: grab;
@@ -3598,8 +3599,8 @@ body.is-viewer-open {
 .download-band {
   position: relative;
   padding: var(--section-pad-y) 0;
-  background-color: var(--livery-blue);
-  color: #0b1015;
+  background-color: var(--color-accent-band);
+  color: #eef0f2;
   overflow: hidden;
 }
 
@@ -3616,7 +3617,7 @@ body.is-viewer-open {
   font-size: 0.8rem;
   letter-spacing: 0.28em;
   text-transform: uppercase;
-  color: rgba(11, 16, 21, 0.9);
+  color: rgba(238, 240, 242, 0.85);
 }
 
 .download-title {
@@ -3635,7 +3636,7 @@ body.is-viewer-open {
   font-weight: 500;
   font-size: 1.05rem;
   line-height: 1.6;
-  color: rgba(11, 16, 21, 0.9);
+  color: rgba(238, 240, 242, 0.85);
 }
 
 .download-action {
@@ -3651,21 +3652,21 @@ body.is-viewer-open {
   gap: 0.75rem;
   padding: 1.1rem 1.75rem;
   border-radius: 10px;
-  background-color: #0d1014;
-  color: #ffffff;
+  background-color: #e0e0e0;
+  color: #0b1015;
   font-weight: 800;
   font-size: 1rem;
   letter-spacing: 0.04em;
   text-transform: uppercase;
   text-decoration: none;
-  box-shadow: 0 0.9rem 2rem -1rem rgba(11, 16, 21, 0.6);
+  box-shadow: 0 0.9rem 2rem -1rem rgba(0, 0, 0, 0.6);
   transition:
     transform var(--transition-fast),
     background-color var(--transition-fast);
 }
 
 .download-button:hover {
-  background-color: #1c2129;
+  background-color: #ffffff;
   transform: translateY(-2px);
 }
 
@@ -3675,7 +3676,7 @@ body.is-viewer-open {
   gap: 0.5rem;
   font-weight: 600;
   font-size: 0.9rem;
-  color: rgba(11, 16, 21, 0.9);
+  color: rgba(238, 240, 242, 0.85);
 }
 
 .download-meta[hidden] {
@@ -3690,7 +3691,7 @@ body.is-viewer-open {
 .download-links a {
   font-weight: 700;
   font-size: 0.9rem;
-  color: #0b1015;
+  color: #eef0f2;
   text-decoration: underline;
   text-underline-offset: 0.25em;
 }
@@ -3709,7 +3710,7 @@ body.is-viewer-open {
    controls, a chequered flag where the download is.
    ========================================================================== */
 
-/* A kerb in the livery's blue and white along the foot of the claims strip, where the hero meets the dark
+/* A black and white kerb along the foot of the claims strip, where the hero meets the dark
    gallery and the two would otherwise run together. */
 .hero-claims::after {
   content: '';

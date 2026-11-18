@@ -33,7 +33,7 @@
   border: 2px solid #ffffff;
   border-radius: 50%;
   background-color: var(--livery-blue);
-  color: #ffffff;
+  color: var(--color-btn-download-text);
   font: 700 0.9rem/1 var(--font-mono);
   cursor: pointer;
   pointer-events: auto;
