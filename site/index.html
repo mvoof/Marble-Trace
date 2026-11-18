@@ -279,7 +279,6 @@
     <link rel="stylesheet" href="src/styles/main.css" />
     <link rel="stylesheet" href="src/styles/widget-gallery.css" />
     <link rel="stylesheet" href="src/styles/hotspots.css" />
-    <link rel="stylesheet" href="src/styles/lap-analysis.css" />
   </head>
   <body
     data-edit-note="Edit mode · drag any framed block · "
@@ -4145,172 +4144,73 @@
       </section>
 
       <!-- ---- Lap analysis ---------------------------------------------------
-           The Analysis tab, played rather than pictured: two real laps of
-           Fuji in a Mercedes GT3, read out of the app's own stats.db
-           (src/data/analysis-laps.json), on the tab's own layout. The
-           charts and the map answer the tab's own gestures, the eye hides a
-           lap and the star makes it the reference; lap-analysis.js draws
-           it all and drives the cursor round the lap while nobody holds it.
-           The lap colours are the ones the two laps have in the app. -->
+           The Analysis tab, as the other main-window blocks show their page:
+           a crop of the real capture below the title bar, opening whole on a
+           click, with markers on what the tab does. The capture is the
+           README's (docs/assets/screenshots/main/analysis.png). -->
       <section
         id="analysis"
         class="feature feature-light analysis"
         aria-labelledby="analysis-heading"
       >
-        <div class="container">
-          <div class="analysis-head">
-            <div class="feature-copy">
-              <p class="feature-kicker">Lap analysis</p>
+        <div class="container feature-grid">
+          <div class="feature-copy">
+            <p class="feature-kicker">Lap analysis</p>
 
-              <h2 id="analysis-heading" class="feature-title">
-                See where<br />
-                the time goes.
-              </h2>
-            </div>
+            <h2 id="analysis-heading" class="feature-title">
+              See where<br />
+              the time goes.
+            </h2>
 
-            <div class="analysis-intro">
-              <p class="feature-desc">
-                Lay laps of a session over each other: the delta to your
-                reference lap, speed, pedals, gear and every other channel the
-                sim records, under one cursor that runs on the track map too.
-              </p>
+            <p class="feature-desc">
+              Lay laps of a session over each other: the delta to your
+              reference lap, speed, pedals, gear and any channel the sim
+              records, under one cursor that runs on the track map too.
+            </p>
 
-              <ul class="pill-list pill-list-inline">
-                <li class="pill">Delta to the reference</li>
-                <li class="pill">Any channel the sim records</li>
-                <li class="pill">Zoom on charts and map</li>
-                <li class="pill">The setup of each lap</li>
-                <li class="pill pill-lit">Kept after the .ibt is gone</li>
-              </ul>
-            </div>
+            <ul class="pill-list pill-list-inline">
+              <li class="pill">Delta to the reference</li>
+              <li class="pill">Any channel the sim records</li>
+              <li class="pill">Zoom on charts and map</li>
+              <li class="pill">The setup of each lap</li>
+              <li class="pill pill-lit">Kept after the .ibt is gone</li>
+            </ul>
           </div>
 
-          <!-- The bench: the Analysis tab's own layout, words and colours
-               (src/pages/analysis, shared/ui/LapChart). Icons are lucide's,
-               as the app's. -->
-          <div class="lap-bench" data-lap-bench>
-            <div class="bench-title">
-              <p class="bench-track">Fuji Speedway · Grand Prix</p>
-              <p class="bench-meta">Mercedes-AMG GT3 2020 · Race</p>
-              <span class="bench-tools" aria-hidden="true">
-                <span class="bench-icon-btn">
-                  <svg viewBox="0 0 24 24"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" /><circle cx="12" cy="12" r="3" /></svg>
-                </span>
-                <span class="bench-btn">
-                  <svg viewBox="0 0 24 24"><path d="M3 12h.01M3 18h.01M3 6h.01M8 12h13M8 18h13M8 6h13" /></svg>
-                  Sessions
-                </span>
-              </span>
-            </div>
+          <div class="feature-media analysis-media">
+            <button
+              class="shot-crop"
+              type="button"
+              style="--x: 0; --y: 88; --w: 1600; --h: 882"
+              data-zoom
+              aria-label="Open the lap analysis screenshot"
+            >
+              <img
+                src="assets/main/analysis.png"
+                alt="Lap analysis of two laps of Fuji: the lap list and track map beside speed, throttle and brake charts under one cursor"
+                width="1600"
+                height="970"
+                loading="lazy"
+                decoding="async"
+              />
+            </button>
 
-            <div class="bench-tabs" aria-hidden="true">
-              <span class="bench-tab is-active">Telemetry</span>
-              <span class="bench-tab">Setup</span>
-            </div>
-
-            <div class="bench-body">
-              <div class="bench-side">
-                <div class="bench-card">
-                  <p class="bench-card-head">
-                    Laps
-                    <span class="bench-card-hint">☆ — reference for the delta</span>
-                  </p>
-
-                  <span class="bench-add-laps" aria-hidden="true">
-                    <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5v14" /></svg>
-                    Add laps
-                  </span>
-
-                  <ul class="bench-laps">
-                    <li class="bench-lap" data-lap-row="0">
-                      <span class="bench-swatch" aria-hidden="true"></span>
-                      <button class="bench-icon is-on" type="button" data-lap-eye aria-pressed="true" aria-label="Hide">
-                        <svg viewBox="0 0 24 24"><path d="M2.06 12.35a1 1 0 0 1 0-.7 10.75 10.75 0 0 1 19.88 0 1 1 0 0 1 0 .7 10.75 10.75 0 0 1-19.88 0" /><circle cx="12" cy="12" r="3" /></svg>
-                      </button>
-                      <span class="bench-lap-name">
-                        <span class="bench-best">★</span>Lap 21
-                        <small>Race</small>
-                      </span>
-                      <span class="bench-time bench-best">1:40.854</span>
-                      <button class="bench-icon" type="button" data-lap-star aria-pressed="true" aria-label="Reference for the delta">
-                        <svg viewBox="0 0 24 24"><path d="M11.53 2.3a.53.53 0 0 1 .95 0l2.31 4.68a2.12 2.12 0 0 0 1.6 1.16l5.16.76a.53.53 0 0 1 .3.9l-3.74 3.64a2.12 2.12 0 0 0-.61 1.88l.88 5.14a.53.53 0 0 1-.77.56l-4.62-2.43a2.12 2.12 0 0 0-1.97 0L6.4 21.01a.53.53 0 0 1-.77-.56l.88-5.13a2.12 2.12 0 0 0-.61-1.88L2.16 9.79a.53.53 0 0 1 .3-.9l5.16-.76a2.12 2.12 0 0 0 1.6-1.16z" /></svg>
-                      </button>
-                      <span class="bench-icon" aria-hidden="true">
-                        <svg viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12" /></svg>
-                      </span>
-                    </li>
-                    <li class="bench-lap" data-lap-row="1">
-                      <span class="bench-swatch" aria-hidden="true"></span>
-                      <button class="bench-icon is-on" type="button" data-lap-eye aria-pressed="true" aria-label="Hide">
-                        <svg viewBox="0 0 24 24"><path d="M2.06 12.35a1 1 0 0 1 0-.7 10.75 10.75 0 0 1 19.88 0 1 1 0 0 1 0 .7 10.75 10.75 0 0 1-19.88 0" /><circle cx="12" cy="12" r="3" /></svg>
-                      </button>
-                      <span class="bench-lap-name">
-                        Lap 48
-                        <small>Race</small>
-                      </span>
-                      <span class="bench-time">1:42.158</span>
-                      <button class="bench-icon" type="button" data-lap-star aria-pressed="false" aria-label="Reference for the delta">
-                        <svg viewBox="0 0 24 24"><path d="M11.53 2.3a.53.53 0 0 1 .95 0l2.31 4.68a2.12 2.12 0 0 0 1.6 1.16l5.16.76a.53.53 0 0 1 .3.9l-3.74 3.64a2.12 2.12 0 0 0-.61 1.88l.88 5.14a.53.53 0 0 1-.77.56l-4.62-2.43a2.12 2.12 0 0 0-1.97 0L6.4 21.01a.53.53 0 0 1-.77-.56l.88-5.13a2.12 2.12 0 0 0-.61-1.88L2.16 9.79a.53.53 0 0 1 .3-.9l5.16-.76a2.12 2.12 0 0 0 1.6-1.16z" /></svg>
-                      </button>
-                      <span class="bench-icon" aria-hidden="true">
-                        <svg viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12" /></svg>
-                      </span>
-                    </li>
-                  </ul>
-                </div>
-
-                <div class="bench-map">
-                  <div class="bench-map-tools">
-                    <button type="button" data-map-zoom="in" aria-label="Zoom in">
-                      <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5v14" /></svg>
-                    </button>
-                    <button type="button" data-map-zoom="out" aria-label="Zoom out">
-                      <svg viewBox="0 0 24 24"><path d="M5 12h14" /></svg>
-                    </button>
-                    <button type="button" data-map-zoom="whole" aria-label="Whole lap">
-                      <svg viewBox="0 0 24 24"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7" /></svg>
-                    </button>
-                  </div>
-                  <svg class="bench-map-svg" data-lap-map role="img" aria-label="Map of the laps"></svg>
-                </div>
-              </div>
-
-              <div class="bench-charts">
-                <div class="bench-charts-head">
-                  <span class="bench-select" aria-hidden="true">
-                    + Channel
-                    <svg viewBox="0 0 24 24"><path d="m6 9 6 6 6-6" /></svg>
-                  </span>
-                  <button class="bench-btn" type="button" data-lap-whole>
-                    <svg viewBox="0 0 24 24"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7" /></svg>
-                    Whole lap
-                  </button>
-                  <span class="bench-gestures" aria-hidden="true">
-                    <b data-gesture="zoom">Wheel — zoom</b>
-                    <b data-gesture="pan">Drag — pan</b>
-                    <b data-gesture="frame">Shift + drag — frame</b>
-                    <b data-gesture="whole">Double click — whole lap</b>
-                  </span>
-                </div>
-
-                <div class="bench-chart-stack" data-lap-charts>
-                  <figure class="bench-chart" data-lap-chart="delta">
-                    <figcaption class="bench-chart-title">Delta · s</figcaption>
-                  </figure>
-                  <figure class="bench-chart" data-lap-chart="speed">
-                    <figcaption class="bench-chart-title">Speed · km/h</figcaption>
-                  </figure>
-                  <figure class="bench-chart" data-lap-chart="throttle">
-                    <figcaption class="bench-chart-title">Throttle · %</figcaption>
-                  </figure>
-                  <figure class="bench-chart" data-lap-chart="brake">
-                    <figcaption class="bench-chart-title">Brake · %</figcaption>
-                  </figure>
-                  <figure class="bench-chart" data-lap-chart="gear">
-                    <figcaption class="bench-chart-title">Gear</figcaption>
-                  </figure>
-                </div>
-              </div>
+            <div class="hotspots">
+              <button class="hotspot" type="button" style="--x: 3.5%; --y: 29%">
+                <span class="hotspot-note"><strong>Laps</strong>Any laps of the session, each in its colour. The star sets the reference for the delta.</span>
+              </button>
+              <button class="hotspot" type="button" style="--x: 11%; --y: 50%">
+                <span class="hotspot-note"><strong>Track map</strong>The cursor runs on the map too; zoom and drag it like the charts.</span>
+              </button>
+              <button class="hotspot" type="button" style="--x: 26%; --y: 15%">
+                <span class="hotspot-note"><strong>Any channel</strong>Speed, pedals, gear, steering, RPM, tyres, shocks: whatever the sim records.</span>
+              </button>
+              <button class="hotspot" type="button" style="--x: 58%; --y: 30%">
+                <span class="hotspot-note"><strong>One cursor</strong>Every chart and the map at the same metre of the lap, each lap’s value beside it.</span>
+              </button>
+              <button class="hotspot" type="button" style="--x: 9%; --y: 10%">
+                <span class="hotspot-note"><strong>Setup</strong>The garage setup each lap was driven with.</span>
+              </button>
             </div>
           </div>
         </div>
@@ -5388,7 +5288,6 @@
     <script type="module" src="src/components/interact-demo.js"></script>
     <script type="module" src="src/components/crew-demo.js"></script>
     <script type="module" src="src/components/rate-demo.js"></script>
-    <script type="module" src="src/components/lap-analysis.js"></script>
     <script type="module" src="src/components/hotspots.js"></script>
     <script type="module" src="src/components/accent-switch.js"></script>
     <script type="module" src="src/components/page-modes.js"></script>

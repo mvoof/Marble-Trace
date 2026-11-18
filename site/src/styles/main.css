@@ -1642,6 +1642,11 @@ button:focus-visible {
   width: 62%;
 }
 
+/* Analysis: the markers lie over the crop, on the box it fills */
+.analysis-media {
+  position: relative;
+}
+
 .feature-light .shot-crop {
   box-shadow: 0 1.8rem 3.6rem -1.4rem rgba(10, 14, 20, 0.45);
 }

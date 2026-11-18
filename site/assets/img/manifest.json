@@ -2008,5 +2008,27 @@
         "path": "assets/img/crew/commands-1600.webp"
       }
     ]
+  },
+  "assets/main/analysis.png": {
+    "width": 1600,
+    "height": 970,
+    "variants": [
+      {
+        "width": 480,
+        "path": "assets/img/main/analysis-480.webp"
+      },
+      {
+        "width": 960,
+        "path": "assets/img/main/analysis-960.webp"
+      },
+      {
+        "width": 1440,
+        "path": "assets/img/main/analysis-1440.webp"
+      },
+      {
+        "width": 1600,
+        "path": "assets/img/main/analysis-1600.webp"
+      }
+    ]
   }
 }
