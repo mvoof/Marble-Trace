@@ -97,7 +97,7 @@ button:focus-visible {
   font-size: 0.8rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: #4a525d;
+  color: #c3cad3;
   margin: 0 0 1.25rem;
 }
 
@@ -109,7 +109,7 @@ button:focus-visible {
   line-height: 0.9;
   letter-spacing: -0.015em;
   text-transform: uppercase;
-  color: #101317;
+  color: #ffffff;
   margin: 0 0 1.25rem;
 }
 
@@ -131,6 +131,7 @@ button:focus-visible {
 }
 
 .hero-subtitle {
+  color: #d5dbe2;
   max-width: 480px;
   margin-bottom: 2.25rem;
 }
@@ -148,8 +149,8 @@ button:focus-visible {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  background-color: #14171d;
-  color: #ffffff;
+  background-color: #ffffff;
+  color: #101317;
   font-family: var(--font-family);
   font-weight: 800;
   font-size: 0.74rem;
@@ -164,7 +165,7 @@ button:focus-visible {
 }
 
 .btn-hero-dark:hover {
-  background-color: #242933;
+  background-color: #e6e9ee;
   transform: translateY(-1.5px);
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.28);
 }
@@ -177,11 +178,11 @@ button:focus-visible {
   display: inline-flex;
   align-items: center;
   gap: 0.45rem;
-  background: rgba(246, 247, 249, 0.85);
+  background: rgba(255, 255, 255, 0.08);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
-  border: 1px solid rgba(0, 0, 0, 0.12);
-  color: #1f242d;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  color: #ffffff;
   font-family: var(--font-family);
   font-weight: 800;
   font-size: 0.74rem;
@@ -209,9 +210,9 @@ button:focus-visible {
 }
 
 .btn-hero-light:hover {
-  background: #ffffff;
-  border-color: rgba(0, 0, 0, 0.22);
-  color: #000000;
+  background: rgba(255, 255, 255, 0.16);
+  border-color: rgba(255, 255, 255, 0.4);
+  color: #ffffff;
   transform: translateY(-1.5px);
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
 }
@@ -233,7 +234,7 @@ button:focus-visible {
   font-size: 0.72rem;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: #4b5563;
+  color: #aab2bd;
   user-select: none;
 }
 
@@ -427,95 +428,28 @@ button:focus-visible {
   }
 }
 
-/* The copy side: frosted windscreen glass. The picture blurs out under the
-   text along the slanted axis instead of washing to flat white, and two soft
-   glare bands cross it parallel to the cuts. Light enough for the dark copy. */
+/* The copy side: the cockpit blurs out under the text, from sharp on the
+   right to fully blurred at the left edge, with a smoky tint deep enough for
+   the light copy. */
 .hero-fade-left {
   --glass-mask: linear-gradient(
     var(--wash-angle),
     #000 0%,
-    #000 44%,
-    rgba(0, 0, 0, 0.75) 54%,
-    rgba(0, 0, 0, 0.3) 63%,
-    transparent 72%
+    #000 30%,
+    rgba(0, 0, 0, 0.6) 48%,
+    rgba(0, 0, 0, 0.25) 62%,
+    transparent 76%
   );
 
   position: absolute;
   inset: 0;
   z-index: 3;
   pointer-events: none;
-  background:
-    linear-gradient(
-      var(--wash-angle),
-      transparent 14%,
-      rgba(255, 255, 255, 0.35) 22%,
-      transparent 30%,
-      transparent 40%,
-      rgba(255, 255, 255, 0.28) 45%,
-      transparent 50%
-    ),
-    linear-gradient(
-      var(--wash-angle),
-      rgba(232, 236, 241, 0.86) 0%,
-      rgba(226, 231, 237, 0.8) 40%,
-      rgba(220, 226, 233, 0.62) 56%,
-      rgba(220, 226, 233, 0.3) 64%,
-      transparent 72%
-    );
-  -webkit-backdrop-filter: blur(14px) saturate(1.2);
-  backdrop-filter: blur(14px) saturate(1.2);
+  background: rgba(10, 13, 17, 0.5);
+  -webkit-backdrop-filter: blur(18px);
+  backdrop-filter: blur(18px);
   -webkit-mask-image: var(--glass-mask);
   mask-image: var(--glass-mask);
-}
-
-/* Near-vertical slanted cut peeling a light strip off the right edge.
-   It runs parallel to the left-hand cuts, so every line in the hero leans the
-   same way; the strip carries the scroll cue. */
-
-/* Crisp hairlines riding the cuts */
-.cut-line {
-  position: absolute;
-  inset: 0;
-  z-index: 4;
-  pointer-events: none;
-}
-
-.cut-line-lead {
-  background: linear-gradient(
-    to bottom,
-    rgba(255, 255, 255, 0.95),
-    rgba(255, 255, 255, 0.4)
-  );
-  clip-path: polygon(
-    var(--lead) 0,
-    calc(var(--lead) + 2px) 0,
-    calc(var(--lead) + 2px - var(--slant)) 100%,
-    calc(var(--lead) - var(--slant)) 100%
-  );
-}
-
-.cut-line-trail {
-  background: rgba(255, 255, 255, 0.55);
-  clip-path: polygon(
-    var(--trail) 0,
-    calc(var(--trail) + 1px) 0,
-    calc(var(--trail) + 1px - var(--slant)) 100%,
-    calc(var(--trail) - var(--slant)) 100%
-  );
-}
-
-.cut-line-edge {
-  background: linear-gradient(
-    to bottom,
-    rgba(255, 255, 255, 0.95),
-    rgba(255, 255, 255, 0.5)
-  );
-  clip-path: polygon(
-    var(--edge) 0,
-    calc(var(--edge) + 2px) 0,
-    calc(var(--edge) + 2px - var(--edge-slant)) 100%,
-    calc(var(--edge) - var(--edge-slant)) 100%
-  );
 }
 
 /* ==========================================================================
@@ -884,6 +818,8 @@ button:focus-visible {
 
 @media (max-width: 1024px) {
   .hero-block {
+    /* Dark ground under the faded photo: the copy is light */
+    background-color: #0d1014;
     min-height: auto;
     padding-top: calc(var(--header-height) + 2rem);
   }
@@ -901,11 +837,9 @@ button:focus-visible {
   .hero-visual {
     left: 0;
     right: 0;
-    opacity: 0.28;
+    opacity: 0.5;
   }
 
-  .hero-visual .cut-line,
-  .hero-visual .cut-glare,
   .hero-overlay-toast {
     display: none;
   }
