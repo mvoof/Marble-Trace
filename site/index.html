@@ -277,6 +277,8 @@
     <link rel="stylesheet" href="src/styles/background.css" />
     <link rel="stylesheet" href="src/styles/navbar.css" />
     <link rel="stylesheet" href="src/styles/main.css" />
+    <link rel="stylesheet" href="src/styles/widget-gallery.css" />
+    <link rel="stylesheet" href="src/styles/hotspots.css" />
   </head>
   <body
     data-edit-note="Edit mode · drag any framed block · "
@@ -585,19 +587,30 @@
 
           <div class="hero-visual">
             <img
-              src="assets/why/scene.webp"
-              alt="Marble Trace widgets over the iRacing cockpit: standings, relative, track map, fuel, weather, radar and the race dash"
+              src="assets/why/hero-cockpit.webp"
+              alt=""
               class="hero-photo"
               fetchpriority="high"
               decoding="async"
             />
 
-            <!-- The blurred side dissolves into the hero ground along the same axis -->
-            <div class="hero-fade-left"></div>
+            <!-- The overlay switching on over the bare cockpit, once, on arrival.
+                 Same frame size as the cockpit, so both cover-fit identically. -->
+            <img
+              src="assets/why/hero-overlay.png"
+              alt="Marble Trace widgets over the iRacing cockpit: standings, lap log, relative, track map, fuel, weather, radar and the race dash"
+              class="hero-photo hero-overlay"
+              fetchpriority="high"
+              decoding="async"
+            />
 
-            <!-- Specular bloom and crisp hairlines riding the slanted cuts -->
-            <div class="cut-line cut-line-lead"></div>
-            <div class="cut-line cut-line-trail"></div>
+            <p class="hero-overlay-toast" aria-hidden="true">
+              <span class="hero-overlay-dot"></span>Overlay on
+            </p>
+
+            <!-- Frosted glass with a windscreen glare: the copy side, where the
+                 picture blurs out under the text instead of washing to white -->
+            <div class="hero-fade-left"></div>
 
             <!-- Near-vertical slanted cut taking a strip off the right edge -->
           </div>
@@ -778,854 +791,2432 @@
              step below that. The step is the section's structure - three
              columns squared off at the top would be a table. -->
         <div class="container">
-          <div class="gallery">
-            <div class="gallery-copy">
-              <p class="lede gallery-lede">
-                Every widget is designed to be read at racing speed: one glance,
-                and your eyes are back on the road.
-              </p>
-            </div>
+          <p class="lede gallery-lede">
+            Every widget is designed to be read at racing speed: one glance,
+            and your eyes are back on the road.
+          </p>
+        </div>
 
-            <div class="stage" id="gw-stage" role="tabpanel" aria-live="polite">
-              <div class="stage-head">
-                <p class="stage-group" id="gw-group">Race &amp; Performance</p>
-
-                <div class="stage-title">
-                  <h3 class="stage-name" id="gw-name">Race Dash</h3>
-                  <p class="stage-index" aria-hidden="true">
-                    <span id="gw-index">01</span> /
-                    <span id="gw-total">31</span>
-                  </p>
-                </div>
-              </div>
-
-              <div class="stage-shot">
+        <!-- The gallery. A stage nearly a screen tall: the widget large on a
+             cockpit, and beside it its name, what it does and the setups it
+             switches to. Under the stage, the groups and a strip of every
+             widget of the open group as its own picture. Each setup carries
+             its picture as a hidden <img>, so the build gives it its WebP
+             copies and its size, and the stage takes both from there. Without
+             JavaScript the strip is still every widget, and the catalogue
+             below says what each one does. -->
+        <div class="wg">
+          <div class="wg-stage">
+            <div class="wg-scene">
+              <figure class="wg-figure">
                 <img
-                  sizes="(max-width: 1180px) 92vw, 64vw"
-                  id="gw-shot"
+                  class="wg-shot"
                   src="assets/widgets/race-dash.png"
                   alt="Race Dash iRacing overlay widget: speed, gear, RPM, position and lap in one strip"
                   decoding="async"
                 />
-              </div>
-
-              <p class="stage-desc" id="gw-desc">
-                Speed, gear, RPM, position and lap in one strip &mdash; the one
-                widget that never leaves the screen.
-              </p>
+              </figure>
             </div>
 
-            <div class="sheet">
-              <ul
-                class="sheet-grid"
-                role="tablist"
-                aria-label="Widget gallery"
-                aria-orientation="horizontal"
-              >
-                <li role="presentation">
+            <div class="wg-panel" aria-live="polite">
+              <p class="wg-group-name">Race &amp; Performance</p>
+              <h3 class="wg-name">Race Dash</h3>
+              <p class="wg-index" aria-hidden="true">
+                <span class="wg-index-now">01</span>
+                <span class="wg-index-total">/ 32</span>
+              </p>
+              <p class="wg-desc"></p>
+
+              <div class="wg-setups-slot">
+                <div
+                  class="wg-setups"
+                  data-setups-for="race-dash"
+                >
+                  <p class="wg-setups-label">Setup</p>
                   <button
                     type="button"
-                    class="frame is-active"
-                    role="tab"
-                    id="gw-tab-race-dash"
-                    aria-controls="gw-stage"
-                    aria-selected="true"
-                    tabindex="0"
-                    data-shot="assets/widgets/race-dash.png"
-                    data-name="Race Dash"
-                    data-alt="Race Dash iRacing overlay widget: speed, gear, RPM, position and lap in one strip"
-                    data-group="Race &amp; Performance"
-                    data-desc-id="gw-desc-race-dash"
+                    class="wg-setup is-active"
+                    aria-pressed="true"
                   >
                     <img
-                      sizes="(max-width: 860px) 36vw, 10vw"
+                      src="assets/widgets/race-dash.png"
+                      alt=""
+                      hidden
+                      loading="lazy"
+                      decoding="async"
+                    />
+                    Fill ring
+                  </button>
+                  <button
+                    type="button"
+                    class="wg-setup"
+                    aria-pressed="false"
+                  >
+                    <img
+                      src="assets/widgets/race-dash-comb.png"
+                      alt=""
+                      hidden
+                      loading="lazy"
+                      decoding="async"
+                    />
+                    Comb
+                  </button>
+                  <button
+                    type="button"
+                    class="wg-setup"
+                    aria-pressed="false"
+                  >
+                    <img
+                      src="assets/widgets/race-dash-no-ring.png"
+                      alt=""
+                      hidden
+                      loading="lazy"
+                      decoding="async"
+                    />
+                    No ring
+                  </button>
+                  <button
+                    type="button"
+                    class="wg-setup"
+                    aria-pressed="false"
+                  >
+                    <img
+                      src="assets/widgets/race-dash-pit-limiter.png"
+                      alt=""
+                      hidden
+                      loading="lazy"
+                      decoding="async"
+                    />
+                    Pit limiter
+                  </button>
+                </div>
+                <div
+                  class="wg-setups"
+                  data-setups-for="pit-line"
+                  hidden
+                >
+                  <p class="wg-setups-label">Setup</p>
+                  <button
+                    type="button"
+                    class="wg-setup is-active"
+                    aria-pressed="true"
+                  >
+                    <img
+                      src="assets/widgets/pit-line.png"
+                      alt=""
+                      hidden
+                      loading="lazy"
+                      decoding="async"
+                    />
+                    On the way in
+                  </button>
+                  <button
+                    type="button"
+                    class="wg-setup"
+                    aria-pressed="false"
+                  >
+                    <img
+                      src="assets/widgets/pit-line-over-limit.png"
+                      alt=""
+                      hidden
+                      loading="lazy"
+                      decoding="async"
+                    />
+                    Over the limit
+                  </button>
+                  <button
+                    type="button"
+                    class="wg-setup"
+                    aria-pressed="false"
+                  >
+                    <img
+                      src="assets/widgets/pit-line-brake.png"
+                      alt=""
+                      hidden
+                      loading="lazy"
+                      decoding="async"
+                    />
+                    Brake for the box
+                  </button>
+                </div>
+                <div
+                  class="wg-setups"
+                  data-setups-for="rpm-lights"
+                  hidden
+                >
+                  <p class="wg-setups-label">Setup</p>
+                  <button
+                    type="button"
+                    class="wg-setup is-active"
+                    aria-pressed="true"
+                  >
+                    <img
+                      src="assets/widgets/rpm-lights.png"
+                      alt=""
+                      hidden
+                      loading="lazy"
+                      decoding="async"
+                    />
+                    Square
+                  </button>
+                  <button
+                    type="button"
+                    class="wg-setup"
+                    aria-pressed="false"
+                  >
+                    <img
+                      src="assets/widgets/rpm-lights-circle.png"
+                      alt=""
+                      hidden
+                      loading="lazy"
+                      decoding="async"
+                    />
+                    Round
+                  </button>
+                  <button
+                    type="button"
+                    class="wg-setup"
+                    aria-pressed="false"
+                  >
+                    <img
+                      src="assets/widgets/rpm-lights-parallelogram.png"
+                      alt=""
+                      hidden
+                      loading="lazy"
+                      decoding="async"
+                    />
+                    Slanted
+                  </button>
+                </div>
+                <div
+                  class="wg-setups"
+                  data-setups-for="engine"
+                  hidden
+                >
+                  <p class="wg-setups-label">Setup</p>
+                  <button
+                    type="button"
+                    class="wg-setup is-active"
+                    aria-pressed="true"
+                  >
+                    <img
+                      src="assets/widgets/engine.png"
+                      alt=""
+                      hidden
+                      loading="lazy"
+                      decoding="async"
+                    />
+                    Full panel
+                  </button>
+                  <button
+                    type="button"
+                    class="wg-setup"
+                    aria-pressed="false"
+                  >
+                    <img
+                      src="assets/widgets/engine-formula.png"
+                      alt=""
+                      hidden
+                      loading="lazy"
+                      decoding="async"
+                    />
+                    Formula car
+                  </button>
+                  <button
+                    type="button"
+                    class="wg-setup"
+                    aria-pressed="false"
+                  >
+                    <img
+                      src="assets/widgets/engine-minimal.png"
+                      alt=""
+                      hidden
+                      loading="lazy"
+                      decoding="async"
+                    />
+                    Minimal
+                  </button>
+                </div>
+                <div
+                  class="wg-setups"
+                  data-setups-for="battery"
+                  hidden
+                >
+                  <p class="wg-setups-label">Setup</p>
+                  <button
+                    type="button"
+                    class="wg-setup is-active"
+                    aria-pressed="true"
+                  >
+                    <img
+                      src="assets/widgets/battery.png"
+                      alt=""
+                      hidden
+                      loading="lazy"
+                      decoding="async"
+                    />
+                    Full
+                  </button>
+                  <button
+                    type="button"
+                    class="wg-setup"
+                    aria-pressed="false"
+                  >
+                    <img
+                      src="assets/widgets/battery-compact.png"
+                      alt=""
+                      hidden
+                      loading="lazy"
+                      decoding="async"
+                    />
+                    Compact
+                  </button>
+                  <button
+                    type="button"
+                    class="wg-setup"
+                    aria-pressed="false"
+                  >
+                    <img
+                      src="assets/widgets/battery-lap-deploy.png"
+                      alt=""
+                      hidden
+                      loading="lazy"
+                      decoding="async"
+                    />
+                    Lap deploy
+                  </button>
+                </div>
+                <div
+                  class="wg-setups"
+                  data-setups-for="drs"
+                  hidden
+                >
+                  <p class="wg-setups-label">Setup</p>
+                  <button
+                    type="button"
+                    class="wg-setup is-active"
+                    aria-pressed="true"
+                  >
+                    <img
+                      src="assets/widgets/drs.png"
+                      alt=""
+                      hidden
+                      loading="lazy"
+                      decoding="async"
+                    />
+                    Open
+                  </button>
+                  <button
+                    type="button"
+                    class="wg-setup"
+                    aria-pressed="false"
+                  >
+                    <img
+                      src="assets/widgets/drs-armed.png"
+                      alt=""
+                      hidden
+                      loading="lazy"
+                      decoding="async"
+                    />
+                    Armed
+                  </button>
+                  <button
+                    type="button"
+                    class="wg-setup"
+                    aria-pressed="false"
+                  >
+                    <img
+                      src="assets/widgets/drs-ready.png"
+                      alt=""
+                      hidden
+                      loading="lazy"
+                      decoding="async"
+                    />
+                    Ready
+                  </button>
+                </div>
+                <div
+                  class="wg-setups"
+                  data-setups-for="abs"
+                  hidden
+                >
+                  <p class="wg-setups-label">Setup</p>
+                  <button
+                    type="button"
+                    class="wg-setup is-active"
+                    aria-pressed="true"
+                  >
+                    <img
+                      src="assets/widgets/abs.png"
+                      alt=""
+                      hidden
+                      loading="lazy"
+                      decoding="async"
+                    />
+                    Active
+                  </button>
+                  <button
+                    type="button"
+                    class="wg-setup"
+                    aria-pressed="false"
+                  >
+                    <img
+                      src="assets/widgets/abs-idle.png"
+                      alt=""
+                      hidden
+                      loading="lazy"
+                      decoding="async"
+                    />
+                    Idle
+                  </button>
+                </div>
+                <div
+                  class="wg-setups"
+                  data-setups-for="input-trace"
+                  hidden
+                >
+                  <p class="wg-setups-label">Setup</p>
+                  <button
+                    type="button"
+                    class="wg-setup is-active"
+                    aria-pressed="true"
+                  >
+                    <img
+                      src="assets/widgets/input-trace.png"
+                      alt=""
+                      hidden
+                      loading="lazy"
+                      decoding="async"
+                    />
+                    Full
+                  </button>
+                  <button
+                    type="button"
+                    class="wg-setup"
+                    aria-pressed="false"
+                  >
+                    <img
+                      src="assets/widgets/input-trace-no-wheel.png"
+                      alt=""
+                      hidden
+                      loading="lazy"
+                      decoding="async"
+                    />
+                    No wheel
+                  </button>
+                  <button
+                    type="button"
+                    class="wg-setup"
+                    aria-pressed="false"
+                  >
+                    <img
+                      src="assets/widgets/input-trace-throttle-brake.png"
+                      alt=""
+                      hidden
+                      loading="lazy"
+                      decoding="async"
+                    />
+                    Throttle and brake
+                  </button>
+                  <button
+                    type="button"
+                    class="wg-setup"
+                    aria-pressed="false"
+                  >
+                    <img
+                      src="assets/widgets/input-trace-corner-speeds.png"
+                      alt=""
+                      hidden
+                      loading="lazy"
+                      decoding="async"
+                    />
+                    Corner speeds
+                  </button>
+                </div>
+                <div
+                  class="wg-setups"
+                  data-setups-for="g-metr"
+                  hidden
+                >
+                  <p class="wg-setups-label">Setup</p>
+                  <button
+                    type="button"
+                    class="wg-setup is-active"
+                    aria-pressed="true"
+                  >
+                    <img
+                      src="assets/widgets/g-metr.png"
+                      alt=""
+                      hidden
+                      loading="lazy"
+                      decoding="async"
+                    />
+                    Default
+                  </button>
+                  <button
+                    type="button"
+                    class="wg-setup"
+                    aria-pressed="false"
+                  >
+                    <img
+                      src="assets/widgets/g-metr-trail.png"
+                      alt=""
+                      hidden
+                      loading="lazy"
+                      decoding="async"
+                    />
+                    Trail
+                  </button>
+                  <button
+                    type="button"
+                    class="wg-setup"
+                    aria-pressed="false"
+                  >
+                    <img
+                      src="assets/widgets/g-metr-peak.png"
+                      alt=""
+                      hidden
+                      loading="lazy"
+                      decoding="async"
+                    />
+                    Peak
+                  </button>
+                  <button
+                    type="button"
+                    class="wg-setup"
+                    aria-pressed="false"
+                  >
+                    <img
+                      src="assets/widgets/g-metr-fading.png"
+                      alt=""
+                      hidden
+                      loading="lazy"
+                      decoding="async"
+                    />
+                    Fading
+                  </button>
+                </div>
+                <div
+                  class="wg-setups"
+                  data-setups-for="coach"
+                  hidden
+                >
+                  <p class="wg-setups-label">Setup</p>
+                  <button
+                    type="button"
+                    class="wg-setup is-active"
+                    aria-pressed="true"
+                  >
+                    <img
+                      src="assets/widgets/coach.png"
+                      alt=""
+                      hidden
+                      loading="lazy"
+                      decoding="async"
+                    />
+                    Full
+                  </button>
+                  <button
+                    type="button"
+                    class="wg-setup"
+                    aria-pressed="false"
+                  >
+                    <img
+                      src="assets/widgets/coach-no-trace.png"
+                      alt=""
+                      hidden
+                      loading="lazy"
+                      decoding="async"
+                    />
+                    No trace
+                  </button>
+                  <button
+                    type="button"
+                    class="wg-setup"
+                    aria-pressed="false"
+                  >
+                    <img
+                      src="assets/widgets/coach-no-readouts.png"
+                      alt=""
+                      hidden
+                      loading="lazy"
+                      decoding="async"
+                    />
+                    No readouts
+                  </button>
+                  <button
+                    type="button"
+                    class="wg-setup"
+                    aria-pressed="false"
+                  >
+                    <img
+                      src="assets/widgets/coach-brake-channel.png"
+                      alt=""
+                      hidden
+                      loading="lazy"
+                      decoding="async"
+                    />
+                    Brake channel
+                  </button>
+                </div>
+                <div
+                  class="wg-setups"
+                  data-setups-for="invisible-dash"
+                  hidden
+                >
+                  <p class="wg-setups-label">Setup</p>
+                  <button
+                    type="button"
+                    class="wg-setup is-active"
+                    aria-pressed="true"
+                  >
+                    <img
+                      src="assets/widgets/invisible-dash.png"
+                      alt=""
+                      hidden
+                      loading="lazy"
+                      decoding="async"
+                    />
+                    Projection
+                  </button>
+                  <button
+                    type="button"
+                    class="wg-setup"
+                    aria-pressed="false"
+                  >
+                    <img
+                      src="assets/widgets/invisible-dash-contour.png"
+                      alt=""
+                      hidden
+                      loading="lazy"
+                      decoding="async"
+                    />
+                    Contour
+                  </button>
+                  <button
+                    type="button"
+                    class="wg-setup"
+                    aria-pressed="false"
+                  >
+                    <img
+                      src="assets/widgets/invisible-dash-backdrop.png"
+                      alt=""
+                      hidden
+                      loading="lazy"
+                      decoding="async"
+                    />
+                    Backdrop
+                  </button>
+                  <button
+                    type="button"
+                    class="wg-setup"
+                    aria-pressed="false"
+                  >
+                    <img
+                      src="assets/widgets/invisible-dash-compact.png"
+                      alt=""
+                      hidden
+                      loading="lazy"
+                      decoding="async"
+                    />
+                    Compact
+                  </button>
+                </div>
+                <div
+                  class="wg-setups"
+                  data-setups-for="standings"
+                  hidden
+                >
+                  <p class="wg-setups-label">Setup</p>
+                  <button
+                    type="button"
+                    class="wg-setup is-active"
+                    aria-pressed="true"
+                  >
+                    <img
+                      src="assets/widgets/standings.png"
+                      alt=""
+                      hidden
+                      loading="lazy"
+                      decoding="async"
+                    />
+                    Default
+                  </button>
+                  <button
+                    type="button"
+                    class="wg-setup"
+                    aria-pressed="false"
+                  >
+                    <img
+                      src="assets/widgets/standings-all-columns.png"
+                      alt=""
+                      hidden
+                      loading="lazy"
+                      decoding="async"
+                    />
+                    All columns
+                  </button>
+                  <button
+                    type="button"
+                    class="wg-setup"
+                    aria-pressed="false"
+                  >
+                    <img
+                      src="assets/widgets/standings-minimal.png"
+                      alt=""
+                      hidden
+                      loading="lazy"
+                      decoding="async"
+                    />
+                    Minimal
+                  </button>
+                  <button
+                    type="button"
+                    class="wg-setup"
+                    aria-pressed="false"
+                  >
+                    <img
+                      src="assets/widgets/standings-grouped.png"
+                      alt=""
+                      hidden
+                      loading="lazy"
+                      decoding="async"
+                    />
+                    By class
+                  </button>
+                  <button
+                    type="button"
+                    class="wg-setup"
+                    aria-pressed="false"
+                  >
+                    <img
+                      src="assets/widgets/standings-team.png"
+                      alt=""
+                      hidden
+                      loading="lazy"
+                      decoding="async"
+                    />
+                    Team race
+                  </button>
+                </div>
+                <div
+                  class="wg-setups"
+                  data-setups-for="relative"
+                  hidden
+                >
+                  <p class="wg-setups-label">Setup</p>
+                  <button
+                    type="button"
+                    class="wg-setup is-active"
+                    aria-pressed="true"
+                  >
+                    <img
+                      src="assets/widgets/relative.png"
+                      alt=""
+                      hidden
+                      loading="lazy"
+                      decoding="async"
+                    />
+                    Default
+                  </button>
+                  <button
+                    type="button"
+                    class="wg-setup"
+                    aria-pressed="false"
+                  >
+                    <img
+                      src="assets/widgets/relative-minimal.png"
+                      alt=""
+                      hidden
+                      loading="lazy"
+                      decoding="async"
+                    />
+                    Minimal
+                  </button>
+                  <button
+                    type="button"
+                    class="wg-setup"
+                    aria-pressed="false"
+                  >
+                    <img
+                      src="assets/widgets/relative-abbreviated.png"
+                      alt=""
+                      hidden
+                      loading="lazy"
+                      decoding="async"
+                    />
+                    Short names
+                  </button>
+                  <button
+                    type="button"
+                    class="wg-setup"
+                    aria-pressed="false"
+                  >
+                    <img
+                      src="assets/widgets/relative-driver-flags.png"
+                      alt=""
+                      hidden
+                      loading="lazy"
+                      decoding="async"
+                    />
+                    Driver flags
+                  </button>
+                </div>
+                <div
+                  class="wg-setups"
+                  data-setups-for="relative-map"
+                  hidden
+                >
+                  <p class="wg-setups-label">Setup</p>
+                  <button
+                    type="button"
+                    class="wg-setup is-active"
+                    aria-pressed="true"
+                  >
+                    <img
+                      src="assets/widgets/relative-map.png"
+                      alt=""
+                      hidden
+                      loading="lazy"
+                      decoding="async"
+                    />
+                    Horizontal
+                  </button>
+                  <button
+                    type="button"
+                    class="wg-setup"
+                    aria-pressed="false"
+                  >
+                    <img
+                      src="assets/widgets/relative-map-vertical.png"
+                      alt=""
+                      hidden
+                      loading="lazy"
+                      decoding="async"
+                    />
+                    Vertical
+                  </button>
+                </div>
+                <div
+                  class="wg-setups"
+                  data-setups-for="delta"
+                  hidden
+                >
+                  <p class="wg-setups-label">Setup</p>
+                  <button
+                    type="button"
+                    class="wg-setup is-active"
+                    aria-pressed="true"
+                  >
+                    <img
+                      src="assets/widgets/delta.png"
+                      alt=""
+                      hidden
+                      loading="lazy"
+                      decoding="async"
+                    />
+                    With gauge
+                  </button>
+                  <button
+                    type="button"
+                    class="wg-setup"
+                    aria-pressed="false"
+                  >
+                    <img
+                      src="assets/widgets/delta-no-gauge.png"
+                      alt=""
+                      hidden
+                      loading="lazy"
+                      decoding="async"
+                    />
+                    Number only
+                  </button>
+                  <button
+                    type="button"
+                    class="wg-setup"
+                    aria-pressed="false"
+                  >
+                    <img
+                      src="assets/widgets/delta-best.png"
+                      alt=""
+                      hidden
+                      loading="lazy"
+                      decoding="async"
+                    />
+                    New best lap
+                  </button>
+                </div>
+                <div
+                  class="wg-setups"
+                  data-setups-for="sector-matrix"
+                  hidden
+                >
+                  <p class="wg-setups-label">Setup</p>
+                  <button
+                    type="button"
+                    class="wg-setup is-active"
+                    aria-pressed="true"
+                  >
+                    <img
+                      src="assets/widgets/sector-matrix.png"
+                      alt=""
+                      hidden
+                      loading="lazy"
+                      decoding="async"
+                    />
+                    In progress
+                  </button>
+                  <button
+                    type="button"
+                    class="wg-setup"
+                    aria-pressed="false"
+                  >
+                    <img
+                      src="assets/widgets/sector-matrix-behind.png"
+                      alt=""
+                      hidden
+                      loading="lazy"
+                      decoding="async"
+                    />
+                    Behind
+                  </button>
+                  <button
+                    type="button"
+                    class="wg-setup"
+                    aria-pressed="false"
+                  >
+                    <img
+                      src="assets/widgets/sector-matrix-four.png"
+                      alt=""
+                      hidden
+                      loading="lazy"
+                      decoding="async"
+                    />
+                    Four sectors
+                  </button>
+                </div>
+                <div
+                  class="wg-setups"
+                  data-setups-for="lap-log"
+                  hidden
+                >
+                  <p class="wg-setups-label">Setup</p>
+                  <button
+                    type="button"
+                    class="wg-setup is-active"
+                    aria-pressed="true"
+                  >
+                    <img
+                      src="assets/widgets/lap-log.png"
+                      alt=""
+                      hidden
+                      loading="lazy"
+                      decoding="async"
+                    />
+                    Default
+                  </button>
+                  <button
+                    type="button"
+                    class="wg-setup"
+                    aria-pressed="false"
+                  >
+                    <img
+                      src="assets/widgets/lap-log-pace-loss.png"
+                      alt=""
+                      hidden
+                      loading="lazy"
+                      decoding="async"
+                    />
+                    Pace loss bars
+                  </button>
+                </div>
+                <div
+                  class="wg-setups"
+                  data-setups-for="timer"
+                  hidden
+                >
+                  <p class="wg-setups-label">Setup</p>
+                  <button
+                    type="button"
+                    class="wg-setup is-active"
+                    aria-pressed="true"
+                  >
+                    <img
+                      src="assets/widgets/timer.png"
+                      alt=""
+                      hidden
+                      loading="lazy"
+                      decoding="async"
+                    />
+                    Full
+                  </button>
+                  <button
+                    type="button"
+                    class="wg-setup"
+                    aria-pressed="false"
+                  >
+                    <img
+                      src="assets/widgets/timer-minimal.png"
+                      alt=""
+                      hidden
+                      loading="lazy"
+                      decoding="async"
+                    />
+                    Minimal
+                  </button>
+                  <button
+                    type="button"
+                    class="wg-setup"
+                    aria-pressed="false"
+                  >
+                    <img
+                      src="assets/widgets/timer-clocks.png"
+                      alt=""
+                      hidden
+                      loading="lazy"
+                      decoding="async"
+                    />
+                    Clocks
+                  </button>
+                  <button
+                    type="button"
+                    class="wg-setup"
+                    aria-pressed="false"
+                  >
+                    <img
+                      src="assets/widgets/timer-dates.png"
+                      alt=""
+                      hidden
+                      loading="lazy"
+                      decoding="async"
+                    />
+                    Dates
+                  </button>
+                </div>
+                <div
+                  class="wg-setups"
+                  data-setups-for="map"
+                  hidden
+                >
+                  <p class="wg-setups-label">Setup</p>
+                  <button
+                    type="button"
+                    class="wg-setup is-active"
+                    aria-pressed="true"
+                  >
+                    <img
+                      src="assets/widgets/map.png"
+                      alt=""
+                      hidden
+                      loading="lazy"
+                      decoding="async"
+                    />
+                    Sectors
+                  </button>
+                  <button
+                    type="button"
+                    class="wg-setup"
+                    aria-pressed="false"
+                  >
+                    <img
+                      src="assets/widgets/map-class-shapes.png"
+                      alt=""
+                      hidden
+                      loading="lazy"
+                      decoding="async"
+                    />
+                    Class shapes
+                  </button>
+                  <button
+                    type="button"
+                    class="wg-setup"
+                    aria-pressed="false"
+                  >
+                    <img
+                      src="assets/widgets/map-incidents.png"
+                      alt=""
+                      hidden
+                      loading="lazy"
+                      decoding="async"
+                    />
+                    Incident zones
+                  </button>
+                  <button
+                    type="button"
+                    class="wg-setup"
+                    aria-pressed="false"
+                  >
+                    <img
+                      src="assets/widgets/map-record.png"
+                      alt=""
+                      hidden
+                      loading="lazy"
+                      decoding="async"
+                    />
+                    Recording a track
+                  </button>
+                </div>
+                <div
+                  class="wg-setups"
+                  data-setups-for="proximity-radar"
+                  hidden
+                >
+                  <p class="wg-setups-label">Setup</p>
+                  <button
+                    type="button"
+                    class="wg-setup is-active"
+                    aria-pressed="true"
+                  >
+                    <img
+                      src="assets/widgets/proximity-radar.png"
+                      alt=""
+                      hidden
+                      loading="lazy"
+                      decoding="async"
+                    />
+                    Surrounded
+                  </button>
+                  <button
+                    type="button"
+                    class="wg-setup"
+                    aria-pressed="false"
+                  >
+                    <img
+                      src="assets/widgets/proximity-radar-left.png"
+                      alt=""
+                      hidden
+                      loading="lazy"
+                      decoding="async"
+                    />
+                    Car left
+                  </button>
+                  <button
+                    type="button"
+                    class="wg-setup"
+                    aria-pressed="false"
+                  >
+                    <img
+                      src="assets/widgets/proximity-radar-both.png"
+                      alt=""
+                      hidden
+                      loading="lazy"
+                      decoding="async"
+                    />
+                    Both sides
+                  </button>
+                </div>
+                <div
+                  class="wg-setups"
+                  data-setups-for="radar-bar"
+                  hidden
+                >
+                  <p class="wg-setups-label">Setup</p>
+                  <button
+                    type="button"
+                    class="wg-setup is-active"
+                    aria-pressed="true"
+                  >
+                    <img
+                      src="assets/widgets/radar-bar.png"
+                      alt=""
+                      hidden
+                      loading="lazy"
+                      decoding="async"
+                    />
+                    Both sides
+                  </button>
+                  <button
+                    type="button"
+                    class="wg-setup"
+                    aria-pressed="false"
+                  >
+                    <img
+                      src="assets/widgets/radar-bar-left.png"
+                      alt=""
+                      hidden
+                      loading="lazy"
+                      decoding="async"
+                    />
+                    Car left
+                  </button>
+                </div>
+                <div
+                  class="wg-setups"
+                  data-setups-for="radio"
+                  hidden
+                >
+                  <p class="wg-setups-label">Setup</p>
+                  <button
+                    type="button"
+                    class="wg-setup is-active"
+                    aria-pressed="true"
+                  >
+                    <img
+                      src="assets/widgets/radio.png"
+                      alt=""
+                      hidden
+                      loading="lazy"
+                      decoding="async"
+                    />
+                    All drivers
+                  </button>
+                  <button
+                    type="button"
+                    class="wg-setup"
+                    aria-pressed="false"
+                  >
+                    <img
+                      src="assets/widgets/radio-race-control.png"
+                      alt=""
+                      hidden
+                      loading="lazy"
+                      decoding="async"
+                    />
+                    Race control
+                  </button>
+                </div>
+                <div
+                  class="wg-setups"
+                  data-setups-for="crew-radio"
+                  hidden
+                >
+                  <p class="wg-setups-label">Setup</p>
+                  <button
+                    type="button"
+                    class="wg-setup is-active"
+                    aria-pressed="true"
+                  >
+                    <img
+                      src="assets/widgets/crew-radio.png"
+                      alt=""
+                      hidden
+                      loading="lazy"
+                      decoding="async"
+                    />
+                    Reply
+                  </button>
+                  <button
+                    type="button"
+                    class="wg-setup"
+                    aria-pressed="false"
+                  >
+                    <img
+                      src="assets/widgets/crew-radio-listening.png"
+                      alt=""
+                      hidden
+                      loading="lazy"
+                      decoding="async"
+                    />
+                    Listening
+                  </button>
+                  <button
+                    type="button"
+                    class="wg-setup"
+                    aria-pressed="false"
+                  >
+                    <img
+                      src="assets/widgets/crew-radio-refused.png"
+                      alt=""
+                      hidden
+                      loading="lazy"
+                      decoding="async"
+                    />
+                    Refused
+                  </button>
+                </div>
+                <div
+                  class="wg-setups"
+                  data-setups-for="close-battle"
+                  hidden
+                >
+                  <p class="wg-setups-label">Setup</p>
+                  <button
+                    type="button"
+                    class="wg-setup is-active"
+                    aria-pressed="true"
+                  >
+                    <img
+                      src="assets/widgets/close-battle.png"
+                      alt=""
+                      hidden
+                      loading="lazy"
+                      decoding="async"
+                    />
+                    Default
+                  </button>
+                  <button
+                    type="button"
+                    class="wg-setup"
+                    aria-pressed="false"
+                  >
+                    <img
+                      src="assets/widgets/close-battle-full-names.png"
+                      alt=""
+                      hidden
+                      loading="lazy"
+                      decoding="async"
+                    />
+                    Full names
+                  </button>
+                  <button
+                    type="button"
+                    class="wg-setup"
+                    aria-pressed="false"
+                  >
+                    <img
+                      src="assets/widgets/close-battle-axis.png"
+                      alt=""
+                      hidden
+                      loading="lazy"
+                      decoding="async"
+                    />
+                    Axis only
+                  </button>
+                </div>
+                <div
+                  class="wg-setups"
+                  data-setups-for="wheel-to-wheel"
+                  hidden
+                >
+                  <p class="wg-setups-label">Setup</p>
+                  <button
+                    type="button"
+                    class="wg-setup is-active"
+                    aria-pressed="true"
+                  >
+                    <img
+                      src="assets/widgets/wheel-to-wheel.png"
+                      alt=""
+                      hidden
+                      loading="lazy"
+                      decoding="async"
+                    />
+                    Columns
+                  </button>
+                  <button
+                    type="button"
+                    class="wg-setup"
+                    aria-pressed="false"
+                  >
+                    <img
+                      src="assets/widgets/wheel-to-wheel-rows.png"
+                      alt=""
+                      hidden
+                      loading="lazy"
+                      decoding="async"
+                    />
+                    Rows
+                  </button>
+                </div>
+                <div
+                  class="wg-setups"
+                  data-setups-for="flat-flag"
+                  hidden
+                >
+                  <p class="wg-setups-label">As shown</p>
+                  <button
+                    type="button"
+                    class="wg-setup is-active"
+                    aria-pressed="true"
+                  >
+                    <img
+                      src="assets/widgets/flat-flag.png"
+                      alt=""
+                      hidden
+                      loading="lazy"
+                      decoding="async"
+                    />
+                    Default
+                  </button>
+                </div>
+                <div
+                  class="wg-setups"
+                  data-setups-for="led-flag-dual"
+                  hidden
+                >
+                  <p class="wg-setups-label">Setup</p>
+                  <button
+                    type="button"
+                    class="wg-setup is-active"
+                    aria-pressed="true"
+                  >
+                    <img
+                      src="assets/widgets/led-flag-dual.png"
+                      alt=""
+                      hidden
+                      loading="lazy"
+                      decoding="async"
+                    />
+                    Split
+                  </button>
+                  <button
+                    type="button"
+                    class="wg-setup"
+                    aria-pressed="false"
+                  >
+                    <img
+                      src="assets/widgets/led-flag-one.png"
+                      alt=""
+                      hidden
+                      loading="lazy"
+                      decoding="async"
+                    />
+                    Single LED
+                  </button>
+                </div>
+                <div
+                  class="wg-setups"
+                  data-setups-for="pit-service"
+                  hidden
+                >
+                  <p class="wg-setups-label">Setup</p>
+                  <button
+                    type="button"
+                    class="wg-setup is-active"
+                    aria-pressed="true"
+                  >
+                    <img
+                      src="assets/widgets/pit-service.png"
+                      alt=""
+                      hidden
+                      loading="lazy"
+                      decoding="async"
+                    />
+                    Servicing
+                  </button>
+                  <button
+                    type="button"
+                    class="wg-setup"
+                    aria-pressed="false"
+                  >
+                    <img
+                      src="assets/widgets/pit-service-no-footer.png"
+                      alt=""
+                      hidden
+                      loading="lazy"
+                      decoding="async"
+                    />
+                    No footer
+                  </button>
+                  <button
+                    type="button"
+                    class="wg-setup"
+                    aria-pressed="false"
+                  >
+                    <img
+                      src="assets/widgets/pit-service-interact.png"
+                      alt=""
+                      hidden
+                      loading="lazy"
+                      decoding="async"
+                    />
+                    F8 interact
+                  </button>
+                </div>
+                <div
+                  class="wg-setups"
+                  data-setups-for="fuel"
+                  hidden
+                >
+                  <p class="wg-setups-label">Setup</p>
+                  <button
+                    type="button"
+                    class="wg-setup is-active"
+                    aria-pressed="true"
+                  >
+                    <img
+                      src="assets/widgets/fuel.png"
+                      alt=""
+                      hidden
+                      loading="lazy"
+                      decoding="async"
+                    />
+                    Bar chart
+                  </button>
+                  <button
+                    type="button"
+                    class="wg-setup"
+                    aria-pressed="false"
+                  >
+                    <img
+                      src="assets/widgets/fuel-line.png"
+                      alt=""
+                      hidden
+                      loading="lazy"
+                      decoding="async"
+                    />
+                    Line chart
+                  </button>
+                  <button
+                    type="button"
+                    class="wg-setup"
+                    aria-pressed="false"
+                  >
+                    <img
+                      src="assets/widgets/fuel-no-chart.png"
+                      alt=""
+                      hidden
+                      loading="lazy"
+                      decoding="async"
+                    />
+                    No chart
+                  </button>
+                  <button
+                    type="button"
+                    class="wg-setup"
+                    aria-pressed="false"
+                  >
+                    <img
+                      src="assets/widgets/fuel-forecast.png"
+                      alt=""
+                      hidden
+                      loading="lazy"
+                      decoding="async"
+                    />
+                    Next stop
+                  </button>
+                  <button
+                    type="button"
+                    class="wg-setup"
+                    aria-pressed="false"
+                  >
+                    <img
+                      src="assets/widgets/fuel-pit-stop.png"
+                      alt=""
+                      hidden
+                      loading="lazy"
+                      decoding="async"
+                    />
+                    Pit window open
+                  </button>
+                </div>
+                <div
+                  class="wg-setups"
+                  data-setups-for="weather"
+                  hidden
+                >
+                  <p class="wg-setups-label">Setup</p>
+                  <button
+                    type="button"
+                    class="wg-setup is-active"
+                    aria-pressed="true"
+                  >
+                    <img
+                      src="assets/widgets/weather.png"
+                      alt=""
+                      hidden
+                      loading="lazy"
+                      decoding="async"
+                    />
+                    Horizontal
+                  </button>
+                  <button
+                    type="button"
+                    class="wg-setup"
+                    aria-pressed="false"
+                  >
+                    <img
+                      src="assets/widgets/weather-vertical.png"
+                      alt=""
+                      hidden
+                      loading="lazy"
+                      decoding="async"
+                    />
+                    Vertical
+                  </button>
+                  <button
+                    type="button"
+                    class="wg-setup"
+                    aria-pressed="false"
+                  >
+                    <img
+                      src="assets/widgets/weather-forecast.png"
+                      alt=""
+                      hidden
+                      loading="lazy"
+                      decoding="async"
+                    />
+                    Forecast
+                  </button>
+                  <button
+                    type="button"
+                    class="wg-setup"
+                    aria-pressed="false"
+                  >
+                    <img
+                      src="assets/widgets/weather-rain.png"
+                      alt=""
+                      hidden
+                      loading="lazy"
+                      decoding="async"
+                    />
+                    Heavy rain
+                  </button>
+                </div>
+                <div
+                  class="wg-setups"
+                  data-setups-for="incident-tracker"
+                  hidden
+                >
+                  <p class="wg-setups-label">Setup</p>
+                  <button
+                    type="button"
+                    class="wg-setup is-active"
+                    aria-pressed="true"
+                  >
+                    <img
+                      src="assets/widgets/incident-tracker.png"
+                      alt=""
+                      hidden
+                      loading="lazy"
+                      decoding="async"
+                    />
+                    Minor incidents
+                  </button>
+                  <button
+                    type="button"
+                    class="wg-setup"
+                    aria-pressed="false"
+                  >
+                    <img
+                      src="assets/widgets/incident-tracker-penalty.png"
+                      alt=""
+                      hidden
+                      loading="lazy"
+                      decoding="async"
+                    />
+                    Penalty warning
+                  </button>
+                  <button
+                    type="button"
+                    class="wg-setup"
+                    aria-pressed="false"
+                  >
+                    <img
+                      src="assets/widgets/incident-tracker-clean.png"
+                      alt=""
+                      hidden
+                      loading="lazy"
+                      decoding="async"
+                    />
+                    Clean race
+                  </button>
+                </div>
+                <div
+                  class="wg-setups"
+                  data-setups-for="stream-chat"
+                  hidden
+                >
+                  <p class="wg-setups-label">Setup</p>
+                  <button
+                    type="button"
+                    class="wg-setup is-active"
+                    aria-pressed="true"
+                  >
+                    <img
+                      src="assets/widgets/stream-chat.png"
+                      alt=""
+                      hidden
+                      loading="lazy"
+                      decoding="async"
+                    />
+                    All platforms
+                  </button>
+                  <button
+                    type="button"
+                    class="wg-setup"
+                    aria-pressed="false"
+                  >
+                    <img
+                      src="assets/widgets/stream-chat-twitch.png"
+                      alt=""
+                      hidden
+                      loading="lazy"
+                      decoding="async"
+                    />
+                    Twitch only
+                  </button>
+                </div>
+              </div>
+
+              <div class="wg-nav">
+                <button
+                  type="button"
+                  class="wg-step"
+                  data-step="-1"
+                  aria-label="Previous widget"
+                >
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M15 5l-7 7 7 7" />
+                  </svg>
+                </button>
+                <button
+                  type="button"
+                  class="wg-step"
+                  data-step="1"
+                  aria-label="Next widget"
+                >
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M9 5l7 7-7 7" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="container wg-browser">
+            <div class="wg-tabs" role="group" aria-label="Widget groups">
+              <button
+                type="button"
+                class="wg-tab is-active"
+                aria-pressed="true"
+                data-group-tab="performance"
+              >
+                Race &amp; Performance
+              </button>
+              <button
+                type="button"
+                class="wg-tab"
+                aria-pressed="false"
+                data-group-tab="timing"
+              >
+                Timing &amp; Standings
+              </button>
+              <button
+                type="button"
+                class="wg-tab"
+                aria-pressed="false"
+                data-group-tab="awareness"
+              >
+                Awareness
+              </button>
+              <button
+                type="button"
+                class="wg-tab"
+                aria-pressed="false"
+                data-group-tab="session"
+              >
+                Car &amp; Session
+              </button>
+              <button
+                type="button"
+                class="wg-tab"
+                aria-pressed="false"
+                data-group-tab="streaming"
+              >
+                Streaming
+              </button>
+            </div>
+
+            <ul class="wg-strip" aria-label="Widgets">
+              <li data-wg-group="performance">
+                <button
+                  type="button"
+                  class="wg-item is-active"
+                  aria-pressed="true"
+                  data-widget="race-dash"
+                  data-desc-id="gw-desc-race-dash"
+                  data-alt="Race Dash iRacing overlay widget: speed, gear, RPM, position and lap in one strip"
+                >
+                  <span class="wg-item-thumb">
+                    <img
+                      sizes="12rem"
                       src="assets/widgets/race-dash.png"
                       alt=""
                       loading="lazy"
                       decoding="async"
                     />
-                    <span class="frame-caption">Race Dash</span>
-                  </button>
-                </li>
-                <li role="presentation">
-                  <button
-                    type="button"
-                    class="frame"
-                    role="tab"
-                    id="gw-tab-pit-line"
-                    aria-controls="gw-stage"
-                    aria-selected="false"
-                    tabindex="-1"
-                    data-shot="assets/widgets/pit-line.png"
-                    data-name="Pit Line"
-                    data-alt="Pit Line iRacing overlay widget: pit limiter, pit-lane speed and distance to the pit box"
-                    data-group="Race &amp; Performance"
-                    data-desc-id="gw-desc-pit-line"
-                  >
+                  </span>
+                  <span class="wg-item-name">Race Dash</span>
+                  <span class="wg-item-count" aria-hidden="true">4</span>
+                </button>
+              </li>
+              <li data-wg-group="performance">
+                <button
+                  type="button"
+                  class="wg-item"
+                  aria-pressed="false"
+                  data-widget="pit-line"
+                  data-desc-id="gw-desc-pit-line"
+                  data-alt="Pit Line iRacing overlay widget: pit limiter, pit-lane speed and distance to the pit box"
+                >
+                  <span class="wg-item-thumb">
                     <img
-                      sizes="(max-width: 860px) 36vw, 10vw"
+                      sizes="12rem"
                       src="assets/widgets/pit-line.png"
                       alt=""
                       loading="lazy"
                       decoding="async"
                     />
-                    <span class="frame-caption">Pit Line</span>
-                  </button>
-                </li>
-                <li role="presentation">
-                  <button
-                    type="button"
-                    class="frame"
-                    role="tab"
-                    id="gw-tab-rpm-lights"
-                    aria-controls="gw-stage"
-                    aria-selected="false"
-                    tabindex="-1"
-                    data-shot="assets/widgets/rpm-lights.png"
-                    data-name="RPM Lights"
-                    data-alt="RPM Lights iRacing overlay widget: shift light bar with custom colours and shift point"
-                    data-group="Race &amp; Performance"
-                    data-desc-id="gw-desc-rpm-lights"
-                  >
+                  </span>
+                  <span class="wg-item-name">Pit Line</span>
+                  <span class="wg-item-count" aria-hidden="true">3</span>
+                </button>
+              </li>
+              <li data-wg-group="performance">
+                <button
+                  type="button"
+                  class="wg-item"
+                  aria-pressed="false"
+                  data-widget="rpm-lights"
+                  data-desc-id="gw-desc-rpm-lights"
+                  data-alt="RPM Lights iRacing overlay widget: shift light bar with custom colours and shift point"
+                >
+                  <span class="wg-item-thumb">
                     <img
-                      sizes="(max-width: 860px) 36vw, 10vw"
+                      sizes="12rem"
                       src="assets/widgets/rpm-lights.png"
                       alt=""
                       loading="lazy"
                       decoding="async"
                     />
-                    <span class="frame-caption">RPM Lights</span>
-                  </button>
-                </li>
-                <li role="presentation">
-                  <button
-                    type="button"
-                    class="frame"
-                    role="tab"
-                    id="gw-tab-engine"
-                    aria-controls="gw-stage"
-                    aria-selected="false"
-                    tabindex="-1"
-                    data-shot="assets/widgets/engine.png"
-                    data-name="Engine Panel"
-                    data-alt="Engine Panel iRacing overlay widget: water, oil, fuel pressure and voltage"
-                    data-group="Race &amp; Performance"
-                    data-desc-id="gw-desc-engine"
-                  >
+                  </span>
+                  <span class="wg-item-name">RPM Lights</span>
+                  <span class="wg-item-count" aria-hidden="true">3</span>
+                </button>
+              </li>
+              <li data-wg-group="performance">
+                <button
+                  type="button"
+                  class="wg-item"
+                  aria-pressed="false"
+                  data-widget="engine"
+                  data-desc-id="gw-desc-engine"
+                  data-alt="Engine Panel iRacing overlay widget: water, oil, fuel pressure and voltage"
+                >
+                  <span class="wg-item-thumb">
                     <img
-                      sizes="(max-width: 860px) 36vw, 10vw"
+                      sizes="12rem"
                       src="assets/widgets/engine.png"
                       alt=""
                       loading="lazy"
                       decoding="async"
                     />
-                    <span class="frame-caption">Engine Panel</span>
-                  </button>
-                </li>
-                <li role="presentation">
-                  <button
-                    type="button"
-                    class="frame"
-                    role="tab"
-                    id="gw-tab-battery"
-                    aria-controls="gw-stage"
-                    aria-selected="false"
-                    tabindex="-1"
-                    data-shot="assets/widgets/battery.png"
-                    data-name="Battery"
-                    data-alt="Battery iRacing overlay widget: hybrid charge, MGU-K deployment and energy per lap"
-                    data-group="Race &amp; Performance"
-                    data-desc-id="gw-desc-battery"
-                  >
+                  </span>
+                  <span class="wg-item-name">Engine Panel</span>
+                  <span class="wg-item-count" aria-hidden="true">3</span>
+                </button>
+              </li>
+              <li data-wg-group="performance">
+                <button
+                  type="button"
+                  class="wg-item"
+                  aria-pressed="false"
+                  data-widget="battery"
+                  data-desc-id="gw-desc-battery"
+                  data-alt="Battery iRacing overlay widget: hybrid charge, MGU-K deployment and energy per lap"
+                >
+                  <span class="wg-item-thumb">
                     <img
-                      sizes="(max-width: 860px) 36vw, 10vw"
+                      sizes="12rem"
                       src="assets/widgets/battery.png"
                       alt=""
                       loading="lazy"
                       decoding="async"
                     />
-                    <span class="frame-caption">Battery</span>
-                  </button>
-                </li>
-                <li role="presentation">
-                  <button
-                    type="button"
-                    class="frame"
-                    role="tab"
-                    id="gw-tab-drs"
-                    aria-controls="gw-stage"
-                    aria-selected="false"
-                    tabindex="-1"
-                    data-shot="assets/widgets/drs.png"
-                    data-name="DRS"
-                    data-alt="DRS iRacing overlay widget: drag reduction system armed, available and open"
-                    data-group="Race &amp; Performance"
-                    data-desc-id="gw-desc-drs"
-                  >
+                  </span>
+                  <span class="wg-item-name">Battery</span>
+                  <span class="wg-item-count" aria-hidden="true">3</span>
+                </button>
+              </li>
+              <li data-wg-group="performance">
+                <button
+                  type="button"
+                  class="wg-item"
+                  aria-pressed="false"
+                  data-widget="drs"
+                  data-desc-id="gw-desc-drs"
+                  data-alt="DRS iRacing overlay widget: drag reduction system armed, available and open"
+                >
+                  <span class="wg-item-thumb">
                     <img
-                      sizes="(max-width: 860px) 36vw, 10vw"
+                      sizes="12rem"
                       src="assets/widgets/drs.png"
                       alt=""
                       loading="lazy"
                       decoding="async"
                     />
-                    <span class="frame-caption">DRS</span>
-                  </button>
-                </li>
-                <li role="presentation">
-                  <button
-                    type="button"
-                    class="frame"
-                    role="tab"
-                    id="gw-tab-abs"
-                    aria-controls="gw-stage"
-                    aria-selected="false"
-                    tabindex="-1"
-                    data-shot="assets/widgets/abs.png"
-                    data-name="ABS"
-                    data-alt="ABS iRacing overlay widget: in-car ABS setting with a badge lit while ABS is working"
-                    data-group="Race &amp; Performance"
-                    data-desc-id="gw-desc-abs"
-                  >
+                  </span>
+                  <span class="wg-item-name">DRS</span>
+                  <span class="wg-item-count" aria-hidden="true">3</span>
+                </button>
+              </li>
+              <li data-wg-group="performance">
+                <button
+                  type="button"
+                  class="wg-item"
+                  aria-pressed="false"
+                  data-widget="abs"
+                  data-desc-id="gw-desc-abs"
+                  data-alt="ABS iRacing overlay widget: in-car ABS setting with a badge lit while ABS is working"
+                >
+                  <span class="wg-item-thumb">
                     <img
-                      sizes="(max-width: 860px) 36vw, 10vw"
+                      sizes="12rem"
                       src="assets/widgets/abs.png"
                       alt=""
                       loading="lazy"
                       decoding="async"
                     />
-                    <span class="frame-caption">ABS</span>
-                  </button>
-                </li>
-                <li role="presentation">
-                  <button
-                    type="button"
-                    class="frame"
-                    role="tab"
-                    id="gw-tab-input-trace"
-                    aria-controls="gw-stage"
-                    aria-selected="false"
-                    tabindex="-1"
-                    data-shot="assets/widgets/input-trace.png"
-                    data-name="Input Trace"
-                    data-alt="Input Trace iRacing overlay widget: throttle, brake and steering trace"
-                    data-group="Race &amp; Performance"
-                    data-desc-id="gw-desc-input-trace"
-                  >
+                  </span>
+                  <span class="wg-item-name">ABS</span>
+                  <span class="wg-item-count" aria-hidden="true">2</span>
+                </button>
+              </li>
+              <li data-wg-group="performance">
+                <button
+                  type="button"
+                  class="wg-item"
+                  aria-pressed="false"
+                  data-widget="input-trace"
+                  data-desc-id="gw-desc-input-trace"
+                  data-alt="Input Trace iRacing overlay widget: throttle, brake and steering trace"
+                >
+                  <span class="wg-item-thumb">
                     <img
-                      sizes="(max-width: 860px) 36vw, 10vw"
+                      sizes="12rem"
                       src="assets/widgets/input-trace.png"
                       alt=""
                       loading="lazy"
                       decoding="async"
                     />
-                    <span class="frame-caption">Input Trace</span>
-                  </button>
-                </li>
-                <li role="presentation">
-                  <button
-                    type="button"
-                    class="frame"
-                    role="tab"
-                    id="gw-tab-g-metr"
-                    aria-controls="gw-stage"
-                    aria-selected="false"
-                    tabindex="-1"
-                    data-shot="assets/widgets/g-metr.png"
-                    data-name="G-Meter"
-                    data-alt="G-Meter iRacing overlay widget: lateral and longitudinal g-force with lap peaks"
-                    data-group="Race &amp; Performance"
-                    data-desc-id="gw-desc-g-metr"
-                  >
+                  </span>
+                  <span class="wg-item-name">Input Trace</span>
+                  <span class="wg-item-count" aria-hidden="true">4</span>
+                </button>
+              </li>
+              <li data-wg-group="performance">
+                <button
+                  type="button"
+                  class="wg-item"
+                  aria-pressed="false"
+                  data-widget="g-metr"
+                  data-desc-id="gw-desc-g-metr"
+                  data-alt="G-Meter iRacing overlay widget: lateral and longitudinal g-force with lap peaks"
+                >
+                  <span class="wg-item-thumb">
                     <img
-                      sizes="(max-width: 860px) 36vw, 10vw"
+                      sizes="12rem"
                       src="assets/widgets/g-metr.png"
                       alt=""
                       loading="lazy"
                       decoding="async"
                     />
-                    <span class="frame-caption">G-Meter</span>
-                  </button>
-                </li>
-                <li role="presentation">
-                  <button
-                    type="button"
-                    class="frame"
-                    role="tab"
-                    id="gw-tab-coach"
-                    aria-controls="gw-stage"
-                    aria-selected="false"
-                    tabindex="-1"
-                    data-shot="assets/widgets/coach.png"
-                    data-name="Coach"
-                    data-alt="Coach iRacing overlay widget: braking and traction guidance against a reference lap"
-                    data-group="Race &amp; Performance"
-                    data-desc-id="gw-desc-coach"
-                  >
+                  </span>
+                  <span class="wg-item-name">G-Meter</span>
+                  <span class="wg-item-count" aria-hidden="true">4</span>
+                </button>
+              </li>
+              <li data-wg-group="performance">
+                <button
+                  type="button"
+                  class="wg-item"
+                  aria-pressed="false"
+                  data-widget="coach"
+                  data-desc-id="gw-desc-coach"
+                  data-alt="Coach iRacing overlay widget: braking and traction guidance against a reference lap"
+                >
+                  <span class="wg-item-thumb">
                     <img
-                      sizes="(max-width: 860px) 36vw, 10vw"
+                      sizes="12rem"
                       src="assets/widgets/coach.png"
                       alt=""
                       loading="lazy"
                       decoding="async"
                     />
-                    <span class="frame-caption">Coach</span>
-                  </button>
-                </li>
-                <li role="presentation">
-                  <button
-                    type="button"
-                    class="frame"
-                    role="tab"
-                    id="gw-tab-invisible-dash"
-                    aria-controls="gw-stage"
-                    aria-selected="false"
-                    tabindex="-1"
-                    data-shot="assets/widgets/invisible-dash.png"
-                    data-name="Invisible Dash"
-                    data-alt="Invisible Dash iRacing overlay widget: speed, gear and position with no panel"
-                    data-group="Race &amp; Performance"
-                    data-desc-id="gw-desc-invisible-dash"
-                  >
+                  </span>
+                  <span class="wg-item-name">Coach</span>
+                  <span class="wg-item-count" aria-hidden="true">4</span>
+                </button>
+              </li>
+              <li data-wg-group="performance">
+                <button
+                  type="button"
+                  class="wg-item"
+                  aria-pressed="false"
+                  data-widget="invisible-dash"
+                  data-desc-id="gw-desc-invisible-dash"
+                  data-alt="Invisible Dash iRacing overlay widget: speed, gear and position with no panel"
+                >
+                  <span class="wg-item-thumb">
                     <img
-                      sizes="(max-width: 860px) 36vw, 10vw"
+                      sizes="12rem"
                       src="assets/widgets/invisible-dash.png"
                       alt=""
                       loading="lazy"
                       decoding="async"
                     />
-                    <span class="frame-caption">Invisible Dash</span>
-                  </button>
-                </li>
-                <li role="presentation">
-                  <button
-                    type="button"
-                    class="frame"
-                    role="tab"
-                    id="gw-tab-standings"
-                    aria-controls="gw-stage"
-                    aria-selected="false"
-                    tabindex="-1"
-                    data-shot="assets/widgets/standings.png"
-                    data-name="Standings"
-                    data-alt="Standings iRacing overlay widget: multi-class order with gaps, class badges, pit state and licence"
-                    data-group="Timing &amp; Standings"
-                    data-desc-id="gw-desc-standings"
-                  >
+                  </span>
+                  <span class="wg-item-name">Invisible Dash</span>
+                  <span class="wg-item-count" aria-hidden="true">4</span>
+                </button>
+              </li>
+              <li data-wg-group="timing">
+                <button
+                  type="button"
+                  class="wg-item"
+                  aria-pressed="false"
+                  data-widget="standings"
+                  data-desc-id="gw-desc-standings"
+                  data-alt="Standings iRacing overlay widget: multi-class order with gaps, class badges, pit state and licence"
+                >
+                  <span class="wg-item-thumb">
                     <img
-                      sizes="(max-width: 860px) 36vw, 10vw"
+                      sizes="12rem"
                       src="assets/widgets/standings.png"
                       alt=""
                       loading="lazy"
                       decoding="async"
                     />
-                    <span class="frame-caption">Standings</span>
-                  </button>
-                </li>
-                <li role="presentation">
-                  <button
-                    type="button"
-                    class="frame"
-                    role="tab"
-                    id="gw-tab-relative"
-                    aria-controls="gw-stage"
-                    aria-selected="false"
-                    tabindex="-1"
-                    data-shot="assets/widgets/relative.png"
-                    data-name="Relative"
-                    data-alt="Relative iRacing overlay widget: cars ahead and behind on track with live gaps"
-                    data-group="Timing &amp; Standings"
-                    data-desc-id="gw-desc-relative"
-                  >
+                  </span>
+                  <span class="wg-item-name">Standings</span>
+                  <span class="wg-item-count" aria-hidden="true">5</span>
+                </button>
+              </li>
+              <li data-wg-group="timing">
+                <button
+                  type="button"
+                  class="wg-item"
+                  aria-pressed="false"
+                  data-widget="relative"
+                  data-desc-id="gw-desc-relative"
+                  data-alt="Relative iRacing overlay widget: cars ahead and behind on track with live gaps"
+                >
+                  <span class="wg-item-thumb">
                     <img
-                      sizes="(max-width: 860px) 36vw, 10vw"
+                      sizes="12rem"
                       src="assets/widgets/relative.png"
                       alt=""
                       loading="lazy"
                       decoding="async"
                     />
-                    <span class="frame-caption">Relative</span>
-                  </button>
-                </li>
-                <li role="presentation">
-                  <button
-                    type="button"
-                    class="frame"
-                    role="tab"
-                    id="gw-tab-relative-map"
-                    aria-controls="gw-stage"
-                    aria-selected="false"
-                    tabindex="-1"
-                    data-shot="assets/widgets/relative-map.png"
-                    data-name="Relative Map"
-                    data-alt="Relative Map iRacing overlay widget: nearby cars laid out along the track by distance"
-                    data-group="Timing &amp; Standings"
-                    data-desc-id="gw-desc-relative-map"
-                  >
+                  </span>
+                  <span class="wg-item-name">Relative</span>
+                  <span class="wg-item-count" aria-hidden="true">4</span>
+                </button>
+              </li>
+              <li data-wg-group="timing">
+                <button
+                  type="button"
+                  class="wg-item"
+                  aria-pressed="false"
+                  data-widget="relative-map"
+                  data-desc-id="gw-desc-relative-map"
+                  data-alt="Relative Map iRacing overlay widget: nearby cars laid out along the track by distance"
+                >
+                  <span class="wg-item-thumb">
                     <img
-                      sizes="(max-width: 860px) 36vw, 10vw"
+                      sizes="12rem"
                       src="assets/widgets/relative-map.png"
                       alt=""
                       loading="lazy"
                       decoding="async"
                     />
-                    <span class="frame-caption">Relative Map</span>
-                  </button>
-                </li>
-                <li role="presentation">
-                  <button
-                    type="button"
-                    class="frame"
-                    role="tab"
-                    id="gw-tab-delta"
-                    aria-controls="gw-stage"
-                    aria-selected="false"
-                    tabindex="-1"
-                    data-shot="assets/widgets/delta.png"
-                    data-name="Delta"
-                    data-alt="Delta iRacing overlay widget: live delta to your best lap or the session best"
-                    data-group="Timing &amp; Standings"
-                    data-desc-id="gw-desc-delta"
-                  >
+                  </span>
+                  <span class="wg-item-name">Relative Map</span>
+                  <span class="wg-item-count" aria-hidden="true">2</span>
+                </button>
+              </li>
+              <li data-wg-group="timing">
+                <button
+                  type="button"
+                  class="wg-item"
+                  aria-pressed="false"
+                  data-widget="delta"
+                  data-desc-id="gw-desc-delta"
+                  data-alt="Delta iRacing overlay widget: live delta to your best lap or the session best"
+                >
+                  <span class="wg-item-thumb">
                     <img
-                      sizes="(max-width: 860px) 36vw, 10vw"
+                      sizes="12rem"
                       src="assets/widgets/delta.png"
                       alt=""
                       loading="lazy"
                       decoding="async"
                     />
-                    <span class="frame-caption">Delta</span>
-                  </button>
-                </li>
-                <li role="presentation">
-                  <button
-                    type="button"
-                    class="frame"
-                    role="tab"
-                    id="gw-tab-sector-matrix"
-                    aria-controls="gw-stage"
-                    aria-selected="false"
-                    tabindex="-1"
-                    data-shot="assets/widgets/sector-matrix.png"
-                    data-name="Sector Matrix"
-                    data-alt="Sector Matrix iRacing overlay widget: sector times of every lap side by side"
-                    data-group="Timing &amp; Standings"
-                    data-desc-id="gw-desc-sector-matrix"
-                  >
+                  </span>
+                  <span class="wg-item-name">Delta</span>
+                  <span class="wg-item-count" aria-hidden="true">3</span>
+                </button>
+              </li>
+              <li data-wg-group="timing">
+                <button
+                  type="button"
+                  class="wg-item"
+                  aria-pressed="false"
+                  data-widget="sector-matrix"
+                  data-desc-id="gw-desc-sector-matrix"
+                  data-alt="Sector Matrix iRacing overlay widget: sector times of every lap side by side"
+                >
+                  <span class="wg-item-thumb">
                     <img
-                      sizes="(max-width: 860px) 36vw, 10vw"
+                      sizes="12rem"
                       src="assets/widgets/sector-matrix.png"
                       alt=""
                       loading="lazy"
                       decoding="async"
                     />
-                    <span class="frame-caption">Sector Matrix</span>
-                  </button>
-                </li>
-                <li role="presentation">
-                  <button
-                    type="button"
-                    class="frame"
-                    role="tab"
-                    id="gw-tab-lap-log"
-                    aria-controls="gw-stage"
-                    aria-selected="false"
-                    tabindex="-1"
-                    data-shot="assets/widgets/lap-log.png"
-                    data-name="Lap Log"
-                    data-alt="Lap Log iRacing overlay widget: stint lap times with the best and invalid laps marked"
-                    data-group="Timing &amp; Standings"
-                    data-desc-id="gw-desc-lap-log"
-                  >
+                  </span>
+                  <span class="wg-item-name">Sector Matrix</span>
+                  <span class="wg-item-count" aria-hidden="true">3</span>
+                </button>
+              </li>
+              <li data-wg-group="timing">
+                <button
+                  type="button"
+                  class="wg-item"
+                  aria-pressed="false"
+                  data-widget="lap-log"
+                  data-desc-id="gw-desc-lap-log"
+                  data-alt="Lap Log iRacing overlay widget: stint lap times with the best and invalid laps marked"
+                >
+                  <span class="wg-item-thumb">
                     <img
-                      sizes="(max-width: 860px) 36vw, 10vw"
+                      sizes="12rem"
                       src="assets/widgets/lap-log.png"
                       alt=""
                       loading="lazy"
                       decoding="async"
                     />
-                    <span class="frame-caption">Lap Log</span>
-                  </button>
-                </li>
-                <li role="presentation">
-                  <button
-                    type="button"
-                    class="frame"
-                    role="tab"
-                    id="gw-tab-timer"
-                    aria-controls="gw-stage"
-                    aria-selected="false"
-                    tabindex="-1"
-                    data-shot="assets/widgets/timer.png"
-                    data-name="Timer"
-                    data-alt="Timer iRacing overlay widget: session clock, stint countdown and time to the pit stop"
-                    data-group="Timing &amp; Standings"
-                    data-desc-id="gw-desc-timer"
-                  >
+                  </span>
+                  <span class="wg-item-name">Lap Log</span>
+                  <span class="wg-item-count" aria-hidden="true">2</span>
+                </button>
+              </li>
+              <li data-wg-group="timing">
+                <button
+                  type="button"
+                  class="wg-item"
+                  aria-pressed="false"
+                  data-widget="timer"
+                  data-desc-id="gw-desc-timer"
+                  data-alt="Timer iRacing overlay widget: session clock, stint countdown and time to the pit stop"
+                >
+                  <span class="wg-item-thumb">
                     <img
-                      sizes="(max-width: 860px) 36vw, 10vw"
+                      sizes="12rem"
                       src="assets/widgets/timer.png"
                       alt=""
                       loading="lazy"
                       decoding="async"
                     />
-                    <span class="frame-caption">Timer</span>
-                  </button>
-                </li>
-                <li role="presentation">
-                  <button
-                    type="button"
-                    class="frame"
-                    role="tab"
-                    id="gw-tab-map"
-                    aria-controls="gw-stage"
-                    aria-selected="false"
-                    tabindex="-1"
-                    data-shot="assets/widgets/map.png"
-                    data-name="Track Map"
-                    data-alt="Track Map iRacing overlay widget: live track layout with every car and your class highlighted"
-                    data-group="Awareness"
-                    data-desc-id="gw-desc-map"
-                  >
+                  </span>
+                  <span class="wg-item-name">Timer</span>
+                  <span class="wg-item-count" aria-hidden="true">4</span>
+                </button>
+              </li>
+              <li data-wg-group="awareness">
+                <button
+                  type="button"
+                  class="wg-item"
+                  aria-pressed="false"
+                  data-widget="map"
+                  data-desc-id="gw-desc-map"
+                  data-alt="Track Map iRacing overlay widget: live track layout with every car and your class highlighted"
+                >
+                  <span class="wg-item-thumb">
                     <img
-                      sizes="(max-width: 860px) 36vw, 10vw"
+                      sizes="12rem"
                       src="assets/widgets/map.png"
                       alt=""
                       loading="lazy"
                       decoding="async"
                     />
-                    <span class="frame-caption">Track Map</span>
-                  </button>
-                </li>
-                <li role="presentation">
-                  <button
-                    type="button"
-                    class="frame"
-                    role="tab"
-                    id="gw-tab-proximity-radar"
-                    aria-controls="gw-stage"
-                    aria-selected="false"
-                    tabindex="-1"
-                    data-shot="assets/widgets/proximity-radar.png"
-                    data-name="Proximity Radar"
-                    data-alt="Proximity Radar iRacing overlay widget: 360° blind-spot radar with distance to the car beside you"
-                    data-group="Awareness"
-                    data-desc-id="gw-desc-proximity-radar"
-                  >
+                  </span>
+                  <span class="wg-item-name">Track Map</span>
+                  <span class="wg-item-count" aria-hidden="true">4</span>
+                </button>
+              </li>
+              <li data-wg-group="awareness">
+                <button
+                  type="button"
+                  class="wg-item"
+                  aria-pressed="false"
+                  data-widget="proximity-radar"
+                  data-desc-id="gw-desc-proximity-radar"
+                  data-alt="Proximity Radar iRacing overlay widget: 360° blind-spot radar with distance to the car beside you"
+                >
+                  <span class="wg-item-thumb">
                     <img
-                      sizes="(max-width: 860px) 36vw, 10vw"
+                      sizes="12rem"
                       src="assets/widgets/proximity-radar.png"
                       alt=""
                       loading="lazy"
                       decoding="async"
                     />
-                    <span class="frame-caption">Proximity Radar</span>
-                  </button>
-                </li>
-                <li role="presentation">
-                  <button
-                    type="button"
-                    class="frame"
-                    role="tab"
-                    id="gw-tab-radar-bar"
-                    aria-controls="gw-stage"
-                    aria-selected="false"
-                    tabindex="-1"
-                    data-shot="assets/widgets/radar-bar.png"
-                    data-name="Radar Bar"
-                    data-alt="Radar Bar iRacing overlay widget: side-by-side warning bars on the screen edges"
-                    data-group="Awareness"
-                    data-desc-id="gw-desc-radar-bar"
-                  >
+                  </span>
+                  <span class="wg-item-name">Proximity Radar</span>
+                  <span class="wg-item-count" aria-hidden="true">3</span>
+                </button>
+              </li>
+              <li data-wg-group="awareness">
+                <button
+                  type="button"
+                  class="wg-item"
+                  aria-pressed="false"
+                  data-widget="radar-bar"
+                  data-desc-id="gw-desc-radar-bar"
+                  data-alt="Radar Bar iRacing overlay widget: side-by-side warning bars on the screen edges"
+                >
+                  <span class="wg-item-thumb">
                     <img
-                      sizes="(max-width: 860px) 36vw, 10vw"
+                      sizes="12rem"
                       src="assets/widgets/radar-bar.png"
                       alt=""
                       loading="lazy"
                       decoding="async"
                     />
-                    <span class="frame-caption">Radar Bar</span>
-                  </button>
-                </li>
-                <li role="presentation">
-                  <button
-                    type="button"
-                    class="frame"
-                    role="tab"
-                    id="gw-tab-radio"
-                    aria-controls="gw-stage"
-                    aria-selected="false"
-                    tabindex="-1"
-                    data-shot="assets/widgets/radio.png"
-                    data-name="Radio"
-                    data-alt="Radio iRacing overlay widget: who is talking, with car number, name and channel"
-                    data-group="Awareness"
-                    data-desc-id="gw-desc-radio"
-                  >
+                  </span>
+                  <span class="wg-item-name">Radar Bar</span>
+                  <span class="wg-item-count" aria-hidden="true">2</span>
+                </button>
+              </li>
+              <li data-wg-group="awareness">
+                <button
+                  type="button"
+                  class="wg-item"
+                  aria-pressed="false"
+                  data-widget="radio"
+                  data-desc-id="gw-desc-radio"
+                  data-alt="Radio iRacing overlay widget: who is talking, with car number, name and channel"
+                >
+                  <span class="wg-item-thumb">
                     <img
-                      sizes="(max-width: 860px) 36vw, 10vw"
+                      sizes="12rem"
                       src="assets/widgets/radio.png"
                       alt=""
                       loading="lazy"
                       decoding="async"
                     />
-                    <span class="frame-caption">Radio</span>
-                  </button>
-                </li>
-                <li role="presentation">
-                  <button
-                    type="button"
-                    class="frame"
-                    role="tab"
-                    id="gw-tab-crew-radio"
-                    aria-controls="gw-stage"
-                    aria-selected="false"
-                    tabindex="-1"
-                    data-shot="assets/widgets/crew-radio.png"
-                    data-name="Crew Radio"
-                    data-alt="Crew Radio iRacing overlay widget: the voice engineer's reply and a pit command's result"
-                    data-group="Awareness"
-                    data-desc-id="gw-desc-crew-radio"
-                  >
+                  </span>
+                  <span class="wg-item-name">Radio</span>
+                  <span class="wg-item-count" aria-hidden="true">2</span>
+                </button>
+              </li>
+              <li data-wg-group="awareness">
+                <button
+                  type="button"
+                  class="wg-item"
+                  aria-pressed="false"
+                  data-widget="crew-radio"
+                  data-desc-id="gw-desc-crew-radio"
+                  data-alt="Crew Radio iRacing overlay widget: the voice engineer's reply and a pit command's result"
+                >
+                  <span class="wg-item-thumb">
                     <img
-                      sizes="(max-width: 860px) 36vw, 10vw"
+                      sizes="12rem"
                       src="assets/widgets/crew-radio.png"
                       alt=""
                       loading="lazy"
                       decoding="async"
                     />
-                    <span class="frame-caption">Crew Radio</span>
-                  </button>
-                </li>
-                <li role="presentation">
-                  <button
-                    type="button"
-                    class="frame"
-                    role="tab"
-                    id="gw-tab-close-battle"
-                    aria-controls="gw-stage"
-                    aria-selected="false"
-                    tabindex="-1"
-                    data-shot="assets/widgets/close-battle.png"
-                    data-name="Close Battle"
-                    data-alt="Close Battle iRacing overlay widget: rivals ahead and behind on a distance axis"
-                    data-group="Awareness"
-                    data-desc-id="gw-desc-close-battle"
-                  >
+                  </span>
+                  <span class="wg-item-name">Crew Radio</span>
+                  <span class="wg-item-count" aria-hidden="true">3</span>
+                </button>
+              </li>
+              <li data-wg-group="awareness">
+                <button
+                  type="button"
+                  class="wg-item"
+                  aria-pressed="false"
+                  data-widget="close-battle"
+                  data-desc-id="gw-desc-close-battle"
+                  data-alt="Close Battle iRacing overlay widget: rivals ahead and behind on a distance axis"
+                >
+                  <span class="wg-item-thumb">
                     <img
-                      sizes="(max-width: 860px) 36vw, 10vw"
+                      sizes="12rem"
                       src="assets/widgets/close-battle.png"
                       alt=""
                       loading="lazy"
                       decoding="async"
                     />
-                    <span class="frame-caption">Close Battle</span>
-                  </button>
-                </li>
-                <li role="presentation">
-                  <button
-                    type="button"
-                    class="frame"
-                    role="tab"
-                    id="gw-tab-wheel-to-wheel"
-                    aria-controls="gw-stage"
-                    aria-selected="false"
-                    tabindex="-1"
-                    data-shot="assets/widgets/wheel-to-wheel.png"
-                    data-name="Wheel to Wheel"
-                    data-alt="Wheel to Wheel iRacing overlay widget: you and your nearest rival with the gap between you"
-                    data-group="Awareness"
-                    data-desc-id="gw-desc-wheel-to-wheel"
-                  >
+                  </span>
+                  <span class="wg-item-name">Close Battle</span>
+                  <span class="wg-item-count" aria-hidden="true">3</span>
+                </button>
+              </li>
+              <li data-wg-group="awareness">
+                <button
+                  type="button"
+                  class="wg-item"
+                  aria-pressed="false"
+                  data-widget="wheel-to-wheel"
+                  data-desc-id="gw-desc-wheel-to-wheel"
+                  data-alt="Wheel to Wheel iRacing overlay widget: you and your nearest rival with the gap between you"
+                >
+                  <span class="wg-item-thumb">
                     <img
-                      sizes="(max-width: 860px) 36vw, 10vw"
+                      sizes="12rem"
                       src="assets/widgets/wheel-to-wheel.png"
                       alt=""
                       loading="lazy"
                       decoding="async"
                     />
-                    <span class="frame-caption">Wheel to Wheel</span>
-                  </button>
-                </li>
-                <li role="presentation">
-                  <button
-                    type="button"
-                    class="frame"
-                    role="tab"
-                    id="gw-tab-flat-flag"
-                    aria-controls="gw-stage"
-                    aria-selected="false"
-                    tabindex="-1"
-                    data-shot="assets/widgets/flat-flag.png"
-                    data-name="Flat Flags"
-                    data-alt="Flat Flags iRacing overlay widget: race flag states as icon rows with colour bands"
-                    data-group="Awareness"
-                    data-desc-id="gw-desc-flat-flag"
-                  >
+                  </span>
+                  <span class="wg-item-name">Wheel to Wheel</span>
+                  <span class="wg-item-count" aria-hidden="true">2</span>
+                </button>
+              </li>
+              <li data-wg-group="awareness">
+                <button
+                  type="button"
+                  class="wg-item"
+                  aria-pressed="false"
+                  data-widget="flat-flag"
+                  data-desc-id="gw-desc-flat-flag"
+                  data-alt="Flat Flags iRacing overlay widget: race flag states as icon rows with colour bands"
+                >
+                  <span class="wg-item-thumb">
                     <img
-                      sizes="(max-width: 860px) 36vw, 10vw"
+                      sizes="12rem"
                       src="assets/widgets/flat-flag.png"
                       alt=""
                       loading="lazy"
                       decoding="async"
                     />
-                    <span class="frame-caption">Flat Flags</span>
-                  </button>
-                </li>
-                <li role="presentation">
-                  <button
-                    type="button"
-                    class="frame"
-                    role="tab"
-                    id="gw-tab-led-flag-dual"
-                    aria-controls="gw-stage"
-                    aria-selected="false"
-                    tabindex="-1"
-                    data-shot="assets/widgets/led-flag-dual.png"
-                    data-name="LED Flags"
-                    data-alt="LED Flags iRacing overlay widget: race flags as light panels at both screen edges"
-                    data-group="Awareness"
-                    data-desc-id="gw-desc-led-flag-dual"
-                  >
+                  </span>
+                  <span class="wg-item-name">Flat Flags</span>
+                </button>
+              </li>
+              <li data-wg-group="awareness">
+                <button
+                  type="button"
+                  class="wg-item"
+                  aria-pressed="false"
+                  data-widget="led-flag-dual"
+                  data-desc-id="gw-desc-led-flag-dual"
+                  data-alt="LED Flags iRacing overlay widget: race flags as light panels at both screen edges"
+                >
+                  <span class="wg-item-thumb">
                     <img
-                      sizes="(max-width: 860px) 36vw, 10vw"
+                      sizes="12rem"
                       src="assets/widgets/led-flag-dual.png"
                       alt=""
                       loading="lazy"
                       decoding="async"
                     />
-                    <span class="frame-caption">LED Flags</span>
-                  </button>
-                </li>
-                <li role="presentation">
-                  <button
-                    type="button"
-                    class="frame"
-                    role="tab"
-                    id="gw-tab-pit-stop"
-                    aria-controls="gw-stage"
-                    aria-selected="false"
-                    tabindex="-1"
-                    data-shot="assets/widgets/pit-service.png"
-                    data-name="Pit Service"
-                    data-alt="Pit Service iRacing overlay widget: fuel, tyres, pressures and repairs for the pit stop"
-                    data-group="Car &amp; Session"
-                    data-desc-id="gw-desc-pit-stop"
-                  >
+                  </span>
+                  <span class="wg-item-name">LED Flags</span>
+                  <span class="wg-item-count" aria-hidden="true">2</span>
+                </button>
+              </li>
+              <li data-wg-group="session">
+                <button
+                  type="button"
+                  class="wg-item"
+                  aria-pressed="false"
+                  data-widget="pit-service"
+                  data-desc-id="gw-desc-pit-stop"
+                  data-alt="Pit Service iRacing overlay widget: fuel, tyres, pressures and repairs for the pit stop"
+                >
+                  <span class="wg-item-thumb">
                     <img
-                      sizes="(max-width: 860px) 36vw, 10vw"
+                      sizes="12rem"
                       src="assets/widgets/pit-service.png"
                       alt=""
                       loading="lazy"
                       decoding="async"
                     />
-                    <span class="frame-caption">Pit Service</span>
-                  </button>
-                </li>
-                <li role="presentation">
-                  <button
-                    type="button"
-                    class="frame"
-                    role="tab"
-                    id="gw-tab-fuel"
-                    aria-controls="gw-stage"
-                    aria-selected="false"
-                    tabindex="-1"
-                    data-shot="assets/widgets/fuel.png"
-                    data-name="Fuel"
-                    data-alt="Fuel iRacing overlay widget: fuel per lap, laps left and fuel to add"
-                    data-group="Car &amp; Session"
-                    data-desc-id="gw-desc-fuel"
-                  >
+                  </span>
+                  <span class="wg-item-name">Pit Service</span>
+                  <span class="wg-item-count" aria-hidden="true">3</span>
+                </button>
+              </li>
+              <li data-wg-group="session">
+                <button
+                  type="button"
+                  class="wg-item"
+                  aria-pressed="false"
+                  data-widget="fuel"
+                  data-desc-id="gw-desc-fuel"
+                  data-alt="Fuel iRacing overlay widget: fuel per lap, laps left and fuel to add"
+                >
+                  <span class="wg-item-thumb">
                     <img
-                      sizes="(max-width: 860px) 36vw, 10vw"
+                      sizes="12rem"
                       src="assets/widgets/fuel.png"
                       alt=""
                       loading="lazy"
                       decoding="async"
                     />
-                    <span class="frame-caption">Fuel</span>
-                  </button>
-                </li>
-                <li role="presentation">
-                  <button
-                    type="button"
-                    class="frame"
-                    role="tab"
-                    id="gw-tab-weather"
-                    aria-controls="gw-stage"
-                    aria-selected="false"
-                    tabindex="-1"
-                    data-shot="assets/widgets/weather.png"
-                    data-name="Weather"
-                    data-alt="Weather iRacing overlay widget: air and track temperature, humidity and wind"
-                    data-group="Car &amp; Session"
-                    data-desc-id="gw-desc-weather"
-                  >
+                  </span>
+                  <span class="wg-item-name">Fuel</span>
+                  <span class="wg-item-count" aria-hidden="true">5</span>
+                </button>
+              </li>
+              <li data-wg-group="session">
+                <button
+                  type="button"
+                  class="wg-item"
+                  aria-pressed="false"
+                  data-widget="weather"
+                  data-desc-id="gw-desc-weather"
+                  data-alt="Weather iRacing overlay widget: air and track temperature, humidity and wind"
+                >
+                  <span class="wg-item-thumb">
                     <img
-                      sizes="(max-width: 860px) 36vw, 10vw"
+                      sizes="12rem"
                       src="assets/widgets/weather.png"
                       alt=""
                       loading="lazy"
                       decoding="async"
                     />
-                    <span class="frame-caption">Weather</span>
-                  </button>
-                </li>
-                <li role="presentation">
-                  <button
-                    type="button"
-                    class="frame"
-                    role="tab"
-                    id="gw-tab-incident-tracker"
-                    aria-controls="gw-stage"
-                    aria-selected="false"
-                    tabindex="-1"
-                    data-shot="assets/widgets/incident-tracker.png"
-                    data-name="Incident Tracker"
-                    data-alt="Incident Tracker iRacing overlay widget: incident count, next penalty and Safety Rating estimate"
-                    data-group="Car &amp; Session"
-                    data-desc-id="gw-desc-incident-tracker"
-                  >
+                  </span>
+                  <span class="wg-item-name">Weather</span>
+                  <span class="wg-item-count" aria-hidden="true">4</span>
+                </button>
+              </li>
+              <li data-wg-group="session">
+                <button
+                  type="button"
+                  class="wg-item"
+                  aria-pressed="false"
+                  data-widget="incident-tracker"
+                  data-desc-id="gw-desc-incident-tracker"
+                  data-alt="Incident Tracker iRacing overlay widget: incident count, next penalty and Safety Rating estimate"
+                >
+                  <span class="wg-item-thumb">
                     <img
-                      sizes="(max-width: 860px) 36vw, 10vw"
+                      sizes="12rem"
                       src="assets/widgets/incident-tracker.png"
                       alt=""
                       loading="lazy"
                       decoding="async"
                     />
-                    <span class="frame-caption">Incident Tracker</span>
-                  </button>
-                </li>
-                <li role="presentation">
-                  <button
-                    type="button"
-                    class="frame"
-                    role="tab"
-                    id="gw-tab-stream-chat"
-                    aria-controls="gw-stage"
-                    aria-selected="false"
-                    tabindex="-1"
-                    data-shot="assets/widgets/stream-chat.png"
-                    data-name="Stream Chat"
-                    data-alt="Stream Chat iRacing overlay widget: Twitch and YouTube chat on the overlay"
-                    data-group="Streaming"
-                    data-desc-id="gw-desc-stream-chat"
-                  >
+                  </span>
+                  <span class="wg-item-name">Incident Tracker</span>
+                  <span class="wg-item-count" aria-hidden="true">3</span>
+                </button>
+              </li>
+              <li data-wg-group="streaming">
+                <button
+                  type="button"
+                  class="wg-item"
+                  aria-pressed="false"
+                  data-widget="stream-chat"
+                  data-desc-id="gw-desc-stream-chat"
+                  data-alt="Stream Chat iRacing overlay widget: Twitch and YouTube chat on the overlay"
+                >
+                  <span class="wg-item-thumb">
                     <img
-                      sizes="(max-width: 860px) 36vw, 10vw"
+                      sizes="12rem"
                       src="assets/widgets/stream-chat.png"
                       alt=""
                       loading="lazy"
                       decoding="async"
                     />
-                    <span class="frame-caption">Stream Chat</span>
-                  </button>
-                </li>
-              </ul>
-            </div>
+                  </span>
+                  <span class="wg-item-name">Stream Chat</span>
+                  <span class="wg-item-count" aria-hidden="true">2</span>
+                </button>
+              </li>
+            </ul>
           </div>
+        </div>
 
+        <div class="container">
           <!-- Every widget in one list: the stage shows one at a time, this is
                the whole catalogue as text - readable on a phone, where the
                sheet is a strip, and by a search engine, which never presses a
@@ -1913,7 +3504,7 @@
       <!-- ====================================================================
          Tapes - the break between the gallery and section 03
 
-         Two bands crossed like barrier tape: a blue one naming what the app
+         Two bands crossed like barrier tape: a black one naming what the app
          is, and a dark one behind it carrying the widgets as badges, running
          the other way. It is the page changing pace between two light
          chapters, not a section of its own, so it has no heading and is
@@ -2358,15 +3949,16 @@
          the point - rather than the whole settings page with its margins.
 
          A crop is .shot-crop with the capture's own pixel box in --x/--y/
-         --w/--h (all captures are 1595x969); data-zoom opens the whole
+         --w/--h (all captures are 1600x970); data-zoom opens the whole
          capture in the viewer at the end of the page (shot-viewer.js).
          ==================================================================== -->
 
       <!-- ---- Layouts --------------------------------------------------------
-           The session strip is the auto-switch acted out: the four sessions
-           a layout can be assigned to (the app tags a layout with the same four),
-           stepped through by layout-demo.js, which brings up that session's
-           screenshot on the screen beside it. -->
+           The auto-switch acted out: a car class picked above a session
+           strip, and the screen beside them showing the layout that class
+           and session put on screen. The garage is one layout for every car.
+           layout-demo.js steps through every shot until the reader picks one
+           and then leaves the choice to them. -->
       <section
         id="layouts"
         class="feature feature-dark"
@@ -2378,13 +3970,45 @@
 
             <h2 id="layouts-heading" class="feature-title">
               A layout for<br />
-              every session.
+              every car and session.
             </h2>
 
             <p class="feature-desc">
-              Which widgets, where, on which monitor. Give each session its own
-              layout and the overlay switches as the session changes.
+              Which widgets, where, on which monitor. Give a session, a car
+              class or a single car its own layout and the overlay switches on
+              its own: the most specific one wins.
             </p>
+
+            <div
+              class="class-track"
+              role="group"
+              aria-label="Show the layouts for a car class"
+            >
+              <button
+                class="class-step is-active"
+                type="button"
+                data-car-class="open-wheel"
+                aria-pressed="true"
+              >
+                Open-wheel
+              </button>
+              <button
+                class="class-step"
+                type="button"
+                data-car-class="gt3"
+                aria-pressed="false"
+              >
+                GT3
+              </button>
+              <button
+                class="class-step"
+                type="button"
+                data-car-class="any"
+                aria-pressed="false"
+              >
+                Any car
+              </button>
+            </div>
 
             <div
               class="session-track"
@@ -2426,75 +4050,495 @@
             </div>
           </div>
 
-          <!-- The screen. One screenshot per session, taken in the sim with
-               that session's layout on, crossfaded by layout-demo.js as the
-               strip steps through the sessions. The shots live in
-               assets/layouts/<session>.webp; a session whose shot is missing
-               drops out of the strip on its own, so the block never shows an
-               empty frame. -->
+          <!-- The screen. One screenshot per class and session, taken in the
+               sim with that layout on: assets/layouts/<class>-<session>.webp,
+               and garage.webp for every class. A shot that is missing takes
+               its session out of the strip for that class. -->
           <div class="feature-media">
             <div class="layout-screen" data-layout-screen data-zoom>
+              <!-- The pictures are clipped to the rounded frame; the markers
+                   sit outside it, so their notes can run past the edge. -->
+              <div class="layout-frame">
               <img
                 sizes="(max-width: 1024px) 92vw, 56vw"
                 class="layout-shot"
                 data-shot="garage"
                 src="assets/layouts/garage.webp"
-                alt="iRacing overlay layout for the garage session"
+                alt="iRacing overlay layout for the garage, shared by every car"
                 loading="lazy"
                 decoding="async"
               />
               <img
                 sizes="(max-width: 1024px) 92vw, 56vw"
                 class="layout-shot"
-                data-shot="practice"
-                src="assets/layouts/practice.webp"
-                alt="iRacing overlay layout for the practice session"
+                data-shot="open-wheel-practice"
+                src="assets/layouts/open-wheel-practice.webp"
+                alt="iRacing overlay layout for practice in an open-wheel car"
                 loading="lazy"
                 decoding="async"
               />
               <img
                 sizes="(max-width: 1024px) 92vw, 56vw"
                 class="layout-shot"
-                data-shot="qualify"
-                src="assets/layouts/qualify.webp"
-                alt="iRacing overlay layout for the qualifying session"
+                data-shot="open-wheel-qualify"
+                src="assets/layouts/open-wheel-qualify.webp"
+                alt="iRacing overlay layout for qualifying in an open-wheel car"
                 loading="lazy"
                 decoding="async"
               />
               <img
                 sizes="(max-width: 1024px) 92vw, 56vw"
                 class="layout-shot is-active"
-                data-shot="race"
-                src="assets/layouts/race.webp"
-                alt="iRacing overlay layout for the race session"
+                data-shot="open-wheel-race"
+                src="assets/layouts/open-wheel-race.webp"
+                alt="iRacing overlay layout for the race in an open-wheel car"
                 loading="lazy"
                 decoding="async"
               />
+              <img
+                sizes="(max-width: 1024px) 92vw, 56vw"
+                class="layout-shot"
+                data-shot="gt3-practice"
+                src="assets/layouts/gt3-practice.webp"
+                alt="iRacing overlay layout for practice in a GT3 car"
+                loading="lazy"
+                decoding="async"
+              />
+              <img
+                sizes="(max-width: 1024px) 92vw, 56vw"
+                class="layout-shot"
+                data-shot="gt3-qualify"
+                src="assets/layouts/gt3-qualify.webp"
+                alt="iRacing overlay layout for qualifying in a GT3 car"
+                loading="lazy"
+                decoding="async"
+              />
+              <img
+                sizes="(max-width: 1024px) 92vw, 56vw"
+                class="layout-shot"
+                data-shot="gt3-race"
+                src="assets/layouts/gt3-race.webp"
+                alt="iRacing overlay layout for the race in a GT3 car"
+                loading="lazy"
+                decoding="async"
+              />
+              <img
+                sizes="(max-width: 1024px) 92vw, 56vw"
+                class="layout-shot"
+                data-shot="any-practice"
+                src="assets/layouts/any-practice.webp"
+                alt="iRacing overlay layout for practice in any car"
+                loading="lazy"
+                decoding="async"
+              />
+              <img
+                sizes="(max-width: 1024px) 92vw, 56vw"
+                class="layout-shot"
+                data-shot="any-qualify"
+                src="assets/layouts/any-qualify.webp"
+                alt="iRacing overlay layout for qualifying in any car"
+                loading="lazy"
+                decoding="async"
+              />
+              <img
+                sizes="(max-width: 1024px) 92vw, 56vw"
+                class="layout-shot"
+                data-shot="any-race"
+                src="assets/layouts/any-race.webp"
+                alt="iRacing overlay layout for the race in any car"
+                loading="lazy"
+                decoding="async"
+              />
+              </div>
 
-              <p class="layout-screen-label" aria-hidden="true">
-                <span data-layout-label>Race</span> layout
-              </p>
+              <div class="hotspots" data-hotspots-for="garage" hidden>
+                <button class="hotspot" type="button" style="--x: 13%; --y: 20%">
+                  <span class="hotspot-note"><strong>Standings</strong>The whole field before you leave the garage: licence, iRating, who is fast.</span>
+                </button>
+                <button class="hotspot" type="button" style="--x: 76%; --y: 7%">
+                  <span class="hotspot-note"><strong>Timer</strong>Session time left, the sim clock and your own.</span>
+                </button>
+                <button class="hotspot" type="button" style="--x: 94%; --y: 11%">
+                  <span class="hotspot-note"><strong>Track map</strong>A track it has not seen yet is recorded on your first lap.</span>
+                </button>
+                <button class="hotspot" type="button" style="--x: 94%; --y: 85%">
+                  <span class="hotspot-note"><strong>Relative</strong>The cars around you, with the gap to each.</span>
+                </button>
+              </div>
+              <div class="hotspots" data-hotspots-for="open-wheel-practice" hidden>
+                <button class="hotspot" type="button" style="--x: 8%; --y: 16%">
+                  <span class="hotspot-note"><strong>Standings</strong>The whole field, laps and best times.</span>
+                </button>
+                <button class="hotspot" type="button" style="--x: 3%; --y: 35%">
+                  <span class="hotspot-note"><strong>Lap log</strong>Every lap with its delta to your best; the best one is marked.</span>
+                </button>
+                <button class="hotspot" type="button" style="--x: 34%; --y: 38%">
+                  <span class="hotspot-note"><strong>DRS</strong>When the wing can open, and when it is open.</span>
+                </button>
+                <button class="hotspot" type="button" style="--x: 92%; --y: 10%">
+                  <span class="hotspot-note"><strong>Track map</strong>Every car on the circuit, in its class colour.</span>
+                </button>
+                <button class="hotspot" type="button" style="--x: 57%; --y: 62%">
+                  <span class="hotspot-note"><strong>RPM lights</strong>Shift lights that follow the car’s own redline.</span>
+                </button>
+                <button class="hotspot" type="button" style="--x: 47%; --y: 67%">
+                  <span class="hotspot-note"><strong>Input trace</strong>Throttle, brake and steering as a moving trace.</span>
+                </button>
+                <button class="hotspot" type="button" style="--x: 39.5%; --y: 71%">
+                  <span class="hotspot-note"><strong>Relative map</strong>The cars near you laid out along the track by distance.</span>
+                </button>
+                <button class="hotspot" type="button" style="--x: 53%; --y: 76%">
+                  <span class="hotspot-note"><strong>Battery</strong>Charge, deploy mode and what is left to spend this lap.</span>
+                </button>
+                <button class="hotspot" type="button" style="--x: 50%; --y: 88%">
+                  <span class="hotspot-note"><strong>Wheel to Wheel</strong>The car ahead and behind, and the gap to each.</span>
+                </button>
+                <button class="hotspot" type="button" style="--x: 4%; --y: 92%">
+                  <span class="hotspot-note"><strong>Relative</strong>The cars around you on track, with the gap to each.</span>
+                </button>
+                <button class="hotspot" type="button" style="--x: 18%; --y: 94%">
+                  <span class="hotspot-note"><strong>Engine panel</strong>Brake bias, engine braking, differential and the rest of the wheel’s settings.</span>
+                </button>
+                <button class="hotspot" type="button" style="--x: 95%; --y: 91%">
+                  <span class="hotspot-note"><strong>Sector matrix</strong>Every sector of the lap against your best.</span>
+                </button>
+              </div>
+              <div class="hotspots" data-hotspots-for="open-wheel-qualify" hidden>
+                <button class="hotspot" type="button" style="--x: 8%; --y: 15%">
+                  <span class="hotspot-note"><strong>Standings</strong>Lone qualifying: who has set a time and who is still out.</span>
+                </button>
+                <button class="hotspot" type="button" style="--x: 34%; --y: 21%">
+                  <span class="hotspot-note"><strong>DRS</strong>When the wing can open, and when it is open.</span>
+                </button>
+                <button class="hotspot" type="button" style="--x: 92%; --y: 10%">
+                  <span class="hotspot-note"><strong>Track map</strong>Every car on the circuit, in its class colour.</span>
+                </button>
+                <button class="hotspot" type="button" style="--x: 4%; --y: 50%">
+                  <span class="hotspot-note"><strong>Sector matrix</strong>Every sector of the lap against your best.</span>
+                </button>
+                <button class="hotspot" type="button" style="--x: 58%; --y: 62%">
+                  <span class="hotspot-note"><strong>RPM lights</strong>Shift lights that follow the car’s own redline.</span>
+                </button>
+                <button class="hotspot" type="button" style="--x: 52%; --y: 68%">
+                  <span class="hotspot-note"><strong>Race dash</strong>Speed, gear, RPM, position and lap in one strip.</span>
+                </button>
+                <button class="hotspot" type="button" style="--x: 39.5%; --y: 71%">
+                  <span class="hotspot-note"><strong>Relative map</strong>The cars near you laid out along the track by distance.</span>
+                </button>
+                <button class="hotspot" type="button" style="--x: 55%; --y: 77%">
+                  <span class="hotspot-note"><strong>Input trace</strong>Throttle, brake and steering as a moving trace.</span>
+                </button>
+                <button class="hotspot" type="button" style="--x: 42%; --y: 93%">
+                  <span class="hotspot-note"><strong>Battery</strong>Charge, deploy mode and what is left to spend this lap.</span>
+                </button>
+                <button class="hotspot" type="button" style="--x: 55%; --y: 94%">
+                  <span class="hotspot-note"><strong>Engine panel</strong>Brake bias, engine braking, differential and the rest of the wheel’s settings.</span>
+                </button>
+              </div>
+              <div class="hotspots" data-hotspots-for="open-wheel-race">
+                <button class="hotspot" type="button" style="--x: 13%; --y: 16%">
+                  <span class="hotspot-note"><strong>Standings</strong>The whole field, gaps, intervals and best laps.</span>
+                </button>
+                <button class="hotspot" type="button" style="--x: 3%; --y: 33%">
+                  <span class="hotspot-note"><strong>Lap log</strong>Every lap with its delta to your best; the best one is marked.</span>
+                </button>
+                <button class="hotspot" type="button" style="--x: 39%; --y: 7%">
+                  <span class="hotspot-note"><strong>LED flags</strong>The flag as a light board beside the mirror.</span>
+                </button>
+                <button class="hotspot" type="button" style="--x: 36%; --y: 14%">
+                  <span class="hotspot-note"><strong>DRS</strong>When the wing can open, and when it is open.</span>
+                </button>
+                <button class="hotspot" type="button" style="--x: 81%; --y: 3%">
+                  <span class="hotspot-note"><strong>Flat flags</strong>The flag the sim shows you, here a blue one.</span>
+                </button>
+                <button class="hotspot" type="button" style="--x: 93%; --y: 9%">
+                  <span class="hotspot-note"><strong>Track map</strong>Every car on the circuit, in its class colour.</span>
+                </button>
+                <button class="hotspot" type="button" style="--x: 50%; --y: 47%">
+                  <span class="hotspot-note"><strong>Close battle</strong>Rivals ahead and behind on a distance axis.</span>
+                </button>
+                <button class="hotspot" type="button" style="--x: 49%; --y: 67%">
+                  <span class="hotspot-note"><strong>Input trace</strong>Throttle, brake and steering as a moving trace.</span>
+                </button>
+                <button class="hotspot" type="button" style="--x: 38.5%; --y: 71%">
+                  <span class="hotspot-note"><strong>Relative map</strong>The cars near you laid out along the track by distance.</span>
+                </button>
+                <button class="hotspot" type="button" style="--x: 53%; --y: 75%">
+                  <span class="hotspot-note"><strong>Battery</strong>Charge, deploy mode and what is left to spend this lap.</span>
+                </button>
+                <button class="hotspot" type="button" style="--x: 50%; --y: 92%">
+                  <span class="hotspot-note"><strong>Wheel to Wheel</strong>The car ahead and behind, and the gap to each.</span>
+                </button>
+                <button class="hotspot" type="button" style="--x: 2%; --y: 81%">
+                  <span class="hotspot-note"><strong>Incident tracker</strong>Incident count, the next penalty and your Safety Rating estimate.</span>
+                </button>
+                <button class="hotspot" type="button" style="--x: 5%; --y: 91%">
+                  <span class="hotspot-note"><strong>Relative</strong>The cars around you on track, with the gap to each.</span>
+                </button>
+                <button class="hotspot" type="button" style="--x: 95%; --y: 94%">
+                  <span class="hotspot-note"><strong>Weather</strong>Air and track temperature, wind and how wet the surface is.</span>
+                </button>
+              </div>
+              <div class="hotspots" data-hotspots-for="gt3-practice" hidden>
+                <button class="hotspot" type="button" style="--x: 8%; --y: 13%">
+                  <span class="hotspot-note"><strong>Standings</strong>The field by class, laps and best times.</span>
+                </button>
+                <button class="hotspot" type="button" style="--x: 92%; --y: 10%">
+                  <span class="hotspot-note"><strong>Track map</strong>Every car on the circuit, in its class colour.</span>
+                </button>
+                <button class="hotspot" type="button" style="--x: 51%; --y: 67%">
+                  <span class="hotspot-note"><strong>Input trace</strong>Throttle, brake and steering as a moving trace.</span>
+                </button>
+                <button class="hotspot" type="button" style="--x: 39.5%; --y: 71%">
+                  <span class="hotspot-note"><strong>Relative map</strong>The cars near you laid out along the track by distance.</span>
+                </button>
+                <button class="hotspot" type="button" style="--x: 4%; --y: 90%">
+                  <span class="hotspot-note"><strong>Sector matrix</strong>Every sector of the lap against your best.</span>
+                </button>
+              </div>
+              <div class="hotspots" data-hotspots-for="gt3-qualify" hidden>
+                <button class="hotspot" type="button" style="--x: 8%; --y: 15%">
+                  <span class="hotspot-note"><strong>Standings</strong>Lone qualifying: who has set a time and who is still out.</span>
+                </button>
+                <button class="hotspot" type="button" style="--x: 39%; --y: 5%">
+                  <span class="hotspot-note"><strong>LED flags</strong>The flag as a light board beside the mirror.</span>
+                </button>
+                <button class="hotspot" type="button" style="--x: 50%; --y: 8%">
+                  <span class="hotspot-note"><strong>Delta</strong>Gain or loss against your best lap, right under the mirror.</span>
+                </button>
+                <button class="hotspot" type="button" style="--x: 81%; --y: 3%">
+                  <span class="hotspot-note"><strong>Flat flags</strong>The flag the sim shows you, here the chequered one.</span>
+                </button>
+                <button class="hotspot" type="button" style="--x: 93%; --y: 9%">
+                  <span class="hotspot-note"><strong>Track map</strong>Every car on the circuit, in its class colour.</span>
+                </button>
+                <button class="hotspot" type="button" style="--x: 51%; --y: 67%">
+                  <span class="hotspot-note"><strong>Input trace</strong>Throttle, brake and steering as a moving trace.</span>
+                </button>
+                <button class="hotspot" type="button" style="--x: 39.5%; --y: 71%">
+                  <span class="hotspot-note"><strong>Relative map</strong>The cars near you laid out along the track by distance.</span>
+                </button>
+                <button class="hotspot" type="button" style="--x: 4%; --y: 90%">
+                  <span class="hotspot-note"><strong>Sector matrix</strong>Every sector of the lap against your best.</span>
+                </button>
+              </div>
+              <div class="hotspots" data-hotspots-for="gt3-race" hidden>
+                <button class="hotspot" type="button" style="--x: 12%; --y: 16%">
+                  <span class="hotspot-note"><strong>Standings</strong>The whole field, gaps, intervals and best laps.</span>
+                </button>
+                <button class="hotspot" type="button" style="--x: 3%; --y: 41%">
+                  <span class="hotspot-note"><strong>Lap log</strong>Every lap with its delta to your best; the best one is marked.</span>
+                </button>
+                <button class="hotspot" type="button" style="--x: 50%; --y: 8%">
+                  <span class="hotspot-note"><strong>Delta</strong>Gain or loss against your best lap, right under the mirror.</span>
+                </button>
+                <button class="hotspot" type="button" style="--x: 94%; --y: 7%">
+                  <span class="hotspot-note"><strong>Track map</strong>Every car on the circuit; your class leader marked.</span>
+                </button>
+                <button class="hotspot" type="button" style="--x: 51%; --y: 67%">
+                  <span class="hotspot-note"><strong>Input trace</strong>Throttle, brake and steering as a moving trace.</span>
+                </button>
+                <button class="hotspot" type="button" style="--x: 39.5%; --y: 72%">
+                  <span class="hotspot-note"><strong>Relative map</strong>The cars near you laid out along the track by distance.</span>
+                </button>
+                <button class="hotspot" type="button" style="--x: 5%; --y: 91%">
+                  <span class="hotspot-note"><strong>Relative</strong>The cars around you on track, with the gap to each.</span>
+                </button>
+                <button class="hotspot" type="button" style="--x: 14%; --y: 96%">
+                  <span class="hotspot-note"><strong>Incident tracker</strong>Incident count, the next penalty and your Safety Rating estimate.</span>
+                </button>
+                <button class="hotspot" type="button" style="--x: 95%; --y: 94%">
+                  <span class="hotspot-note"><strong>Weather</strong>Air and track temperature, wind and how wet the surface is.</span>
+                </button>
+              </div>
+              <div class="hotspots" data-hotspots-for="any-practice" hidden>
+                <button class="hotspot" type="button" style="--x: 8%; --y: 15%">
+                  <span class="hotspot-note"><strong>Standings</strong>The field, laps and best times.</span>
+                </button>
+                <button class="hotspot" type="button" style="--x: 3%; --y: 35%">
+                  <span class="hotspot-note"><strong>Lap log</strong>Every lap with its delta to your best; the best one is marked.</span>
+                </button>
+                <button class="hotspot" type="button" style="--x: 93%; --y: 10%">
+                  <span class="hotspot-note"><strong>Track map</strong>A new circuit is recorded on your first lap.</span>
+                </button>
+                <button class="hotspot" type="button" style="--x: 51%; --y: 62%">
+                  <span class="hotspot-note"><strong>RPM lights</strong>Shift lights that follow the car’s own redline.</span>
+                </button>
+                <button class="hotspot" type="button" style="--x: 58%; --y: 69%">
+                  <span class="hotspot-note"><strong>Input trace</strong>Throttle, brake and steering as a moving trace.</span>
+                </button>
+                <button class="hotspot" type="button" style="--x: 39.5%; --y: 71%">
+                  <span class="hotspot-note"><strong>Relative map</strong>The cars near you laid out along the track by distance.</span>
+                </button>
+                <button class="hotspot" type="button" style="--x: 5%; --y: 91%">
+                  <span class="hotspot-note"><strong>Relative</strong>The cars around you on track, with the gap to each.</span>
+                </button>
+                <button class="hotspot" type="button" style="--x: 95%; --y: 93%">
+                  <span class="hotspot-note"><strong>Sector matrix</strong>Every sector of the lap against your best.</span>
+                </button>
+              </div>
+              <div class="hotspots" data-hotspots-for="any-qualify" hidden>
+                <button class="hotspot" type="button" style="--x: 8%; --y: 15%">
+                  <span class="hotspot-note"><strong>Standings</strong>Lone qualifying: who has set a time and who is still out.</span>
+                </button>
+                <button class="hotspot" type="button" style="--x: 39%; --y: 5%">
+                  <span class="hotspot-note"><strong>LED flags</strong>The flag as a light board beside the mirror.</span>
+                </button>
+                <button class="hotspot" type="button" style="--x: 81%; --y: 3%">
+                  <span class="hotspot-note"><strong>Flat flags</strong>The flag the sim shows you, here the chequered one.</span>
+                </button>
+                <button class="hotspot" type="button" style="--x: 94%; --y: 9%">
+                  <span class="hotspot-note"><strong>Track map</strong>Every car on the circuit, in its class colour.</span>
+                </button>
+                <button class="hotspot" type="button" style="--x: 4%; --y: 50%">
+                  <span class="hotspot-note"><strong>Sector matrix</strong>Every sector of the lap against your best.</span>
+                </button>
+                <button class="hotspot" type="button" style="--x: 51%; --y: 62%">
+                  <span class="hotspot-note"><strong>RPM lights</strong>Shift lights that follow the car’s own redline.</span>
+                </button>
+                <button class="hotspot" type="button" style="--x: 58%; --y: 69%">
+                  <span class="hotspot-note"><strong>Input trace</strong>Throttle, brake and steering as a moving trace.</span>
+                </button>
+                <button class="hotspot" type="button" style="--x: 39.5%; --y: 71%">
+                  <span class="hotspot-note"><strong>Relative map</strong>The cars near you laid out along the track by distance.</span>
+                </button>
+                <button class="hotspot" type="button" style="--x: 55%; --y: 94%">
+                  <span class="hotspot-note"><strong>Engine panel</strong>Brake bias, traction control and ABS at a glance.</span>
+                </button>
+              </div>
+              <div class="hotspots" data-hotspots-for="any-race" hidden>
+                <button class="hotspot" type="button" style="--x: 13%; --y: 16%">
+                  <span class="hotspot-note"><strong>Standings</strong>The whole field, gaps, intervals and best laps.</span>
+                </button>
+                <button class="hotspot" type="button" style="--x: 3%; --y: 39%">
+                  <span class="hotspot-note"><strong>Lap log</strong>Every lap with its delta to your best; the best one is marked.</span>
+                </button>
+                <button class="hotspot" type="button" style="--x: 50%; --y: 7%">
+                  <span class="hotspot-note"><strong>Delta</strong>Gain or loss against your best lap, right under the mirror.</span>
+                </button>
+                <button class="hotspot" type="button" style="--x: 94%; --y: 9%">
+                  <span class="hotspot-note"><strong>Track map</strong>Every car on the circuit, in its class colour.</span>
+                </button>
+                <button class="hotspot" type="button" style="--x: 49%; --y: 67%">
+                  <span class="hotspot-note"><strong>Input trace</strong>Throttle, brake and steering as a moving trace.</span>
+                </button>
+                <button class="hotspot" type="button" style="--x: 38.5%; --y: 71%">
+                  <span class="hotspot-note"><strong>Relative map</strong>The cars near you laid out along the track by distance.</span>
+                </button>
+                <button class="hotspot" type="button" style="--x: 2%; --y: 81%">
+                  <span class="hotspot-note"><strong>Incident tracker</strong>Incident count, the next penalty and your Safety Rating estimate.</span>
+                </button>
+                <button class="hotspot" type="button" style="--x: 5%; --y: 91%">
+                  <span class="hotspot-note"><strong>Relative</strong>The cars around you on track, with the gap to each.</span>
+                </button>
+                <button class="hotspot" type="button" style="--x: 95%; --y: 94%">
+                  <span class="hotspot-note"><strong>Weather</strong>Air and track temperature, wind and how wet the surface is.</span>
+                </button>
+              </div>
             </div>
 
-            <button
-              class="layout-screen-proof"
-              type="button"
-              data-zoom
-              data-zoom-from="[data-layout-screen]"
-            >
-              Open this layout full size <span aria-hidden="true">&rarr;</span>
-            </button>
+            <div class="layout-screen-foot">
+              <p class="layout-screen-label" aria-hidden="true">
+                <span data-layout-class-part
+                  ><span data-layout-class>Open-wheel</span> &middot;
+                </span>
+                <span data-layout-label>Race</span>
+              </p>
+
+              <button
+                class="layout-screen-proof"
+                type="button"
+                data-zoom
+                data-zoom-from="[data-layout-screen]"
+              >
+                Open this layout full size <span aria-hidden="true">&rarr;</span>
+              </button>
+            </div>
           </div>
         </div>
 
         <ul class="container pill-list">
+          <li class="pill">By session, car class or car</li>
           <li class="pill">Every monitor on one canvas</li>
-          <li class="pill">Remote screens too</li>
+          <li class="pill">Browser screens too</li>
           <li class="pill">Live data while you place</li>
           <li class="pill">Snap grid</li>
           <li class="pill">Undo and redo</li>
           <li class="pill">Duplicate a layout</li>
         </ul>
+      </section>
+
+      <!-- ---- Lap analysis ---------------------------------------------------
+           The Analysis tab, as the other main-window blocks show their page:
+           a crop of the real capture below the title bar, opening whole on a
+           click, with markers on what the tab does. The capture is the
+           README's (docs/assets/screenshots/main/analysis.png). -->
+      <section
+        id="analysis"
+        class="feature feature-light analysis"
+        aria-labelledby="analysis-heading"
+      >
+        <div class="container feature-grid">
+          <div class="feature-copy">
+            <p class="feature-kicker">Lap analysis</p>
+
+            <h2 id="analysis-heading" class="feature-title">
+              See where<br />
+              the time goes.
+            </h2>
+
+            <p class="feature-desc">
+              Lay laps of a session over each other: the delta to your
+              reference lap, speed, pedals, gear and any channel the sim
+              records, under one cursor that runs on the track map too.
+            </p>
+
+            <ul class="pill-list pill-list-inline">
+              <li class="pill">Delta to the reference</li>
+              <li class="pill">Any channel the sim records</li>
+              <li class="pill">Zoom on charts and map</li>
+              <li class="pill">The setup of each lap</li>
+              <li class="pill pill-lit">Kept after the .ibt is gone</li>
+            </ul>
+          </div>
+
+          <div class="feature-media analysis-media">
+            <button
+              class="shot-crop"
+              type="button"
+              style="--x: 0; --y: 88; --w: 1600; --h: 882"
+              data-zoom
+              aria-label="Open the lap analysis screenshot"
+            >
+              <img
+                src="assets/main/analysis.png"
+                alt="Lap analysis of two laps of Fuji: the lap list and track map beside speed, throttle and brake charts under one cursor"
+                width="1600"
+                height="970"
+                loading="lazy"
+                decoding="async"
+              />
+            </button>
+
+            <div class="hotspots">
+              <button class="hotspot" type="button" style="--x: 3.5%; --y: 29%">
+                <span class="hotspot-note"><strong>Laps</strong>Any laps of the session, each in its colour. The star sets the reference for the delta.</span>
+              </button>
+              <button class="hotspot" type="button" style="--x: 11%; --y: 50%">
+                <span class="hotspot-note"><strong>Track map</strong>The cursor runs on the map too; zoom and drag it like the charts.</span>
+              </button>
+              <button class="hotspot" type="button" style="--x: 26%; --y: 15%">
+                <span class="hotspot-note"><strong>Any channel</strong>Speed, pedals, gear, steering, RPM, tyres, shocks: whatever the sim records.</span>
+              </button>
+              <button class="hotspot" type="button" style="--x: 58%; --y: 30%">
+                <span class="hotspot-note"><strong>One cursor</strong>Every chart and the map at the same metre of the lap, each lap’s value beside it.</span>
+              </button>
+              <button class="hotspot" type="button" style="--x: 9%; --y: 10%">
+                <span class="hotspot-note"><strong>Setup</strong>The garage setup each lap was driven with.</span>
+              </button>
+            </div>
+          </div>
+        </div>
       </section>
 
       <!-- ---- Widget workbench ---------------------------------------------- -->
@@ -2512,7 +4556,7 @@
             </h2>
 
             <p class="feature-desc">
-              Each widget opens with a live preview beside its settings. Switch
+              Each widget opens with a live preview beside its settings, on a scenario you pick. Switch
               a column off and it is gone from the picture before you are back
               in the car.
             </p>
@@ -2533,15 +4577,15 @@
             <button
               class="shot-crop shot-workbench"
               type="button"
-              style="--x: 330; --y: 250; --w: 1240; --h: 530"
+              style="--x: 260; --y: 145; --w: 1312; --h: 600"
               data-zoom
               aria-label="Open the widget settings screenshot"
             >
               <img
                 src="assets/control/widget-config.png"
                 alt="Standings open in the widget settings: a live preview of the table beside its column switches"
-                width="1595"
-                height="969"
+                width="1600"
+                height="970"
                 loading="lazy"
                 decoding="async"
               />
@@ -2586,15 +4630,15 @@
             <button
               class="shot-crop shot-devices"
               type="button"
-              style="--x: 488; --y: 255; --w: 868; --h: 460"
+              style="--x: 1092; --y: 143; --w: 480; --h: 452"
               data-zoom
               aria-label="Open the devices screenshot"
             >
               <img
                 src="assets/control/devices.png"
                 alt="The devices page, listing connected wheels, button boxes, joysticks and pedals"
-                width="1595"
-                height="969"
+                width="1600"
+                height="970"
                 loading="lazy"
                 decoding="async"
               />
@@ -2603,15 +4647,15 @@
             <button
               class="shot-crop shot-bindings"
               type="button"
-              style="--x: 508; --y: 378; --w: 828; --h: 182"
+              style="--x: 261; --y: 255; --w: 800; --h: 205"
               data-zoom
               aria-label="Open the input bindings screenshot"
             >
               <img
                 src="assets/control/bindings.png"
-                alt="Input bindings: drag mode on F9, interact mode on F8, hide all widgets on F10"
-                width="1595"
-                height="969"
+                alt="Input bindings: drag mode on F9, interact mode on F8, hide all widgets on F10, push to talk on a wheel button"
+                width="1600"
+                height="970"
                 loading="lazy"
                 decoding="async"
               />
@@ -2816,12 +4860,12 @@
               class="shot-crop shot-crew"
               type="button"
               style="
-                --cap-w: 1523;
-                --cap-h: 1109;
+                --cap-w: 1600;
+                --cap-h: 970;
                 --x: 250;
-                --y: 120;
-                --w: 1262;
-                --h: 930;
+                --y: 90;
+                --w: 1330;
+                --h: 860;
               "
               data-zoom
               aria-label="Open the crew commands screenshot"
@@ -2829,8 +4873,8 @@
               <img
                 src="assets/crew/commands.png"
                 alt="The Crew tab: the Fuel command's sentences as blocks, the engineer's replies, and a tried sentence matched to the command"
-                width="1523"
-                height="1109"
+                width="1600"
+                height="970"
                 loading="lazy"
                 decoding="async"
               />
@@ -3016,7 +5060,7 @@
                   </svg>
                 </span>
                 <span class="perf-node-name">Overlay</span>
-                <span class="perf-node-sub">And remote screens</span>
+                <span class="perf-node-sub">And browser screens</span>
               </li>
             </ol>
 
@@ -3569,6 +5613,7 @@
     <script type="module" src="src/components/interact-demo.js"></script>
     <script type="module" src="src/components/crew-demo.js"></script>
     <script type="module" src="src/components/rate-demo.js"></script>
+    <script type="module" src="src/components/hotspots.js"></script>
     <script type="module" src="src/components/page-modes.js"></script>
     <script type="module" src="src/components/release.js"></script>
     <script type="module" src="src/components/copyright-year.js"></script>

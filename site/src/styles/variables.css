@@ -29,23 +29,28 @@
   --color-nav-hover-bg: rgba(0, 0, 0, 0.04);
   --color-nav-active-bar: #111418;
 
-  /* The livery's palette: graphite and steel for ground, grey and silver
-     for the light panels, two blues for the accent. */
+  /* The accent is black and white, like the app's own: graphite on the light
+     page, the app's near-white (its colorPrimary) on the dark sections. The
+     --livery-blue name stays from the blue days; it is the accent. */
   --livery-graphite: #1b2027;
   --livery-steel: #2a3038;
   --livery-grey: #aab3bd;
   --livery-silver: #dde2e8;
-  --livery-blue: #4f8fe3;
-  --livery-sky: #72aaec;
-  --livery-deep: #2f6fd0;
+  --livery-blue: #111418;
+  --livery-sky: #2a3038;
+  --livery-deep: #000000;
+  --accent-rgb: 17, 20, 24;
+  --accent-ink: #111418;
+  --accent-bright: #111418;
+  /* The two loud bands (Interact, Download): graphite, a step off the
+     #0d1014 of the dark sections. */
+  --color-accent-band: #15191f;
 
-  /* Brand accent - the blue of the logo and the livery. Dark text on it
-     (5.8:1); white would not pass. */
   --color-btn-download-bg: var(--livery-blue);
   --color-btn-download-bg-hover: var(--livery-sky);
-  --color-btn-download-text: #0b1015;
-  --color-btn-download-shadow: 0 3px 12px rgba(79, 143, 227, 0.35);
-  --color-btn-download-shadow-hover: 0 6px 18px rgba(79, 143, 227, 0.5);
+  --color-btn-download-text: #ffffff;
+  --color-btn-download-shadow: 0 3px 12px rgba(0, 0, 0, 0.25);
+  --color-btn-download-shadow-hover: 0 6px 18px rgba(0, 0, 0, 0.35);
 
   /* Social Icons */
   --color-social: #1d2124;
@@ -72,4 +77,21 @@
   --transition-fast: 0.15s ease;
   --transition-normal: 0.25s cubic-bezier(0.16, 1, 0.3, 1);
   --transition-smooth: 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* On a dark ground the accent turns to the app's near-white, with dark text on
+   it. Custom properties resolve where they are declared, so every token built
+   on --livery-blue is restated here, not only the root one. */
+:is(.footer-cta, .chapter-gallery, .feature-dark, .perf-band, .interact-band, .download-band) {
+  --livery-blue: #e0e0e0;
+  --livery-sky: #ffffff;
+  --livery-deep: #bfc3c8;
+  --accent-rgb: 224, 224, 224;
+  --accent-ink: #e0e0e0;
+  --accent-bright: #e0e0e0;
+  --color-btn-download-bg: #e0e0e0;
+  --color-btn-download-bg-hover: #ffffff;
+  --color-btn-download-text: #0b1015;
+  --color-btn-download-shadow: 0 3px 12px rgba(255, 255, 255, 0.12);
+  --color-btn-download-shadow-hover: 0 6px 18px rgba(255, 255, 255, 0.2);
 }

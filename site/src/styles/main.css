@@ -97,7 +97,7 @@ button:focus-visible {
   font-size: 0.8rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: #4a525d;
+  color: #c3cad3;
   margin: 0 0 1.25rem;
 }
 
@@ -109,7 +109,7 @@ button:focus-visible {
   line-height: 0.9;
   letter-spacing: -0.015em;
   text-transform: uppercase;
-  color: #101317;
+  color: #ffffff;
   margin: 0 0 1.25rem;
 }
 
@@ -131,6 +131,7 @@ button:focus-visible {
 }
 
 .hero-subtitle {
+  color: #d5dbe2;
   max-width: 480px;
   margin-bottom: 2.25rem;
 }
@@ -148,8 +149,8 @@ button:focus-visible {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  background-color: #14171d;
-  color: #ffffff;
+  background-color: #ffffff;
+  color: #101317;
   font-family: var(--font-family);
   font-weight: 800;
   font-size: 0.74rem;
@@ -164,7 +165,7 @@ button:focus-visible {
 }
 
 .btn-hero-dark:hover {
-  background-color: #242933;
+  background-color: #e6e9ee;
   transform: translateY(-1.5px);
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.28);
 }
@@ -177,11 +178,11 @@ button:focus-visible {
   display: inline-flex;
   align-items: center;
   gap: 0.45rem;
-  background: rgba(246, 247, 249, 0.85);
+  background: rgba(255, 255, 255, 0.08);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
-  border: 1px solid rgba(0, 0, 0, 0.12);
-  color: #1f242d;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  color: #ffffff;
   font-family: var(--font-family);
   font-weight: 800;
   font-size: 0.74rem;
@@ -209,9 +210,9 @@ button:focus-visible {
 }
 
 .btn-hero-light:hover {
-  background: #ffffff;
-  border-color: rgba(0, 0, 0, 0.22);
-  color: #000000;
+  background: rgba(255, 255, 255, 0.16);
+  border-color: rgba(255, 255, 255, 0.4);
+  color: #ffffff;
   transform: translateY(-1.5px);
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
 }
@@ -233,7 +234,7 @@ button:focus-visible {
   font-size: 0.72rem;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: #4b5563;
+  color: #aab2bd;
   user-select: none;
 }
 
@@ -330,69 +331,125 @@ button:focus-visible {
   color: #a3abb5;
 }
 
-/* The blurred side dissolves into the hero ground along the same axis */
+/* ---- The overlay switching on ---------------------------------------------
+
+   The widgets arrive over the bare cockpit with a short power-on flicker,
+   while a toast says what happened and leaves after three seconds. Runs once,
+   on load; with reduced motion the widgets are simply there. */
+.hero-overlay {
+  /* The capture is a transparent window: no tone-down, the widgets keep
+     their own colours over the held-down cockpit. */
+  filter: none;
+  opacity: 0;
+  animation: hero-overlay-on 0.9s steps(1, end) 0.7s forwards;
+}
+
+@keyframes hero-overlay-on {
+  0% {
+    opacity: 0.55;
+  }
+
+  12% {
+    opacity: 0.1;
+  }
+
+  24% {
+    opacity: 0.8;
+  }
+
+  36% {
+    opacity: 0.35;
+  }
+
+  100% {
+    opacity: 1;
+  }
+}
+
+.hero-overlay-toast {
+  position: absolute;
+  top: 46%;
+  left: 74%;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin: 0;
+  padding: 0.7rem 1.15rem;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 6px;
+  background: rgba(13, 16, 20, 0.86);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
+  color: #ffffff;
+  font-family: var(--font-hero-heading);
+  font-size: 0.95rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(0.96);
+  animation: hero-toast 3.6s ease 0.7s forwards;
+}
+
+.hero-overlay-dot {
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: 50%;
+  background: #22c55e;
+  box-shadow: 0 0 10px #22c55e;
+}
+
+@keyframes hero-toast {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.96);
+  }
+
+  8%,
+  88% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-overlay {
+    opacity: 1;
+    animation: none;
+  }
+
+  .hero-overlay-toast {
+    display: none;
+  }
+}
+
+/* The copy side: the cockpit blurs out under the text, from sharp on the
+   right to fully blurred at the left edge, with a smoky tint deep enough for
+   the light copy. */
 .hero-fade-left {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background: linear-gradient(
+  --glass-mask: linear-gradient(
     var(--wash-angle),
-    rgba(227, 230, 234, 0.96) 0%,
-    rgba(227, 230, 234, 0.94) 38%,
-    rgba(227, 230, 234, 0.84) 50%,
-    rgba(227, 230, 234, 0.5) 58%,
-    rgba(227, 230, 234, 0.18) 65%,
-    transparent 72%
+    #000 0%,
+    #000 30%,
+    rgba(0, 0, 0, 0.6) 48%,
+    rgba(0, 0, 0, 0.25) 62%,
+    transparent 76%
   );
-}
 
-/* Near-vertical slanted cut peeling a light strip off the right edge.
-   It runs parallel to the left-hand cuts, so every line in the hero leans the
-   same way; the strip carries the scroll cue. */
-
-/* Crisp hairlines riding the cuts */
-.cut-line {
   position: absolute;
   inset: 0;
+  z-index: 3;
   pointer-events: none;
-}
-
-.cut-line-lead {
-  background: linear-gradient(
-    to bottom,
-    rgba(255, 255, 255, 0.95),
-    rgba(255, 255, 255, 0.4)
-  );
-  clip-path: polygon(
-    var(--lead) 0,
-    calc(var(--lead) + 2px) 0,
-    calc(var(--lead) + 2px - var(--slant)) 100%,
-    calc(var(--lead) - var(--slant)) 100%
-  );
-}
-
-.cut-line-trail {
-  background: rgba(255, 255, 255, 0.55);
-  clip-path: polygon(
-    var(--trail) 0,
-    calc(var(--trail) + 1px) 0,
-    calc(var(--trail) + 1px - var(--slant)) 100%,
-    calc(var(--trail) - var(--slant)) 100%
-  );
-}
-
-.cut-line-edge {
-  background: linear-gradient(
-    to bottom,
-    rgba(255, 255, 255, 0.95),
-    rgba(255, 255, 255, 0.5)
-  );
-  clip-path: polygon(
-    var(--edge) 0,
-    calc(var(--edge) + 2px) 0,
-    calc(var(--edge) + 2px - var(--edge-slant)) 100%,
-    calc(var(--edge) - var(--edge-slant)) 100%
-  );
+  background: rgba(10, 13, 17, 0.5);
+  -webkit-backdrop-filter: blur(18px);
+  backdrop-filter: blur(18px);
+  -webkit-mask-image: var(--glass-mask);
+  mask-image: var(--glass-mask);
 }
 
 /* ==========================================================================
@@ -499,7 +556,7 @@ button:focus-visible {
   width: 44px;
   height: 44px;
   border-radius: 10px;
-  background: rgba(79, 143, 227, 0.2);
+  background: rgba(var(--accent-rgb), 0.2);
   color: #4d7c0f;
   display: flex;
   align-items: center;
@@ -761,6 +818,8 @@ button:focus-visible {
 
 @media (max-width: 1024px) {
   .hero-block {
+    /* Dark ground under the faded photo: the copy is light */
+    background-color: #0d1014;
     min-height: auto;
     padding-top: calc(var(--header-height) + 2rem);
   }
@@ -778,11 +837,10 @@ button:focus-visible {
   .hero-visual {
     left: 0;
     right: 0;
-    opacity: 0.28;
+    opacity: 0.5;
   }
 
-  .hero-visual .cut-line,
-  .hero-visual .cut-glare {
+  .hero-overlay-toast {
     display: none;
   }
 }
@@ -1058,459 +1116,6 @@ button:focus-visible {
   margin: 0 0 0.4rem;
 }
 
-/* ---- Layout ------------------------------------------------------------------
-
-   The widget is the section: the stage takes two thirds of the width and the
-   full height, and the copy and the sheet share the column beside it, the
-   words on top and the catalogue under them.
-   -------------------------------------------------------------------------- */
-
-.gallery {
-  position: relative;
-  display: grid;
-  grid-template-columns: minmax(0, 2.1fr) minmax(17rem, 0.9fr);
-  grid-template-rows: auto 1fr;
-  grid-template-areas:
-    'stage copy'
-    'stage sheet';
-  gap: clamp(1.5rem, 3vw, 2.75rem);
-  align-items: start;
-}
-
-.stage {
-  grid-area: stage;
-}
-
-.gallery-copy {
-  grid-area: copy;
-}
-
-.sheet {
-  grid-area: sheet;
-}
-
-.gallery-copy,
-.stage,
-.sheet {
-  position: relative;
-  z-index: 1;
-}
-
-.gallery-copy {
-  padding-top: 0;
-}
-
-.gallery-lede {
-  max-width: 34ch;
-  margin: 0;
-}
-
-/* ---- Stage ---------------------------------------------------------------
-
-   One widget, upright, at the size it is drawn at in the car. No card under
-   it and no neighbours beside it: the captures are dark designed objects with
-   a frame of their own, and anything drawn around them competes with it.
-   -------------------------------------------------------------------------- */
-
-.stage {
-  /* A slot of one height whatever it holds. Sizing it to the picture would
-     make the page jump by several hundred pixels between Standings and RPM
-     Lights, and a section that resizes under the cursor cannot be browsed. */
-  --shot-h: clamp(21rem, 37vw, 35rem);
-
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  width: 100%;
-  margin: 0;
-}
-
-.stage-head {
-  width: 100%;
-  margin-bottom: clamp(1.1rem, 2vw, 1.75rem);
-}
-
-.stage-group {
-  font-family: var(--font-mono);
-  font-size: 0.64rem;
-  letter-spacing: 0.24em;
-  text-transform: uppercase;
-  color: #2a5aa6;
-  margin: 0 0 0.45rem;
-}
-
-/* The one horizontal rule left in the section, and it earns it: the name of a
-   widget is a caption for the picture under it, and the rule is what ties them
-   together. */
-.stage-title {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 1rem;
-  padding-bottom: 0.6rem;
-  border-bottom: 1px solid var(--ink-main);
-}
-
-.stage-name {
-  font-family: var(--font-family);
-  font-weight: 800;
-  font-size: clamp(1.3rem, 2vw, 1.7rem);
-  letter-spacing: 0;
-  color: #101317;
-  margin: 0;
-}
-
-.stage-index {
-  flex: none;
-  font-family: var(--font-mono);
-  font-size: 0.68rem;
-  letter-spacing: 0.16em;
-  color: #8b929c;
-  margin: 0;
-}
-
-.stage-index > span:first-child {
-  font-weight: 700;
-  color: #101317;
-}
-
-/* The widgets are drawn to sit over the sim - translucent dark panels made
-   for a road and a sky behind them - and on the page's own paper they turned
-   into grey boxes. So the stage is a screen: a frame of the cockpit, blurred
-   and held down, the way the overlay actually meets it. The picture is the
-   same render section 01 opens on, so nothing new is downloaded. */
-.stage-shot {
-  position: relative;
-  isolation: isolate;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  height: calc(var(--shot-h) + 4rem);
-  padding: 2rem;
-  border-radius: 14px;
-  overflow: hidden;
-  background-color: #0d1014;
-  box-shadow:
-    0 1.6rem 3.2rem -1.4rem rgba(10, 14, 20, 0.55),
-    inset 0 0 0 1px rgba(255, 255, 255, 0.06);
-}
-
-.stage-shot::before,
-.stage-shot::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  pointer-events: none;
-}
-
-/* Scaled past the frame so the blur has no soft edge to show */
-.stage-shot::before {
-  inset: -2rem;
-  background: url('../../assets/img/why/cockpit-bg-960.webp') center 40% / cover
-    no-repeat;
-  filter: blur(14px) saturate(1.1) brightness(0.62);
-}
-
-/* A vignette and a blue floor light, so the widget has somewhere to stand */
-.stage-shot::after {
-  background:
-    radial-gradient(
-      ellipse 60% 22% at 50% 100%,
-      rgba(79, 143, 227, 0.28),
-      transparent 70%
-    ),
-    radial-gradient(
-      ellipse at center,
-      transparent 35%,
-      rgba(8, 10, 13, 0.7) 100%
-    );
-}
-
-.stage-shot img {
-  max-width: 78%;
-  max-height: 78%;
-  width: auto;
-  height: auto;
-  object-fit: contain;
-  filter: drop-shadow(0 16px 34px rgba(0, 0, 0, 0.5));
-  transition:
-    opacity 0.28s ease,
-    transform 0.28s ease;
-}
-
-/* The one movement in the section: the outgoing capture drops out and the new
-   one settles in from a few pixels below. The picture is what changes, so the
-   picture is what moves — sliding the whole section would say something
-   happened to the page rather than to the widget. */
-.stage.is-swapping .stage-shot img,
-.stage.is-swapping .stage-desc {
-  opacity: 0;
-  transform: translateY(6px);
-}
-
-/* Two lines' worth of room whether the sentence fills them or not. Without it
-   the section is 25px shorter on a one-line description, and every widget with
-   a shorter sentence than its neighbour moved the whole page under the
-   cursor. */
-.stage-desc {
-  max-width: 50ch;
-  min-height: calc(2 * 1.6em);
-  margin: clamp(1rem, 1.8vw, 1.5rem) 0 0;
-  font-size: 0.98rem;
-  line-height: 1.6;
-  text-align: center;
-  color: #5d656f;
-  transition:
-    opacity 0.28s ease,
-    transform 0.28s ease;
-}
-
-/* ---- Sheet -----------------------------------------------------------------
-
-   Every widget there is, as its own capture, and the only control in the
-   section: the catalogue and the way through it are the same object. Three
-   frames to a row, level with each other,
-   scrolling in its own box so the column never runs past the widget beside it.
-   -------------------------------------------------------------------------- */
-
-/* The frames' own hairlines are the sheet's structure; a rule across the top
-   of them only added a fourth parallel line. The sheet's one edge is vertical:
-   it stands the catalogue off the widget beside it without adding a horizontal
-   to the stack. */
-.sheet {
-  position: relative;
-}
-
-.sheet::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: calc(-1 * clamp(0.75rem, 1.5vw, 1.4rem));
-  width: 1px;
-  background-color: var(--ink-main);
-  pointer-events: none;
-}
-
-/* The bottom edge fades into the page ground: that is what says the sheet
-   continues past the end of its box. */
-.sheet::after {
-  content: '';
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  height: 3rem;
-  z-index: 2;
-  background: linear-gradient(180deg, transparent, var(--color-body-bg));
-  pointer-events: none;
-}
-
-.sheet-grid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  list-style: none;
-  margin: 0;
-  padding: 0 0 2.5rem;
-  max-height: clamp(22rem, 40vw, 32rem);
-  overflow-y: auto;
-  overscroll-behavior-y: contain;
-  scrollbar-width: thin;
-  scrollbar-color: rgba(0, 0, 0, 0.28) transparent;
-}
-
-.sheet-grid::-webkit-scrollbar {
-  width: 6px;
-}
-
-.sheet-grid::-webkit-scrollbar-track {
-  background-color: rgba(0, 0, 0, 0.05);
-}
-
-.sheet-grid::-webkit-scrollbar-thumb {
-  background-color: rgba(0, 0, 0, 0.28);
-}
-
-.frame {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.5rem;
-  width: 100%;
-  height: 100%;
-  padding: 0.85rem 0.6rem 0.8rem;
-  background-color: transparent;
-  border: 0;
-  /* Hairlines between frames rather than boxes around them, the way the claims
-     band above divides itself. */
-  border-right: 1px solid var(--ink-light);
-  border-bottom: 1px solid var(--ink-light);
-  cursor: pointer;
-  opacity: 0.6;
-  transition:
-    opacity 0.2s ease,
-    background-color 0.2s ease;
-}
-
-.sheet-grid > li:nth-child(3n) .frame {
-  border-right: 0;
-}
-
-.frame:hover {
-  opacity: 1;
-  background-color: rgba(0, 0, 0, 0.03);
-}
-
-.frame.is-active {
-  opacity: 1;
-  background-color: rgba(0, 0, 0, 0.05);
-}
-
-/* The blue marker on the chosen frame, sitting on the rule above it so the
-   sheet reads as one ruled surface with one mark on it. */
-.frame::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 2px;
-  background-color: var(--color-btn-download-bg);
-  opacity: 0;
-  transition: opacity 0.2s ease;
-}
-
-.frame.is-active::before {
-  opacity: 1;
-}
-
-.frame img {
-  width: 100%;
-  height: 2.8rem;
-  object-fit: contain;
-  object-position: center;
-}
-
-.frame-caption {
-  display: -webkit-box;
-  font-family: var(--font-family);
-  font-weight: 600;
-  font-size: 0.64rem;
-  letter-spacing: 0.05em;
-  line-height: 1.25;
-  text-align: center;
-  color: #5d656f;
-  overflow: hidden;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-}
-
-.frame.is-active .frame-caption {
-  font-weight: 800;
-  color: #101317;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .stage-shot img,
-  .stage-desc,
-  .frame,
-  .frame::before {
-    transition: none;
-  }
-}
-
-/* ---- Responsive ---------------------------------------------------------- */
-
-@media (max-width: 1180px) {
-  /* Two columns: the widget takes the width, the sheet stands beside the copy.
-     The steps go with them — at this width they cost more than they say. */
-  .gallery {
-    grid-template-columns: minmax(0, 1fr) minmax(15rem, 0.85fr);
-    grid-template-areas:
-      'stage sheet'
-      'copy sheet';
-  }
-
-  /* Two columns, and the box keeps its own scroll: let loose at this width
-     the sheet becomes fourteen rows of cards with the widget beside them
-     stopping after two, which is the long-list failure again. */
-  .sheet-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    max-height: clamp(24rem, 52vw, 34rem);
-  }
-
-  .sheet-grid > li:nth-child(3n + 2),
-  .sheet-grid > li:nth-child(3n) {
-    margin-top: 0;
-  }
-
-  .sheet-grid > li:nth-child(2n) {
-    margin-top: 1.2rem;
-  }
-
-  .sheet-grid > li:nth-child(3n) .frame {
-    border-right: 1px solid var(--ink-light);
-  }
-
-  .sheet-grid > li:nth-child(2n) .frame {
-    border-right: 0;
-  }
-}
-
-@media (max-width: 860px) {
-  .gallery {
-    grid-template-columns: minmax(0, 1fr);
-  }
-
-  /* The sheet's edge divides columns; stacked there are no columns. */
-  .sheet::before {
-    display: none;
-  }
-
-  .gallery {
-    grid-template-rows: none;
-    grid-template-areas:
-      'stage'
-      'copy'
-      'sheet';
-  }
-
-  /* One line again on a phone. A vertical sheet here is a list a screen and a
-     half long, and the section stops being a gallery. */
-  .sheet-grid {
-    display: flex;
-    flex-wrap: nowrap;
-    padding-bottom: 0;
-    overflow-x: auto;
-    overscroll-behavior-x: contain;
-    scroll-snap-type: x proximity;
-  }
-
-  .sheet-grid::-webkit-scrollbar {
-    height: 6px;
-    width: auto;
-  }
-
-  .sheet-grid > li {
-    flex: none;
-    width: 7rem;
-    margin-top: 0;
-  }
-
-  .sheet-grid > li:nth-child(2n) .frame,
-  .sheet-grid > li:nth-child(3n) .frame {
-    border-right: 1px solid var(--ink-light);
-  }
-
-  .frame {
-    border-bottom: 0;
-    scroll-snap-align: center;
-  }
-}
-
 @media (max-width: 640px) {
   /* The bar folds: a one-line title needs width this width does not have. */
   .gallery-head-bar {
@@ -1522,10 +1127,6 @@ button:focus-visible {
   .gallery-kicker {
     order: -1;
     margin: 0;
-  }
-
-  .stage {
-    --shot-h: 16rem;
   }
 }
 
@@ -1544,10 +1145,7 @@ button:focus-visible {
   border-bottom: 0;
 }
 
-.chapter-gallery .chapter-title,
-.chapter-gallery .stage-name,
-.chapter-gallery .stage-index > span:first-child,
-.chapter-gallery .frame.is-active .frame-caption {
+.chapter-gallery .chapter-title {
   color: #ffffff;
 }
 
@@ -1558,46 +1156,6 @@ button:focus-visible {
 
 .chapter-gallery .lede {
   color: #9aa2ad;
-}
-
-.chapter-gallery .stage-group {
-  color: var(--color-btn-download-bg);
-}
-
-.chapter-gallery .stage-index,
-.chapter-gallery .stage-desc,
-.chapter-gallery .frame-caption {
-  color: #8a939e;
-}
-
-.chapter-gallery .stage-shot {
-  box-shadow:
-    0 1.6rem 3.2rem -1.4rem rgba(0, 0, 0, 0.8),
-    inset 0 0 0 1px rgba(255, 255, 255, 0.08);
-}
-
-.chapter-gallery .sheet::after {
-  background: linear-gradient(180deg, transparent, #0d1014);
-}
-
-.chapter-gallery .sheet-grid {
-  scrollbar-color: rgba(255, 255, 255, 0.25) transparent;
-}
-
-.chapter-gallery .sheet-grid::-webkit-scrollbar-track {
-  background-color: rgba(255, 255, 255, 0.05);
-}
-
-.chapter-gallery .sheet-grid::-webkit-scrollbar-thumb {
-  background-color: rgba(255, 255, 255, 0.25);
-}
-
-.chapter-gallery .frame:hover {
-  background-color: rgba(255, 255, 255, 0.04);
-}
-
-.chapter-gallery .frame.is-active {
-  background-color: rgba(255, 255, 255, 0.07);
 }
 
 /* ==========================================================================
@@ -1749,13 +1307,16 @@ button:focus-visible {
   position: absolute;
   left: var(--x);
   top: var(--y);
-  width: 1.1rem;
-  height: 1.1rem;
+  /* The same marker as the screenshots' hotspots (hotspots.css) */
+  width: 1.6rem;
+  height: 1.6rem;
   padding: 0;
-  border: 2px solid #fff;
+  border: 2px solid #0b1015;
   border-radius: 50%;
-  background-color: var(--color-btn-download-bg);
-  box-shadow: 0 0.2rem 0.6rem rgba(0, 0, 0, 0.35);
+  background-color: #ffffff;
+  color: #0b1015;
+  font: 700 0.9rem/1 var(--font-mono);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.45);
   transform: translate(-50%, -50%);
   cursor: pointer;
 }
@@ -1765,8 +1326,20 @@ button:focus-visible {
   position: absolute;
   inset: -2px;
   border-radius: 50%;
-  border: 2px solid var(--color-btn-download-bg);
+  border: 2px solid #ffffff;
   animation: screens-pulse 1.8s ease-out infinite;
+}
+
+.screens-spot::after {
+  content: '+';
+}
+
+@media (max-width: 640px) {
+  .screens-spot {
+    width: 1.25rem;
+    height: 1.25rem;
+    font-size: 0.75rem;
+  }
 }
 
 @keyframes screens-pulse {
@@ -1850,7 +1423,7 @@ button:focus-visible {
   font-family: var(--font-mono);
   font-size: 0.8rem;
   font-weight: 700;
-  color: #2a5aa6;
+  color: var(--accent-ink);
 }
 
 .screens-net {
@@ -1908,7 +1481,8 @@ button:focus-visible {
 }
 
 .screens-net-sub-hub {
-  fill: var(--color-btn-download-bg);
+  /* The hub is a dark disc on the light page: the dark-ground accent */
+  fill: #e0e0e0;
 }
 
 .screens-net-flow {
@@ -2073,20 +1647,20 @@ button:focus-visible {
 }
 
 .pill-lit {
-  color: #0b1015;
+  color: var(--color-btn-download-text);
   background-color: var(--color-btn-download-bg);
   border-color: var(--color-btn-download-bg);
 }
 
 /* ---- Crops of the real window ------------------------------------------------
 
-   A crop is a window onto one box of a 1595x969 capture: the frame takes the
+   A crop is a window onto one box of a 1600x970 capture: the frame takes the
    box's aspect ratio, and the image is scaled and shifted so exactly that box
    fills it. Clicking one opens the whole capture. */
 
 .shot-crop {
-  --cap-w: 1595;
-  --cap-h: 969;
+  --cap-w: 1600;
+  --cap-h: 970;
 
   position: relative;
   display: block;
@@ -2129,8 +1703,9 @@ button:focus-visible {
   padding-bottom: 3rem;
 }
 
+/* The Devices card is a narrow column of the capture: kept near its own size */
 .shot-devices {
-  width: 88%;
+  width: 60%;
   margin-left: auto;
 }
 
@@ -2139,6 +1714,11 @@ button:focus-visible {
   left: 0;
   bottom: 0;
   width: 62%;
+}
+
+/* Analysis: the markers lie over the crop, on the box it fills */
+.analysis-media {
+  position: relative;
 }
 
 .feature-light .shot-crop {
@@ -2165,7 +1745,53 @@ button:focus-visible {
   padding: 0.3rem;
 }
 
+/* The car class sits above the sessions as plain text tabs, so the two rows
+   read as "which car" and then "which session", not as one strip. */
+.class-track {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 1.4rem;
+  margin-top: 2rem;
+}
+
+.class-step {
+  position: relative;
+  font-family: var(--font-family);
+  font-weight: 700;
+  font-size: 0.82rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0.35rem 0;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  color: #7b8390;
+  background-color: transparent;
+  cursor: pointer;
+  transition:
+    color 0.3s ease,
+    border-color 0.3s ease;
+}
+
+.class-step:hover {
+  color: #eef0f2;
+}
+
+.class-step.is-active {
+  color: #eef0f2;
+  border-bottom-color: var(--color-btn-download-bg);
+}
+
+.class-step:focus-visible {
+  outline: 2px solid var(--color-btn-download-bg);
+  outline-offset: 2px;
+}
+
+.class-track + .session-track {
+  margin-top: 1rem;
+}
+
 .session-step {
+  position: relative;
   font-family: var(--font-family);
   font-weight: 700;
   font-size: 0.72rem;
@@ -2187,8 +1813,40 @@ button:focus-visible {
 }
 
 .session-step.is-active {
-  color: #0b1015;
+  color: var(--color-btn-download-text);
   background-color: var(--color-btn-download-bg);
+}
+
+/* How long until the strip moves on: a line that runs along the active
+   step while the strip plays, and is gone while it waits for a reader. */
+.session-step::after {
+  content: '';
+  position: absolute;
+  left: 1rem;
+  right: 1rem;
+  bottom: 0.28rem;
+  height: 2px;
+  border-radius: 1px;
+  background-color: currentColor;
+  opacity: 0.45;
+  transform: scaleX(0);
+  transform-origin: left;
+}
+
+.session-step.is-timing::after {
+  animation: session-step-timer var(--step-ms, 3600ms) linear forwards;
+}
+
+@keyframes session-step-timer {
+  to {
+    transform: scaleX(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .session-step.is-timing::after {
+    animation: none;
+  }
 }
 
 .session-step:focus-visible {
@@ -2200,11 +1858,19 @@ button:focus-visible {
   position: relative;
   aspect-ratio: 43 / 18;
   cursor: zoom-in;
-  overflow: hidden;
   border-radius: 10px;
   border: 1px solid rgba(255, 255, 255, 0.12);
   background-color: #0b0e12;
   box-shadow: 0 1.8rem 3.6rem -1.2rem rgba(0, 0, 0, 0.6);
+}
+
+/* The clip lives on the pictures alone: a marker's note may run past the
+   frame instead of being cut by it. */
+.layout-frame {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  border-radius: inherit;
 }
 
 .layout-shot {
@@ -2225,14 +1891,18 @@ button:focus-visible {
   transform: none;
 }
 
+/* Under the screen, not on it: every corner of a shot holds a widget. */
+.layout-screen-foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem 1.5rem;
+  margin-top: 1rem;
+}
+
 .layout-screen-label {
-  position: absolute;
-  right: 1.5%;
-  bottom: 3%;
-  z-index: 2;
-  padding: 0.3rem 0.8rem;
-  border-radius: 999px;
-  background-color: rgba(11, 16, 21, 0.78);
+  margin: 0;
   font-family: var(--font-mono);
   font-size: 0.66rem;
   letter-spacing: 0.16em;
@@ -2248,7 +1918,6 @@ button:focus-visible {
 .layout-screen-proof {
   display: inline-flex;
   gap: 0.4rem;
-  margin-top: 1rem;
   padding: 0;
   border: 0;
   background: none;
@@ -2291,12 +1960,6 @@ button:focus-visible {
 
   .shot-devices {
     width: 100%;
-  }
-
-  /* The session strip above already names the layout, and at this width the
-     label covers a widget */
-  .layout-screen-label {
-    display: none;
   }
 }
 
@@ -2681,7 +2344,7 @@ button:focus-visible {
   width: 4.2rem;
   border: 1px solid var(--band-accent);
   border-radius: 8px;
-  background-color: rgba(79, 143, 227, 0.1);
+  background-color: rgba(var(--accent-rgb), 0.1);
 }
 
 .perf-node-logo {
@@ -2752,7 +2415,7 @@ button:focus-visible {
 }
 
 .perf-rate-option[aria-pressed='true'] {
-  color: #0b1015;
+  color: var(--color-btn-download-text);
   background-color: var(--band-accent);
 }
 
@@ -2784,7 +2447,7 @@ button:focus-visible {
 }
 
 .perf-rate-dot.is-change {
-  background-color: rgba(79, 143, 227, 0.4);
+  background-color: rgba(var(--accent-rgb), 0.4);
 }
 
 .perf-rate.is-playing .perf-rate-dot.is-change {
@@ -2796,11 +2459,11 @@ button:focus-visible {
   0%,
   40%,
   100% {
-    background-color: rgba(79, 143, 227, 0.35);
+    background-color: rgba(var(--accent-rgb), 0.35);
   }
 
   14% {
-    background-color: rgba(79, 143, 227, 0.95);
+    background-color: rgba(var(--accent-rgb), 0.95);
   }
 }
 
@@ -3001,7 +2664,7 @@ button:focus-visible {
 /* ==========================================================================
    Tapes - two crossed bands between the gallery and section 03
 
-   The blue tape is the loud one: what the app is, in the hero's own face.
+   The black tape is the loud one: what the app is, in the hero's own face.
    The dark tape crosses behind it the other way and carries the widgets as
    pill badges. Both lean off the page's axis by a few degrees - enough to
    read as tape laid across the page, not so much that the words are hard
@@ -3037,7 +2700,7 @@ button:focus-visible {
 .tape-front {
   z-index: 2;
   background-color: var(--color-btn-download-bg);
-  color: #0b1015;
+  color: var(--color-btn-download-text);
   transform: translateY(-50%) rotate(-3deg);
   box-shadow: 0 0.9rem 2rem -1rem rgba(11, 16, 21, 0.45);
 }
@@ -3091,7 +2754,7 @@ button:focus-visible {
   width: 0.55em;
   height: 0.55em;
   margin: 0 0.9em;
-  background-color: #0b1015;
+  background-color: currentColor;
   clip-path: polygon(0 0, 55% 0, 100% 50%, 55% 100%, 0 100%, 45% 50%);
 }
 
@@ -3150,7 +2813,7 @@ button:focus-visible {
 }
 
 /* ==========================================================================
-   Interact mode - one feature on blue
+   Interact mode - one feature on a graphite band
 
    A compact band: F8 and F9 on the left, pressed in turn, and what each one
    does on the right. The splash is a ring and a handful of drops thrown off
@@ -3160,8 +2823,8 @@ button:focus-visible {
 .interact-band {
   position: relative;
   padding: clamp(2.5rem, 4.5vw, 3.75rem) 0;
-  background-color: var(--livery-blue);
-  color: #0b1015;
+  background-color: var(--color-accent-band);
+  color: #eef0f2;
   overflow: hidden;
 }
 
@@ -3271,7 +2934,7 @@ button:focus-visible {
   top: -1.3rem;
   width: 17rem;
   height: 2.6rem;
-  border: 2px solid #0b1015;
+  border: 2px solid #e0e0e0;
   border-radius: 50%;
   opacity: 0;
 }
@@ -3289,7 +2952,7 @@ button:focus-visible {
 }
 
 .splash-drop-ink {
-  background-color: #0b1015;
+  background-color: #6b737d;
 }
 
 .keycap-slot.is-pressed .splash-ring {
@@ -3343,6 +3006,7 @@ button:focus-visible {
   padding: 0.5rem 1rem;
   border-radius: 999px;
   background-color: #0d1014;
+  border: 1px solid rgba(255, 255, 255, 0.14);
   color: #eef0f2;
   font-weight: 700;
   font-size: 0.72rem;
@@ -3370,7 +3034,7 @@ button:focus-visible {
   font-size: 0.8rem;
   letter-spacing: 0.28em;
   text-transform: uppercase;
-  color: rgba(11, 16, 21, 0.9);
+  color: rgba(238, 240, 242, 0.85);
   margin-bottom: 0.9rem;
 }
 
@@ -3425,13 +3089,13 @@ button:focus-visible {
   font-weight: 500;
   font-size: 1rem;
   line-height: 1.55;
-  color: rgba(11, 16, 21, 0.9);
+  color: rgba(238, 240, 242, 0.85);
 }
 
 .interact-note {
   margin-top: 1rem;
   font-size: 0.8rem;
-  color: rgba(11, 16, 21, 0.9);
+  color: rgba(238, 240, 242, 0.85);
 }
 
 @media (max-width: 720px) {
@@ -3603,6 +3267,9 @@ body.is-viewer-open {
    ========================================================================== */
 
 .page-edit {
+  /* The overlay's own edit colour ($race-green), not the site accent */
+  --edit-mark: #10b981;
+
   position: fixed;
   inset: 0;
   z-index: 1050;
@@ -3641,9 +3308,8 @@ body.is-viewer-open {
   top: 0;
   left: 0;
   box-sizing: border-box;
-  border: 1px solid rgba(79, 143, 227, 0.75);
-  /* A dark rim around the blue marks, so they still read on the page's own
-     blue band */
+  border: 1px dashed var(--edit-mark);
+  /* A dark rim around the marks, so they still read on a light block */
   filter: drop-shadow(0 0 1px rgba(11, 16, 21, 0.85));
   pointer-events: auto;
   cursor: grab;
@@ -3651,14 +3317,14 @@ body.is-viewer-open {
 
 .page-edit-frame.is-grabbing {
   cursor: grabbing;
-  border-color: var(--color-btn-download-bg);
+  border-style: solid;
 }
 
 .page-edit-corner {
   position: absolute;
   width: 16px;
   height: 16px;
-  border: 0 solid var(--color-btn-download-bg);
+  border: 0 solid var(--edit-mark);
 }
 
 .page-edit-corner-tl {
@@ -3702,7 +3368,7 @@ body.is-viewer-open {
   text-transform: uppercase;
   white-space: nowrap;
   color: #0b1015;
-  background-color: var(--color-btn-download-bg);
+  background-color: var(--edit-mark);
 }
 
 .page-edit-bar {
@@ -3739,7 +3405,7 @@ body.is-viewer-open {
   width: 0.5rem;
   height: 0.5rem;
   border-radius: 50%;
-  background-color: #3b82f6;
+  background-color: var(--edit-mark);
 }
 
 .page-edit-time {
@@ -4001,8 +3667,8 @@ body.is-viewer-open {
 .download-band {
   position: relative;
   padding: var(--section-pad-y) 0;
-  background-color: var(--livery-blue);
-  color: #0b1015;
+  background-color: var(--color-accent-band);
+  color: #eef0f2;
   overflow: hidden;
 }
 
@@ -4019,7 +3685,7 @@ body.is-viewer-open {
   font-size: 0.8rem;
   letter-spacing: 0.28em;
   text-transform: uppercase;
-  color: rgba(11, 16, 21, 0.9);
+  color: rgba(238, 240, 242, 0.85);
 }
 
 .download-title {
@@ -4038,7 +3704,7 @@ body.is-viewer-open {
   font-weight: 500;
   font-size: 1.05rem;
   line-height: 1.6;
-  color: rgba(11, 16, 21, 0.9);
+  color: rgba(238, 240, 242, 0.85);
 }
 
 .download-action {
@@ -4054,21 +3720,21 @@ body.is-viewer-open {
   gap: 0.75rem;
   padding: 1.1rem 1.75rem;
   border-radius: 10px;
-  background-color: #0d1014;
-  color: #ffffff;
+  background-color: #e0e0e0;
+  color: #0b1015;
   font-weight: 800;
   font-size: 1rem;
   letter-spacing: 0.04em;
   text-transform: uppercase;
   text-decoration: none;
-  box-shadow: 0 0.9rem 2rem -1rem rgba(11, 16, 21, 0.6);
+  box-shadow: 0 0.9rem 2rem -1rem rgba(0, 0, 0, 0.6);
   transition:
     transform var(--transition-fast),
     background-color var(--transition-fast);
 }
 
 .download-button:hover {
-  background-color: #1c2129;
+  background-color: #ffffff;
   transform: translateY(-2px);
 }
 
@@ -4078,7 +3744,7 @@ body.is-viewer-open {
   gap: 0.5rem;
   font-weight: 600;
   font-size: 0.9rem;
-  color: rgba(11, 16, 21, 0.9);
+  color: rgba(238, 240, 242, 0.85);
 }
 
 .download-meta[hidden] {
@@ -4093,7 +3759,7 @@ body.is-viewer-open {
 .download-links a {
   font-weight: 700;
   font-size: 0.9rem;
-  color: #0b1015;
+  color: #eef0f2;
   text-decoration: underline;
   text-underline-offset: 0.25em;
 }
@@ -4112,7 +3778,7 @@ body.is-viewer-open {
    controls, a chequered flag where the download is.
    ========================================================================== */
 
-/* A kerb in the livery's blue and white along the foot of the claims strip, where the hero meets the dark
+/* A black and white kerb along the foot of the claims strip, where the hero meets the dark
    gallery and the two would otherwise run together. */
 .hero-claims::after {
   content: '';
@@ -4137,7 +3803,8 @@ body.is-viewer-open {
   bottom: clamp(-2rem, -2vw, -1rem);
   width: clamp(16rem, 30vw, 28rem);
   aspect-ratio: 420 / 180;
-  background: url('../../assets/chevrons.svg') no-repeat center / contain;
+  background-color: var(--livery-blue);
+  mask: url('../../assets/chevrons.svg') no-repeat center / contain;
   opacity: 0.28;
   pointer-events: none;
 }

@@ -1,0 +1,502 @@
+/* ==========================================================================
+   Widget gallery (section 02)
+
+   The section that sells the overlay, so it takes the room: a stage nearly a
+   screen tall with the widget large on a cockpit, its name, what it does and
+   its setups on a panel beside it, and under the stage the groups and a strip
+   of every widget as its own picture.
+
+   Scale: every widget is drawn at one factor of its size on the overlay
+   (TARGET_SCALE in widget-gallery.js), so a small widget stays smaller than a
+   large one; only a widget that would not fit is brought down to fit.
+   ========================================================================== */
+
+.gallery-lede {
+  max-width: 46ch;
+  margin: 0 0 clamp(1.5rem, 3vw, 2.5rem);
+}
+
+/* The cockpit runs edge to edge under the whole gallery - stage, groups and
+   strip - darkened on the left where the words are and at the foot where
+   the strip is, and left clear where the widget stands. The cockpit is
+   blurred on a layer of its own (::after) so the widget stays the one sharp
+   thing; the layer overhangs the box by twice the blur so its soft edge
+   falls outside, where the box clips it. */
+.wg {
+  --wg-panel: min(27rem, 34%);
+  --wg-blur: 10px;
+
+  position: relative;
+  isolation: isolate;
+  overflow: clip;
+  padding: clamp(1rem, 2.5vw, 2rem) 0 clamp(1.5rem, 3vw, 2.5rem);
+  background-color: #0b0e12;
+}
+
+.wg::after {
+  content: '';
+  position: absolute;
+  inset: calc(var(--wg-blur, 0px) * -2);
+  z-index: -2;
+  background: url('../../assets/img/why/cockpit-bg-1920.webp') center 38% /
+    cover no-repeat;
+  filter: blur(var(--wg-blur, 0px));
+}
+
+@media (min-width: 1700px) {
+  .wg::after {
+    background-image: url('../../assets/img/why/cockpit-bg-2560.webp');
+  }
+}
+
+.wg::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background:
+    linear-gradient(
+      90deg,
+      rgba(9, 11, 14, 0.93) 0%,
+      rgba(9, 11, 14, 0.8) 24%,
+      rgba(9, 11, 14, 0.25) 50%,
+      rgba(9, 11, 14, 0.35) 100%
+    ),
+    linear-gradient(
+      180deg,
+      #0d1014 0%,
+      rgba(13, 16, 20, 0) 12%,
+      rgba(13, 16, 20, 0) 58%,
+      rgba(13, 16, 20, 0.9) 82%,
+      #0d1014 100%
+    );
+}
+
+/* ---- Stage ------------------------------------------------------------------ */
+
+.wg-stage {
+  position: relative;
+  display: grid;
+  grid-template-columns: var(--wg-panel) minmax(0, 1fr);
+  max-width: var(--container-width);
+  margin: 0 auto;
+  padding: 0 var(--container-padding);
+}
+
+.wg-scene,
+.wg-panel {
+  grid-row: 1;
+}
+
+/* The cockpit the widgets are made for, darkened under the panel so the
+   words read, and left clear on the right where the widget stands. */
+.wg-scene {
+  grid-column: 1 / -1;
+  position: relative;
+  display: grid;
+  place-items: center;
+  height: clamp(30rem, 72vh, 48rem);
+  padding: clamp(1.5rem, 3vw, 3rem) 0 clamp(1.5rem, 3vw, 3rem)
+    calc(var(--wg-panel) + clamp(1.5rem, 3vw, 3rem));
+}
+
+.wg-figure {
+  position: relative;
+  z-index: 1;
+  margin: 0;
+}
+
+.wg-shot {
+  display: block;
+  width: calc(var(--shot-w, 300) * var(--wg-scale, 1) * 1px);
+  max-width: none;
+  height: auto;
+  filter: drop-shadow(0 1rem 2rem rgba(0, 0, 0, 0.55));
+  transition:
+    opacity 0.25s ease,
+    transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.wg.is-swapping .wg-shot {
+  opacity: 0;
+  transform: translateX(2rem) scale(0.97);
+}
+
+/* ---- Panel ------------------------------------------------------------------ */
+
+.wg-panel {
+  grid-column: 1;
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  padding: clamp(1.75rem, 3.5vw, 3.25rem) clamp(1.5rem, 3vw, 2.5rem)
+    clamp(1.75rem, 3.5vw, 3.25rem) 0;
+  color: #ffffff;
+}
+
+.wg-group-name {
+  margin: 0 0 0.9rem;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  color: var(--livery-blue);
+}
+
+.wg-name {
+  margin: 0;
+  font-family: var(--font-hero-heading);
+  font-style: italic;
+  font-weight: 800;
+  font-size: clamp(2.6rem, 4.6vw, 4.6rem);
+  line-height: 0.92;
+  text-transform: uppercase;
+  color: #ffffff;
+  transition: opacity 0.2s ease;
+}
+
+.wg-index {
+  display: flex;
+  align-items: baseline;
+  gap: 0.4rem;
+  margin: 0.9rem 0 0;
+  font-family: var(--font-mono);
+}
+
+.wg-index-now {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--livery-blue);
+}
+
+.wg-index-total {
+  font-size: 0.8rem;
+  color: #6f7883;
+}
+
+.wg-desc {
+  max-width: 36ch;
+  margin: 1.1rem 0 0;
+  font-size: 1.02rem;
+  line-height: 1.6;
+  color: #c3c9d1;
+  transition: opacity 0.2s ease;
+}
+
+.wg.is-swapping .wg-name,
+.wg.is-swapping .wg-desc {
+  opacity: 0.35;
+}
+
+.wg-setups-slot {
+  margin-top: 1.75rem;
+}
+
+.wg-setups {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+.wg-setups[hidden] {
+  display: none;
+}
+
+.wg-setups-label {
+  flex-basis: 100%;
+  margin: 0 0 0.25rem;
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: #8a939e;
+}
+
+.wg-setup {
+  padding: 0.55rem 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 999px;
+  background-color: rgba(255, 255, 255, 0.04);
+  font-family: var(--font-family);
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #dfe3e8;
+  cursor: pointer;
+  transition:
+    background-color var(--transition-fast),
+    border-color var(--transition-fast),
+    color var(--transition-fast);
+}
+
+.wg-setup:hover {
+  border-color: rgba(255, 255, 255, 0.5);
+  color: #ffffff;
+}
+
+.wg-setup.is-active {
+  border-color: var(--livery-blue);
+  background-color: var(--livery-blue);
+  color: var(--color-btn-download-text);
+}
+
+/* One setup only: a label, not a control */
+.wg-setups:not(:has(.wg-setup + .wg-setup)) .wg-setup {
+  pointer-events: none;
+}
+
+.wg-nav {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: auto;
+  padding-top: 1.75rem;
+}
+
+.wg-step {
+  display: grid;
+  place-items: center;
+  width: 3rem;
+  height: 3rem;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  background-color: rgba(255, 255, 255, 0.04);
+  color: #ffffff;
+  cursor: pointer;
+  transition:
+    background-color var(--transition-fast),
+    border-color var(--transition-fast);
+}
+
+.wg-step:hover {
+  border-color: var(--livery-blue);
+  background-color: rgba(var(--accent-rgb), 0.18);
+}
+
+.wg-step svg {
+  width: 1.25rem;
+  height: 1.25rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* ---- Groups and the strip ------------------------------------------------- */
+
+.wg-browser {
+  margin-top: clamp(1.5rem, 3vw, 2.25rem);
+}
+
+.wg-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.wg-tab {
+  position: relative;
+  padding: 0.85rem 1rem;
+  border: 0;
+  background: none;
+  font-family: var(--font-family);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #8a939e;
+  cursor: pointer;
+  transition: color var(--transition-fast);
+}
+
+.wg-tab:hover,
+.wg-tab.is-active {
+  color: #ffffff;
+}
+
+.wg-tab::after {
+  content: '';
+  position: absolute;
+  left: 1rem;
+  right: 1rem;
+  bottom: -1px;
+  height: 2px;
+  background-color: var(--livery-blue);
+  transform: scaleX(0);
+  transition: transform var(--transition-normal);
+}
+
+.wg-tab.is-active::after {
+  transform: none;
+}
+
+.wg-strip {
+  display: flex;
+  gap: 0.75rem;
+  margin: 1.25rem 0 0;
+  padding: 0 0 0.75rem;
+  list-style: none;
+  overflow-x: auto;
+  scroll-snap-type: x proximity;
+  scrollbar-color: rgba(255, 255, 255, 0.25) transparent;
+}
+
+.wg-strip > li {
+  flex: none;
+  width: 11.5rem;
+  scroll-snap-align: start;
+}
+
+.wg-strip > li[hidden] {
+  display: none;
+}
+
+.wg-item {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  width: 100%;
+  padding: 0.6rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  background-color: rgba(13, 16, 20, 0.72);
+  backdrop-filter: blur(6px);
+  font-family: var(--font-family);
+  text-align: left;
+  color: #9aa2ad;
+  cursor: pointer;
+  transition:
+    background-color var(--transition-fast),
+    border-color var(--transition-fast),
+    color var(--transition-fast);
+}
+
+.wg-item:hover {
+  border-color: rgba(255, 255, 255, 0.22);
+  color: #ffffff;
+}
+
+.wg-item.is-active {
+  border-color: var(--livery-blue);
+  background-color: rgba(var(--accent-rgb), 0.1);
+  color: #ffffff;
+}
+
+.wg-item-thumb {
+  display: grid;
+  place-items: center;
+  height: 5.5rem;
+  border-radius: 6px;
+  background-color: rgba(0, 0, 0, 0.35);
+  overflow: hidden;
+}
+
+/* Bounded in rem: a percentage of the grid cell does not hold, and a tall
+   capture (Pit Line) would run out of the box */
+.wg-item-thumb img {
+  width: auto;
+  height: auto;
+  max-width: 88%;
+  max-height: 4.4rem;
+}
+
+.wg-item-name {
+  padding: 0 0.2rem;
+  font-size: 0.86rem;
+  font-weight: 600;
+}
+
+.wg-item-count {
+  position: absolute;
+  top: 0.95rem;
+  right: 0.95rem;
+  padding: 0.1rem 0.4rem;
+  border-radius: 4px;
+  background-color: rgba(9, 11, 14, 0.85);
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+  color: #c3c9d1;
+}
+
+.wg-tab:focus-visible,
+.wg-item:focus-visible,
+.wg-setup:focus-visible,
+.wg-step:focus-visible {
+  outline: 2px solid var(--livery-blue);
+  outline-offset: 2px;
+}
+
+/* ---- Narrow: the panel goes under the scene --------------------------------- */
+
+@media (max-width: 900px) {
+  .wg-stage {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .wg-scene {
+    height: clamp(18rem, 62vw, 26rem);
+    padding: 1.25rem 0;
+  }
+
+  .wg::before {
+    background: linear-gradient(
+      180deg,
+      #0d1014 0%,
+      rgba(13, 16, 20, 0.2) 8%,
+      rgba(13, 16, 20, 0.35) 30%,
+      rgba(13, 16, 20, 0.92) 48%,
+      #0d1014 100%
+    );
+  }
+
+  .wg-panel {
+    grid-row: 2;
+    padding: 1.5rem 0 0;
+  }
+
+  .wg-nav {
+    position: absolute;
+    top: 1.5rem;
+    right: 0;
+    margin: 0;
+    padding: 0;
+  }
+
+  .wg-name {
+    padding-right: 7rem;
+  }
+
+  .wg-tabs {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .wg-tab {
+    flex: none;
+  }
+
+  .wg-strip > li {
+    width: 9rem;
+  }
+
+  .wg-item-thumb {
+    height: 4.5rem;
+  }
+
+  .wg-item-thumb img {
+    max-height: 3.5rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wg-shot,
+  .wg-name,
+  .wg-desc,
+  .wg-tab::after {
+    transition: none;
+  }
+}

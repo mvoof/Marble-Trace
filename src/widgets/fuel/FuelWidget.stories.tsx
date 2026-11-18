@@ -102,7 +102,7 @@ const meta: Meta<StoryArgs> = {
   title: 'Widgets/FuelWidget',
   ...defineWidgetStories<StoryArgs>({
     widget: FuelWidget,
-    size: { width: 306, height: 350 },
+    size: { width: 306 },
     seedSnapshot: true,
     seed: (store, args) => {
       // The recorded snapshot was captured in the garage with the tank empty,
@@ -177,6 +177,8 @@ export const CustomBarWidth: Story = {
 
 export const PitWindowOpen: Story = {
   parameters: previewScenario('fuel-pit-window'),
+  // The tank the scenario's 2.4 laps left stand for at 2.64 L a lap
+  args: { fuelLevel: 6.3 },
 };
 
 export const LowFuel: Story = {
@@ -209,6 +211,11 @@ export const NoData: Story = {
     shortage: null,
     longHistory: false,
   },
+};
+
+/** Mid-stint with the tank matching its laps left: the widget's picture. */
+export const Showcase: Story = {
+  args: { fuelLevel: 24.3, showChart: true, chartType: 'bar' },
 };
 
 export const FullPreview: Story = {

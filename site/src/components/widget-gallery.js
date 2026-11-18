@@ -1,16 +1,22 @@
 /**
  * Marble Trace Site - Widget gallery (section 02)
  *
- * A stage and a sheet of frames. The sheet is a tablist and the stage its
- * panel:
- * picking a frame swaps the capture above rather than navigating anywhere. Everything
- * the stage needs is on the frame that was pressed, or in the catalogue below
- * the sheet it points at (the descriptions live there once, as text), so the
- * markup stays the source of truth and this file never carries a copy.
+ * A stage with one widget in one setup, a panel saying what it is, and a
+ * strip of every widget under it. Everything the stage shows is in the
+ * markup: a widget's name and group on its button and tab, its description
+ * in the catalogue below, and every setup's picture as a hidden <img> the
+ * build has already turned into WebP copies with the source's size. This
+ * file only moves them onto the stage.
  *
- * The next capture is decoded off-screen before it is shown. Swapping the src
- * straight away paints the stage empty for a frame, and a gallery that blinks
- * on every click reads as broken however fast it is.
+ * Scale. The captures are taken at CAPTURE_SCALE, so a picture's width
+ * attribute divided by it is the widget's width on the overlay. Every widget
+ * is drawn at TARGET_SCALE of that, so the sizes keep their proportions to
+ * each other; one whose largest setup would not fit the scene is brought
+ * down until it does, and keeps that one scale across its setups.
+ *
+ * While the stage is in view and the reader has not touched the gallery, it
+ * walks through the setups of the widget on it, then on to the next widget.
+ * The first touch anywhere in the gallery ends that for good.
  */
 
 (() => {
@@ -19,260 +25,368 @@
   const ACTIVE_CLASS = 'is-active';
   const SWAPPING_CLASS = 'is-swapping';
 
-  /* Long enough for the outgoing capture to be gone before the new one takes
-     its place, short enough that a run across the sheet does not feel gated. It
-     is the stylesheet's own transition, named here because the swap waits for
-     it. */
-  const FADE_MS = 200;
+  /* The device scale the widget captures are taken at (capture:widgets) */
+  const CAPTURE_SCALE = 3;
 
-  /* How long each widget holds the stage while the gallery plays by itself.
-     The run stops for good once the reader picks a frame: from then on the
-     stage is theirs. */
-  const AUTOPLAY_MS = 3500;
+  /* How large every widget is drawn against its size on the overlay. The
+     captures hold three times that, so the pictures stay sharp. */
+  const TARGET_SCALE = 1.6;
 
-  const padOrdinal = (value) => (value < 10 ? '0' + value : String(value));
+  /* The stylesheet's fade; the swap waits for the old picture to be gone */
+  const FADE_MS = 250;
+
+  const AUTOPLAY_MS = 3200;
+
+  const setPressed = (button, pressed) => {
+    button.classList.toggle(ACTIVE_CLASS, pressed);
+    button.setAttribute('aria-pressed', pressed ? 'true' : 'false');
+  };
+
+  const overlayWidthOf = (img) =>
+    Number(img.getAttribute('width')) / CAPTURE_SCALE;
+
+  const overlayHeightOf = (img) =>
+    Number(img.getAttribute('height')) / CAPTURE_SCALE;
+
+  const padOrdinal = (value) => (value < 10 ? `0${value}` : String(value));
 
   const initWidgetGallery = () => {
-    const gallery = document.querySelector('[data-widget-gallery]');
+    const gallery = document.querySelector('[data-widget-gallery] .wg');
 
     if (!gallery) {
       return;
     }
 
-    const stage = gallery.querySelector('.stage');
-    const shot = gallery.querySelector('#gw-shot');
-    const name = gallery.querySelector('#gw-name');
-    const desc = gallery.querySelector('#gw-desc');
-    const group = gallery.querySelector('#gw-group');
-    const index = gallery.querySelector('#gw-index');
-    const total = gallery.querySelector('#gw-total');
-    const frames = Array.from(gallery.querySelectorAll('.frame'));
+    const scene = gallery.querySelector('.wg-scene');
+    const shot = gallery.querySelector('.wg-shot');
+    const groupName = gallery.querySelector('.wg-group-name');
+    const widgetName = gallery.querySelector('.wg-name');
+    const indexNow = gallery.querySelector('.wg-index-now');
+    const description = gallery.querySelector('.wg-desc');
+    const strip = gallery.querySelector('.wg-strip');
+    const tabs = Array.from(gallery.querySelectorAll('.wg-tab'));
+    const items = Array.from(gallery.querySelectorAll('.wg-item'));
+    const setupRows = Array.from(gallery.querySelectorAll('.wg-setups'));
 
-    if (!stage || !shot || !frames.length) {
+    if (!scene || !shot || !strip || !items.length) {
       return;
     }
 
-    let activeIndex = 0;
+    let activeItem =
+      items.find((item) => item.classList.contains(ACTIVE_CLASS)) ?? items[0];
+    let activeRow = null;
+    let activeSetup = null;
     let fadeTimer = 0;
+    let autoplayTimer = 0;
+    let autoplayOn = true;
+    let inView = false;
 
-    const isStageInView = () => {
-      const box = stage.getBoundingClientRect();
+    const groupOf = (item) => item.parentElement.getAttribute('data-wg-group');
 
-      return box.bottom > 0 && box.top < window.innerHeight;
+    /* ---- Scale ---------------------------------------------------------- */
+
+    const roomOfScene = () => {
+      const style = getComputedStyle(scene);
+
+      return {
+        width:
+          scene.clientWidth -
+          parseFloat(style.paddingLeft) -
+          parseFloat(style.paddingRight),
+        height:
+          scene.clientHeight -
+          parseFloat(style.paddingTop) -
+          parseFloat(style.paddingBottom),
+      };
     };
 
-    const show = (next, moveFocus) => {
-      const frame = frames[next];
+    /* The browser picks a copy by the width the picture is drawn at */
+    const updateSizes = () => {
+      const scale =
+        parseFloat(gallery.style.getPropertyValue('--wg-scale')) || 1;
+      const width = parseFloat(shot.style.getPropertyValue('--shot-w')) || 0;
 
-      if (!frame) {
+      if (width) {
+        shot.sizes = `${Math.ceil(width * scale)}px`;
+      }
+    };
+
+    /* One scale per widget: the largest of its setups decides it */
+    const updateScale = () => {
+      if (!activeRow) {
         return;
       }
 
-      if (moveFocus) {
-        frame.focus();
-      }
+      const largest = Array.from(activeRow.querySelectorAll('img')).reduce(
+        (size, img) => ({
+          width: Math.max(size.width, overlayWidthOf(img) || 0),
+          height: Math.max(size.height, overlayHeightOf(img) || 0),
+        }),
+        { width: 0, height: 0 }
+      );
+      const room = roomOfScene();
 
-      /* Only a keyboard run scrolls anything. A click already happened where
-         the reader was looking, and scrolling after it moved the page under
-         the cursor by up to 170px on a phone — which reads as the layout
-         jumping, not as the gallery answering. */
-      if (moveFocus) {
-        frame.scrollIntoView({ block: 'nearest', inline: 'center' });
-      }
-
-      if (next === activeIndex) {
+      if (!largest.width || !largest.height || room.width <= 0) {
         return;
       }
 
-      const previous = frames[activeIndex];
+      const scale = Math.min(
+        TARGET_SCALE,
+        room.width / largest.width,
+        room.height / largest.height
+      );
 
-      previous.classList.remove(ACTIVE_CLASS);
-      previous.setAttribute('aria-selected', 'false');
-      previous.setAttribute('tabindex', '-1');
+      gallery.style.setProperty('--wg-scale', scale.toFixed(4));
+      updateSizes();
+    };
 
-      frame.classList.add(ACTIVE_CLASS);
-      frame.setAttribute('aria-selected', 'true');
-      frame.setAttribute('tabindex', '0');
-      stage.setAttribute('aria-labelledby', frame.id);
+    /* ---- Showing -------------------------------------------------------- */
 
-      activeIndex = next;
+    const putOnStage = (img) => {
+      const width = overlayWidthOf(img);
 
-      /* On a narrow screen the stage is above the sheet and off screen while
-         the sheet is being read, so a tap would swap a widget nobody can see.
-         There the page is brought back to the stage, smoothly and only when it
-         is actually out of view — on a wide screen both halves are visible at
-         once and nothing moves at all. */
-      if (!moveFocus && !isStageInView()) {
-        stage.scrollIntoView({ block: 'center', behavior: 'smooth' });
+      if (width) {
+        shot.style.setProperty('--shot-w', String(width));
+      } else {
+        // A picture the build has no copies for carries no size: it is
+        // measured once it has loaded instead
+        shot.addEventListener(
+          'load',
+          () => {
+            shot.style.setProperty(
+              '--shot-w',
+              String(shot.naturalWidth / CAPTURE_SCALE)
+            );
+            updateSizes();
+          },
+          { once: true }
+        );
       }
 
-      // The thumbnail is the same picture, and its src and srcset are the ones
-      // the build rewrote to the hashed WebP copies; a data-* path is never
-      // rewritten. The whole srcset moves to the stage, so the stage picks
-      // the copy for its own size rather than the thumbnail's.
-      const thumbnail = frame.querySelector('img');
-      const nextSrc = thumbnail
-        ? thumbnail.src
-        : frame.getAttribute('data-shot');
-      const nextSrcset = thumbnail
-        ? thumbnail.getAttribute('srcset') || ''
-        : '';
-      const loader = new Image();
+      updateScale();
+      shot.srcset = img.getAttribute('srcset') || '';
+      shot.src = img.getAttribute('src') || '';
+      shot.alt = activeItem.getAttribute('data-alt') || '';
+    };
 
-      stage.classList.add(SWAPPING_CLASS);
+    const showSetup = (setup, animate = true) => {
+      const img = setup.querySelector('img');
+
+      if (!img || setup === activeSetup) {
+        return;
+      }
+
+      activeSetup = setup;
+      activeRow
+        .querySelectorAll('.wg-setup')
+        .forEach((button) => setPressed(button, button === setup));
+
       window.clearTimeout(fadeTimer);
 
-      const settle = () => {
-        // A slower picture must not overwrite a faster click that came after it.
-        if (frames[activeIndex] !== frame) {
+      if (!animate) {
+        putOnStage(img);
+
+        return;
+      }
+
+      // Decoded off-screen first: swapping the src straight away paints the
+      // stage empty for a frame, and a gallery that blinks reads as broken.
+      const loader = new Image();
+
+      loader.sizes = shot.sizes;
+      loader.srcset = img.getAttribute('srcset') || '';
+      loader.src = img.getAttribute('src') || '';
+
+      gallery.classList.add(SWAPPING_CLASS);
+
+      const ready = loader.decode
+        ? loader.decode().catch(() => {})
+        : Promise.resolve();
+      const faded = new Promise((resolve) => {
+        fadeTimer = window.setTimeout(resolve, FADE_MS);
+      });
+
+      void Promise.all([ready, faded]).then(() => {
+        if (activeSetup !== setup) {
           return;
         }
 
-        shot.srcset = nextSrcset;
-        shot.src = nextSrc;
-        shot.alt = frame.getAttribute('data-alt') || '';
-        name.textContent = frame.getAttribute('data-name') || '';
-        const descSource = document.getElementById(
-          frame.getAttribute('data-desc-id') || ''
-        );
-
-        desc.textContent = descSource ? descSource.textContent : '';
-        group.textContent = frame.getAttribute('data-group') || '';
-        index.textContent = padOrdinal(activeIndex + 1);
-        stage.classList.remove(SWAPPING_CLASS);
-      };
-
-      /* The fade out and the decode run at the same time, and the swap waits
-         for whichever finishes last: waiting only on the timer shows a picture
-         that has not arrived, waiting only on the decode swaps a cached one
-         mid-fade. */
-      let faded = false;
-      let loaded = false;
-
-      const ready = () => {
-        if (faded && loaded) {
-          settle();
-        }
-      };
-
-      loader.onload = () => {
-        loaded = true;
-        ready();
-      };
-
-      loader.onerror = () => {
-        loaded = true;
-        ready();
-      };
-
-      loader.sizes = shot.sizes;
-      loader.srcset = nextSrcset;
-      loader.src = nextSrc;
-
-      if (loader.complete) {
-        loaded = true;
-      }
-
-      fadeTimer = window.setTimeout(() => {
-        faded = true;
-        ready();
-      }, FADE_MS);
+        putOnStage(img);
+        gallery.classList.remove(SWAPPING_CLASS);
+      });
     };
 
-    frames.forEach((frame, position) => {
-      frame.addEventListener('click', () => {
-        show(position, false);
-      });
+    /* The strip scrolls itself, never the page */
+    const bringIntoStrip = (item) => {
+      const cell = item.parentElement;
+      const left = cell.offsetLeft - strip.offsetLeft;
+      const right = left + cell.offsetWidth;
 
-      frame.addEventListener('keydown', (event) => {
-        const key = event.key;
-        const last = frames.length - 1;
-
-        if (key === 'ArrowRight' || key === 'ArrowDown') {
-          event.preventDefault();
-          show(position === last ? 0 : position + 1, true);
-        } else if (key === 'ArrowLeft' || key === 'ArrowUp') {
-          event.preventDefault();
-          show(position === 0 ? last : position - 1, true);
-        } else if (key === 'Home') {
-          event.preventDefault();
-          show(0, true);
-        } else if (key === 'End') {
-          event.preventDefault();
-          show(last, true);
-        }
-      });
-    });
-
-    stage.setAttribute('aria-labelledby', frames[0].id);
-    total.textContent = frames.length;
-
-    const sheetGrid = gallery.querySelector('.sheet-grid');
-    const reducedMotion = window.matchMedia(
-      '(prefers-reduced-motion: reduce)'
-    ).matches;
-    let userTookOver = false;
-    let hovering = false;
-    let inView = false;
-
-    const stopAutoplay = () => {
-      userTookOver = true;
-    };
-
-    /* Scrolls only the sheet's own box, never the page: a gallery playing by
-       itself must not move what the reader is looking at. */
-    const revealInSheet = (frame) => {
-      if (!sheetGrid) {
-        return;
-      }
-
-      const item = frame.parentElement;
-      const top = item.offsetTop - sheetGrid.offsetTop;
-      const bottom = top + item.offsetHeight;
-
-      if (
-        top < sheetGrid.scrollTop ||
-        bottom > sheetGrid.scrollTop + sheetGrid.clientHeight
-      ) {
-        sheetGrid.scrollTo({
-          top: top - sheetGrid.clientHeight / 3,
+      if (left < strip.scrollLeft) {
+        strip.scrollTo({ left, behavior: 'smooth' });
+      } else if (right > strip.scrollLeft + strip.clientWidth) {
+        strip.scrollTo({
+          left: right - strip.clientWidth,
           behavior: 'smooth',
         });
       }
     };
 
-    const advance = () => {
-      if (userTookOver || hovering || !inView || document.hidden) {
-        return;
-      }
+    const showGroupOf = (item) => {
+      const key = groupOf(item);
 
-      const next = activeIndex === frames.length - 1 ? 0 : activeIndex + 1;
+      tabs.forEach((tab) =>
+        setPressed(tab, tab.getAttribute('data-group-tab') === key)
+      );
 
-      revealInSheet(frames[next]);
-      // No focus move; the stage is in view, so show() scrolls nothing either.
-      show(next, false);
+      items.forEach((candidate) => {
+        candidate.parentElement.hidden = groupOf(candidate) !== key;
+      });
+
+      const tab = tabs.find(
+        (candidate) => candidate.getAttribute('data-group-tab') === key
+      );
+
+      groupName.textContent = tab ? tab.textContent.trim() : '';
     };
 
-    if (!reducedMotion) {
-      frames.forEach((frame) => {
-        frame.addEventListener('click', stopAutoplay);
-        frame.addEventListener('keydown', stopAutoplay);
+    const showWidget = (item, animate = true) => {
+      activeItem = item;
+      activeSetup = null;
+      items.forEach((candidate) => setPressed(candidate, candidate === item));
+      showGroupOf(item);
+
+      const key = item.getAttribute('data-widget');
+
+      setupRows.forEach((row) => {
+        const isRow = row.getAttribute('data-setups-for') === key;
+
+        row.hidden = !isRow;
+        activeRow = isRow ? row : activeRow;
       });
 
-      gallery.addEventListener('pointerenter', () => {
-        hovering = true;
-      });
+      widgetName.textContent =
+        item.querySelector('.wg-item-name')?.textContent.trim() ?? '';
+      indexNow.textContent = padOrdinal(items.indexOf(item) + 1);
 
-      gallery.addEventListener('pointerleave', () => {
-        hovering = false;
-      });
+      const descriptionSource = document.getElementById(
+        item.getAttribute('data-desc-id') || ''
+      );
 
-      new IntersectionObserver((entries) => {
-        inView = entries[0].isIntersecting;
-      }).observe(stage);
+      description.textContent = descriptionSource
+        ? descriptionSource.textContent.replace(/\s+/g, ' ').trim()
+        : '';
 
-      window.setInterval(advance, AUTOPLAY_MS);
+      bringIntoStrip(item);
+
+      const first = activeRow?.querySelector('.wg-setup');
+
+      if (first) {
+        showSetup(first, animate);
+      }
+    };
+
+    const step = (direction) => {
+      const next =
+        items[
+          (items.indexOf(activeItem) + direction + items.length) % items.length
+        ];
+
+      showWidget(next);
+    };
+
+    /* ---- Autoplay ------------------------------------------------------- */
+
+    const advance = () => {
+      const setups = Array.from(activeRow?.querySelectorAll('.wg-setup') ?? []);
+      const nextSetup = setups[setups.indexOf(activeSetup) + 1];
+
+      if (nextSetup) {
+        showSetup(nextSetup);
+      } else {
+        step(1);
+      }
+    };
+
+    const schedule = () => {
+      window.clearTimeout(autoplayTimer);
+
+      if (autoplayOn && inView) {
+        autoplayTimer = window.setTimeout(() => {
+          advance();
+          schedule();
+        }, AUTOPLAY_MS);
+      }
+    };
+
+    const stopAutoplay = () => {
+      autoplayOn = false;
+      window.clearTimeout(autoplayTimer);
+    };
+
+    /* ---- Wiring ----------------------------------------------------------- */
+
+    tabs.forEach((tab) =>
+      tab.addEventListener('click', () => {
+        const key = tab.getAttribute('data-group-tab');
+        const first = items.find((item) => groupOf(item) === key);
+
+        if (first) {
+          showWidget(first);
+        }
+      })
+    );
+
+    items.forEach((item) =>
+      item.addEventListener('click', () => showWidget(item))
+    );
+
+    setupRows.forEach((row) =>
+      row
+        .querySelectorAll('.wg-setup')
+        .forEach((setup) =>
+          setup.addEventListener('click', () => showSetup(setup))
+        )
+    );
+
+    gallery
+      .querySelectorAll('.wg-step')
+      .forEach((button) =>
+        button.addEventListener('click', () =>
+          step(Number(button.getAttribute('data-step')) || 1)
+        )
+      );
+
+    gallery.addEventListener('keydown', (event) => {
+      if (event.key === 'ArrowRight' || event.key === 'ArrowLeft') {
+        event.preventDefault();
+        step(event.key === 'ArrowRight' ? 1 : -1);
+      }
+    });
+
+    // A hand on the gallery is a reader looking: the walk stops for good
+    gallery.addEventListener('pointerdown', stopAutoplay);
+    gallery.addEventListener('keydown', stopAutoplay);
+
+    window.addEventListener('resize', updateScale, { passive: true });
+
+    showWidget(activeItem, false);
+
+    const reducedMotion = window.matchMedia(
+      '(prefers-reduced-motion: reduce)'
+    ).matches;
+
+    if (reducedMotion || !('IntersectionObserver' in window)) {
+      return;
     }
+
+    new IntersectionObserver(
+      (entries) => {
+        inView = entries.some((entry) => entry.isIntersecting);
+        schedule();
+      },
+      { threshold: 0.5 }
+    ).observe(scene);
   };
 
   if (document.readyState === 'loading') {

@@ -11,6 +11,8 @@
 //   npm run capture:widgets                      every picture in SHOTS
 //   npm run capture:widgets -- fuel standings    only these files
 //   npm run capture:widgets -- --border          with the frame's border
+//   npm run capture:widgets -- --audit           no pictures: which frames
+//                                                leave empty room or cut
 //
 // Each shot is one story, taken as the widget itself at 3x with its alpha
 // intact: the container's ground and border the story decorator draws (the
@@ -40,9 +42,16 @@ const WIDGET_FRAME = '#storybook-root [style*="--widget-bg"]';
 const OVERHANG_PX = 160;
 
 const KEEP_BORDER = process.argv.includes('--border');
+const AUDIT = process.argv.includes('--audit');
+
+// How much room a frame may leave beside what the widget draws, in CSS px,
+// before the audit calls it too big: a widget's own padding (up to ~16 px)
+// sits within it
+const SPARE_ROOM_PX = 24;
 
 // file name -> [story title under Widgets/, story name, options?]. Options:
-// `settle` (ms) overrides SETTLE_MS; `ground: false` drops the frame's own
+// `settle` (ms) overrides SETTLE_MS; `overhang` (px) overrides OVERHANG_PX for
+// a widget that draws far past its box by design (Delta's gauge); `ground: false` drops the frame's own
 // background too, for widgets that sit on nothing on the overlay. The first
 // entry of a widget is its picture on the site; the ones after it are the
 // variants the README shows beside it.
@@ -52,12 +61,12 @@ const SHOTS = {
   'close-battle': ['CloseBattleWidget', 'ahead-behind-and-merged'],
   coach: ['CoachWidget', 'brake-call'],
   'crew-radio': ['CrewRadioWidget', 'reply'],
-  delta: ['DeltaWidget', 'default'],
+  delta: ['DeltaWidget', 'default', { overhang: 320 }],
   'delta-best': ['DeltaWidget', 'best-lap'],
   drs: ['DrsWidget', 'open'],
   engine: ['EnginePanelWidget', 'default'],
   'flat-flag': ['FlatFlagsWidget', 'showcase', { ground: false }],
-  fuel: ['FuelWidget', 'full-preview'],
+  fuel: ['FuelWidget', 'showcase'],
   'fuel-pit-stop': ['FuelWidget', 'pit-window-open'],
   'g-metr': ['GMeter', 'showcase'],
   'incident-tracker': ['IncidentTrackerWidget', 'minor-incidents'],
@@ -83,6 +92,72 @@ const SHOTS = {
   timer: ['TimerWidget', 'timed-race'],
   weather: ['WeatherWidget', 'horizontal'],
   'wheel-to-wheel': ['WheelToWheelWidget', 'in-the-fight'],
+
+  // The setups and states the site gallery switches between, one widget at a
+  // time: <widget's own picture>-<what changes>.
+  'standings-all-columns': ['StandingsWidget', 'with-all-columns'],
+  'standings-minimal': ['StandingsWidget', 'minimal-columns'],
+  'standings-grouped': ['StandingsWidget', 'grouped-by-class'],
+  'standings-team': ['StandingsWidget', 'team-race'],
+  'relative-minimal': ['RelativeWidget', 'minimal-view'],
+  'relative-abbreviated': ['RelativeWidget', 'abbreviated-names'],
+  'relative-driver-flags': ['RelativeWidget', 'with-driver-flags'],
+  'input-trace-no-wheel': ['InputTraceWidget', 'corner-speeds-without-wheel'],
+  'input-trace-throttle-brake': ['InputTraceWidget', 'only-throttle-brake'],
+  'input-trace-corner-speeds': ['InputTraceWidget', 'corner-speeds'],
+  'race-dash-comb': ['RaceDashWidget', 'rpm-sweep-animation-comb'],
+  'race-dash-no-ring': ['RaceDashWidget', 'rpm-sweep-animation-hidden-ring'],
+  'race-dash-pit-limiter': ['RaceDashWidget', 'pit-limiter'],
+  'invisible-dash-contour': ['InvisibleDashWidget', 'contour'],
+  'invisible-dash-backdrop': ['InvisibleDashWidget', 'full-backdrop'],
+  'invisible-dash-compact': ['InvisibleDashWidget', 'compact'],
+  'fuel-line': ['FuelWidget', 'with-line-chart'],
+  'fuel-no-chart': ['FuelWidget', 'no-chart'],
+  'fuel-forecast': ['FuelWidget', 'next-stop-forecast'],
+  'map-class-shapes': ['TrackMapWidget', 'class-shapes'],
+  'map-incidents': ['TrackMapWidget', 'with-incident-zones'],
+  'relative-map-vertical': ['RelativeMapWidget', 'vertical'],
+  'weather-vertical': ['WeatherWidget', 'default'],
+  'weather-forecast': ['WeatherWidget', 'with-forecast'],
+  'weather-rain': ['WeatherWidget', 'heavy-rain'],
+  'g-metr-trail': ['GMeter', 'trail-mono'],
+  'g-metr-peak': ['GMeter', 'peak-simple'],
+  'g-metr-fading': ['GMeter', 'fading-advanced'],
+  'close-battle-full-names': ['CloseBattleWidget', 'full-names'],
+  'close-battle-axis': ['CloseBattleWidget', 'compact-axis-only'],
+  'coach-no-trace': ['CoachWidget', 'trace-off'],
+  'coach-no-readouts': ['CoachWidget', 'no-readouts'],
+  'coach-brake-channel': ['CoachWidget', 'brake-channel'],
+  'engine-formula': ['EnginePanelWidget', 'formula-car'],
+  'engine-minimal': ['EnginePanelWidget', 'minimal-layout'],
+  'battery-compact': ['BatteryWidget', 'compact'],
+  'battery-lap-deploy': ['BatteryWidget', 'with-lap-deploy'],
+  'pit-service-no-footer': ['PitServiceWidget', 'footer-off'],
+  'pit-service-interact': ['PitServiceWidget', 'interact-mode'],
+  'timer-minimal': ['TimerWidget', 'minimal-view'],
+  'timer-clocks': ['TimerWidget', 'with-clocks'],
+  'timer-dates': ['TimerWidget', 'with-dates'],
+  'lap-log-pace-loss': ['LapLogWidget', 'pace-loss-bars'],
+  'wheel-to-wheel-rows': ['WheelToWheelWidget', 'rows'],
+  'abs-idle': ['AbsWidget', 'idle'],
+  'drs-armed': ['DrsWidget', 'armed'],
+  'drs-ready': ['DrsWidget', 'ready'],
+  'proximity-radar-left': ['ProximityRadarWidget', 'car-left'],
+  'proximity-radar-both': ['ProximityRadarWidget', 'cars-both-sides'],
+  'radar-bar-left': ['RadarBarWidget', 'car-left'],
+  'radio-race-control': ['RadioWidget', 'race-control'],
+  'sector-matrix-behind': ['SectorMatrixWidget', 'behind'],
+  'sector-matrix-four': ['SectorMatrixWidget', 'four-sectors'],
+  'pit-line-over-limit': ['PitLineWidget', 'over-pit-limit'],
+  'pit-line-brake': ['PitLineWidget', 'brake-for-box'],
+  'crew-radio-listening': ['CrewRadioWidget', 'listening'],
+  'crew-radio-refused': ['CrewRadioWidget', 'refused'],
+  'incident-tracker-penalty': ['IncidentTrackerWidget', 'penalty-warning'],
+  'incident-tracker-clean': ['IncidentTrackerWidget', 'clean-race'],
+  'stream-chat-twitch': ['StreamChatWidget', 'twitch-only'],
+  'rpm-lights-circle': ['RpmLightsWidget', 'circle-leds'],
+  'rpm-lights-parallelogram': ['RpmLightsWidget', 'parallelogram-leds'],
+  'delta-no-gauge': ['DeltaWidget', 'no-gauge'],
 };
 
 const storyId = ([title, name]) => `widgets-${title.toLowerCase()}--${name}`;
@@ -125,8 +200,20 @@ const clearGround = (page, keepBorder, keepGround) =>
     [WIDGET_FRAME, keepBorder, keepGround]
   );
 
+// A bare frame - a widget on nothing - is taken as what it draws, with a
+// hair of room: the frame is a box the user sized on the overlay, and the
+// empty part of it is not the widget.
+const BARE_ROOM_PX = 2;
+
+const clipOfDrawn = ({ box }) => ({
+  x: Math.floor(box.left - BARE_ROOM_PX),
+  y: Math.floor(box.top - BARE_ROOM_PX),
+  width: Math.ceil(box.right - box.left + BARE_ROOM_PX * 2),
+  height: Math.ceil(box.bottom - box.top + BARE_ROOM_PX * 2),
+});
+
 // The frame and anything it hangs past its edge, up to OVERHANG_PX
-const clipOf = (page) =>
+const clipOf = (page, overhang = OVERHANG_PX) =>
   page
     .locator(WIDGET_FRAME)
     .first()
@@ -173,23 +260,148 @@ const clipOf = (page) =>
       );
 
       return { x: left, y: top, width: right - left, height: bottom - top };
-    }, OVERHANG_PX);
+    }, overhang);
 
-const shoot = async (page, fileName, story) => {
+// What the widget actually draws inside its frame: the union of its leaves -
+// text, a picture, a chart, or a box that paints something - so a plate that
+// merely fills the frame does not hide the room left around its content.
+// Returns the room on each side (negative: drawn past the frame), the drawn
+// box itself, and whether the frame is bare - no ground and no border of its
+// own, the widget floating on nothing as it does on the overlay.
+// `groundless`: the shot drops the frame's ground (`ground: false`), so its
+// painted boxes are the widget, as on a bare frame (Flat Flags' plates).
+const roomOf = (page, groundless = false) =>
+  page
+    .locator(WIDGET_FRAME)
+    .first()
+    .evaluate((frame, groundlessShot) => {
+      const own = frame.getBoundingClientRect();
+      const frameStyle = getComputedStyle(frame);
+      const bare =
+        frameStyle.backgroundColor === 'rgba(0, 0, 0, 0)' &&
+        frameStyle.backgroundImage === 'none' &&
+        (frameStyle.borderTopStyle === 'none' ||
+          frameStyle.borderTopColor === 'rgba(0, 0, 0, 0)');
+      const paints = (element) => {
+        const style = getComputedStyle(element);
+
+        return (
+          style.backgroundColor !== 'rgba(0, 0, 0, 0)' ||
+          style.backgroundImage !== 'none' ||
+          parseFloat(style.borderTopWidth) > 0 ||
+          parseFloat(style.borderBottomWidth) > 0
+        );
+      };
+      const isLeaf = (element) =>
+        ['svg', 'canvas', 'img'].includes(element.localName) ||
+        element.children.length === 0;
+      const drawsSomething = (element) =>
+        ['svg', 'canvas', 'img'].includes(element.localName) ||
+        element.textContent.trim().length > 0 ||
+        paints(element);
+
+      const rects = [...frame.querySelectorAll('*')]
+        .filter(
+          (element) => !element.closest('svg') || element.localName === 'svg'
+        )
+        // On a bare frame a box that paints is part of the widget even with
+        // children (Delta's gauge track under its fill); on a grounded one a
+        // plate filling the frame would hide the room around the content
+        .filter(
+          (element) =>
+            isLeaf(element) || ((bare || groundlessShot) && paints(element))
+        )
+        .filter((element) => element.checkVisibility({ opacityProperty: true }))
+        .filter(drawsSomething)
+        .map((element) => element.getBoundingClientRect())
+        .filter((rect) => rect.width > 0 && rect.height > 0);
+
+      if (rects.length === 0) {
+        return null;
+      }
+
+      const box = {
+        left: Math.min(...rects.map((rect) => rect.left)),
+        top: Math.min(...rects.map((rect) => rect.top)),
+        right: Math.max(...rects.map((rect) => rect.right)),
+        bottom: Math.max(...rects.map((rect) => rect.bottom)),
+      };
+
+      return {
+        bare,
+        box,
+        frame: [Math.round(own.width), Math.round(own.height)],
+        left: Math.round(box.left - own.left),
+        top: Math.round(box.top - own.top),
+        right: Math.round(own.right - box.right),
+        bottom: Math.round(own.bottom - box.bottom),
+      };
+    }, groundless);
+
+const audit = async (page, fileName, story) => {
   const id = storyId(story);
-  const { settle = SETTLE_MS, ground = true } = story[2] ?? {};
+  const {
+    settle = SETTLE_MS,
+    overhang = OVERHANG_PX,
+    ground = true,
+  } = story[2] ?? {};
 
   await page.goto(storyUrl(id));
   await page.locator(WIDGET_FRAME).first().waitFor({ state: 'visible' });
   await page.evaluate(() => document.fonts.ready);
   await page.waitForTimeout(settle);
+
+  const room = await roomOf(page, !ground);
+
+  if (!room) {
+    console.log(`? ${fileName}  draws nothing measurable`);
+
+    return false;
+  }
+
+  const sides = ['left', 'top', 'right', 'bottom'];
+  // A bare frame is taken as what it draws, so its room never reaches the
+  // picture; past the frame, the picture keeps up to the overhang
+  const spare =
+    room.bare || !ground
+      ? []
+      : sides.filter((side) => room[side] > SPARE_ROOM_PX);
+  const cut = sides.filter((side) => room[side] < -overhang);
+  const ok = spare.length === 0 && cut.length === 0;
+  const detail = sides.map((side) => `${side} ${room[side]}`).join(', ');
+
+  console.log(
+    `${ok ? ' ' : '!'} ${fileName.padEnd(28)} ${room.bare ? 'bare ' : 'frame'} ${room.frame.join('x').padEnd(9)} ${detail}${
+      cut.length ? `  CUT ${cut.join('/')}` : ''
+    }${spare.length ? `  ROOM ${spare.join('/')}` : ''}`
+  );
+
+  return ok;
+};
+
+const shoot = async (page, fileName, story) => {
+  const id = storyId(story);
+  const { settle = SETTLE_MS, ground = true, overhang } = story[2] ?? {};
+
+  await page.goto(storyUrl(id));
+  await page.locator(WIDGET_FRAME).first().waitFor({ state: 'visible' });
+  await page.evaluate(() => document.fonts.ready);
+  await page.waitForTimeout(settle);
+
+  // Measured before the ground is cleared: after it every frame looks bare
+  const drawn = await roomOf(page, !ground);
+
   await clearGround(page, KEEP_BORDER, ground);
 
   const target = path.join(OUT_DIR, `${fileName}.png`);
+  const clip =
+    drawn && (drawn.bare || !ground)
+      ? clipOfDrawn(drawn)
+      : await clipOf(page, overhang);
 
   await page.screenshot({
     path: target,
-    clip: await clipOf(page),
+    clip,
     omitBackground: true,
   });
 
@@ -224,13 +436,30 @@ const main = async () => {
     );
   }
 
-  mkdirSync(OUT_DIR, { recursive: true });
-
   const browser = await chromium.launch();
   const page = await browser.newPage({
     viewport: VIEWPORT,
     deviceScaleFactor: DEVICE_SCALE,
   });
+
+  if (AUDIT) {
+    let failing = 0;
+
+    try {
+      for (const name of wanted) {
+        failing += (await audit(page, name, SHOTS[name])) ? 0 : 1;
+      }
+    } finally {
+      await browser.close();
+    }
+
+    console.log(`
+${failing} of ${wanted.length} frames need a look`);
+
+    return;
+  }
+
+  mkdirSync(OUT_DIR, { recursive: true });
 
   try {
     for (const name of wanted) {
