@@ -36,11 +36,11 @@
 .wg::after {
   content: '';
   position: absolute;
-  inset: calc(var(--wg-blur) * -2);
+  inset: calc(var(--wg-blur, 0px) * -2);
   z-index: -2;
   background: url('../../assets/img/why/cockpit-bg-1920.webp') center 38% /
     cover no-repeat;
-  filter: blur(var(--wg-blur));
+  filter: blur(var(--wg-blur, 0px));
 }
 
 @media (min-width: 1700px) {
