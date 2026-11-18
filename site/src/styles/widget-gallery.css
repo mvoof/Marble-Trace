@@ -18,19 +18,33 @@
 
 /* The cockpit runs edge to edge under the whole gallery - stage, groups and
    strip - darkened on the left where the words are and at the foot where
-   the strip is, and left clear where the widget stands. */
+   the strip is, and left clear where the widget stands. The cockpit is
+   blurred on a layer of its own (::after) so the widget stays the one sharp
+   thing; the layer overhangs the box by twice the blur so its soft edge
+   falls outside, where the box clips it. */
 .wg {
   --wg-panel: min(27rem, 34%);
+  --wg-blur: 10px;
 
   position: relative;
   isolation: isolate;
+  overflow: clip;
   padding: clamp(1rem, 2.5vw, 2rem) 0 clamp(1.5rem, 3vw, 2.5rem);
-  background: #0b0e12 url('../../assets/img/why/cockpit-bg-1920.webp') center
-    38% / cover no-repeat;
+  background-color: #0b0e12;
+}
+
+.wg::after {
+  content: '';
+  position: absolute;
+  inset: calc(var(--wg-blur) * -2);
+  z-index: -2;
+  background: url('../../assets/img/why/cockpit-bg-1920.webp') center 38% /
+    cover no-repeat;
+  filter: blur(var(--wg-blur));
 }
 
 @media (min-width: 1700px) {
-  .wg {
+  .wg::after {
     background-image: url('../../assets/img/why/cockpit-bg-2560.webp');
   }
 }
