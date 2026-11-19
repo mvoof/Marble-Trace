@@ -940,6 +940,16 @@ mod tests {
     }
 
     #[test]
+    fn chinese_fuel_grammar_uses_only_vocabulary_supported_units() {
+        let pack = load("zh", None);
+        let recognised = pack.grammar.recognise("加油 六 十 七 升").unwrap();
+
+        assert_eq!(recognised.intent, "pit.fuel");
+        assert_eq!(recognised.slot("number"), Some(&SlotValue::Number(67)));
+        assert!(!pack.grammar.vosk_grammar().contains("加仑"));
+    }
+
+    #[test]
     fn a_built_in_car_query_hears_the_number_with_its_zeros() {
         let pack = load("en", None);
         let heard = pack.grammar.recognise("where is car zero seven").unwrap();
