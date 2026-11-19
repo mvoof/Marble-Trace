@@ -1,0 +1,1653 @@
+{
+  "widgetsPage": {
+    "allWidgets": "Tous les widgets",
+    "unavailable": "indisponible pour ce simulateur",
+    "sort": {
+      "tier": "Importance",
+      "az": "A–Z"
+    },
+    "widgetsCount_one": "{{count}} widget",
+    "widgetsCount_other": "{{count}} widgets",
+    "previewTop": "Aperçu au-dessus des paramètres",
+    "previewLeft": "Aperçu à côté des paramètres",
+    "previewFit": "Adapter le widget à l’aperçu",
+    "previewActualSize": "Taille réelle",
+    "addToLayout": "Ajouter à la disposition",
+    "onScreen": "À l’écran",
+    "addToLayoutHint": "Ajoute le widget au premier écran de la disposition active"
+  },
+  "appHeader": {
+    "sections": {
+      "home": "Accueil",
+      "widgets": "Widgets",
+      "layouts": "Dispositions",
+      "crew": "Équipe",
+      "analysis": "Analyse",
+      "settings": "Paramètres"
+    },
+    "websiteTitle": "Ouvrir marbletrace.com",
+    "releasesTitle": "Nouveautés — versions sur GitHub",
+    "discordTitle": "Discord — communauté",
+    "window": {
+      "minimise": "Réduire",
+      "maximise": "Agrandir",
+      "close": "Fermer"
+    }
+  },
+  "appStatus": {
+    "connectedTo": "{{sim}} · connecté",
+    "replaying": "Lecture · {{tape}}",
+    "waitingForTelemetry": "{{sim}} · en attente des données télémétriques",
+    "systemError": "Erreur système",
+    "waitingForGame": "{{sim}} · non démarré"
+  },
+  "releaseNotes": {
+    "whatsNew": "Nouveautés",
+    "title": "Nouveautés",
+    "titleWithVersion": "Nouveautés de la version v{{version}}"
+  },
+  "settingsLock": {
+    "from-the-future": {
+      "title": "Vos paramètres ont été enregistrés par une version plus récente",
+      "description": "Cette version ne peut pas les lire et ne les écrasera pas. Mettez Marble Trace à jour pour retrouver vos dispositions et raccourcis."
+    },
+    "too-old": {
+      "title": "Vos paramètres sont trop anciens pour être mis à niveau automatiquement",
+      "description": "Ils ont été enregistrés par une version trop ancienne pour être convertis par celle-ci. Le fichier n’a pas été modifié."
+    },
+    "corrupt": {
+      "title": "Impossible de lire votre fichier de paramètres",
+      "description": "Il reste intact afin de pouvoir être récupéré manuellement. Marble Trace utilise les valeurs par défaut et ne l’écrasera pas."
+    },
+    "lastGoodAvailable": "Une copie du {{date}}, enregistrée lors du dernier chargement réussi, peut être restaurée.",
+    "restore": "Restaurer la dernière copie valide",
+    "restoreConfirm": "Remplacer le fichier illisible par la copie enregistrée avant le problème ? Le fichier illisible sera conservé à côté.",
+    "restoreOk": "Restaurer et redémarrer",
+    "restoreFailed": "La restauration a échoué. Rien n’a été modifié. Consultez le journal pour connaître la raison.",
+    "restoredRestartRequired": "La dernière copie valide est restaurée, mais Marble Trace n’a pas pu redémarrer. Fermez puis relancez l’application.",
+    "reset": "Réinitialiser les paramètres",
+    "resetConfirm": "Remplacer le fichier de paramètres par les valeurs par défaut ? Les dispositions, widgets et raccourcis seront perdus.",
+    "resetOk": "Réinitialiser et redémarrer",
+    "resetCancel": "Annuler"
+  },
+  "updateBanner": {
+    "downloading": "Téléchargement de la mise à jour…",
+    "ready": "Mise à jour téléchargée. Redémarrage…",
+    "available": "La version v{{version}} est disponible",
+    "updateAndRestart": "Mettre à jour et redémarrer"
+  },
+  "monitorMap": {
+    "primary": "Principal",
+    "notConnected": "non connecté",
+    "notInLayout": "Absent de cette disposition — cliquer pour ajouter",
+    "addToLayout": "Ajouter ce moniteur à la disposition",
+    "browserScreens": "Écrans de navigateur",
+    "identify": "Identifier",
+    "identifyTooltip": "Afficher le numéro de chaque moniteur directement sur son écran",
+    "title": "Agencement des moniteurs et écrans de navigateur"
+  },
+  "layoutList": {
+    "newLayout": "Nouvelle disposition",
+    "emptyLayout": "Disposition vide",
+    "widgetsCount_one": "{{count}} widget",
+    "widgetsCount_other": "{{count}} widgets",
+    "deleteLayoutConfirmTitle": "Supprimer cette disposition ?",
+    "deleteLayoutConfirmDescription": "Cette action est irréversible.",
+    "createNewLayout": "Créer une disposition",
+    "enterLayoutName": "Saisir le nom de la disposition…",
+    "sessions": {
+      "practice": "Entraînement",
+      "qualify": "Qualifications",
+      "race": "Course",
+      "garage": "Garage"
+    },
+    "monitorsCount_one": "{{count}} moniteur",
+    "monitorsCount_other": "{{count}} moniteurs",
+    "noMonitors": "Aucun moniteur",
+    "removeMonitorWithWidgets": "Retirer ce moniteur et ses {{count}} widgets ?",
+    "layoutsCount_one": "{{count}} disposition",
+    "layoutsCount_other": "{{count}} dispositions",
+    "open": "Ouvrir",
+    "onScreen": "À l’écran",
+    "putOnScreen": "Afficher à l’écran",
+    "duplicate": "Dupliquer",
+    "rename": "Renommer",
+    "export": "Exporter dans un fichier",
+    "delete": "Supprimer",
+    "notAutoSwitched": "Pas de changement automatique",
+    "autoSwitch": {
+      "title": "Changement automatique",
+      "description": "Affiche une disposition lorsque la situation dans le simulateur change. Chaque carte indique quand elle s’affiche : selon la session, la classe ou la voiture. Une situation appartient à une seule disposition ; la règle la plus précise l’emporte : voiture avant classe, classe avant session.",
+      "anySession": "Toute session",
+      "anySessionShort": "Toute",
+      "anyClass": "Toute classe",
+      "anyCar": "Toute voiture",
+      "session": "Session",
+      "carClass": "Classe de voiture",
+      "car": "Voiture",
+      "carById": "Voiture {{id}}",
+      "noClass": "Sans classe",
+      "showWhen": "Afficher quand",
+      "addSituation": "Ajouter une situation",
+      "removeSituation": "Supprimer cette situation",
+      "add": "Ajouter",
+      "onLayout": "sur la disposition {{name}}",
+      "now": "Maintenant :",
+      "noLayout": "Aucune disposition pour cette situation",
+      "redundant": "Aucun effet : « {{rules}} » affiche cette disposition même sans cette règle",
+      "shadowed": "Aucun effet : les situations plus précises d’autres dispositions couvrent tous les cas"
+    },
+    "exported": "Disposition enregistrée sous {{path}}",
+    "exportFailed": "Impossible d’enregistrer le fichier de disposition",
+    "import": "Importer",
+    "imported": "Disposition « {{name}} » ajoutée",
+    "importFailed": "Ce fichier ne contient pas de disposition Marble Trace"
+  },
+  "layoutWidgetPanel": {
+    "onMonitor": "sur {{monitor}}",
+    "offScreen": "Hors de tous les écrans",
+    "copyTooltip": "Une copie — paramètres, position et changement indépendants",
+    "originalTooltip": "Première instance sur cet écran ; les autres sont ses copies",
+    "deleteCopy": "Supprimer cette copie",
+    "removeWidget": "Retirer de ce moniteur",
+    "hide": "Masquer",
+    "show": "Afficher",
+    "addTo": "Ajouter un widget à {{monitor}}",
+    "empty": "Aucun widget sur ce moniteur",
+    "search": "Rechercher un widget…",
+    "noMatch": "Aucun widget correspondant",
+    "hotkeysOn": "Les raccourcis agissent sur ce widget — cliquer pour l’exclure",
+    "hotkeysOff": "Les raccourcis ignorent ce widget — cliquer pour l’inclure"
+  },
+  "layoutCanvas": {
+    "move": "Déplacer",
+    "stepSize": "Pas de {{size}}",
+    "large": "Grand",
+    "remove": "Retirer",
+    "loadingBackground": "Chargement de l’arrière-plan…",
+    "allMonitors": "Tous les moniteurs",
+    "nothingToShow": "Rien à afficher dans ce scénario"
+  },
+  "overlayWidgetPicker": {
+    "addWidget": "Ajouter un widget",
+    "search": "Rechercher des widgets",
+    "empty": "Il n’y a plus rien à ajouter",
+    "unavailable": "Indisponible dans ce simulateur"
+  },
+  "overlayCanvas": {
+    "exitEditMode": "Quitter le mode édition",
+    "interactMode": "Mode interaction",
+    "interactModeHold": "Mode interaction — relâchez {{key}} pour quitter",
+    "interactModeToggle": "Mode interaction — {{key}} pour quitter",
+    "layoutSwitched": "Disposition « {{layout}} » activée"
+  },
+  "widgetSettingsPopup": {
+    "ariaLabel": "Paramètres de {{label}}",
+    "close": "Fermer"
+  },
+  "widgetPreview": {
+    "noPreview": "Aucun aperçu disponible"
+  },
+  "widgetSettings": {
+    "selectToConfigure": "Sélectionner un widget à configurer",
+    "notFound": "Widget introuvable",
+    "moduleConfig": "Configuration du module",
+    "groups": {
+      "columns": "Colonnes",
+      "content": "Contenu",
+      "display": "Affichage",
+      "size": "Taille",
+      "background": "Arrière-plan",
+      "behaviour": "Comportement",
+      "hotkeys": "Raccourcis"
+    },
+    "positionX": "Position X",
+    "positionY": "Position Y",
+    "width": "Largeur (px)",
+    "height": "Hauteur (px)",
+    "layerDepth": "Profondeur du calque (Z-index)",
+    "fontScale": "Taille du texte",
+    "fontScaleDesc": "Met uniquement le texte à l’échelle, indépendamment de la largeur et de la hauteur du widget",
+    "background": "Arrière-plan",
+    "border": "Bordure",
+    "columns": {
+      "move": "Faire glisser pour réorganiser"
+    },
+    "hotkeysShared": "Partagés par toutes les copies de ce widget",
+    "hotkeysChange": "Modifier"
+  },
+  "settingsPage": {
+    "language": {
+      "title": "Langue",
+      "fieldLabel": "Langue de l’application",
+      "system": "Langue du système"
+    },
+    "widgetDisplayOverride": {
+      "title": "Remplacement de l’affichage des widgets",
+      "hideAllTitle": "Masquer tous les widgets actifs",
+      "hideAllDesc": "Commande globale pour afficher ou masquer rapidement tous les éléments d’interface activés."
+    },
+    "startupBehavior": {
+      "title": "Comportement au démarrage",
+      "launchMinimizedTitle": "Démarrer en mode réduit",
+      "launchMinimizedDesc": "Démarrer l’application réduite dans la barre des tâches."
+    },
+    "appearance": {
+      "title": "Apparence",
+      "headerAnimationTitle": "Animation d’arrière-plan",
+      "headerAnimationDesc": "La vague douce derrière l’en-tête. Elle s’arrête lorsque la fenêtre est réduite ou n’a pas le focus."
+    },
+    "interactionMode": {
+      "title": "Mode interaction",
+      "dragModeTitle": "Mode déplacement de l’interface",
+      "dragModeDesc": "Déverrouiller les widgets pour les déplacer librement à l’écran.",
+      "interactModeTitle": "Mode interaction",
+      "interactModeDesc": "Permettre à la souris d’interagir avec l’overlay (défilement, boutons) sans déverrouiller le déplacement des widgets. Le jeu ne reçoit pas la souris tant que ce mode est actif.",
+      "interactHotkeyModeTitle": "Comportement du raccourci",
+      "interactHotkeyModeDesc": "Basculer active ou désactive le mode ; Maintenir le garde actif uniquement pendant que la touche est enfoncée.",
+      "interactToggle": "Basculer",
+      "interactHold": "Maintenir",
+      "interactAutoOffTitle": "Désactivation automatique",
+      "interactAutoOffDesc": "Désactiver automatiquement le mode interaction pour rendre la souris au jeu.",
+      "interactAutoOffNever": "Jamais",
+      "boundTo": "Associé à {{accelerator}}"
+    },
+    "gameIntegration": {
+      "title": "Intégration au jeu",
+      "autoHideTitle": "Masquage automatique",
+      "autoHideDesc": "Masquer les widgets lorsque le simulateur ne fonctionne pas."
+    },
+    "systemUnits": {
+      "title": "Unités",
+      "fieldLabel": "Système de mesure",
+      "metric": "Métrique (km/h, °C, L)",
+      "imperial": "Impérial (mph, °F, gal)"
+    },
+    "overlayPerformance": {
+      "title": "Performances",
+      "updateRateTitle": "Fréquence de mise à jour de l’overlay",
+      "updateRateDesc": "Fréquence de redessin des widgets. Chaque redessin coûte une image composite au jeu : 60 Hz offre le mouvement le plus fluide mais entraîne davantage d’images perdues ; 30 Hz reste fluide pour une fraction du coût."
+    },
+    "steeringLock": {
+      "title": "Volant",
+      "rangeTitle": "Angle de braquage",
+      "rangeDesc": "Plage physique de votre volant : {{full}}° (±{{half}}°). Partagée par tous les widgets qui affichent la direction."
+    },
+    "pitStrategy": {
+      "title": "Stratégie d’arrêt au stand",
+      "desc": "S’applique à l’unique voiture du simulateur, quel que soit l’écran affichant le stand.",
+      "autoFuel": "Carburant automatique",
+      "autoFuelDesc": "Le mode automatique utilise la quantité calculée par le widget Carburant, dans la limite de la capacité du réservoir.",
+      "autoTires": "Pneus automatiques",
+      "autoTiresDesc": "Le mode automatique vérifie un par un les pneus dont l’usure a dépassé le seuil ci-dessous.",
+      "autoTireWearThreshold": "Changer un pneu à {{percent}} % de gomme restante",
+      "fuelAdjustStep": "Pas de la touche de carburant",
+      "fuelAdjustStepDesc": "Quantité ajoutée ou retirée à chaque pression sur les touches de carburant, dans l’unité choisie : litres ou gallons.",
+      "pressureAdjustStep": "Pas de pression des pneus",
+      "pressureAdjustStepDesc": "Variation de pression à chaque pression sur le bouton ou la touche. Régler une pression commande aussi le changement du pneu — le simulateur ne permet pas de modifier sa pression sans le changer."
+    },
+    "fuelStrategy": {
+      "title": "Stratégie carburant",
+      "desc": "S’applique aux données de carburant de chaque widget Carburant sur tous les écrans — l’application les calcule une fois pour la voiture.",
+      "pitWarningLaps": "Alerte carburant faible, tours",
+      "pitWarningLapsDesc": "Le widget Carburant avertit lorsqu’il reste ce nombre de tours de carburant.",
+      "fuelAvgWindow": "Fenêtre moyenne de consommation, tours (0 = tous les tours)",
+      "fuelAvgWindowDesc": "Presque tout le widget dépend de cette moyenne : la cellule AVG du résumé, TOURS RESTANTS, le carburant restant à l’arrivée, la quantité à ravitailler et les limites de la fenêtre d’arrêt. Une fenêtre courte suit le rythme actuel mais varie davantage ; une fenêtre longue est plus stable mais réagit plus lentement aux changements de rythme ou de météo. La colonne AVG ALL couvre toujours tous les tours pour comparer les deux valeurs. À 0, elle est masquée, car elle répéterait la cellule du résumé.",
+      "countYellowFlagLaps": "Compter les tours sous drapeau jaune",
+      "countYellowFlagLapsDesc": "Inclure les tours sous drapeau jaune local dans la moyenne. Sur un circuit routier, un jaune ralentit rarement assez le tour pour modifier la consommation. Les neutralisations complètes et les drapeaux rouges sont toujours exclus."
+    },
+    "carLength": {
+      "title": "Voiture",
+      "valueTitle": "Longueur de la voiture",
+      "valueDesc": "Longueur d’une voiture en mètres. Convertit la distance entre les centres en distance entre les pare-chocs, afin que deux voitures pare-chocs contre pare-chocs affichent zéro. Utilisé par les radars et Close Battle."
+    },
+    "applicationUpdates": {
+      "title": "Mises à jour de l’application",
+      "autoCheckTitle": "Rechercher automatiquement les mises à jour",
+      "autoCheckDesc": "Rechercher automatiquement les nouvelles versions au démarrage de l’application.",
+      "checkIntervalTitle": "Fréquence de vérification",
+      "checkIntervalDesc": "Fréquence de recherche des mises à jour pendant l’exécution de l’application.",
+      "everyHour": "Toutes les heures",
+      "every3Hours": "Toutes les 3 heures",
+      "every6Hours": "Toutes les 6 heures",
+      "every12Hours": "Toutes les 12 heures",
+      "daily": "Chaque jour",
+      "currentVersion": "Version actuelle :",
+      "lastChecked": "Dernière vérification :",
+      "upToDate": "Votre application est à jour.",
+      "checkingForUpdates": "Recherche de mises à jour…",
+      "newVersionAvailable": "La nouvelle version v{{version}} est disponible !",
+      "downloadingUpdate": "Téléchargement de la mise à jour…",
+      "updateDownloaded": "Mise à jour téléchargée. Redémarrage…",
+      "updateCheckFailed": "Échec de la recherche de mises à jour.",
+      "restarting": "Redémarrage…",
+      "installAndRestart": "Installer et redémarrer",
+      "checkingEllipsis": "Vérification…",
+      "checkForUpdates": "Rechercher des mises à jour"
+    },
+    "about": {
+      "title": "À propos de Marble Trace",
+      "tagline": "Un overlay télémétrique pour iRacing. Gratuit et open source sous GPL-3.0.",
+      "trademarks": "Marble Trace™ et le logo Marble Trace sont des marques de voof. iRacing est une marque d’iRacing.com Motorsport Simulations, LLC. TAURI est une marque du Tauri Programme au sein de la Commons Conservancy. Windows est une marque du groupe Microsoft. Twitch est une marque de Twitch Interactive, Inc. YouTube est une marque de Google LLC. Tous les autres noms appartiennent à leurs propriétaires respectifs.",
+      "independence": "Marble Trace est un projet open source indépendant. Il n’est pas développé par iRacing, n’a aucun lien avec iRacing.com Motorsport Simulations, LLC et n’est ni affilié, ni financé, ni approuvé par cette société ou par celles mentionnées ci-dessous.",
+      "links": "Liens",
+      "website": "Site web"
+    },
+    "trackMap": {
+      "title": "Carte du circuit",
+      "reRecordTitle": "Réenregistrer le circuit",
+      "reRecordDesc": "Efface les données actuelles de la carte et recommence au prochain passage sur la ligne ou au déclenchement manuel.",
+      "resetCurrentTrackData": "Réinitialiser les données du circuit actuel",
+      "manualStartActive": "Démarrage manuel actif. Roulez pour commencer l’enregistrement.",
+      "forceStartRecording": "Forcer le démarrage de l’enregistrement",
+      "pitLaneCalibrationTitle": "Calibration de la voie des stands",
+      "pitLaneCalibrationDescWithTrack": "Efface les points d’entrée et de sortie enregistrés pour « {{track}} ». Traversez à nouveau la voie des stands pour la recalibrer.",
+      "pitLaneCalibrationDescNoTrack": "Aucun circuit chargé. Chargez une session pour réinitialiser les données de la voie des stands du circuit actif.",
+      "resetPitLaneDataForTrack": "Réinitialiser les données des stands de {{track}}",
+      "resetPitLaneData": "Réinitialiser les données des stands",
+      "pitLaneResetSuccess": "Données des stands effacées. Traversez la voie des stands pour la recalibrer.",
+      "referenceLapTitle": "Tour de référence",
+      "referenceLapDescWithCar": "Supprime le meilleur tour enregistré de « {{car}} » sur le circuit actuel. L’enregistrement reprendra après le prochain tour complet.",
+      "referenceLapDescNoSession": "Aucune session chargée. Chargez une session pour supprimer le tour de référence du circuit et de la voiture actifs.",
+      "deleteReferenceLapConfirm": "Supprimer le tour de référence enregistré ?",
+      "deleteReferenceLap": "Supprimer le tour de référence",
+      "referenceLapDeleteSuccess": "Tour de référence supprimé. L’enregistrement reprend après le prochain tour complet."
+    },
+    "fpsDiagnostics": {
+      "title": "Diagnostic FPS",
+      "description": "Mesure le coût de l’overlay à l’aide du compteur d’images du simulateur. Utilisez une scène reproductible — par exemple un replay en boucle sur le même tronçon avec du trafic.",
+      "detailed": "Mesure détaillée",
+      "detailedDesc": "Mesure aussi chaque widget activé séparément. Le test est bien plus long, mais identifie le widget coûteux plutôt que la seule configuration.",
+      "start": "Démarrer ({{minutes}} min)",
+      "cancel": "Arrêter",
+      "switchToSim": "Revenez maintenant au simulateur et laissez-le au premier plan : en arrière-plan, sa fréquence d’images est réduite et les mesures seraient inutilisables.",
+      "phase": {
+        "countdown": "Revenir au simulateur",
+        "settling": "Stabilisation",
+        "sampling": "Mesure",
+        "done": "Terminé",
+        "failed": "Échec",
+        "idle": "En attente"
+      },
+      "step": {
+        "noOverlay": "Sans overlay",
+        "hidden": "Overlay masqué",
+        "allWidgets": "Tous les widgets"
+      },
+      "table": {
+        "config": "Configuration",
+        "fps": "FPS",
+        "fpsLow": "FPS minimum",
+        "delta": "Écart",
+        "gpu": "GPU %",
+        "cpu": "CPU %"
+      },
+      "error": {
+        "noWidgets": "Activez d’abord au moins un widget : il n’y a rien à mesurer.",
+        "noTelemetry": "Aucune télémétrie du simulateur. Démarrez une session et réessayez."
+      },
+      "hud": {
+        "progress": "Étape {{done}} sur {{total}}",
+        "doneSummary": "Tous les widgets coûtent {{delta}} FPS. Résultats dans les paramètres.",
+        "doneNoSummary": "Résultats dans les paramètres."
+      },
+      "saveCsv": "Enregistrer le CSV",
+      "saved": "Enregistré dans {{path}}"
+    },
+    "telemetryInspector": {
+      "title": "Inspecteur de télémétrie",
+      "description": "Ce que le simulateur envoie et ce que l’application en fait. Les deux vues iRacing affichent les données d’origine, intactes ; les vues traitées montrent la sortie de l’adaptateur de l’application. La télémétrie est actualisée quatre fois par seconde lorsque cette page est ouverte et ne coûte rien à l’application lorsqu’elle est fermée.",
+      "filterPlaceholder": "Rechercher",
+      "hideAbsent": "Masquer les champs absents ({{count}})",
+      "waiting": "En attente du simulateur…",
+      "absentCount": "{{count}} non signalés",
+      "absent": "absent",
+      "sourceRawTelemetry": "Télémétrie iRacing",
+      "sourceRawSession": "Session iRacing (YAML)",
+      "sourceTelemetry": "Télémétrie (traitée)",
+      "sourceSession": "Session (traitée)",
+      "waitingRaw": "En attente du simulateur… Un replay ne contient que des trames traitées.",
+      "noteRawTelemetry": "Toutes les variables publiées par iRacing, avec leurs noms d’origine, exactement comme kerb les lit dans la mémoire partagée. Rien n’est renommé, masqué ou arrondi. La recherche porte aussi sur la description du simulateur.",
+      "noteRawSession": "Le YAML de session exactement comme iRacing l’écrit. La vue texte est intacte ; la vue arborescente met uniquement les noms des pilotes et des équipes entre guillemets pour éviter les erreurs d’analyse.",
+      "noteProcessedTitle": "Traité par Marble Trace — pas les données brutes",
+      "noteTelemetry": "Sortie de l’adaptateur : la trame kerb est convertie en trames de l’application dans src-tauri/crates/mt-sim-iracing/src/frame_map.rs ; les champs d’état non déclarés par la voiture y sont vidés (DeclaredVars). Affiché avant la hiérarchisation, le filtrage à la demande et la quantification.",
+      "noteSession": "La session analysée : src-tauri/crates/mt-sim-iracing/src/session_parse.rs sélectionne et normalise les champs utilisés ; les badges et couleurs de classe sont résolus dans car_classes.rs et car_badges.rs.",
+      "viewTree": "Arborescence",
+      "viewText": "Texte",
+      "copyYaml": "Copier le YAML",
+      "copied": "Copié",
+      "copyFailed": "Copie impossible : {{error}}",
+      "rowCount": "{{count}} lignes",
+      "waitingSession": "En attente des données de session…",
+      "showAll": "Afficher les {{count}} restantes",
+      "collapseRow": "Réduire",
+      "expandRow": "Développer",
+      "delivery": {
+        "title": "Compteurs de livraison",
+        "description": "Nombre de paquets réellement reçus par chaque destinataire et nombre de ceux contenant chaque champ soumis à une demande. Le débit sert de référence pour mesurer le travail du masque par fenêtre : la déclaration d’un widget indique ce qui a été demandé, ici ce qui a été transmis.",
+        "reset": "Réinitialiser les compteurs",
+        "waiting": "Aucune donnée transmise pour l’instant.",
+        "field": "Champ",
+        "bundles": "Paquets",
+        "rate": "Débit",
+        "bundlesLabel": "paquets",
+        "spanLabel": "sur",
+        "seconds": "{{seconds}} s"
+      }
+    },
+    "developerTools": {
+      "title": "Outils de développement",
+      "snapshotTitle": "Instantané de télémétrie",
+      "snapshotDesc": "Capturer l’état actuel de la télémétrie et l’enregistrer à côté du fichier de paramètres.",
+      "downloadSnapshot": "Enregistrer l’instantané JSON",
+      "snapshotSuccess": "Enregistré dans {{path}}"
+    },
+    "streamChat": {
+      "title": "Chat du stream",
+      "twitchChannel": "Chaîne Twitch",
+      "twitchChannelPlaceholder": "twitchdev",
+      "twitchChannelDesc": "Saisissez uniquement le nom dans l’adresse de la chaîne : twitch.tv/twitchdev → twitchdev. Lecture anonyme, sans compte. Laissez vide pour désactiver Twitch.",
+      "youtubeTarget": "Stream YouTube",
+      "youtubeTargetPlaceholder": "@identifiant ou lien du stream",
+      "youtubeTargetDesc": "Exemples : @MrBeast, youtube.com/watch?v=dQw4w9WgXcQ, youtu.be/dQw4w9WgXcQ ou simplement dQw4w9WgXcQ. Si vous indiquez une chaîne, le direct en cours est trouvé automatiquement.",
+      "hideCommands": "Masquer les commandes des bots",
+      "hideCommandsDesc": "Ignore les messages commençant par un point d’exclamation.",
+      "ignoredBots": "Comptes ignorés",
+      "ignoredBotsDesc": "Séparés par des virgules. Leurs messages n’atteignent jamais le widget.",
+      "signInTitle": "Se connecter à Twitch",
+      "signInDesc": "Facultatif. Affiche le nombre de spectateurs et la durée du stream en pied de page, et permet de répondre aux commandes du chat — le chat fonctionne sans connexion.",
+      "clientId": "ID client de l’application",
+      "clientIdDesc": "Cette version ne contient pas d’ID client. Pour vous connecter, créez votre application sur dev.twitch.tv/console/apps. Enregistrez-la comme client Public ; aucun secret client n’est nécessaire.",
+      "signIn": "Se connecter",
+      "signOut": "Se déconnecter",
+      "reconnect": "Reconnecter",
+      "reconnectDesc": "Cette version nécessite de nouvelles autorisations Twitch. Reconnectez-vous pour les accorder — les commandes du chat resteront indisponibles jusque-là. La lecture du chat continue de fonctionner.",
+      "commands": {
+        "title": "Commandes du chat",
+        "enabled": "Répondre aux commandes du chat",
+        "enabledDesc": "Les spectateurs saisissent une commande dans votre chat Twitch et Marble Trace y répond depuis votre compte avec les données de la session en cours. Le traitement reste sur votre PC.",
+        "needsSignIn": "Connectez-vous à Twitch ci-dessus : les réponses sont envoyées depuis votre compte.",
+        "needsReconnect": "Votre connexion Twitch ne permet pas de publier dans le chat. Reconnectez-vous pour accorder cette autorisation.",
+        "ownChannelOnly": "Les commandes ne fonctionnent que sur votre chaîne : la chaîne Twitch ci-dessus doit correspondre au compte connecté.",
+        "cooldown": "Délai par commande, secondes",
+        "cooldownDesc": "Durée pendant laquelle une commande reste en attente après une réponse.",
+        "globalCooldown": "Délai entre les réponses, secondes",
+        "globalCooldownDesc": "Limite le spam : deux réponses sont toujours espacées de cette durée, quelle que soit la commande. Jamais moins de 2 secondes, conformément aux limites de Twitch.",
+        "list": {
+          "pos": "Position dans la classe et au classement général.",
+          "gap": "Écart avec les voitures devant et derrière.",
+          "lap": "Tour actuel et distance restante.",
+          "best": "Meilleur et dernier tour.",
+          "sof": "Niveau du plateau et votre iRating.",
+          "car": "Voiture et circuit.",
+          "info": "Circuit, voiture et type de session.",
+          "weather": "Températures de l’air et de la piste, vent et état de la piste.",
+          "lastrace": "Circuit, résultat, incidents, SR et iR après votre dernière course. Affiche vos incidents et votre classement à tout le monde.",
+          "fuel": "Niveau de carburant. Les spectateurs voient votre stratégie.",
+          "commands": "Liste des commandes activées."
+        }
+      },
+      "signedIn": "Connecté",
+      "cancel": "Annuler",
+      "openActivate": "Ouvrir twitch.tv/activate",
+      "deviceHint": "Saisissez ce code sur twitch.tv/activate puis revenez ici : cette fenêtre s’actualisera automatiquement.",
+      "errors": {
+        "clientIdRequired": "Saisissez d’abord l’ID client.",
+        "codeExpired": "Le code a expiré. Recommencez.",
+        "sessionExpired": "La session Twitch a expiré. Reconnectez-vous."
+      }
+    },
+    "nav": {
+      "sections": {
+        "general": "Général",
+        "updates": "Mises à jour",
+        "about": "À propos",
+        "overlay": "Affichage des widgets",
+        "interaction": "Modes d’interaction",
+        "maintenance": "Réinitialisation et diagnostic",
+        "hotkeys": "Raccourcis",
+        "browserScreens": "Écrans de navigateur",
+        "streamChat": "Chat du stream",
+        "otherApps": "Autres applications",
+        "tracks": "Circuits enregistrés",
+        "widgetSettings": "Paramètres des widgets",
+        "telemetryFiles": "Fichiers télémétriques",
+        "telemetryInspector": "Inspecteur de télémétrie"
+      }
+    },
+    "remote": {
+      "title": "Écrans de navigateur",
+      "enableTitle": "Diffuser les dispositions vers d’autres appareils",
+      "enableDesc": "Lance un petit serveur web pour qu’un téléphone ou une tablette du même réseau puisse ouvrir dans son navigateur un écran de la disposition active. Les appareils peuvent seulement regarder, sans rien modifier.",
+      "running": "En cours sur {{ip}}:{{port}}",
+      "stopped": "À l’arrêt",
+      "clients": "{{count}} connecté(s)",
+      "portTitle": "Port et fréquence d’envoi",
+      "portDesc": "Fréquence d’envoi de la télémétrie aux appareils, et non de leur redessin. 30 envois par seconde suffisent pour un tableau de bord et sollicitent peu le Wi-Fi ; les temps au tour, le carburant et l’horloge de session sont toujours transmis intégralement. Ne changez le port que s’il est déjà utilisé.",
+      "securityTitle": "Accès réseau",
+      "securityDesc": "Les liens d’écran contiennent un jeton d’accès. Générez-en un nouveau pour couper l’accès de tous les appareils auxquels vous avez donné un lien.",
+      "securityDescOpen": "Aucun jeton d’accès n’est défini : toute personne sur ce réseau connaissant l’adresse peut voir vos écrans.",
+      "tokenTitle": "Jeton d’accès",
+      "tokenDesc": "Les appareils ont besoin de ce jeton pour ouvrir un écran. Il figure déjà dans les liens et les QR codes ci-dessous.",
+      "lanLabel": "Accessible sur le réseau local",
+      "regenerateToken": "Nouveau jeton",
+      "screensTitle": "Écrans de navigateur",
+      "screensDesc": "Ouvrez l’adresse sur l’appareil. Ajoutez la page à l’écran d’accueil pour masquer la barre du navigateur et utiliser tout l’écran.",
+      "screensEmpty": "Aucun écran de navigateur pour l’instant. Ajoutez-en un dans l’éditeur de disposition, à côté des moniteurs.",
+      "usedInLayouts": "Dispositions",
+      "activeNow": "Actif maintenant",
+      "inactive": "Inactif pendant la session actuelle",
+      "serverOffline": "Serveur arrêté",
+      "copyUrl": "Copier le lien",
+      "obsHint": "Ajoutez cette adresse à OBS comme source navigateur de {{width}}×{{height}}. Rendez l’arrière-plan transparent pour ne conserver que les widgets à l’écran.",
+      "urlCopied": "Lien copié",
+      "deviceOnline": "Appareil connecté",
+      "deviceReports": "L’appareil indique une zone utile de {{width}}×{{height}} sur un écran de {{screenWidth}}×{{screenHeight}}.",
+      "addToHomeScreenHint": "Ajoutez la page à l’écran d’accueil pour masquer la barre du navigateur et utiliser tout l’écran.",
+      "fitToDevice": "Adapter à {{width}}×{{height}}",
+      "fitToDeviceTooltip": "Redimensionner cet écran selon les dimensions de l’appareil. Les widgets conservent leur position relative à l’écran.",
+      "sizeApplied": "Taille de l’écran mise à jour",
+      "lanOffHint": "Désactivé : seul cet ordinateur peut ouvrir les écrans — utile pour capturer une disposition comme source navigateur OBS ou couper tous les appareils sans défaire la configuration.",
+      "showToken": "Afficher",
+      "hideToken": "Masquer",
+      "copyToken": "Copier le jeton",
+      "tokenCopied": "Jeton copié",
+      "qrHidden": "QR code masqué",
+      "backgroundLabel": "Arrière-plan",
+      "backgroundTransparent": "transparent",
+      "retryStart": "Réessayer"
+    },
+    "companions": {
+      "add": "Ajouter",
+      "addDesc": "La détection recherche les outils de simulation dans les dossiers utilisés par leurs installateurs. Ajoutez manuellement les autres programmes.",
+      "addTitle": "Ajouter un programme",
+      "browse": "Ajouter un programme…",
+      "close": "Fermer maintenant",
+      "closeWithApp": "Fermer avec l’application",
+      "detect": "Détecter les programmes installés",
+      "detectedDesc": "Pas encore dans votre liste.",
+      "detectedTitle": "Trouvé sur ce PC",
+      "empty": "Aucun programme pour l’instant.",
+      "launch": "Lancer maintenant",
+      "launchWithApp": "Lancer avec l’application",
+      "listDesc": "Les programmes qui ne fonctionnent pas déjà sont lancés avec Marble Trace. À la fermeture de l’application, ceux que vous avez sélectionnés sont arrêtés, quel que soit leur lanceur ; les programmes nécessitant des droits administrateur ne peuvent pas être arrêtés ainsi.",
+      "listTitle": "Vos programmes",
+      "missing": "Fichier manquant",
+      "notOurs": "Lancé en dehors de Marble Trace — fermez-le depuis l’endroit où vous l’avez lancé.",
+      "removeConfirm": "Retirer ce programme de la liste ?",
+      "running": "En cours",
+      "stopped": "À l’arrêt",
+      "title": "Applications associées"
+    },
+    "reset": {
+      "title": "Réinitialisation",
+      "resetAllTitle": "Réinitialiser tous les paramètres",
+      "resetAllDesc": "Efface les positions, tailles et préférences des widgets. L’application redémarrera automatiquement.",
+      "confirmTitle": "Réinitialiser tous les paramètres ?",
+      "confirmDescription": "La disposition des widgets et toutes les préférences seront perdues.",
+      "confirmOk": "Réinitialiser et redémarrer",
+      "resetSettings": "Réinitialiser les paramètres"
+    }
+  },
+  "layoutEditor": {
+    "backToLayouts": "Retour aux dispositions",
+    "toggleWidgetPanel": "Afficher/masquer le panneau des widgets",
+    "create": "Créer",
+    "cancel": "Annuler",
+    "deleteLayoutConfirm": "Supprimer cette disposition ?",
+    "delete": "Supprimer",
+    "active": "Active",
+    "applyLayoutTooltip": "Appliquer cette disposition à l’overlay",
+    "makeActive": "Activer",
+    "monitorTooltip": "Choisissez l’écran à modifier ou affichez-les tous en même temps. Un écran absent de la disposition y sera ajouté si vous le sélectionnez.",
+    "monitorPlaceholder": "Écran…",
+    "customResolutionOption": "Résolution personnalisée…",
+    "customResolutionLabel": "Personnalisée ({{width}}×{{height}})",
+    "lockAspectRatio": "Verrouiller les proportions",
+    "unlockAspectRatio": "Déverrouiller les proportions",
+    "bringToFront": "Mettre au premier plan",
+    "sendToBack": "Mettre à l’arrière-plan",
+    "duplicateWidget": "Dupliquer le widget",
+    "deleteWidgetCopy": "Supprimer la copie",
+    "quickPlacement": "Positionnement rapide",
+    "backgroundImageAria": "Image d’arrière-plan de la disposition",
+    "undoTooltip": "Annuler (Ctrl+Z)",
+    "redoTooltip": "Rétablir (Ctrl+Y)",
+    "toggleGridTooltip": "Afficher/masquer la grille d’alignement",
+    "gridSizeTooltip": "Taille de la grille",
+    "snapToGridTooltip": "Aligner sur la grille",
+    "viewOverview": "Tous les écrans",
+    "viewOverviewTooltip": "Tous les écrans de la disposition en même temps",
+    "viewFullSize": "Pleine taille",
+    "viewFullSizeTooltip": "Un écran occupe toute la fenêtre de l’application",
+    "viewFullscreen": "Sur le moniteur",
+    "viewFullscreenTooltip": "Un écran occupe tout son moniteur physique",
+    "setBackgroundTooltip": "Définir l’arrière-plan de l’éditeur (par exemple, la vue du cockpit)",
+    "clearBackgroundTooltip": "Effacer l’arrière-plan",
+    "widgetsPanelTitle": "Widgets",
+    "hidePanel": "Masquer le panneau",
+    "customResolutionModal": {
+      "title": "Résolution d’écran personnalisée",
+      "width": "Largeur (px)",
+      "height": "Hauteur (px)",
+      "apply": "Appliquer"
+    },
+    "editingMonitor": "Modification : {{monitor}}",
+    "monitorAdd": "ajouter",
+    "moveToMonitor": "Déplacer vers le moniteur",
+    "allMonitors": "Tous les moniteurs",
+    "removeMonitor": "Retirer le moniteur de la disposition",
+    "addRemoteScreen": "Écran de navigateur",
+    "addRemoteScreenTooltip": "Ajouter un écran virtuel — ce n’est pas un moniteur de ce PC, mais une page ouverte dans un navigateur via un lien : tablette, téléphone ou source navigateur OBS",
+    "addRemoteScreenConfirm": "Ajouter un écran de navigateur",
+    "remoteScreenNamePlaceholder": "Nom de l’écran, par ex. tablette du volant",
+    "remoteScreenDefaultName": "Écran de navigateur",
+    "remoteScreenTag": "navigateur",
+    "arrangeRemoteScreens": "Ranger les écrans de navigateur",
+    "arrangeRemoteScreensTooltip": "Disposer les écrans de navigateur en rangées sous le bureau, widgets compris",
+    "addRemoteScreenHint": "Tout appareil ouvrant le lien affiche cet écran : une tablette du réseau ou une source navigateur OBS. Pour OBS, rendez l’arrière-plan transparent et adaptez la taille de la source. Le premier appareil connecté indique sa taille ; l’ajustement à cette taille déplace tous les widgets de l’écran.",
+    "remoteScreenTransparent": "Arrière-plan transparent (pour OBS)",
+    "remoteScreenTransparentSuffix": "transparent",
+    "remoteScreenModeReuse": "Écran existant",
+    "remoteScreenModeNew": "Nouvel écran",
+    "remoteScreenSelectExisting": "Choisir un écran",
+    "remoteScreenReuseHint": "Réutilise cet écran, son URL et ses dimensions dans la disposition actuelle.",
+    "remoteScreenPresetGroup": {
+      "monitor": "Moniteur / canevas de diffusion",
+      "tablet": "Tablette",
+      "phone": "Téléphone"
+    },
+    "inspectorTitle": "Widget",
+    "inspectorActions": "Actions de l’éditeur",
+    "toggleInspector": "Panneau du widget",
+    "duplicate": "Dupliquer",
+    "layerOrder": "Ordre des calques",
+    "moveToMonitorPlaceholder": "Choisir un écran",
+    "quickPlacementDesc": "Place le widget dans un coin, le long d’un bord ou au centre de l’écran.",
+    "copySettingsFrom": "Copier les paramètres depuis",
+    "copySettingsFromDesc": "Reprend les paramètres d’une autre instance, tout en conservant la position et la taille de celle-ci",
+    "copySettingsFromPlaceholder": "Choisir une instance",
+    "resetSettings": "Réinitialiser les paramètres",
+    "resetSettingsConfirm": "Rétablir les paramètres par défaut de ce widget ?",
+    "resetSettingsOk": "Réinitialiser",
+    "reset": "Réinitialiser",
+    "hotkeysActOn": "Les raccourcis agissent sur ce widget",
+    "hotkeysActOnDesc": "Ses raccourcis affichent, masquent et changent cette instance. Si plusieurs sont sélectionnées, elles changent ensemble. Un écran de navigateur les suit aussi pour que le flux affiche la vue choisie.",
+    "layouts": "Dispositions",
+    "addWidget": "Widget",
+    "addWidgetTooltip": "Ajouter un widget",
+    "addWidgetSearch": "Rechercher un widget…",
+    "addWidgetCore": "Essentiels",
+    "addWidgetAll": "Tous",
+    "addWidgetOnScreen": "à l’écran",
+    "addWidgetTarget": "Sur le moniteur :",
+    "addWidgetEmpty": "Aucun widget correspondant",
+    "moreTools": "Autres outils",
+    "grid": "Grille",
+    "background": "Arrière-plan",
+    "screens": "Écrans",
+    "hideArrangement": "Masquer l’agencement des moniteurs",
+    "showArrangement": "Afficher l’agencement des moniteurs",
+    "scenarioTooltip": "Aperçu du scénario",
+    "dragToolbar": "Faire glisser la barre d’outils"
+  },
+  "dataPage": {
+    "statistics": {
+      "subtitle": "lues depuis les fichiers télémétriques du jeu",
+      "folderTitle": "Dossier télémétrique",
+      "folderDefault": "Trouvé automatiquement dans Documents.",
+      "folderChosen": "Choisi par vous.",
+      "folderMissing": "Dossier télémétrique iRacing introuvable. Choisissez l’emplacement de vos fichiers .ibt.",
+      "change": "Modifier",
+      "useDefault": "Utiliser la valeur par défaut",
+      "folderRefused": "Ce dossier ne peut pas être utilisé : {{reason}}",
+      "loggingTitle": "Enregistrement télémétrique dans iRacing",
+      "logging": {
+        "on": "Activé",
+        "off": "Désactivé",
+        "unknown": "Inconnu"
+      },
+      "importTitle": "Importation",
+      "importIdle": "Tous les fichiers ont été lus",
+      "reimport": "Tout réimporter",
+      "reimportDesc": "Relit tous les fichiers du dossier, y compris ceux ignorés. Les sessions restent même si leurs fichiers ont disparu.",
+      "reimportStarted": "Réimportation lancée",
+      "reimportQueued": "La réimportation démarrera à la fermeture du jeu",
+      "skippedTitle": "Fichiers ignorés",
+      "skippedNone": "Tous les fichiers ont été lus.",
+      "skippedFile": "Fichier",
+      "skippedReason": "Raison",
+      "exportCsv": "Exporter en CSV",
+      "exported": "Sessions exportées : {{count}}",
+      "exportFailed": "Échec de l’exportation : {{reason}}"
+    },
+    "analysis": {
+      "empty": "Aucun tour pour l’instant. Choisissez une session ci-dessous et ajoutez ses tours à l’analyse.",
+      "changeSession": "Sessions",
+      "sessionsTitle": "Choisir une session",
+      "addLaps": "Ajouter des tours",
+      "laps": "Tours",
+      "referenceHint": "☆ — référence pour l’écart",
+      "lap": "Tour {{number}}",
+      "color": "Couleur du tour",
+      "hide": "Masquer",
+      "show": "Afficher",
+      "reference": "Référence pour l’écart",
+      "remove": "Retirer de l’analyse",
+      "fileDeleted": "Le fichier de la session a été supprimé",
+      "settings": "Paramètres d’analyse",
+      "keepWhileGameRuns": "Conserver l’analyse en mémoire pendant le jeu",
+      "keepWhileGameRunsNote": "Par défaut, lorsque le jeu tourne, la télémétrie des tours reste en mémoire uniquement lorsque cette fenêtre est active.",
+      "keepWhileGameRunsWarning": "Utilise jusqu’à environ 150 Mo de RAM. Mieux vaut désactiver en course.",
+      "unloaded": "Jeu en cours — analyse déchargée",
+      "unloadedNote": "Pour ne pas gêner l’overlay, la télémétrie des tours n’est pas conservée lorsque cette fenêtre est en arrière-plan. Revenez ici pour recharger les données.",
+      "telemetryTab": "Télémétrie",
+      "setupTab": "Setup",
+      "setupNote": "Setup au moment de l’écriture du fichier",
+      "noSetup": "Le fichier ne contient aucun setup.",
+      "setupUnreadable": "Impossible de lire le fichier de session.",
+      "loading": "Lecture des tours…",
+      "delta": "Écart",
+      "addChannel": "+ Canal",
+      "moveUp": "Monter",
+      "moveDown": "Descendre",
+      "removeChart": "Supprimer le graphique",
+      "resetZoom": "Tour complet",
+      "zoomIn": "Zoom avant",
+      "zoomOut": "Zoom arrière",
+      "wholeLap": "Tour complet",
+      "map": "Carte des tours",
+      "gesture": {
+        "zoom": "Molette — zoomer",
+        "pan": "Glisser — déplacer",
+        "frame": "Maj + glisser — cadrer",
+        "whole": "Double-clic — tour complet"
+      }
+    }
+  },
+  "bindings": {
+    "title": "Affectations des commandes",
+    "intro": "Les touches et boutons de manette fonctionnent partout dans l’application et dans chaque disposition. Les conflits avec les commandes du simulateur ne peuvent pas être détectés ici — vérifiez-les dans iRacing.",
+    "searchPlaceholder": "Rechercher une action ou une affectation",
+    "resetAll": "Tout réinitialiser",
+    "resetConfirm": "Rétablir toutes les affectations par défaut ?",
+    "noMatches": "Aucune action ne correspond à la recherche.",
+    "filteredTo": "Afficher uniquement {{widget}}",
+    "showAll": "Tout afficher",
+    "unbound": "Non attribué",
+    "addBinding": "Ajouter une affectation",
+    "removeBinding": "Supprimer l’affectation",
+    "conflictWith": "Également attribué à : {{actions}}",
+    "deviceOffline": "Appareil déconnecté — l’affectation est conservée.",
+    "notInLayout": "absent de la disposition",
+    "captureTitle": "Appuyez sur une touche ou un bouton",
+    "captureHint": "Appuyez sur Échap pour annuler. Rien n’est enregistré avant d’appuyer sur une touche.",
+    "devicesTitle": "Appareils",
+    "noDevices": "Aucune manette détectée.",
+    "deviceMeta": "VID {{vendor}} · PID {{product}} · {{buttons}} boutons",
+    "deviceConnected": "connecté",
+    "deviceOfflineTag": "hors ligne",
+    "groups": {
+      "app": "Application"
+    },
+    "chip": {
+      "button": "bouton {{button}}",
+      "hat": "pavé {{hat}} {{direction}}",
+      "direction": {
+        "0": "haut",
+        "1": "droite",
+        "2": "bas",
+        "3": "gauche"
+      },
+      "unknownDevice": "Appareil inconnu"
+    },
+    "devicesIntro": "Volants, boîtiers de boutons, joysticks et pédales sont détectés automatiquement. Un appareil auquel une commande est attribuée reste dans la liste lorsqu’il est débranché, afin de conserver ses affectations.",
+    "boundCount": "{{bound}} / {{total}} attribués",
+    "notInLayoutTooltip": "Ce widget n’est pas dans la disposition active : aucune de ses fonctions ne tourne, ni ses affectations ni ses tâches en arrière-plan comme les arrêts automatiques. Le raccourci afficher/masquer fait exception : il permet de le réactiver.",
+    "toggleHint": "Active ou retire la commande : appuyez à nouveau pour l’enlever.",
+    "inert": {
+      "pitServiceAutoMode": "Sans effet tant que le carburant ou les pneus automatiques ne sont pas activés dans les paramètres du widget."
+    },
+    "searchByKey": "Par touche",
+    "searchByKeyHint": "Appuyez sur une touche ou un bouton pour voir ce qui lui est attribué.",
+    "searchPressKey": "Appuyez sur une touche ou un bouton…",
+    "keyIsFree": "{{key}} n’est attribué à rien.",
+    "actions": {
+      "toggleDragMode": "Mode déplacement",
+      "toggleInteractMode": "Mode interaction",
+      "pushToTalk": "Maintenir pour parler (équipe vocale)",
+      "toggleHideAllWidgets": "Masquer tous les widgets",
+      "standingsCycleViewMode": "Changer de vue (Tous → Groupés → Défilement)",
+      "standingsClassPrev": "Classe précédente (mode défilement)",
+      "standingsClassNext": "Classe suivante (mode défilement)",
+      "standingsScrollUp": "Faire défiler le tableau vers le haut",
+      "standingsScrollDown": "Faire défiler le tableau vers le bas",
+      "streamChatScrollUp": "Faire défiler le chat vers le haut",
+      "streamChatScrollDown": "Faire défiler le chat vers le bas",
+      "deltaCycleReference": "Changer la référence du delta (PB → PO → SB → SO → SL)",
+      "pitServiceToggle": "Ouvrir l’ordre d’arrêt hors de la voie des stands (temporaire)",
+      "pitServiceAutoMode": "Confier cet arrêt au mode automatique ou le reprendre",
+      "pitServiceApplyOrder": "Commander un arrêt complet : carburant calculé et quatre pneus (remplace l’ordre actuel)",
+      "pitServiceClearOrder": "Annuler tout l’ordre",
+      "pitServiceFuel": "Ajouter la quantité de carburant calculée",
+      "pitServiceFuelPlus": "Ajouter un pas à la quantité de carburant (pas réglé dans les paramètres du widget)",
+      "pitServiceFuelMinus": "Retirer un pas de la quantité de carburant (pas réglé dans les paramètres du widget)",
+      "pitServiceTiresAll": "Changer les quatre pneus",
+      "pitServiceTireLf": "Changer le pneu avant gauche",
+      "pitServiceTireRf": "Changer le pneu avant droit",
+      "pitServiceTireLr": "Changer le pneu arrière gauche",
+      "pitServiceTireRr": "Changer le pneu arrière droit",
+      "pitServiceTireCompound": "Passer au composé de pneus suivant",
+      "pitServicePressurePlus": "Augmenter la pression de chaque pneu d’un pas (et commander leur remplacement)",
+      "pitServicePressureMinus": "Baisser la pression de chaque pneu d’un pas (et commander leur remplacement)",
+      "pitServiceFastRepair": "Utiliser une réparation rapide",
+      "pitServiceWindshield": "Nettoyer le pare-brise (utilise un tear-off)",
+      "widgetToggleVisibility": "Afficher / masquer « {{widget}} »"
+    }
+  },
+  "homePage": {
+    "greeting": "Bonjour, {{name}} !",
+    "greetingNoName": "Bonjour !",
+    "emptyTitle": "Aucune session pour l’instant",
+    "emptyText": "Chaque fois que vous prenez le volant, iRacing enregistre un fichier télémétrique dans DocumentsiRacing\\telemetry. Marble Trace lit ces fichiers lorsque le jeu est fermé et les transforme en sessions, tours, incidents et iRating.",
+    "emptyKept": "Les données lues sont conservées même après la suppression des fichiers.",
+    "import": {
+      "reading": "Lecture des fichiers du jeu ·",
+      "paused": "Importation en pause — vous êtes dans le jeu",
+      "noFolder": "Dossier télémétrique iRacing introuvable"
+    },
+    "kpi": {
+      "timeWeek": "Temps cette semaine",
+      "kmWeek": "Km cette semaine",
+      "cleanLaps": "Tours sans incident",
+      "podiumRate": "Taux de podium",
+      "vsLastWeek": "{{change}} par rapport à la semaine dernière",
+      "thisWeek": "cette semaine",
+      "results": {
+        "wins": "Victoires",
+        "podiums": "Podiums",
+        "topTens": "Top 10",
+        "races": "Courses"
+      }
+    },
+    "recentSessions": {
+      "title": "Sessions récentes",
+      "date": "Date",
+      "track": "Circuit",
+      "car": "Voiture",
+      "finish": "Résultat",
+      "bestLap": "Meilleur tour",
+      "incidents": "Inc.",
+      "type": "Type",
+      "laps": "Tours",
+      "search": "Circuit ou voiture",
+      "withBots": "Sessions avec des bots",
+      "botsTag": "bots",
+      "none": "Aucune session ne correspond au filtre",
+      "shown": "{{from}}–{{to}} sur {{total}}",
+      "period": {
+        "7d": "7 j",
+        "30d": "30 j",
+        "90d": "90 j",
+        "all": "Tout"
+      },
+      "kind": {
+        "practice": "Entraînement",
+        "qualify": "Qualifications",
+        "race": "Course",
+        "test": "Test",
+        "timeTrial": "Contre-la-montre"
+      }
+    },
+    "calendar": {
+      "title": "Jours de pilotage",
+      "previousYear": "Année précédente",
+      "nextYear": "Année suivante",
+      "summary": "{{days}} jours de pilotage · {{time}}",
+      "less": "moins",
+      "more": "plus"
+    },
+    "tops": {
+      "cars": "Voitures principales",
+      "tracks": "Circuits principaux"
+    },
+    "duration": {
+      "minutes": "{{minutes}} min",
+      "hoursMinutes": "{{hours}} h {{minutes}} min",
+      "hours": "{{hours}} h"
+    },
+    "lastRace": {
+      "title": "Dernière course",
+      "finish": "Résultat",
+      "bestLap": "Meilleur tour",
+      "incidents": "Inc."
+    },
+    "now": {
+      "title": "Maintenant",
+      "sim": "iRacing",
+      "connected": "Connecté",
+      "notRunning": "À l’arrêt",
+      "layout": "Disposition",
+      "noLayout": "Aucune",
+      "openLayouts": "Ouvrir les dispositions",
+      "monitors": "Moniteurs",
+      "widgetsOn": "Widgets actifs",
+      "browserScreens": "Écrans de navigateur"
+    },
+    "autolog": {
+      "title": "iRacing n’enregistre pas les fichiers télémétriques",
+      "text": "Les statistiques proviennent des fichiers enregistrés par iRacing à chaque session. Cette option est désactivée dans son fichier app.ini. Marble Trace peut l’activer pour vous.",
+      "enable": "Activer",
+      "closeGame": "Fermez d’abord iRacing",
+      "failed": "Activation impossible : {{reason}}"
+    },
+    "sessionLaps": {
+      "title": "Tours de la session",
+      "lap": "Tour",
+      "time": "Temps",
+      "delta": "Écart au meilleur tour",
+      "incidents": "Inc.",
+      "best": "meilleur",
+      "pit": "stand",
+      "partial": "partiel",
+      "toAnalysis": "À analyser",
+      "inAnalysis": "Dans l’analyse",
+      "fileDeleted": "fichier supprimé",
+      "allToAnalysis": "Analyser tous les tours",
+      "added": "Analyse : {{track}}, {{date}} — {{count}} tours",
+      "openAnalysis": "Ouvrir l’analyse",
+      "incidentsCount": "{{count}}×",
+      "delete": "Supprimer la session",
+      "deleteTitle": "Supprimer la session ?",
+      "deleteText": "La session, ses tours et leurs données télémétriques seront retirés de la base. L’import ne relira plus ses fichiers.",
+      "deleteFiles": "Supprimer aussi les fichiers .ibt",
+      "deleteFailed": "La session n’a pas été supprimée"
+    }
+  },
+  "crewPage": {
+    "sections": {
+      "overview": "Aperçu",
+      "downloads": "Téléchargements",
+      "commands": "Commandes",
+      "phrases": "Phrases et réponses",
+      "packs": "Packs"
+    },
+    "notReady": "Il manque au copilote le moteur audio, une voix et un modèle de reconnaissance — voir Aperçu.",
+    "openOverview": "Ouvrir l’aperçu",
+    "status": {
+      "title": "État",
+      "engineer": "Ingénieur",
+      "ready": "Prêt",
+      "off": "Désactivé",
+      "notReady": "Téléchargements requis",
+      "pushToTalk": "Maintenir pour parler",
+      "pushToTalkUnbound": "Non défini — attribuez une touche pour parler à l’ingénieur",
+      "change": "Modifier"
+    },
+    "packOutdated": "Les modifications non enregistrées appartiennent au pack « {{pack}} », mais l’équipe parle maintenant « {{language}} ». Enregistrez-les ou annulez-les pour ouvrir le pack « {{language}} ».",
+    "save": "Enregistrer",
+    "saveBar": {
+      "changes": "Modifications non enregistrées",
+      "errors_one": "{{count}} erreur",
+      "errors_other": "{{count}} erreurs",
+      "discard": "Annuler",
+      "unvoiced": "Réponses pas encore vocalisées : {{count}}",
+      "generate": "Générer la voix"
+    },
+    "leave": {
+      "title": "Modifications non enregistrées",
+      "desc": "Les commandes de l’équipe ont été modifiées sans être enregistrées. Les enregistrer avant de quitter ?",
+      "stay": "Rester",
+      "discard": "Ne pas enregistrer"
+    },
+    "check": {
+      "idle": "Maintenez la touche et dites une phrase, ou saisissez-la dans la liste",
+      "listening": "Écoute…",
+      "draftNote": "Les modifications non enregistrées sont aussi prises en compte",
+      "voiceOff": "La voix est désactivée — activez-la dans Aperçu",
+      "silence": "Aucun son détecté — vérifiez le micro dans Aperçu",
+      "unknown": "« {{sentence}} » — aucune commande ne correspond",
+      "heard": "« {{sentence}} » → {{action}}{{slots}}",
+      "sure": "{{percent}} %",
+      "unsure": "incertain, {{percent}} % — les ordres de stand et les étapes de question ne seront pas exécutés",
+      "answer": "Ingénieur : « {{text}} »"
+    },
+    "openFolder": "Ouvrir le dossier",
+    "downloads": {
+      "tabs": {
+        "recognition": "Reconnaissance",
+        "voices": "Voix",
+        "custom": "Vos voix"
+      },
+      "voicesTitle": "Voix · {{count}}",
+      "languageFilter": {
+        "all": "Toutes"
+      },
+      "recommendedTag": "recommandé",
+      "sample": "Écouter un extrait",
+      "importFolder": "Importer un dossier",
+      "noCustomVoices": "Aucune voix personnelle pour l’instant",
+      "banner": "La voix nécessite un moteur et une voix — environ {{size}} Mo.",
+      "recommended": "Télécharger les éléments recommandés pour votre langue",
+      "download": "Télécharger",
+      "cancel": "Annuler",
+      "remove": "Retirer",
+      "importFiles": "Importer depuis des fichiers",
+      "customVoice": "Votre voix Piper",
+      "customVoiceDesc": "Une voix Piper .onnx avec son fichier .onnx.json — un fichier ou toutes les voix d’un dossier et de ses sous-dossiers.",
+      "importVoice": "Importer une voix",
+      "folder": "Dossier des voix",
+      "state": {
+        "installed": "installé",
+        "outdated": "obsolète",
+        "missing": "non installé"
+      },
+      "kind": {
+        "ttsEngine": "Moteur vocal",
+        "sttEngine": "Moteur de reconnaissance",
+        "ttsVoice": "Voix",
+        "sttModel": "Modèle de reconnaissance"
+      },
+      "changeFolder": "Changer de dossier…",
+      "defaultFolder": "Revenir au dossier par défaut",
+      "folderDesc": "Les téléchargements, packs et le cache sont déplacés ensemble vers le dossier choisi, par exemple sur un disque plus spacieux. Le nouveau dossier doit être vide ; la voix est désactivée pendant le déplacement."
+    },
+    "voice": {
+      "title": "Voix",
+      "enabled": "Ingénieur vocal",
+      "enabledDesc": "Maintenez la touche pour parler (Paramètres → Affectations) et posez une question ou donnez un ordre d’arrêt.",
+      "language": "Langue",
+      "experimental": "expérimental",
+      "languages": {
+        "app": "Même langue que l’application",
+        "ru": "Russe",
+        "en": "Anglais",
+        "es": "Espagnol",
+        "zh": "Chinois"
+      },
+      "voice": "Voix",
+      "recommendedVoice": "Recommandée",
+      "output": "Périphérique de sortie",
+      "input": "Microphone",
+      "systemDefault": "Par défaut",
+      "volume": "Volume {{percent}} %",
+      "speed": "Débit vocal ×{{speed}}",
+      "confidence": "Seuil de confiance {{percent}} %",
+      "confidenceDesc": "Un ordre d’arrêt reconnu avec une confiance inférieure à ce seuil n’est pas exécuté.",
+      "test": "Tester le microphone",
+      "testDesc": "Maintenez la touche et parlez : le résultat reconnu et l’action prévue s’affichent sans être exécutés.",
+      "hold": "Maintenir pour tester",
+      "testIdle": "Aucun test pour l’instant",
+      "testResult": "Entendu : « {{text}} » → {{intent}} ({{percent}} %)",
+      "testNotUnderstood": "non compris"
+    },
+    "phrases": {
+      "desc": "Ce que dit l’ingénieur lorsqu’une phrase n’est pas comprise ou qu’une valeur manque.",
+      "play": "Lire",
+      "addVariant": "Variante",
+      "removeVariant": "Supprimer la variante",
+      "status": {
+        "generated": "généré",
+        "missing": "non généré",
+        "dynamic": "à la volée"
+      },
+      "shared": "Réponses communes",
+      "mistake": "Erreur : {{message}}",
+      "sounds": "Ressemble à : {{samples}}",
+      "playSaveFirst": "Enregistrez les modifications pour écouter",
+      "soundsWays_one": "{{count}} façon : {{samples}}",
+      "soundsWays_other": "{{count}} façons, par exemple : {{samples}}"
+    },
+    "commands": {
+      "counts": "{{intents}} intentions, {{sentences}} phrases",
+      "sentences": "{{count}} phrases",
+      "conflict": "« {{sentence}} » appartient à {{intents}}",
+      "tryShort": "Tester une phrase…",
+      "tryPlaceholder": "Saisissez ce que vous diriez, par ex. « fuel forty »",
+      "tryButton": "Tester",
+      "groups": {
+        "pit": "Ordre d’arrêt",
+        "query": "Questions",
+        "control": "Commandes de l’ingénieur"
+      },
+      "broken": "erreur",
+      "says": "Vous dites",
+      "answers": "L’ingénieur répond",
+      "addTemplate": "Phrase",
+      "removeTemplate": "Supprimer la phrase",
+      "unsaidTitle": "Si {{slot}} n’est pas prononcé",
+      "unsaidDesc": "Une phrase peut omettre la valeur : cochez « peut être omis » dans son bloc. L’ingénieur la demandera ou utilisera la valeur choisie ici.",
+      "unsaidAsk": "L’ingénieur demande",
+      "unsaidNumber": "Ce nombre",
+      "sharedAnswers": "Hors de la voiture ou si la commande échoue, les réponses communes sont utilisées — elles se trouvent en fin de liste.",
+      "mistake": "Erreur : {{message}}",
+      "more": "et {{count}} autres",
+      "missingWords": "Absent du vocabulaire du modèle vocal : {{words}} — une phrase contenant ces mots ne sera jamais reconnue",
+      "vocabularyUnchecked": "Les mots ne sont pas vérifiés par le modèle vocal : l’équipe est désactivée ou le modèle de cette langue n’est pas installé",
+      "slotTitle": "Valeur {{slot}}",
+      "slots": {
+        "number": "Un nombre de 0 à 200, prononcé en toutes lettres : « quarante », « cent vingt ». Les nombres sont intégrés.",
+        "tires": "Quels pneus. Indiquez les mots utilisés pour chacun ; Entrée ajoute un mot.",
+        "compound": "Le composé des pneus. Indiquez les mots utilisés pour chacun ; Entrée ajoute un mot."
+      },
+      "slotValues": {
+        "tires": {
+          "all": "Tous",
+          "front": "Avant",
+          "rear": "Arrière",
+          "left": "Gauche",
+          "right": "Droite",
+          "lf": "Avant gauche",
+          "rf": "Avant droit",
+          "lr": "Arrière gauche",
+          "rr": "Arrière droit"
+        },
+        "compound": {
+          "dry": "Sec",
+          "wet": "Pluie",
+          "soft": "Tendre",
+          "medium": "Medium",
+          "hard": "Dur"
+        }
+      },
+      "search": "Rechercher une commande",
+      "conflicted": "conflit",
+      "slotsTitle": "Valeurs :"
+    },
+    "mistakes": {
+      "fileUnreadable": "Impossible de lire le fichier : {{detail}}",
+      "fileInvalid": "Ce n’est pas un fichier de pack — ligne {{line}}, colonne {{column}} : {{detail}}",
+      "formatUnsupported": "Format {{format}} — cette version lit les formats de {{oldest}} à {{newest}}",
+      "unknownKey": "Phrase inexistante",
+      "unknownIntent": "Commande inexistante",
+      "intentTakesNoValue": "Cette commande ne prend aucune valeur",
+      "notAValueOf": "« {{value}} » n’est pas une valeur de {{slots}}",
+      "unknownSlotValue": "Valeur inconnue « {{value}} », choisissez parmi {{expected}}",
+      "numberSlotBuiltIn": "Les nombres sont intégrés et ne peuvent pas être redéfinis",
+      "unknownSlot": "Aucune valeur {{slot}} ici",
+      "noNumberWords": "Aucun nombre en toutes lettres pour « {{language}} » — les commandes avec un nombre sont omises",
+      "sentenceConflict": "« {{sentence}} » appartient à {{intents}}",
+      "largeGrammar": "{{sentences}} phrases — la reconnaissance ralentit au-delà de {{limit}}",
+      "unclosed": "« {{mark}} » n’est jamais fermé",
+      "unexpected": "« {{mark}} » inattendu",
+      "nothingToClose": "« {{mark}} » n’a rien d’ouvert à fermer",
+      "emptySlot": "Accolades vides : une valeur doit avoir un nom",
+      "tooManySentences": "Développe plus de {{limit}} phrases",
+      "tooManySayings": "{{count}} formulations, {{limit}} au maximum — réduisez les variantes",
+      "unknownFormat": "Format « {{format}} » inconnu — seul le pluriel est pris en charge",
+      "unknownPluralCase": "Forme plurielle « {{case}} » inconnue",
+      "noPluralCases": "{{name}} au pluriel ne possède aucune forme",
+      "unknownValue": "Cette phrase ne contient aucune valeur {{name}}",
+      "noValueHere": "Aucune valeur {{name}} ici — cette phrase propose {{offered}}",
+      "noValueHereNone": "Aucune valeur {{name}} ici — cette phrase n’en propose pas",
+      "badQuestionId": "Identifiant « {{id}} » — lettres, chiffres, - et _ uniquement",
+      "questionIdTaken": "L’identifiant « {{id}} » est déjà utilisé",
+      "noField": "Aucun champ {{field}}",
+      "carFieldNoTarget": "{{field}} est un champ de voiture — cette question ne concerne aucune voiture",
+      "carFieldNoCar": "{{field}} est un champ de voiture — aucune voiture à consulter",
+      "phraseNeedsSlot": "{{slot}} requis — il sert à choisir la voiture",
+      "phraseOnlySlot": "La voiture est choisie uniquement par {{slot}}, pas par {{found}}",
+      "phraseNoSlot": "{{found}} — cette question ne choisit pas la voiture à partir d’une valeur",
+      "noAction": "Aucune action « {{action}} »",
+      "stepNeedsNumber": "{{action}} nécessite un nombre, pas « {{value}} »",
+      "macroOutOfRange": "Une macro de chat va de 1 à {{limit}}, pas {{number}}",
+      "stepValueUnknown": "{{action}} attend {{expected}}, pas « {{value}} »",
+      "where": {
+        "question": "Question « {{name}} »",
+        "phrases": "Question « {{name}} », phrase {{index}}",
+        "replies": "Question « {{name}} », réponse {{index}}",
+        "noCar": "Question « {{name}} », aucune voiture {{index}}",
+        "noValue": "Question « {{name}} », aucune valeur {{index}}",
+        "steps": "Question « {{name}} », étape {{index}}"
+      }
+    },
+    "pack": {
+      "title": "Fichiers du pack",
+      "folder": "Dossier du pack",
+      "folderDesc": "phrases.json et commands.json, avec leurs schémas JSON.",
+      "share": "Partager",
+      "shareDesc": "Les phrases et commandes du pack dans une archive.",
+      "export": "Exporter",
+      "import": "Importer",
+      "reload": "Recharger",
+      "reloadDesc": "Relire le pack après avoir modifié ses fichiers manuellement.",
+      "reloadButton": "Recharger",
+      "switchedOff": "Les questions qui exécutent des actions ont été désactivées à l’importation. Vérifiez-les et activez-les vous-même :",
+      "exported": "Pack exporté : {{path}}",
+      "imported": "Pack importé",
+      "exportFailed": "Le pack n’a pas été exporté",
+      "importFailed": "Le pack n’a pas été importé — le vôtre est inchangé",
+      "errors": {
+        "notAnArchive": "Le fichier n’est pas une archive zip.",
+        "noPackExport": "Vous n’avez pas encore de pack personnel pour cette langue — enregistrez d’abord une modification.",
+        "noPackImport": "L’archive ne contient aucun pack vocal : phrases.json ou commands.json est absent.",
+        "brokenFile": "{{file}} : {{mistake}}"
+      },
+      "sheet": "Fiche mémo",
+      "sheetDesc": "Les commandes vocales possibles, avec vos modifications, sur une page à imprimer ou à garder près du volant. S’ouvre dans le navigateur ; Ctrl+P permet de l’imprimer ou de l’enregistrer en PDF.",
+      "sheetButton": "Exporter la fiche",
+      "sheetSaveFirst": "Enregistrez d’abord les modifications : la fiche est créée à partir du pack enregistré.",
+      "sheetExported": "Fiche enregistrée : {{path}}",
+      "sheetFailed": "La fiche n’a pas été enregistrée"
+    },
+    "values": {
+      "cancel": "Annuler",
+      "insert": "Insérer",
+      "insertPlain": "{{value}} — le nombre seul",
+      "insertWithWord": "{{value}} — le nombre avec un mot",
+      "insertAmount": "{{value}} — avec son unité, litres ou gallons",
+      "pluralTitle": "Nombre avec un mot : {{value}}",
+      "pluralDesc": "Le mot qui suit un nombre change : 1 tour, 5 tours. Indiquez le mot pour chaque nombre ; la forme correcte sera choisie.",
+      "pluralPlaceholder": "le mot après « {{sample}} »",
+      "names": {
+        "laps": "tours",
+        "gap": "écart",
+        "position": "position",
+        "minutes": "minutes",
+        "seconds": "secondes",
+        "compound": "composé",
+        "tires": "pneus",
+        "corners": "quels pneus",
+        "airTemp": "température de l’air",
+        "trackTemp": "température de la piste",
+        "rain": "pluie",
+        "wetness": "humidité de la piste",
+        "wind": "vent",
+        "fuel": "carburant",
+        "fuelLaps": "tours de carburant",
+        "gapAhead": "écart devant",
+        "gapBehind": "écart derrière",
+        "lap": "tour",
+        "lapsLeft": "tours restants",
+        "minutesLeft": "minutes restantes",
+        "car": "numéro de voiture",
+        "name": "nom du pilote",
+        "className": "classe"
+      }
+    },
+    "syntax": {
+      "title": "Écrire des phrases",
+      "intro": "Une ligne représente plusieurs formulations possibles. Seul le texte écrit est reconnu ; chaque variante doit donc être indiquée.",
+      "choice": {
+        "example": "(fuel|fill) forty",
+        "title": "(a|b) — un choix",
+        "desc": "Dites l’un des mots : « fuel forty » ou « fill forty »."
+      },
+      "optional": {
+        "example": "fuel forty [litres]",
+        "title": "[x] — facultatif",
+        "desc": "« fuel forty » et « fuel forty litres » sont tous deux reconnus."
+      },
+      "slot": {
+        "example": "fuel {number}",
+        "title": "{value} — valeur nommée",
+        "desc": "Indiquez ici un nombre ou l’un des mots ci-dessous ; la commande reçoit cette valeur."
+      },
+      "nested": {
+        "example": "[(litres|liters)]",
+        "title": "Imbrication",
+        "desc": "Les crochets peuvent s’imbriquer : un choix facultatif parmi plusieurs mots."
+      },
+      "replies": {
+        "title": "Écrire des réponses",
+        "intro": "Dans les réponses de l’ingénieur, (a|b) et [a] fonctionnent comme dans les phrases du pilote : l’ingénieur choisit une variante à chaque fois. Les réponses acceptent aussi les champs et les formes numériques — ICU MessageFormat, limité ici à {field} et au pluriel.",
+        "field": {
+          "example": "You are P{classPosition}",
+          "title": "{field} — une valeur",
+          "desc": "Valeur d’un champ de la fiche, dans son format propre : temps au tour, nombre. Le carburant, les températures et la vitesse incluent leur unité selon les paramètres : « 40 litres » ou « 11 gallons » — n’ajoutez pas d’unité."
+        },
+        "plural": {
+          "example": "{incidents, plural, one {# incident} other {# incidents}}",
+          "title": "plural — le mot selon le nombre",
+          "desc": "# représente le nombre. L’ingénieur choisit la forme correspondante : « 1 incident », « 5 incidents »."
+        },
+        "exact": {
+          "example": "{incidents, plural, =0 {no incidents} other {# incidents}}",
+          "title": "=N — un nombre exact",
+          "desc": "Texte spécifique à un nombre, évalué avant les formes."
+        },
+        "forms": "Anglais : one (1) et other (tout le reste). Russe : one — 1, 21… ; few — 2–4, 22–24… ; many — 0, 5–20… ; other — fractions. Espagnol : one, many et other. Chinois : other uniquement.",
+        "rulesLink": "Quels nombres prennent quelle forme (CLDR)"
+      }
+    },
+    "questions": {
+      "title": "Vos questions",
+      "desc": "Posez vos propres questions à l’ingénieur ou créez une routine : phrases déclencheuses, actions à effectuer (ordres de stand, macros de chat) et réponse avec des valeurs — météo, carburant, position, écarts, tours et temps.",
+      "add": "Ajouter une question",
+      "newName": "Nouvelle question",
+      "name": "Nom",
+      "remove": "Supprimer la question",
+      "untitled": "Question sans titre",
+      "steps": "Actions à effectuer d’abord",
+      "stepsDesc": "Dans l’ordre, avant la réponse. Si une action échoue, les suivantes sont ignorées et l’ingénieur signale le problème. Les actions de stand nécessitent d’être dans la voiture. Comme une commande de stand, une routine n’est pas exécutée si la phrase a été reconnue avec hésitation.",
+      "addStep": "Ajouter une action",
+      "removeStep": "Supprimer l’action",
+      "macroSlot": "#",
+      "enabled": "Reconnu",
+      "duplicate": "Dupliquer",
+      "copyName": "{{name}} (copie)",
+      "preview": {
+        "title": "Réponse actuelle",
+        "desc": "Réponse de la session à laquelle l’application est connectée, en direct ou enregistrée. Les modifications apparaissent immédiatement sans enregistrer ; les actions de la question ne sont pas exécutées.",
+        "car": {
+          "number": "Numéro de voiture",
+          "position": "Place au classement général",
+          "classPosition": "Place dans la classe"
+        },
+        "show": "Afficher",
+        "listen": "Écouter",
+        "said": "« {{text}} »",
+        "noSession": "Aucune session : démarrez iRacing ou un enregistrement.",
+        "needsCar": "Saisissez le numéro ou la place demandée par la question.",
+        "silent": "L’ingénieur reste silencieux : le pack ne contient aucun texte vocal pour cette réponse."
+      },
+      "target": {
+        "title": "Voiture concernée par la question",
+        "none": "Aucune voiture",
+        "me": "Ma voiture",
+        "ahead": "Voiture devant dans la classe",
+        "behind": "Voiture derrière dans la classe",
+        "leader": "Leader général",
+        "classLeader": "Leader de classe",
+        "aheadOnTrack": "Voiture devant sur la piste",
+        "behindOnTrack": "Voiture derrière sur la piste",
+        "byCarNumber": "Voiture par numéro — {number}",
+        "byPosition": "Voiture par place générale — {position}",
+        "byClassPosition": "Voiture par place de classe — {classPosition}"
+      },
+      "lists": {
+        "answers": {
+          "title": "La réponse",
+          "desc": "Prononcée lorsque tous les champs qu’elle contient ont une valeur."
+        },
+        "noCar": {
+          "title": "Aucune voiture de ce type",
+          "desc": "Prononcée si la voiture n’existe pas : personne devant ou aucune voiture portant ce numéro. Si le champ reste vide, l’ingénieur indique qu’il n’a pas de données."
+        },
+        "noValue": {
+          "title": "Aucune valeur",
+          "desc": "Prononcée lorsqu’un champ de la réponse n’a pas de valeur pour l’instant (pas de données de pluie, aucun tour). Si le champ reste vide, l’ingénieur indique qu’il n’a pas de données."
+        }
+      },
+      "fields": {
+        "desc": "Cliquez sur un champ pour l’insérer à l’emplacement du curseur, ou saisissez { dans une réponse.",
+        "car": "Voiture",
+        "session": "Session",
+        "carNeedsTarget": "Choisissez la voiture concernée pour afficher ses champs.",
+        "names": {
+          "name": "Nom du pilote",
+          "number": "Numéro de voiture",
+          "carName": "Modèle de voiture",
+          "className": "Classe",
+          "position": "Place générale",
+          "classPosition": "Place dans la classe",
+          "startPosition": "Place au départ",
+          "positionsGained": "Places gagnées depuis le départ",
+          "lapsDown": "Tours de retard sur le leader",
+          "lastLap": "Temps du dernier tour",
+          "bestLap": "Meilleur temps au tour",
+          "qualifyTime": "Temps de qualification",
+          "gapToMe": "Écart avec moi, secondes",
+          "gapToLeader": "Écart avec le leader, secondes",
+          "lapDeltaToMe": "Écart de temps au tour avec moi, secondes",
+          "inPit": "Aux stands : oui ou non",
+          "pitStops": "Arrêts effectués",
+          "tireCompound": "Composé des pneus",
+          "speed": "Vitesse",
+          "iRating": "iRating",
+          "license": "Licence",
+          "incidents": "Incidents",
+          "irDelta": "Variation d’iRating",
+          "isRetired": "Abandon : oui ou non",
+          "fuel": "Carburant dans le réservoir",
+          "fuelLaps": "Tours possibles avec le carburant",
+          "fuelToFinish": "Carburant nécessaire jusqu’à l’arrivée",
+          "fuelSavePerLap": "Carburant à économiser par tour",
+          "pitWindowOpen": "Ouverture de la fenêtre d’arrêt au tour",
+          "pitWindowClose": "Fermeture de la fenêtre d’arrêt au tour",
+          "airTemp": "Température de l’air",
+          "trackTemp": "Température de la piste",
+          "rain": "Pluie, %",
+          "trackName": "Nom du circuit",
+          "lapsLeft": "Tours restants",
+          "minutesLeft": "Minutes restantes",
+          "lap": "Tour actuel"
+        }
+      }
+    },
+    "actions": {
+      "pit": {
+        "fuel": {
+          "title": "Carburant",
+          "desc": "Définit la quantité de carburant à ravitailler, en litres ou gallons selon les paramètres."
+        },
+        "fuelToFinish": {
+          "title": "Carburant jusqu’à l’arrivée",
+          "desc": "Définit le carburant encore nécessaire pour finir la course."
+        },
+        "clearFuel": {
+          "title": "Pas de carburant",
+          "desc": "Retire le carburant de l’ordre d’arrêt."
+        },
+        "tires": {
+          "title": "Changer les pneus",
+          "desc": "Marque les pneus indiqués à changer : tous, avant, arrière, gauche, droite ou un seul coin."
+        },
+        "clearTires": {
+          "title": "Pas de pneus",
+          "desc": "Retire le changement de pneus de l’ordre d’arrêt."
+        },
+        "compound": {
+          "title": "Composé des pneus",
+          "desc": "Choisit le composé s’il est disponible dans cette session."
+        },
+        "fastRepair": {
+          "title": "Réparation rapide",
+          "desc": "Active la réparation rapide dans l’ordre d’arrêt."
+        },
+        "clearFastRepair": {
+          "title": "Pas de réparation rapide",
+          "desc": "Désactive la réparation rapide."
+        },
+        "windshield": {
+          "title": "Nettoyer le pare-brise",
+          "desc": "Active le tear-off du pare-brise."
+        },
+        "clearWindshield": {
+          "title": "Laisser le pare-brise",
+          "desc": "Désactive le tear-off du pare-brise."
+        },
+        "clearAll": {
+          "title": "Effacer l’ordre",
+          "desc": "Vide tout l’ordre d’arrêt."
+        },
+        "applyPlanned": {
+          "title": "Arrêt prévu",
+          "desc": "Définit le carburant nécessaire pour finir et quatre pneus."
+        }
+      },
+      "query": {
+        "fuel": {
+          "title": "Carburant restant",
+          "desc": "L’ingénieur indique les litres dans le réservoir et le nombre de tours possibles."
+        },
+        "gapAhead": {
+          "title": "Écart devant",
+          "desc": "Écart en secondes avec la voiture devant dans votre classe."
+        },
+        "gapBehind": {
+          "title": "Écart derrière",
+          "desc": "Écart en secondes avec la voiture derrière dans votre classe."
+        },
+        "whoAhead": {
+          "title": "Qui est devant",
+          "desc": "Voiture la plus proche devant vous sur la piste, toutes classes confondues : numéro, pilote, classe en multiclass, écart et statut (voiture doublée ou concurrente)."
+        },
+        "whoBehind": {
+          "title": "Qui est derrière",
+          "desc": "Voiture la plus proche derrière vous sur la piste, toutes classes confondues : numéro, pilote, classe en multiclass, écart et statut (voiture doublée ou concurrente)."
+        },
+        "position": {
+          "title": "Position",
+          "desc": "Votre place dans la classe."
+        },
+        "lapsLeft": {
+          "title": "Tours restants",
+          "desc": "Tours avant l’arrivée ou minutes restantes pour une course chronométrée."
+        },
+        "lastLap": {
+          "title": "Dernier tour",
+          "desc": "Votre dernier temps au tour."
+        },
+        "bestLap": {
+          "title": "Meilleur tour",
+          "desc": "Votre meilleur temps au tour."
+        },
+        "pitOrder": {
+          "title": "Ordre d’arrêt",
+          "desc": "L’ingénieur lit l’ordre d’arrêt actuel."
+        },
+        "weather": {
+          "title": "Météo",
+          "desc": "Températures de l’air et de la piste, et intensité de la pluie."
+        },
+        "carPosition": {
+          "title": "Position de la voiture",
+          "desc": "Place dans sa classe de la voiture portant ce numéro."
+        },
+        "carLastLap": {
+          "title": "Dernier tour de la voiture",
+          "desc": "Dernier tour de la voiture portant ce numéro."
+        },
+        "carBestLap": {
+          "title": "Meilleur tour de la voiture",
+          "desc": "Meilleur tour de la voiture portant ce numéro."
+        }
+      },
+      "control": {
+        "repeat": {
+          "title": "Répéter",
+          "desc": "L’ingénieur répète la dernière phrase."
+        }
+      },
+      "chat": {
+        "macro": {
+          "title": "Macro de chat",
+          "desc": "Envoie une macro de chat iRacing par son numéro (1–15) ; le texte de la macro se règle dans les options iRacing."
+        }
+      }
+    },
+    "replies": {
+      "engineer": {
+        "ack": {
+          "fuel": "Carburant confirmé",
+          "fuelToFinish": "Carburant jusqu’à l’arrivée confirmé",
+          "clearFuel": "Carburant retiré",
+          "tires": "Pneus confirmés",
+          "clearTires": "Pneus retirés",
+          "compound": "Composé confirmé",
+          "fastRepair": "Réparation rapide confirmée",
+          "clearFastRepair": "Réparation rapide retirée",
+          "windshield": "Pare-brise confirmé",
+          "clearWindshield": "Pare-brise laissé en l’état",
+          "clearAll": "Ordre effacé",
+          "applyPlanned": "Arrêt prévu confirmé"
+        },
+        "answer": {
+          "fuel": "Réponse",
+          "gapAhead": "Réponse",
+          "gapBehind": "Réponse",
+          "noCarAhead": "Personne devant (vous menez la classe)",
+          "noCarBehind": "Personne derrière",
+          "lapsAhead": "Un tour ou plus d’avance",
+          "lapsBehind": "Un tour ou plus de retard",
+          "carAheadOnTrack": "Réponse",
+          "carBehindOnTrack": "Réponse",
+          "carAheadOnTrackClass": "Course multiclass",
+          "carBehindOnTrackClass": "Course multiclass",
+          "noCarAheadOnTrack": "Personne devant sur la piste",
+          "noCarBehindOnTrack": "Personne derrière sur la piste",
+          "trackRival": "Puis : en lutte avec vous pour la position",
+          "trackLapped": "Puis : voiture doublée",
+          "trackLapsUp": "Puis : tours d’avance sur vous",
+          "position": "Réponse",
+          "lapsLeft": "Course en nombre de tours",
+          "timeLeft": "Course chronométrée",
+          "lastLap": "Réponse",
+          "bestLap": "Réponse",
+          "noLapTime": "Aucun temps au tour pour l’instant",
+          "pitOrder": "Réponse",
+          "pitOrderEmpty": "L’ordre est vide",
+          "weather": "Sec",
+          "weatherRain": "Pluie",
+          "carPosition": "Réponse",
+          "carLastLap": "Réponse",
+          "carBestLap": "Réponse",
+          "carNoLapTime": "Lorsque la voiture n’a pas encore de temps au tour",
+          "noSuchCar": "Lorsque ce numéro de voiture n’existe pas"
+        },
+        "ask": {
+          "fuel": "Si la valeur n’est pas prononcée",
+          "tires": "Si la valeur n’est pas prononcée",
+          "compound": "Si la valeur n’est pas prononcée",
+          "car": "Si la valeur n’est pas prononcée"
+        },
+        "unit": {
+          "liters": "Litres",
+          "gallons": "Gallons",
+          "celsius": "Degrés Celsius",
+          "fahrenheit": "Degrés Fahrenheit",
+          "kmh": "Kilomètres par heure",
+          "mph": "Miles par heure"
+        },
+        "notUnderstood": "Non compris",
+        "notInCar": "Commande d’arrêt alors que vous n’êtes pas dans la voiture",
+        "noData": "Aucune donnée pour répondre",
+        "cannot": "La commande n’a pas pu être exécutée",
+        "nothingToRepeat": "Rien à répéter"
+      }
+    },
+    "blocks": {
+      "blocks": "Blocs",
+      "text": "Texte",
+      "modeDesc": "Les blocs composent une phrase avec des mots, des choix et des valeurs sans saisir de symboles. Une phrase aux crochets déséquilibrés s’ouvre en mode texte.",
+      "newWord": "mot",
+      "words": "Mots",
+      "choice": "Un choix",
+      "optional": "Facultatif",
+      "slot": "Valeur {{slot}}",
+      "add": "Ajouter un bloc",
+      "remove": "Supprimer le bloc",
+      "move": "Faire glisser pour déplacer",
+      "apply": "Appliquer",
+      "reply": {
+        "text": "Texte"
+      },
+      "emptySentence": "Saisissez une phrase — Entrée ou un clic ailleurs crée les blocs",
+      "slotOptional": "peut être omis",
+      "emptyReply": "Saisissez une réponse — Entrée ou un clic ailleurs crée les blocs",
+      "choiceHint": "Entrée ajoute une option. Une seule option devient un mot simple.",
+      "change": "Modifier le bloc",
+      "makeOptional": "Facultatif",
+      "makeRequired": "Toujours prononcé",
+      "makeChoice": "Créer un choix « un parmi »",
+      "makeWords": "Remplacer par des mots simples"
+    },
+    "cheatSheet": {
+      "title": "Commandes vocales",
+      "meta": "Pack : {{language}} · exporté le {{date}}",
+      "legend": "a / b — dire l’un des deux ; [ ] — facultatif ; ‹ › — une valeur à préciser.",
+      "command": "Commande",
+      "sections": {
+        "fuel": "Carburant",
+        "tires": "Pneus",
+        "pit": "Réparations et autres ordres d’arrêt",
+        "race": "Questions sur la course"
+      },
+      "values": "Valeurs possibles",
+      "number": "nombre",
+      "numberNote": "Les nombres de 0 à {{max}} se disent en toutes lettres : « quarante », « cent vingt ».",
+      "carNumberNote": "Un numéro de voiture se prononce comme il est inscrit : « trente-trois », « zéro sept », « cinq cent douze ». Seules les voitures de la session sont reconnues."
+    }
+  }
+}

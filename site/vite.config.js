@@ -9,7 +9,7 @@ import {
 } from './i18n/translate.mjs';
 
 const ROOT = dirname(fileURLToPath(import.meta.url));
-const LOCALE_PATH = /^\/(ru|es|zh)(\/(index\.html)?)?(\?.*)?$/;
+const LOCALE_PATH = /^\/(ru|es|zh|de|fr|pt-BR)(\/(index\.html)?)?(\?.*)?$/;
 
 /**
  * Every language besides English is a copy of index.html translated from

@@ -8,19 +8,28 @@ import ruMainApp from './locales/ru/main-app.json';
 import ruWidgets from './locales/ru/widgets.json';
 import zhMainApp from './locales/zh/main-app.json';
 import zhWidgets from './locales/zh/widgets.json';
+import deMainApp from './locales/de/main-app.json';
+import deWidgets from './locales/de/widgets.json';
+import frMainApp from './locales/fr/main-app.json';
+import frWidgets from './locales/fr/widgets.json';
+import ptBrMainApp from './locales/pt-BR/main-app.json';
+import ptBrWidgets from './locales/pt-BR/widgets.json';
 
 const resources = {
   en: { 'main-app': enMainApp, widgets: enWidgets },
   es: { 'main-app': esMainApp, widgets: esWidgets },
   ru: { 'main-app': ruMainApp, widgets: ruWidgets },
   zh: { 'main-app': zhMainApp, widgets: zhWidgets },
+  de: { 'main-app': deMainApp, widgets: deWidgets },
+  fr: { 'main-app': frMainApp, widgets: frWidgets },
+  'pt-BR': { 'main-app': ptBrMainApp, widgets: ptBrWidgets },
 };
 
 void i18n.use(initReactI18next).init({
   resources,
   lng: 'en',
   fallbackLng: 'en',
-  supportedLngs: ['en', 'es', 'ru', 'zh'],
+  supportedLngs: ['en', 'es', 'ru', 'zh', 'de', 'fr', 'pt-BR'],
   interpolation: {
     escapeValue: false,
   },
