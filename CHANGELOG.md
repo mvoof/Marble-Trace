@@ -37,6 +37,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Layout Editor — Widget Hotkeys:** The enabled keyboard button is green. Widget hotkeys can be added and removed in the widget settings as well as in Settings → Hotkeys.
 - **Main Window — Redesign:** A refreshed navigation brings Home, Widgets, Layouts, Crew and Analysis together, with settings and layout editing reorganized into a wider, clearer interface. Remote screens are now called browser screens.
 - **Auto-switch by Car Class and Car:** Each layout card says when it is shown: a session, a car class or a car, picked from every car iRacing has, and every session kind counts. A situation belongs to one layout, and the most specific one wins: a car over a class, a class over a session. A class rule follows your own car's class, so a GT3 car counts as GT3 in an "All Cars" class too. The Auto-switch block says what you are in now and the layout it puts on screen, or that no layout fits. Your session layouts carry over as rules.
 - **Widgets — Redesign:** Widgets have a refreshed visual style and clearer layouts, with saved sizes adjusted where needed to fit the new designs.

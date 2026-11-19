@@ -38,6 +38,9 @@
 }
 
 .chip {
+  display: inline-flex;
+  align-items: center;
+  gap: rem(4);
   padding: rem(2) rem(8);
   border: 1px solid $sys-border-main;
   border-radius: 4px;
@@ -45,6 +48,20 @@
   font-family: $font-mono;
   font-size: rem(11);
   color: $sys-text-primary;
+}
+
+.remove {
+  display: grid;
+  place-items: center;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  color: $sys-text-muted;
+  cursor: pointer;
+
+  &:hover {
+    color: $sys-danger;
+  }
 }
 
 .unbound {
