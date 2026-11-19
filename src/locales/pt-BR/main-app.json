@@ -1063,7 +1063,10 @@
         "ru": "Russo",
         "en": "Inglês",
         "es": "Espanhol",
-        "zh": "Chinês"
+        "zh": "Chinês",
+        "de": "Alemão",
+        "fr": "Francês",
+        "pt": "Português (Brasil)"
       },
       "voice": "Voz",
       "recommendedVoice": "Recomendada",

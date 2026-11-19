@@ -1,0 +1,130 @@
+{
+  "format": 3,
+  "intents": {
+    "pit.fuel": [
+      "(tanken|benzin) {number} [(liter|gallonen)]",
+      "{number} (liter|gallonen) (benzin|kraftstoff)"
+    ],
+    "pit.fuelToFinish": [
+      "kraftstoff bis zum ende",
+      "tanken bis ins ziel",
+      "volltanken"
+    ],
+    "pit.clearFuel": ["kein kraftstoff", "nicht tanken", "kraftstoff löschen"],
+    "pit.tires": [
+      "(reifen|räder) wechseln {tires}",
+      "{tires} (reifen|räder)",
+      "reifen wechseln"
+    ],
+    "pit.clearTires": [
+      "keine reifen wechseln",
+      "keine reifen",
+      "reifen löschen"
+    ],
+    "pit.compound": [
+      "(montiere|nimm) {compound} reifen",
+      "{compound} reifen",
+      "mischung wechseln"
+    ],
+    "pit.fastRepair": [
+      "schnelle reparatur",
+      "schnell reparieren",
+      "repariere das auto"
+    ],
+    "pit.clearFastRepair": [
+      "keine schnelle reparatur",
+      "schnelle reparatur abbrechen"
+    ],
+    "pit.windshield": [
+      "(scheibe|windschutzscheibe) reinigen",
+      "scheibe reinigen"
+    ],
+    "pit.clearWindshield": [
+      "scheibe nicht reinigen",
+      "reinige die scheibe nicht"
+    ],
+    "pit.clearAll": [
+      "(lösche|storniere) den (boxenstopp|auftrag|alles)",
+      "nichts bei diesem stopp"
+    ],
+    "pit.applyPlanned": [
+      "(normaler|voller) boxenstopp",
+      "wie geplant",
+      "mach den plan"
+    ],
+    "query.fuel": [
+      "wie viel kraftstoff (habe ich|ist übrig)",
+      "kraftstoff stand",
+      "für wie viele runden reicht der sprit"
+    ],
+    "query.gapAhead": [
+      "abstand nach vorne",
+      "abstand zum vordermann",
+      "wie weit ist der vordermann entfernt"
+    ],
+    "query.gapBehind": [
+      "abstand nach hinten",
+      "abstand zum hintermann",
+      "wie weit ist der hintermann entfernt"
+    ],
+    "query.whoAhead": ["wer ist (vor mir|voraus)", "wer ist das auto vor mir"],
+    "query.whoBehind": [
+      "wer ist (hinter mir|hinten)",
+      "wer ist das auto hinter mir"
+    ],
+    "query.position": [
+      "welche position habe ich",
+      "was ist meine position",
+      "wo stehe ich"
+    ],
+    "query.lapsLeft": [
+      "wie viele runden (noch|übrig)",
+      "verbleibende runden",
+      "wie viel zeit ist noch übrig",
+      "restzeit"
+    ],
+    "query.lastLap": ["(letzte|vorherige) runde", "wie war meine letzte runde"],
+    "query.bestLap": ["beste runde", "was ist meine beste runde"],
+    "query.pitOrder": [
+      "was machen wir beim stopp",
+      "boxen stopp plan",
+      "was ist der plan für den stopp"
+    ],
+    "query.weather": [
+      "wie ist das wetter",
+      "wetterbericht",
+      "wie sind die temperaturen"
+    ],
+    "query.carPosition": [
+      "wo ist (auto|wagen) {number}",
+      "position von auto {number}"
+    ],
+    "query.carLastLap": [
+      "letzte runde von auto {number}",
+      "zeit von auto {number}"
+    ],
+    "query.carBestLap": ["beste runde von auto {number}"],
+    "control.repeat": ["(wiederhole|noch einmal|wie bitte)", "sag das noch mal"]
+  },
+  "defaults": { "pit.tires": "all" },
+  "slots": {
+    "tires": {
+      "all": ["alle vier", "alle"],
+      "front": ["vorderreifen", "vorne"],
+      "rear": ["hinten"],
+      "left": ["linke"],
+      "right": ["rechte"],
+      "lf": ["vorne links", "links vorne"],
+      "rf": ["vorne rechts", "rechts vorne"],
+      "lr": ["hinten links", "links hinten"],
+      "rr": ["hinten rechts", "rechts hinten"]
+    },
+    "compound": {
+      "dry": ["slicks", "trocken reifen"],
+      "wet": ["regen reifen", "nasse"],
+      "soft": ["weiche"],
+      "medium": ["medium"],
+      "hard": ["harte"]
+    }
+  }
+}

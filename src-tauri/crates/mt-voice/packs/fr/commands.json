@@ -1,0 +1,137 @@
+{
+  "format": 3,
+  "intents": {
+    "pit.fuel": [
+      "(essence|carburant) {number} [(litres|gallons)]",
+      "{number} (litres|gallons) (d'essence|de carburant)"
+    ],
+    "pit.fuelToFinish": [
+      "carburant jusqu'à l'arrivée",
+      "essence pour finir",
+      "fais le plein"
+    ],
+    "pit.clearFuel": [
+      "pas d'essence",
+      "ne fais pas le plein",
+      "annule le carburant"
+    ],
+    "pit.tires": [
+      "(change|monte) les pneus {tires}",
+      "{tires} pneus",
+      "change les pneus"
+    ],
+    "pit.clearTires": [
+      "ne change pas les pneus",
+      "pas de pneus",
+      "annule les pneus"
+    ],
+    "pit.compound": [
+      "(monte|mets) les pneus {compound}",
+      "pneus {compound}",
+      "change de gomme"
+    ],
+    "pit.fastRepair": [
+      "réparation rapide",
+      "répare la voiture",
+      "fais la réparation rapide"
+    ],
+    "pit.clearFastRepair": [
+      "pas de réparation rapide",
+      "annule la réparation rapide"
+    ],
+    "pit.windshield": ["(nettoie|essuie) le (pare-brise|viseur)", "pare-brise"],
+    "pit.clearWindshield": [
+      "ne nettoie pas le pare-brise",
+      "pas de nettoyage du pare-brise"
+    ],
+    "pit.clearAll": [
+      "(efface|annule) (l'arrêt|l'ordre|tout)",
+      "rien à cet arrêt"
+    ],
+    "pit.applyPlanned": [
+      "arrêt (normal|complet)",
+      "comme prévu",
+      "fais le plan"
+    ],
+    "query.fuel": [
+      "combien d'essence (me reste-t-il|il me reste)",
+      "niveau de carburant",
+      "combien de tours d'essence"
+    ],
+    "query.gapAhead": [
+      "écart devant",
+      "écart avec la voiture devant",
+      "à quelle distance est la voiture devant"
+    ],
+    "query.gapBehind": [
+      "écart derrière",
+      "écart avec la voiture derrière",
+      "à quelle distance est la voiture derrière"
+    ],
+    "query.whoAhead": [
+      "qui est (devant|devant moi)",
+      "quelle est la voiture devant"
+    ],
+    "query.whoBehind": [
+      "qui est (derrière|derrière moi)",
+      "quelle est la voiture derrière"
+    ],
+    "query.position": [
+      "quelle est ma position",
+      "je suis à quelle place",
+      "où suis-je"
+    ],
+    "query.lapsLeft": [
+      "combien de tours (restent|il reste)",
+      "tours restants",
+      "combien de temps reste-t-il",
+      "temps restant"
+    ],
+    "query.lastLap": [
+      "(dernier|précédent) tour",
+      "quel était mon dernier tour"
+    ],
+    "query.bestLap": ["meilleur tour", "quel est mon meilleur tour"],
+    "query.pitOrder": [
+      "que fait-on à l'arrêt",
+      "ordre d'arrêt",
+      "quel est le plan pour l'arrêt"
+    ],
+    "query.weather": [
+      "quel temps fait-il",
+      "météo",
+      "quelles sont les températures"
+    ],
+    "query.carPosition": [
+      "où est la voiture {number}",
+      "position de la voiture {number}"
+    ],
+    "query.carLastLap": [
+      "dernier tour de la voiture {number}",
+      "temps au tour de la voiture {number}"
+    ],
+    "query.carBestLap": ["meilleur tour de la voiture {number}"],
+    "control.repeat": ["(répète|encore|pardon)", "redis le"]
+  },
+  "defaults": { "pit.tires": "all" },
+  "slots": {
+    "tires": {
+      "all": ["les quatre", "tous"],
+      "front": ["avant", "les avant"],
+      "rear": ["arrière", "les arrière"],
+      "left": ["gauche", "les gauches"],
+      "right": ["droite", "les droites"],
+      "lf": ["avant gauche", "gauche avant"],
+      "rf": ["avant droite", "droite avant"],
+      "lr": ["arrière gauche", "gauche arrière"],
+      "rr": ["arrière droite", "droite arrière"]
+    },
+    "compound": {
+      "dry": ["secs"],
+      "wet": ["pluie"],
+      "soft": ["tendres"],
+      "medium": ["medium"],
+      "hard": ["dures"]
+    }
+  }
+}

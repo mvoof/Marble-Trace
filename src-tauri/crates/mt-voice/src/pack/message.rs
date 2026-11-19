@@ -358,15 +358,16 @@ fn pick_case<'a>(
 
 /// CLDR cardinal rules for the built-in languages; anything else is `other`.
 pub fn plural_category(language: &str, number: f64) -> PluralCategory {
-    if number.fract() != 0.0 {
-        return PluralCategory::Other;
-    }
-
     let whole = number.abs() as u64;
 
     match language {
-        "en" | "es" if whole == 1 => PluralCategory::One,
+        "en" | "es" | "de" if number.fract() == 0.0 && whole == 1 => PluralCategory::One,
+        "fr" | "pt" if number.abs() < 2.0 => PluralCategory::One,
         "ru" => {
+            if number.fract() != 0.0 {
+                return PluralCategory::Other;
+            }
+
             let last = whole % 10;
             let last_two = whole % 100;
 
@@ -391,7 +392,7 @@ pub fn format_number(number: f64, language: &str) -> String {
 
     let text = format!("{number:.1}");
 
-    if matches!(language, "ru" | "es") {
+    if matches!(language, "ru" | "es" | "de" | "fr" | "pt") {
         text.replace('.', ",")
     } else {
         text
@@ -437,6 +438,17 @@ mod tests {
         assert_eq!(say(text, "en", &[("laps", Arg::Number(0.0))]), "no laps");
         assert_eq!(say(text, "en", &[("laps", Arg::Number(1.0))]), "1 lap");
         assert_eq!(say(text, "en", &[("laps", Arg::Number(2.5))]), "2.5 laps");
+    }
+
+    #[test]
+    fn follows_french_and_portuguese_cardinal_plural_rules() {
+        assert_eq!(plural_category("fr", 0.0), PluralCategory::One);
+        assert_eq!(plural_category("fr", 1.5), PluralCategory::One);
+        assert_eq!(plural_category("fr", 2.0), PluralCategory::Other);
+        assert_eq!(plural_category("pt", 0.0), PluralCategory::One);
+        assert_eq!(plural_category("pt", 1.5), PluralCategory::One);
+        assert_eq!(plural_category("pt", 2.0), PluralCategory::Other);
+        assert_eq!(plural_category("de", 1.5), PluralCategory::Other);
     }
 
     #[test]

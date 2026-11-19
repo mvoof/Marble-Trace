@@ -150,7 +150,7 @@ export const questionAnswerList = (
 
   return 'answers';
 };
-const CREW_LANGUAGES = ['ru', 'en', 'es', 'zh'] as const;
+const CREW_LANGUAGES = ['ru', 'en', 'es', 'zh', 'de', 'fr', 'pt'] as const;
 const FALLBACK_LANGUAGE = 'en';
 
 /**

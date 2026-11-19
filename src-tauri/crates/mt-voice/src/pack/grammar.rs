@@ -41,6 +41,9 @@ fn connectives(language: &str) -> &'static [&'static str] {
         "en" => &["and", "then"],
         "es" => &["y", "luego", "después"],
         "zh" => &["然后", "还有", "再"],
+        "de" => &["und", "dann", "außerdem"],
+        "fr" => &["et", "puis", "ensuite"],
+        "pt" => &["e", "depois", "também"],
         _ => &[],
     }
 }

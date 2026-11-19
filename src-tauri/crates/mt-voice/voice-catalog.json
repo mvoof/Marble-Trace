@@ -108,6 +108,132 @@
       ]
     },
     {
+      "id": "vosk-model-small-de",
+      "kind": "sttModel",
+      "language": "de",
+      "title": "Vosk small de 0.15",
+      "license": "Apache-2.0",
+      "licenseUrl": "https://alphacephei.com/vosk/models",
+      "recommended": true,
+      "files": [
+        {
+          "name": "vosk-model-small-de-0.15.zip",
+          "url": "https://alphacephei.com/vosk/models/vosk-model-small-de-0.15.zip",
+          "sha256": "b7e53c90b1f0a38456f4cd62b366ecd58803cd97cd42b06438e2c131713d5e43",
+          "size": 46499967,
+          "unpack": "zip"
+        }
+      ]
+    },
+    {
+      "id": "vosk-model-small-fr",
+      "kind": "sttModel",
+      "language": "fr",
+      "title": "Vosk small fr 0.22",
+      "license": "Apache-2.0",
+      "licenseUrl": "https://alphacephei.com/vosk/models",
+      "recommended": true,
+      "files": [
+        {
+          "name": "vosk-model-small-fr-0.22.zip",
+          "url": "https://alphacephei.com/vosk/models/vosk-model-small-fr-0.22.zip",
+          "sha256": "cabf6180e177eb9b3a9a9d43a437bd5e549f3a7d09525e5d69a3fed787be12ad",
+          "size": 42233323,
+          "unpack": "zip"
+        }
+      ]
+    },
+    {
+      "id": "vosk-model-small-pt",
+      "kind": "sttModel",
+      "language": "pt",
+      "title": "Vosk small pt 0.3",
+      "license": "Apache-2.0",
+      "licenseUrl": "https://alphacephei.com/vosk/models",
+      "recommended": true,
+      "files": [
+        {
+          "name": "vosk-model-small-pt-0.3.zip",
+          "url": "https://alphacephei.com/vosk/models/vosk-model-small-pt-0.3.zip",
+          "sha256": "6e1ce909032e1afa7a88e68a3d628ecafff302bdf195befab308826c395e93b7",
+          "size": 32453112,
+          "unpack": "zip"
+        }
+      ]
+    },
+    {
+      "id": "piper-voice-de-de-thorsten-medium",
+      "kind": "ttsVoice",
+      "language": "de",
+      "title": "Thorsten (de_DE, medium)",
+      "license": "CC0",
+      "licenseUrl": "https://huggingface.co/rhasspy/piper-voices/blob/04ca88f5685ca5253c701af3687e155b113bd512/de/de_DE/thorsten/medium/MODEL_CARD",
+      "recommended": true,
+      "sample": "https://rhasspy.github.io/piper-samples/samples/de/de_DE/thorsten/medium/speaker_0.mp3",
+      "files": [
+        {
+          "name": "de_DE-thorsten-medium.onnx",
+          "url": "https://huggingface.co/rhasspy/piper-voices/resolve/04ca88f5685ca5253c701af3687e155b113bd512/de/de_DE/thorsten/medium/de_DE-thorsten-medium.onnx",
+          "sha256": "fd270eb3d1ebf91d763f8a0f949b1b1bebdfefaea18c3aaf8577dd34536e064f",
+          "size": 63221984
+        },
+        {
+          "name": "de_DE-thorsten-medium.onnx.json",
+          "url": "https://huggingface.co/rhasspy/piper-voices/resolve/04ca88f5685ca5253c701af3687e155b113bd512/de/de_DE/thorsten/medium/de_DE-thorsten-medium.onnx.json",
+          "sha256": "e5bb7410dcbbcc0be6f4544f6bc66612b315ab5cb3099ec44bb46d860bc7cca9",
+          "size": 6455
+        }
+      ]
+    },
+    {
+      "id": "piper-voice-fr-fr-siwis-medium",
+      "kind": "ttsVoice",
+      "language": "fr",
+      "title": "Siwis (fr_FR, medium)",
+      "license": "CC BY 4.0",
+      "licenseUrl": "https://huggingface.co/rhasspy/piper-voices/blob/04ca88f5685ca5253c701af3687e155b113bd512/fr/fr_FR/siwis/medium/MODEL_CARD",
+      "recommended": true,
+      "sample": "https://rhasspy.github.io/piper-samples/samples/fr/fr_FR/siwis/medium/speaker_0.mp3",
+      "files": [
+        {
+          "name": "fr_FR-siwis-medium.onnx",
+          "url": "https://huggingface.co/rhasspy/piper-voices/resolve/04ca88f5685ca5253c701af3687e155b113bd512/fr/fr_FR/siwis/medium/fr_FR-siwis-medium.onnx",
+          "sha256": "b1d946fd68d0347155fa59bce0a018924abbef3c1561181db45ca463d83963ef",
+          "size": 63221984
+        },
+        {
+          "name": "fr_FR-siwis-medium.onnx.json",
+          "url": "https://huggingface.co/rhasspy/piper-voices/resolve/04ca88f5685ca5253c701af3687e155b113bd512/fr/fr_FR/siwis/medium/fr_FR-siwis-medium.onnx.json",
+          "sha256": "3b3efdbcdcae930c40d8255527170ec5c87bf05e510b67f53d75fd028df40f43",
+          "size": 6369
+        }
+      ]
+    },
+    {
+      "id": "piper-voice-pt-br-faber-medium",
+      "kind": "ttsVoice",
+      "language": "pt",
+      "title": "Faber (pt_BR, medium)",
+      "license": "CC0",
+      "licenseUrl": "https://huggingface.co/rhasspy/piper-voices/blob/04ca88f5685ca5253c701af3687e155b113bd512/pt/pt_BR/faber/medium/MODEL_CARD",
+      "recommended": true,
+      "sample": "https://rhasspy.github.io/piper-samples/samples/pt/pt_BR/faber/medium/speaker_0.mp3",
+      "files": [
+        {
+          "name": "pt_BR-faber-medium.onnx",
+          "url": "https://huggingface.co/rhasspy/piper-voices/resolve/04ca88f5685ca5253c701af3687e155b113bd512/pt/pt_BR/faber/medium/pt_BR-faber-medium.onnx",
+          "sha256": "75e913eb463db0b6ac7ddf68d3e4c9ac19ace36dc3b710a81039b448352b8ffc",
+          "size": 63221984
+        },
+        {
+          "name": "pt_BR-faber-medium.onnx.json",
+          "url": "https://huggingface.co/rhasspy/piper-voices/resolve/04ca88f5685ca5253c701af3687e155b113bd512/pt/pt_BR/faber/medium/pt_BR-faber-medium.onnx.json",
+          "sha256": "6b6801319e5a70aa4d75c63343515f55d1cd671ecd1ac511586bc16216812261",
+          "size": 6257
+        }
+      ]
+    },
+    {
       "id": "piper-voice-ru-denis",
       "kind": "ttsVoice",
       "language": "ru",

@@ -47,7 +47,7 @@ pub const PACK_FORMAT: u32 = 3;
 const OLDEST_FORMAT: u32 = 1;
 pub const PHRASES_FILE: &str = "phrases.json";
 pub const COMMANDS_FILE: &str = "commands.json";
-pub const BUILT_IN_LANGUAGES: &[&str] = &["ru", "en", "es", "zh"];
+pub const BUILT_IN_LANGUAGES: &[&str] = &["ru", "en", "es", "zh", "de", "fr", "pt"];
 
 const BUILT_IN_RU_PHRASES: &str = include_str!("../../packs/ru/phrases.json");
 const BUILT_IN_RU_COMMANDS: &str = include_str!("../../packs/ru/commands.json");
@@ -57,6 +57,12 @@ const BUILT_IN_ES_PHRASES: &str = include_str!("../../packs/es/phrases.json");
 const BUILT_IN_ES_COMMANDS: &str = include_str!("../../packs/es/commands.json");
 const BUILT_IN_ZH_PHRASES: &str = include_str!("../../packs/zh/phrases.json");
 const BUILT_IN_ZH_COMMANDS: &str = include_str!("../../packs/zh/commands.json");
+const BUILT_IN_DE_PHRASES: &str = include_str!("../../packs/de/phrases.json");
+const BUILT_IN_DE_COMMANDS: &str = include_str!("../../packs/de/commands.json");
+const BUILT_IN_FR_PHRASES: &str = include_str!("../../packs/fr/phrases.json");
+const BUILT_IN_FR_COMMANDS: &str = include_str!("../../packs/fr/commands.json");
+const BUILT_IN_PT_PHRASES: &str = include_str!("../../packs/pt/phrases.json");
+const BUILT_IN_PT_COMMANDS: &str = include_str!("../../packs/pt/commands.json");
 
 /// One way to say a phrase, always synthesised. A recording or a file named
 /// by an older pack (`source`, `audio`) is read past and never played.
@@ -398,6 +404,9 @@ pub(crate) fn built_in(language: &str) -> Option<(PhrasesFile, CommandsFile)> {
         "en" => (BUILT_IN_EN_PHRASES, BUILT_IN_EN_COMMANDS),
         "es" => (BUILT_IN_ES_PHRASES, BUILT_IN_ES_COMMANDS),
         "zh" => (BUILT_IN_ZH_PHRASES, BUILT_IN_ZH_COMMANDS),
+        "de" => (BUILT_IN_DE_PHRASES, BUILT_IN_DE_COMMANDS),
+        "fr" => (BUILT_IN_FR_PHRASES, BUILT_IN_FR_COMMANDS),
+        "pt" => (BUILT_IN_PT_PHRASES, BUILT_IN_PT_COMMANDS),
         _ => return None,
     };
 
@@ -909,6 +918,25 @@ mod tests {
                 .intent,
             "query.fuel"
         );
+    }
+
+    #[test]
+    fn recognises_a_pit_command_in_each_new_language() {
+        for (language, sentence) in [
+            ("de", "benzin vierzig liter"),
+            ("fr", "essence quarante litres"),
+            ("pt", "combustível quarenta litros"),
+        ] {
+            let pack = load(language, None);
+            let recognised = pack.grammar.recognise(sentence).unwrap();
+
+            assert_eq!(recognised.intent, "pit.fuel", "{language}");
+            assert_eq!(
+                recognised.slot("number"),
+                Some(&SlotValue::Number(40)),
+                "{language}"
+            );
+        }
     }
 
     #[test]

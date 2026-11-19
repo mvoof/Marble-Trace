@@ -1,0 +1,174 @@
+{
+  "format": 1,
+  "language": "fr",
+  "phrases": {
+    "engineer.ack.fuel": [{ "text": "Bien reçu, {fuel}" }],
+    "engineer.ack.fuelToFinish": [
+      { "text": "Du carburant jusqu'à l'arrivée, {fuel}" }
+    ],
+    "engineer.ack.clearFuel": [{ "text": "Bien reçu, pas de carburant" }],
+    "engineer.ack.tires": [{ "text": "Bien reçu, on change {corners}" }],
+    "engineer.ack.clearTires": [{ "text": "Bien reçu, pas de pneus" }],
+    "engineer.ack.compound": [{ "text": "Bien reçu, pneus {compound}" }],
+    "engineer.ack.fastRepair": [{ "text": "Réparation rapide, bien reçu" }],
+    "engineer.ack.clearFastRepair": [{ "text": "Pas de réparation rapide" }],
+    "engineer.ack.windshield": [{ "text": "On nettoie le pare-brise" }],
+    "engineer.ack.clearWindshield": [{ "text": "On laisse le pare-brise" }],
+    "engineer.ack.clearAll": [{ "text": "Ordre d'arrêt effacé" }],
+    "engineer.ack.applyPlanned": [
+      { "text": "Comme prévu : {fuel} et quatre pneus" }
+    ],
+    "engineer.answer.fuel": [
+      {
+        "text": "{fuel} de carburant, assez pour {laps, plural, one {# tour} other {# tours}}"
+      }
+    ],
+    "engineer.answer.gapAhead": [
+      {
+        "text": "Écart devant, {gap, plural, one {# seconde} other {# secondes}}"
+      }
+    ],
+    "engineer.answer.gapBehind": [
+      {
+        "text": "Écart derrière, {gap, plural, one {# seconde} other {# secondes}}"
+      }
+    ],
+    "engineer.answer.noCarAhead": [{ "text": "Personne devant" }],
+    "engineer.answer.noCarBehind": [{ "text": "Personne derrière" }],
+    "engineer.answer.lapsAhead": [
+      {
+        "text": "La voiture devant a {laps, plural, one {# tour} other {# tours}} d'avance"
+      }
+    ],
+    "engineer.answer.lapsBehind": [
+      {
+        "text": "La voiture derrière a {laps, plural, one {# tour} other {# tours}} de retard"
+      }
+    ],
+    "engineer.answer.carAheadOnTrack": [
+      {
+        "text": "Devant, numéro {car}, à {gap, plural, one {# seconde} other {# secondes}}"
+      }
+    ],
+    "engineer.answer.carBehindOnTrack": [
+      {
+        "text": "Derrière, numéro {car}, à {gap, plural, one {# seconde} other {# secondes}}"
+      }
+    ],
+    "engineer.answer.carAheadOnTrackClass": [
+      {
+        "text": "Devant, numéro {car}, {className}, à {gap, plural, one {# seconde} other {# secondes}}"
+      }
+    ],
+    "engineer.answer.carBehindOnTrackClass": [
+      {
+        "text": "Derrière, numéro {car}, {className}, à {gap, plural, one {# seconde} other {# secondes}}"
+      }
+    ],
+    "engineer.answer.noCarAheadOnTrack": [
+      { "text": "Personne devant sur la piste" }
+    ],
+    "engineer.answer.noCarBehindOnTrack": [
+      { "text": "Personne derrière sur la piste" }
+    ],
+    "engineer.answer.trackRival": [
+      { "text": "Il se bat avec toi pour la position" }
+    ],
+    "engineer.answer.trackLapped": [
+      {
+        "text": "Voiture doublée, à {laps, plural, one {# tour} other {# tours}}"
+      }
+    ],
+    "engineer.answer.trackLapsUp": [
+      {
+        "text": "{laps, plural, one {# tour} other {# tours}} d'avance sur toi"
+      }
+    ],
+    "engineer.answer.position": [{ "text": "Tu es en position {position}" }],
+    "engineer.answer.lapsLeft": [
+      { "text": "Encore {laps, plural, one {# tour} other {# tours}}" }
+    ],
+    "engineer.answer.timeLeft": [
+      { "text": "Encore {minutes, plural, one {# minute} other {# minutes}}" }
+    ],
+    "engineer.answer.lastLap": [{ "text": "Dernier tour {minutes} {seconds}" }],
+    "engineer.answer.bestLap": [
+      { "text": "Meilleur tour {minutes} {seconds}" }
+    ],
+    "engineer.answer.noLapTime": [{ "text": "Pas encore de temps au tour" }],
+    "engineer.answer.pitOrder": [
+      {
+        "text": "À cet arrêt : {fuel, plural, =0 {pas de carburant} other {{fuel}}}, {tires, plural, =0 {pas de pneus} one {# pneu} other {# pneus}}"
+      }
+    ],
+    "engineer.answer.pitOrderEmpty": [{ "text": "Rien de prévu" }],
+    "engineer.answer.weather": [
+      { "text": "Piste {surface}. Air {airTemp}, piste {trackTemp}" }
+    ],
+    "engineer.answer.weatherRain": [
+      {
+        "text": "Pluie à {rain} pour cent, piste {surface}. Air {airTemp}, piste {trackTemp}"
+      }
+    ],
+    "engineer.answer.carPosition": [
+      { "text": "La voiture {car} est en position {position} dans sa classe" }
+    ],
+    "engineer.answer.carLastLap": [
+      { "text": "Voiture {car}, dernier tour {minutes} {seconds}" }
+    ],
+    "engineer.answer.carBestLap": [
+      { "text": "Voiture {car}, meilleur tour {minutes} {seconds}" }
+    ],
+    "engineer.answer.carNoLapTime": [
+      { "text": "Pas encore de temps au tour pour la voiture {car}" }
+    ],
+    "engineer.answer.noSuchCar": [
+      { "text": "La voiture {car} n'est pas dans la course" }
+    ],
+    "engineer.ask.fuel": [{ "text": "Combien de carburant ?" }],
+    "engineer.ask.tires": [{ "text": "Quels pneus ?" }],
+    "engineer.ask.compound": [{ "text": "Quelle gomme ?" }],
+    "engineer.ask.car": [{ "text": "Quel numéro de voiture ?" }],
+    "engineer.notUnderstood": [{ "text": "Répète ?" }],
+    "engineer.notInCar": [{ "text": "Tu n'es pas dans la voiture" }],
+    "engineer.noData": [{ "text": "Pas encore de données" }],
+    "engineer.cannot": [{ "text": "Impossible" }],
+    "engineer.nothingToRepeat": [{ "text": "Je n'ai encore rien dit" }],
+    "engineer.yes": [{ "text": "oui" }],
+    "engineer.no": [{ "text": "non" }],
+    "engineer.plus": [{ "text": "plus {value}" }],
+    "engineer.minus": [{ "text": "moins {value}" }],
+    "engineer.faster": [{ "text": "{value} plus vite" }],
+    "engineer.slower": [{ "text": "{value} moins vite" }],
+    "engineer.surface.unknown": [{ "text": "inconnue" }],
+    "engineer.surface.dry": [{ "text": "sèche" }],
+    "engineer.surface.mostlyDry": [{ "text": "presque sèche" }],
+    "engineer.surface.veryLightlyWet": [{ "text": "très légèrement humide" }],
+    "engineer.surface.lightlyWet": [{ "text": "légèrement humide" }],
+    "engineer.surface.moderatelyWet": [{ "text": "humide" }],
+    "engineer.surface.veryWet": [{ "text": "très humide" }],
+    "engineer.surface.extremelyWet": [{ "text": "détrempée" }],
+    "engineer.unit.liters": [
+      { "text": "{value, plural, one {# litre} other {# litres}}" }
+    ],
+    "engineer.unit.gallons": [
+      { "text": "{value, plural, one {# gallon} other {# gallons}}" }
+    ],
+    "engineer.unit.celsius": [
+      { "text": "{value, plural, one {# degré} other {# degrés}}" }
+    ],
+    "engineer.unit.fahrenheit": [
+      { "text": "{value, plural, one {# degré} other {# degrés}}" }
+    ],
+    "engineer.unit.kmh": [
+      {
+        "text": "{value, plural, one {# kilomètre par heure} other {# kilomètres par heure}}"
+      }
+    ],
+    "engineer.unit.mph": [
+      {
+        "text": "{value, plural, one {# mile par heure} other {# miles par heure}}"
+      }
+    ]
+  }
+}

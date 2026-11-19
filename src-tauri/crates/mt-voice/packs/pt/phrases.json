@@ -1,0 +1,166 @@
+{
+  "format": 1,
+  "language": "pt",
+  "phrases": {
+    "engineer.ack.fuel": [{ "text": "Entendido, {fuel}" }],
+    "engineer.ack.fuelToFinish": [{ "text": "Combustível até o fim, {fuel}" }],
+    "engineer.ack.clearFuel": [{ "text": "Entendido, sem combustível" }],
+    "engineer.ack.tires": [{ "text": "Entendido, vamos trocar {corners}" }],
+    "engineer.ack.clearTires": [{ "text": "Entendido, sem pneus" }],
+    "engineer.ack.compound": [{ "text": "Entendido, pneus {compound}" }],
+    "engineer.ack.fastRepair": [{ "text": "Reparo rápido, entendido" }],
+    "engineer.ack.clearFastRepair": [{ "text": "Sem reparo rápido" }],
+    "engineer.ack.windshield": [{ "text": "Vamos limpar o para-brisa" }],
+    "engineer.ack.clearWindshield": [{ "text": "Vamos deixar o para-brisa" }],
+    "engineer.ack.clearAll": [{ "text": "Ordem de parada cancelada" }],
+    "engineer.ack.applyPlanned": [
+      { "text": "Como planejado: {fuel} e quatro pneus" }
+    ],
+    "engineer.answer.fuel": [
+      {
+        "text": "{fuel} de combustível, suficiente para {laps, plural, one {# volta} other {# voltas}}"
+      }
+    ],
+    "engineer.answer.gapAhead": [
+      {
+        "text": "Distância à frente, {gap, plural, one {# segundo} other {# segundos}}"
+      }
+    ],
+    "engineer.answer.gapBehind": [
+      {
+        "text": "Distância atrás, {gap, plural, one {# segundo} other {# segundos}}"
+      }
+    ],
+    "engineer.answer.noCarAhead": [{ "text": "Ninguém à frente" }],
+    "engineer.answer.noCarBehind": [{ "text": "Ninguém atrás" }],
+    "engineer.answer.lapsAhead": [
+      {
+        "text": "O carro da frente está {laps, plural, one {# volta} other {# voltas}} à frente"
+      }
+    ],
+    "engineer.answer.lapsBehind": [
+      {
+        "text": "O carro de trás está {laps, plural, one {# volta} other {# voltas}} atrás"
+      }
+    ],
+    "engineer.answer.carAheadOnTrack": [
+      {
+        "text": "À frente, número {car}, a {gap, plural, one {# segundo} other {# segundos}}"
+      }
+    ],
+    "engineer.answer.carBehindOnTrack": [
+      {
+        "text": "Atrás, número {car}, a {gap, plural, one {# segundo} other {# segundos}}"
+      }
+    ],
+    "engineer.answer.carAheadOnTrackClass": [
+      {
+        "text": "À frente, número {car}, {className}, a {gap, plural, one {# segundo} other {# segundos}}"
+      }
+    ],
+    "engineer.answer.carBehindOnTrackClass": [
+      {
+        "text": "Atrás, número {car}, {className}, a {gap, plural, one {# segundo} other {# segundos}}"
+      }
+    ],
+    "engineer.answer.noCarAheadOnTrack": [
+      { "text": "Ninguém à frente na pista" }
+    ],
+    "engineer.answer.noCarBehindOnTrack": [
+      { "text": "Ninguém atrás na pista" }
+    ],
+    "engineer.answer.trackRival": [{ "text": "Disputa posição com você" }],
+    "engineer.answer.trackLapped": [
+      {
+        "text": "Carro retardatário, {laps, plural, one {# volta} other {# voltas}} atrás"
+      }
+    ],
+    "engineer.answer.trackLapsUp": [
+      { "text": "{laps, plural, one {# volta} other {# voltas}} à sua frente" }
+    ],
+    "engineer.answer.position": [{ "text": "Você está na posição {position}" }],
+    "engineer.answer.lapsLeft": [
+      { "text": "Faltam {laps, plural, one {# volta} other {# voltas}}" }
+    ],
+    "engineer.answer.timeLeft": [
+      { "text": "Faltam {minutes, plural, one {# minuto} other {# minutos}}" }
+    ],
+    "engineer.answer.lastLap": [{ "text": "Última volta {minutes} {seconds}" }],
+    "engineer.answer.bestLap": [{ "text": "Melhor volta {minutes} {seconds}" }],
+    "engineer.answer.noLapTime": [{ "text": "Ainda não há tempo de volta" }],
+    "engineer.answer.pitOrder": [
+      {
+        "text": "Nesta parada: {fuel, plural, =0 {sem combustível} other {{fuel}}}, {tires, plural, =0 {sem pneus} one {# pneu} other {# pneus}}"
+      }
+    ],
+    "engineer.answer.pitOrderEmpty": [{ "text": "Nada solicitado" }],
+    "engineer.answer.weather": [
+      { "text": "Pista {surface}. Ar {airTemp}, pista {trackTemp}" }
+    ],
+    "engineer.answer.weatherRain": [
+      {
+        "text": "Chuva a {rain} por cento, pista {surface}. Ar {airTemp}, pista {trackTemp}"
+      }
+    ],
+    "engineer.answer.carPosition": [
+      { "text": "O carro {car} está na posição {position} na classe" }
+    ],
+    "engineer.answer.carLastLap": [
+      { "text": "Carro {car}, última volta {minutes} {seconds}" }
+    ],
+    "engineer.answer.carBestLap": [
+      { "text": "Carro {car}, melhor volta {minutes} {seconds}" }
+    ],
+    "engineer.answer.carNoLapTime": [
+      { "text": "Ainda não há tempo de volta para o carro {car}" }
+    ],
+    "engineer.answer.noSuchCar": [
+      { "text": "O carro {car} não está na sessão" }
+    ],
+    "engineer.ask.fuel": [{ "text": "Quanto combustível?" }],
+    "engineer.ask.tires": [{ "text": "Quais pneus?" }],
+    "engineer.ask.compound": [{ "text": "Qual composto?" }],
+    "engineer.ask.car": [{ "text": "Qual número do carro?" }],
+    "engineer.notUnderstood": [{ "text": "Pode repetir?" }],
+    "engineer.notInCar": [{ "text": "Você não está no carro" }],
+    "engineer.noData": [{ "text": "Ainda sem dados" }],
+    "engineer.cannot": [{ "text": "Não consigo fazer isso" }],
+    "engineer.nothingToRepeat": [{ "text": "Ainda não falei nada" }],
+    "engineer.yes": [{ "text": "sim" }],
+    "engineer.no": [{ "text": "não" }],
+    "engineer.plus": [{ "text": "mais {value}" }],
+    "engineer.minus": [{ "text": "menos {value}" }],
+    "engineer.faster": [{ "text": "{value} mais rápido" }],
+    "engineer.slower": [{ "text": "{value} mais devagar" }],
+    "engineer.surface.unknown": [{ "text": "desconhecida" }],
+    "engineer.surface.dry": [{ "text": "seca" }],
+    "engineer.surface.mostlyDry": [{ "text": "quase seca" }],
+    "engineer.surface.veryLightlyWet": [{ "text": "levemente úmida" }],
+    "engineer.surface.lightlyWet": [{ "text": "um pouco molhada" }],
+    "engineer.surface.moderatelyWet": [{ "text": "molhada" }],
+    "engineer.surface.veryWet": [{ "text": "muito molhada" }],
+    "engineer.surface.extremelyWet": [{ "text": "alagada" }],
+    "engineer.unit.liters": [
+      { "text": "{value, plural, one {# litro} other {# litros}}" }
+    ],
+    "engineer.unit.gallons": [
+      { "text": "{value, plural, one {# galão} other {# galões}}" }
+    ],
+    "engineer.unit.celsius": [
+      { "text": "{value, plural, one {# grau} other {# graus}}" }
+    ],
+    "engineer.unit.fahrenheit": [
+      { "text": "{value, plural, one {# grau} other {# graus}}" }
+    ],
+    "engineer.unit.kmh": [
+      {
+        "text": "{value, plural, one {# quilômetro por hora} other {# quilômetros por hora}}"
+      }
+    ],
+    "engineer.unit.mph": [
+      {
+        "text": "{value, plural, one {# milha por hora} other {# milhas por hora}}"
+      }
+    ]
+  }
+}
