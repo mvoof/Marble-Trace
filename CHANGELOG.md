@@ -62,6 +62,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Incident Count:** The Incident Tracker takes the count as the sim gives it. Started mid-session, it no longer counts from zero while the standings footer reads the right number, and a momentary drop of the session number no longer starts a new session.
 - **Invisible Dash — Depth and Curvature Sliders:** The two sliders in the widget's settings had shrunk to nothing and could not be moved; they now span the panel.
 - **Incident Warning:** The warning comes five incidents short of the session's own limit or the next penalty, and stays quiet when the session has no limit; before, it fired at a fixed 15 or two short of the limit.
+- **Overlay Window Order:** After the game or a screenshot tool puts an overlay behind it, the overlay returns on top automatically without taking focus from the game.
 
 ## [0.28.0] — 2026-11-03
 

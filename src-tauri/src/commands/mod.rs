@@ -20,6 +20,7 @@ pub mod stats;
 pub mod telemetry;
 pub mod track;
 pub mod voice;
+pub mod windows;
 
 use tauri::ipc::Invoke;
 use tauri::{generate_handler, Wry};
@@ -82,6 +83,7 @@ pub fn invoke_handler() -> impl Fn(Invoke<Wry>) -> bool + Send + Sync + 'static 
         track::get_active_reference_lap,
         track::delete_reference_lap,
         displays::list_display_names,
+        windows::reassert_all_overlays_topmost,
         settings::log_settings_snapshot,
         settings::backup_settings_file,
         settings::load_settings,

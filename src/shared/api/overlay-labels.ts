@@ -1,4 +1,5 @@
 import { getAllWebviewWindows } from '@tauri-apps/api/webviewWindow';
+import { invoke } from '@tauri-apps/api/core';
 
 export const OVERLAY_LABEL_PREFIX = 'overlay-';
 
@@ -19,3 +20,6 @@ export const listOverlayWindowLabels = async (): Promise<string[]> => {
     .map((window) => window.label)
     .filter((label) => label.startsWith(OVERLAY_LABEL_PREFIX));
 };
+
+export const reassertAllOverlaysTopmost = (): Promise<void> =>
+  invoke('reassert_all_overlays_topmost');

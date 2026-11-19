@@ -6,9 +6,11 @@ import type { LayoutResolution } from '@shared/contracts/widget-settings';
 import {
   monitorLabel,
   listOverlayWindowLabels,
+  reassertAllOverlaysTopmost,
 } from '@shared/api/overlay-labels';
 
 const WIN32_DISPLAY_PREFIX = '\\\\.\\';
+const TOPMOST_REASSERT_INTERVAL_MS = 2000;
 
 interface PhysicalMonitor {
   name: string;
@@ -158,4 +160,37 @@ export const syncOverlayWindows = (root: RendererCore): Promise<void> => {
   });
 
   return syncInFlight;
+};
+
+// A game or screenshot tool can become topmost after an overlay was created.
+// Reassert z-order through SetWindowPos with SWP_NOACTIVATE in the backend.
+export const watchOverlayTopmost = (): (() => void) => {
+  let stopped = false;
+  let reasserting = false;
+
+  const reassert = async () => {
+    if (stopped || reasserting) return;
+
+    reasserting = true;
+
+    try {
+      await reassertAllOverlaysTopmost();
+    } catch (error) {
+      console.error('Failed to reassert overlay topmost:', error);
+    } finally {
+      reasserting = false;
+    }
+  };
+
+  void reassert();
+
+  const timer = window.setInterval(
+    () => void reassert(),
+    TOPMOST_REASSERT_INTERVAL_MS
+  );
+
+  return () => {
+    stopped = true;
+    window.clearInterval(timer);
+  };
 };

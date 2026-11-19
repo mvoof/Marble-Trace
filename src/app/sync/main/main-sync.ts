@@ -23,7 +23,11 @@ import {
   registerStatsFolderReaction,
 } from './stats-folder-sync';
 import { registerAnalysisSync } from './analysis-sync';
-import { overlayMonitorNames, syncOverlayWindows } from './overlay-windows';
+import {
+  overlayMonitorNames,
+  syncOverlayWindows,
+  watchOverlayTopmost,
+} from './overlay-windows';
 import { registerRemotePublishing } from './remote-publish';
 import { registerClientPublishing } from './client-publish';
 import { registerTrackRotationOwnership } from './track-rotation-sync';
@@ -178,6 +182,7 @@ export const initMainSync = async (root: MainRoot) => {
       const clientPublishing = await registerClientPublishing(root);
 
       await syncOverlayWindows(root);
+      const stopOverlayTopmostWatch = watchOverlayTopmost();
 
       // Overlays that outlived a reload of this window never say hello again.
       void clientPublishing.publishAll();
@@ -256,6 +261,7 @@ export const initMainSync = async (root: MainRoot) => {
 
       const cleanup = () => {
         stopMonitorWatch();
+        stopOverlayTopmostWatch();
         stopRemotePublishing();
         stopAnalysisSync();
         clientPublishing.dispose();
