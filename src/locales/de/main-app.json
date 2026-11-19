@@ -849,7 +849,7 @@
     "greeting": "Hallo, {{name}}!",
     "greetingNoName": "Hallo!",
     "emptyTitle": "Noch keine Sessions",
-    "emptyText": "Jedes Mal, wenn du ins Auto steigst, speichert iRacing eine Telemetriedatei unter DocumentsiRacing\\telemetry. Marble Trace liest diese Dateien bei geschlossenem Spiel ein und erstellt daraus deine Sessions, Runden, Zwischenfälle und dein iRating.",
+    "emptyText": "Jedes Mal, wenn du ins Auto steigst, speichert iRacing eine Telemetriedatei unter Documents\\iRacing\\telemetry. Marble Trace liest diese Dateien bei geschlossenem Spiel ein und erstellt daraus deine Sessions, Runden, Zwischenfälle und dein iRating.",
     "emptyKept": "Die eingelesenen Daten bleiben erhalten, auch wenn du die Dateien löschst.",
     "import": {
       "reading": "Spieldateien werden gelesen ·",

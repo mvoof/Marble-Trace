@@ -235,7 +235,7 @@
   "A shift light bar you read at the edge of vision, with your own colours and shift point.": "Eine Schaltlichtleiste am Rand des Sichtfelds, mit eigenen Farben und Schaltpunkt.",
   "Water, oil, fuel pressure and voltage under one glance, so a failing engine is not a surprise.": "Wasser, Öl, Kraftstoffdruck und Spannung auf einen Blick — damit ein Motorschaden nicht überraschend kommt.",
   "Hybrid charge, what the MGU-K is doing with it, and the energy spent on the lap.": "Hybridladung, MGU-K-Energieeinsatz und die in der Runde verbrauchte Energie.",
-  "Armed past the detection point, ready inside the zone, open — the drag reduction system at a glance.": "Scharfgeschaltet vor dem Erkennungspunkt, bereit innerhalb der Zone, geöffnet — das Drag Reduction System auf einen Blick.",
+  "Armed past the detection point, ready inside the zone, open — the drag reduction system at a glance.": "Nach dem Erkennungspunkt scharfgeschaltet, innerhalb der Zone bereit, geöffnet — das Drag Reduction System auf einen Blick.",
   "The in-car ABS setting, with a badge that lights while ABS is working.": "ABS-Einstellung im Fahrzeug und ein Abzeichen, das bei aktivem ABS leuchtet.",
   "Throttle, brake and steering as a rolling trace — see your own hands and feet on the lap.": "Gas, Bremse und Lenkung als laufender Verlauf — sieh, was deine Hände und Füße in der Runde tun.",
   "Lateral and longitudinal load live, with the peaks of the lap held beside them.": "Quer- und Längskräfte live, mit den Rundenhöchstwerten daneben.",
@@ -441,7 +441,7 @@
   "Lap times": "Rundenzeiten",
   "Track and weather": "Strecke und Wetter",
   "Runs on your PC": "Läuft auf deinem PC",
-  "Speech is heard and spoken on your own PC, in English, Russian, Spanish or Chinese. Every sentence it listens for and every reply it gives can be edited, word by word.": "Die Spracherkennung und Sprachausgabe laufen auf deinem eigenen PC, auf Deutsch, Russisch, Spanisch oder Chinesisch. Jeden erkannten Satz und jede Antwort kannst du Wort für Wort bearbeiten.",
+  "Speech is heard and spoken on your own PC, in English, Russian, Spanish or Chinese. Every sentence it listens for and every reply it gives can be edited, word by word.": "Die Spracherkennung und Sprachausgabe laufen auf deinem eigenen PC, auf Englisch, Russisch, Spanisch oder Chinesisch. Jeden erkannten Satz und jede Antwort kannst du Wort für Wort bearbeiten.",
   "Open the crew commands screenshot": "Screenshot der Crew-Befehle öffnen",
   "The Crew tab: the Fuel command's sentences as blocks, the engineer's replies, and a tried sentence matched to the command": "Crew-Tab: Sätze des Kraftstoffbefehls als Bausteine, Antworten des Ingenieurs und ein getesteter Satz, der dem Befehl zugeordnet wurde",
   "Try a sentence": "Satz ausprobieren",
@@ -506,6 +506,6 @@
   "Discord server": "Discord-Server",
   "Built with Rust and the Tauri® framework · telemetry by kerb": "Erstellt mit Rust und dem Tauri®-Framework · Telemetrie von kerb",
   "Marble Trace™ and the Marble Trace logo are trademarks of voof. TAURI is trademark of The Tauri Programme within the Commons Conservancy. Rust is a trademark of the Rust Foundation. iRacing is a trademark of iRacing.com Motorsport Simulations, LLC. Windows is a trademark of the Microsoft group of companies. GitHub is a trademark of GitHub, Inc. Discord is a trademark of Discord Inc. All other names are the property of their respective owners. Marble Trace is an independent open-source project and is not affiliated with, sponsored or endorsed by any of them.": "Marble Trace™ und das Marble-Trace-Logo sind Marken von voof. TAURI ist eine Marke des Tauri Programme innerhalb der Commons Conservancy. Rust ist eine Marke der Rust Foundation. iRacing ist eine Marke von iRacing.com Motorsport Simulations, LLC. Windows ist eine Marke der Microsoft-Unternehmensgruppe. GitHub ist eine Marke von GitHub, Inc. Discord ist eine Marke von Discord Inc. Alle anderen Namen gehören ihren jeweiligen Eigentümern. Marble Trace ist ein unabhängiges Open-Source-Projekt und steht mit keinem dieser Unternehmen in Verbindung; es wird von ihnen weder gesponsert noch unterstützt.",
-  "Screenshot": "Captura de tela",
-  "Close the screenshot": "Fechar captura de tela"
+  "Screenshot": "Bildschirmfoto",
+  "Close the screenshot": "Bildschirmfoto schließen"
 }

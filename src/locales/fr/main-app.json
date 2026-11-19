@@ -849,7 +849,7 @@
     "greeting": "Bonjour, {{name}} !",
     "greetingNoName": "Bonjour !",
     "emptyTitle": "Aucune session pour l’instant",
-    "emptyText": "Chaque fois que vous prenez le volant, iRacing enregistre un fichier télémétrique dans DocumentsiRacing\\telemetry. Marble Trace lit ces fichiers lorsque le jeu est fermé et les transforme en sessions, tours, incidents et iRating.",
+    "emptyText": "Chaque fois que vous prenez le volant, iRacing enregistre un fichier télémétrique dans Documents\\iRacing\\telemetry. Marble Trace lit ces fichiers lorsque le jeu est fermé et les transforme en sessions, tours, incidents et iRating.",
     "emptyKept": "Les données lues sont conservées même après la suppression des fichiers.",
     "import": {
       "reading": "Lecture des fichiers du jeu ·",

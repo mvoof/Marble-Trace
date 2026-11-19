@@ -849,7 +849,7 @@
     "greeting": "Olá, {{name}}!",
     "greetingNoName": "Olá!",
     "emptyTitle": "Nenhuma sessão ainda",
-    "emptyText": "Sempre que você entra no carro, o iRacing grava um arquivo de telemetria em DocumentsiRacing\\telemetry. O Marble Trace lê esses arquivos quando o jogo está fechado e os transforma em sessões, voltas, incidentes e iRating.",
+    "emptyText": "Sempre que você entra no carro, o iRacing grava um arquivo de telemetria em Documents\\iRacing\\telemetry. O Marble Trace lê esses arquivos quando o jogo está fechado e os transforma em sessões, voltas, incidentes e iRating.",
     "emptyKept": "Os dados lidos são mantidos mesmo depois que você exclui os arquivos.",
     "import": {
       "reading": "Lendo arquivos do jogo ·",
