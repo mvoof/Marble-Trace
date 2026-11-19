@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.29.0] — 2026-11-19
+
 ### Added
 
 - **Voice Crew — German, French and Brazilian Portuguese:** Add voice packs and Piper voices for all three languages. Piper 1.5 is downloaded on demand with a portable Python runtime; the app keeps its worker and voice model loaded while the crew is speaking.
