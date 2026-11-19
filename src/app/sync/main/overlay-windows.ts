@@ -6,6 +6,7 @@ import type { LayoutResolution } from '@shared/contracts/widget-settings';
 import {
   monitorLabel,
   listOverlayWindowLabels,
+  reassertAllOverlaysTopmost,
 } from '@shared/api/overlay-labels';
 
 const WIN32_DISPLAY_PREFIX = '\\\\.\\';
@@ -162,8 +163,7 @@ export const syncOverlayWindows = (root: RendererCore): Promise<void> => {
 };
 
 // A game or screenshot tool can become topmost after an overlay was created.
-// Flipping the flag makes Windows apply the topmost z-order again. This does
-// not activate the overlay, so input focus remains with the game.
+// Reassert z-order through SetWindowPos with SWP_NOACTIVATE in the backend.
 export const watchOverlayTopmost = (): (() => void) => {
   let stopped = false;
   let reasserting = false;
@@ -174,18 +174,7 @@ export const watchOverlayTopmost = (): (() => void) => {
     reasserting = true;
 
     try {
-      const labels = await listOverlayWindowLabels();
-
-      await Promise.all(
-        labels.map(async (label) => {
-          const overlay = await WebviewWindow.getByLabel(label);
-
-          if (!overlay) return;
-
-          await overlay.setAlwaysOnTop(false);
-          await overlay.setAlwaysOnTop(true);
-        })
-      );
+      await reassertAllOverlaysTopmost();
     } catch (error) {
       console.error('Failed to reassert overlay topmost:', error);
     } finally {
