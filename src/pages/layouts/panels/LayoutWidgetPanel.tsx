@@ -43,6 +43,7 @@ const RowIconButton = ({
   icon: Icon,
   title,
   isOn,
+  isPositive = false,
   isDanger = false,
   isDisabled = false,
   isHoverOnly = false,
@@ -51,6 +52,7 @@ const RowIconButton = ({
   icon: LucideIcon;
   title: string;
   isOn?: boolean;
+  isPositive?: boolean;
   isDanger?: boolean;
   isDisabled?: boolean;
   /** Shown on the row's hover, focus or selection only. */
@@ -62,6 +64,7 @@ const RowIconButton = ({
     className={cx(
       styles.rowButton,
       isOn && styles.rowButtonOn,
+      isPositive && isOn && styles.rowButtonPositive,
       isDanger && styles.rowButtonDanger,
       isHoverOnly && styles.rowButtonHoverOnly
     )}
@@ -93,6 +96,7 @@ const HotkeyToggle = observer(({ widgetId }: { widgetId: string }) => {
           : t('layoutWidgetPanel.hotkeysOff')
       }
       isOn={isOn}
+      isPositive
       isHoverOnly
       onClick={() => liveWidgets.setHotkeysActOn(widgetId, !isOn)}
     />
