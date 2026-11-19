@@ -4,16 +4,65 @@
     {
       "id": "piper-engine",
       "kind": "ttsEngine",
-      "title": "Piper 2023.11.14-2",
-      "license": "MIT; espeak-ng GPL-3.0",
-      "licenseUrl": "https://github.com/rhasspy/piper/blob/master/LICENSE.md",
+      "title": "Piper 1.5.0",
+      "license": "GPL-3.0-or-later (Piper); PSF-2.0 (Python); dependencies as packaged",
+      "licenseUrl": "https://github.com/OHF-Voice/piper1-gpl/blob/v1.5.0/COPYING",
       "recommended": true,
       "files": [
         {
-          "name": "piper_windows_amd64.zip",
-          "url": "https://github.com/rhasspy/piper/releases/download/2023.11.14-2/piper_windows_amd64.zip",
-          "sha256": "f3c58906402b24f3a96d92145f58acba6d86c9b5db896d207f78dc80811efcea",
-          "size": 22477236,
+          "name": "python-3.13.7-embed-amd64.zip",
+          "url": "https://www.python.org/ftp/python/3.13.7/python-3.13.7-embed-amd64.zip",
+          "sha256": "f6cca216a359be84797cabb54149ce5e062afb16cc7567eb7fc51cacb2d86b65",
+          "size": 10922561,
+          "unpack": "zip"
+        },
+        {
+          "name": "piper_tts-1.5.0-cp39-abi3-win_amd64.whl",
+          "url": "https://files.pythonhosted.org/packages/15/98/bc24aa72dca6514af02d8d92a774f690a48912b8a626fa3496ac0a3c7492/piper_tts-1.5.0-cp39-abi3-win_amd64.whl",
+          "sha256": "d05f0985143f180046d2765eed505a1f5ea1fc30cee4c9c18edb68ef58cce204",
+          "size": 14273715,
+          "unpack": "zip"
+        },
+        {
+          "name": "onnxruntime-1.32.0-cp313-cp313-win_amd64.whl",
+          "url": "https://files.pythonhosted.org/packages/6f/ee/a776ccc71ba54de3739c20c7c815d9695c55db1d08e2b3c621452676c23f/onnxruntime-1.32.0-cp313-cp313-win_amd64.whl",
+          "sha256": "c7f9aa98036ba2a47aa041a4a8c6d0a1f7bfe1bde44c131dcd15ce334f2f148d",
+          "size": 16697937,
+          "unpack": "zip"
+        },
+        {
+          "name": "numpy-2.5.5-cp313-cp313-win_amd64.whl",
+          "url": "https://files.pythonhosted.org/packages/45/74/bb9161943fb65caf24e4bb04c788f5c7815e6cb78ac595e7f46781033c82/numpy-2.5.5-cp313-cp313-win_amd64.whl",
+          "sha256": "e0608d1585557b68dcb6a70a41654f7536567960afad79d91752d2863b242b68",
+          "size": 12573354,
+          "unpack": "zip"
+        },
+        {
+          "name": "flatbuffers-25.12.19-py2.py3-none-any.whl",
+          "url": "https://files.pythonhosted.org/packages/e8/2d/d2a548598be01649e2d46231d151a6c56d10b964d94043a335ae56ea2d92/flatbuffers-25.12.19-py2.py3-none-any.whl",
+          "sha256": "7634f50c427838bb021c2d66a3d1168e9d199b0607e6329399f04846d42e20b4",
+          "size": 26661,
+          "unpack": "zip"
+        },
+        {
+          "name": "packaging-26.3-py3-none-any.whl",
+          "url": "https://files.pythonhosted.org/packages/63/34/ba1c580383c9eada3711951fef0795c80b829a078d72188184bcab9dd527/packaging-26.3-py3-none-any.whl",
+          "sha256": "d7193f7c8e4e93f444fde0262bf90af30e16fa0ad0ad44cb553c87339b23cd1c",
+          "size": 129956,
+          "unpack": "zip"
+        },
+        {
+          "name": "protobuf-7.36.2-cp310-abi3-win_amd64.whl",
+          "url": "https://files.pythonhosted.org/packages/8a/55/b77bda4e5e5f5971fb51b07663694690e9afdb9402136c16a522bd621cad/protobuf-7.36.2-cp310-abi3-win_amd64.whl",
+          "sha256": "a300819d441e078a5608c0d3c709796bb548136058fda017ae51d425b44fd353",
+          "size": 456514,
+          "unpack": "zip"
+        },
+        {
+          "name": "pathvalidate-3.3.1-py3-none-any.whl",
+          "url": "https://files.pythonhosted.org/packages/9a/70/875f4a23bfc4731703a5835487d0d2fb999031bd415e7d17c0ae615c18b7/pathvalidate-3.3.1-py3-none-any.whl",
+          "sha256": "5263baab691f8e1af96092fa5137ee17df5bdfbd6cff1fcac4d6ef4bc2e1735f",
+          "size": 24305,
           "unpack": "zip"
         }
       ]

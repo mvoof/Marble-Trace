@@ -1,9 +1,9 @@
 //! Piper, run as its own process and kept alive between replies: loading a
 //! voice takes longer than speaking a short line with it.
 //!
-//! In `--json-input` mode Piper reads one JSON object per line and, given an
-//! `output_file`, writes the WAV there and prints its path once done — the
-//! printed line is how a reply's end is known.
+//! A small Python API worker keeps one voice loaded. Rust sends one JSON
+//! object per line; the worker writes the requested WAV and returns a JSON
+//! response when synthesis is complete.
 //!
 //! Piper takes its paths as narrow strings, so a path through a user folder
 //! with a Cyrillic name would not survive the trip. The process is started in
@@ -15,13 +15,43 @@ use std::path::{Path, PathBuf};
 use std::process::{Child, ChildStdin, ChildStdout, Command, Stdio};
 use std::thread;
 
+use serde::Deserialize;
 use serde_json::json;
 
 /// Windows `CREATE_NO_WINDOW`: no console flashes up behind the overlay.
 #[cfg(windows)]
 const CREATE_NO_WINDOW: u32 = 0x0800_0000;
 
-const ESPEAK_DATA_DIR: &str = "espeak-ng-data";
+/// Piper 1.5's JSON protocol was removed from its CLI. Keep the voice loaded
+/// in a small Python API worker and use JSON lines between the Rust thread and
+/// that process instead.
+const PIPER_SERVICE: &str = r#"
+import json
+import sys
+import wave
+
+sys.stdin.reconfigure(encoding="utf-8")
+sys.stdout.reconfigure(encoding="utf-8")
+
+try:
+    from piper import PiperVoice, SynthesisConfig
+
+    voice = PiperVoice.load(sys.argv[1])
+    synthesis = SynthesisConfig(length_scale=float(sys.argv[2]))
+    print(json.dumps({"ready": True}), flush=True)
+except Exception as error:
+    print(json.dumps({"error": str(error)}), flush=True)
+    raise SystemExit(1)
+
+for line in sys.stdin:
+    try:
+        request = json.loads(line)
+        with wave.open(request["output_file"], "wb") as wav_file:
+            voice.synthesize_wav(request["text"], wav_file, syn_config=synthesis)
+        print(json.dumps({"output_file": request["output_file"]}), flush=True)
+    except Exception as error:
+        print(json.dumps({"error": str(error)}), flush=True)
+"#;
 
 /// What a Piper process is started with; a change of any of it restarts it.
 #[derive(Debug, Clone, PartialEq)]
@@ -41,24 +71,27 @@ pub struct Piper {
     stdout: BufReader<ChildStdout>,
 }
 
+#[derive(Deserialize)]
+struct PiperResponse {
+    ready: Option<bool>,
+    output_file: Option<String>,
+    error: Option<String>,
+}
+
 impl Piper {
     pub fn spawn(setup: PiperSetup) -> io::Result<Self> {
         let model = relative_to(&setup.root, &setup.model)?;
-        let espeak_data = relative_to(&setup.root, &setup.executable)?
-            .parent()
-            .map(|engine| engine.join(ESPEAK_DATA_DIR))
-            .unwrap_or_else(|| PathBuf::from(ESPEAK_DATA_DIR));
         let mut command = Command::new(&setup.executable);
 
         command
             .current_dir(&setup.root)
-            .arg("--model")
+            .arg("-X")
+            .arg("utf8")
+            .arg("-u")
+            .arg("-c")
+            .arg(PIPER_SERVICE)
             .arg(&model)
-            .arg("--espeak_data")
-            .arg(&espeak_data)
-            .arg("--length_scale")
             .arg(setup.length_scale.to_string())
-            .arg("--json-input")
             .stdin(Stdio::piped())
             .stdout(Stdio::piped())
             .stderr(Stdio::piped());
@@ -89,11 +122,47 @@ impl Piper {
                 }
             });
 
+        let mut stdout = BufReader::new(stdout);
+        let mut line = String::new();
+
+        if stdout.read_line(&mut line)? == 0 {
+            let status = child.wait().ok();
+
+            return Err(io::Error::other(format!(
+                "piper exited during startup ({status:?})"
+            )));
+        }
+
+        let response: PiperResponse = match serde_json::from_str(&line) {
+            Ok(response) => response,
+            Err(error) => {
+                let _ = child.kill();
+                let _ = child.wait();
+
+                return Err(io::Error::other(format!(
+                    "invalid piper startup response: {error}"
+                )));
+            }
+        };
+
+        if let Some(error) = response.error {
+            let _ = child.wait();
+
+            return Err(io::Error::other(error));
+        }
+
+        if response.ready != Some(true) {
+            let _ = child.kill();
+            let _ = child.wait();
+
+            return Err(io::Error::other("piper did not become ready"));
+        }
+
         Ok(Self {
             setup,
             child,
             stdin,
-            stdout: BufReader::new(stdout),
+            stdout,
         })
     }
 
@@ -124,7 +193,16 @@ impl Piper {
             return Err(io::Error::new(io::ErrorKind::UnexpectedEof, "piper exited"));
         }
 
-        if output.is_file() {
+        let response: PiperResponse = serde_json::from_str(&line)
+            .map_err(|error| io::Error::other(format!("invalid piper response: {error}")))?;
+
+        if let Some(error) = response.error {
+            let _ = std::fs::remove_file(output);
+
+            return Err(io::Error::other(error));
+        }
+
+        if response.output_file.is_some() && output.is_file() {
             Ok(())
         } else {
             Err(io::Error::other(format!(

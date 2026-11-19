@@ -334,7 +334,7 @@ mod tests {
     fn config() -> OutputConfig {
         OutputConfig {
             root: PathBuf::from("voice"),
-            piper: Some(PathBuf::from("voice/piper-engine/piper.exe")),
+            piper: Some(PathBuf::from("voice/piper-engine/python.exe")),
             voice_id: "piper-voice-ru-dmitri".into(),
             voice_model: None,
             device: None,
@@ -445,6 +445,73 @@ mod tests {
             "finished"
         );
         println!("queued → finished: {:?}", queued.elapsed());
+    }
+
+    /// Checks a preview line and the full fixed-line generation path with the
+    /// French vowel-cluster config that the legacy CLI cannot load.
+    #[test]
+    #[ignore = "needs MT_VOICE_DOWNLOADS: a folder with the Piper runtime and French Siwis voice files"]
+    fn synthesizes_the_french_pack_through_the_real_engine() {
+        use crate::assets::VoiceAssets;
+
+        let downloads = PathBuf::from(std::env::var("MT_VOICE_DOWNLOADS").unwrap());
+        let root = std::env::temp_dir().join("mt-voice-french-live");
+        let assets = VoiceAssets::new(&root);
+        let voice_id = "piper-voice-fr-fr-siwis-medium";
+
+        for id in [PIPER_ENGINE, voice_id] {
+            let component = catalog().component(id).unwrap();
+
+            if !assets.is_installed(component) {
+                let files: Vec<PathBuf> = component
+                    .files
+                    .iter()
+                    .map(|file| downloads.join(&file.name))
+                    .collect();
+
+                assets.import_files(component, &files).unwrap();
+            }
+        }
+
+        let mut piper = Piper::spawn(PiperSetup {
+            root: root.clone(),
+            executable: assets.piper_executable().unwrap(),
+            model: assets.voice_model(voice_id).unwrap(),
+            length_scale: 1.0,
+        })
+        .unwrap();
+        let output = root.join("cache/french-live.wav");
+
+        piper
+            .synthesize("Bien reçu, pas de carburant", &output)
+            .unwrap();
+
+        assert!(std::fs::metadata(output).unwrap().len() > 44);
+
+        let config = OutputConfig {
+            root: root.clone(),
+            piper: assets.piper_executable(),
+            voice_id: voice_id.into(),
+            voice_model: assets.voice_model(voice_id),
+            device: None,
+            volume: 0.0,
+            length_scale: 1.0,
+        };
+        let pack = crate::pack::load("fr", None);
+        let _ = std::fs::remove_dir_all(root.join("cache"));
+        let lines = crate::cache::missing_lines(&pack, &config);
+        let mut done = 0;
+
+        crate::cache::generate(&lines, &config, |line, result| {
+            result.unwrap_or_else(|error| panic!("could not synthesize {line}: {error}"));
+            done += 1;
+        })
+        .unwrap();
+
+        assert_eq!(done, lines.len());
+        assert!(crate::cache::missing_lines(&pack, &config).is_empty());
+
+        let _ = std::fs::remove_dir_all(root);
     }
 
     #[test]
