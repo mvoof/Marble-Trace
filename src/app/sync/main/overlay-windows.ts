@@ -9,6 +9,7 @@ import {
 } from '@shared/api/overlay-labels';
 
 const WIN32_DISPLAY_PREFIX = '\\\\.\\';
+const TOPMOST_REASSERT_INTERVAL_MS = 2000;
 
 interface PhysicalMonitor {
   name: string;
@@ -158,4 +159,49 @@ export const syncOverlayWindows = (root: RendererCore): Promise<void> => {
   });
 
   return syncInFlight;
+};
+
+// A game or screenshot tool can become topmost after an overlay was created.
+// Flipping the flag makes Windows apply the topmost z-order again. This does
+// not activate the overlay, so input focus remains with the game.
+export const watchOverlayTopmost = (): (() => void) => {
+  let stopped = false;
+  let reasserting = false;
+
+  const reassert = async () => {
+    if (stopped || reasserting) return;
+
+    reasserting = true;
+
+    try {
+      const labels = await listOverlayWindowLabels();
+
+      await Promise.all(
+        labels.map(async (label) => {
+          const overlay = await WebviewWindow.getByLabel(label);
+
+          if (!overlay) return;
+
+          await overlay.setAlwaysOnTop(false);
+          await overlay.setAlwaysOnTop(true);
+        })
+      );
+    } catch (error) {
+      console.error('Failed to reassert overlay topmost:', error);
+    } finally {
+      reasserting = false;
+    }
+  };
+
+  void reassert();
+
+  const timer = window.setInterval(
+    () => void reassert(),
+    TOPMOST_REASSERT_INTERVAL_MS
+  );
+
+  return () => {
+    stopped = true;
+    window.clearInterval(timer);
+  };
 };
