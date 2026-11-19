@@ -49,10 +49,10 @@
       "description": "Reibungskreis für Quer- und Längsbeschleunigung."
     },
     "sector-matrix": {
-      "description": "Sektorzeiten mit Fortschrittsbalken, Live-Delta je Sektor sowie LETZTE und BESTE."
+      "description": "Sektorzeiten, Fortschritt, Live-Delta und LETZTE/BESTE."
     },
     "lap-log": {
-      "description": "Letzte Runden: Zeit und Abstand zur Bestzeit. Ein höheres Widget zeigt mehr Runden."
+      "description": "Rundenzeiten und Abstand zur Bestzeit; größere Widgets zeigen mehr Runden."
     },
     "engine-panel": {
       "description": "Flüssigkeitstemperaturen, Drücke und verfügbare Fahrzeugeinstellungen."
@@ -61,7 +61,7 @@
       "description": "Schaltlichtleiste nach Motordrehzahl mit Animationen für den Boxenbegrenzer."
     },
     "race-dash": {
-      "description": "Cockpit-Instrumente: Gang, Tempo, Runde, Position und Drehzahl sowie Boxengassenmodus."
+      "description": "Cockpitwerte: Gang, Tempo, Runde, Position, Drehzahl und Boxenmodus."
     },
     "stream-chat": {
       "description": "Twitch- und YouTube-Livechat in einem Feed."
@@ -73,7 +73,7 @@
       "description": "Geschwindigkeit in der Boxengasse im Vergleich zum Limit und der Weg zur Box."
     },
     "coach": {
-      "description": "Brems- und Gasansagen mit Geschwindigkeitsverlauf im Vergleich zur gespeicherten Bestzeit."
+      "description": "Brems- und Gasansagen samt Geschwindigkeitsvergleich zur Bestzeit."
     },
     "invisible-dash": {
       "description": "Windschutzscheiben-Projektion: links Motor und Gang, rechts Position und Runde."

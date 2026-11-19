@@ -49,19 +49,19 @@
       "description": "Círculo de atrito das forças laterais e longitudinais."
     },
     "sector-matrix": {
-      "description": "Tempos por setor com barra de progresso, delta ao vivo de cada setor, ÚLTIMA e MELHOR."
+      "description": "Tempos por setor, progresso, delta ao vivo, ÚLTIMA e MELHOR."
     },
     "lap-log": {
-      "description": "Voltas recentes: tempo e diferença para sua melhor. Um widget mais alto mostra mais voltas."
+      "description": "Tempo e diferença das voltas recentes; um widget maior mostra mais."
     },
     "engine-panel": {
       "description": "Temperaturas dos fluidos, pressões e ajustes disponíveis no carro."
     },
     "rpm-lights": {
-      "description": "Barra de LEDs para troca de marcha baseada no RPM, com animações do limitador de pit."
+      "description": "Luzes de troca conforme o RPM, com animações do limitador de pit."
     },
     "race-dash": {
-      "description": "Painel de cockpit: marcha, velocidade, volta, posição e RPM, além do modo de pit lane."
+      "description": "Painel: marcha, velocidade, volta, posição, RPM e modo de pit lane."
     },
     "stream-chat": {
       "description": "Chat ao vivo da Twitch e do YouTube em um único feed."
@@ -73,7 +73,7 @@
       "description": "Velocidade no pit lane comparada ao limite e distância até a vaga."
     },
     "coach": {
-      "description": "Indicações de freio e acelerador, com traçado de velocidade comparado à sua melhor volta salva."
+      "description": "Alertas de freio e aceleração com velocidade comparada à melhor volta."
     },
     "invisible-dash": {
       "description": "Projeção no para-brisa: motor e marcha à esquerda, posição e volta à direita."

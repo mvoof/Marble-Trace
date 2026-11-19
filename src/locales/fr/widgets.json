@@ -49,19 +49,19 @@
       "description": "Cercle de friction des accélérations latérales et longitudinales."
     },
     "sector-matrix": {
-      "description": "Temps par secteur avec barre de progression, delta en direct par secteur, DERNIER et MEILLEUR."
+      "description": "Temps par secteur, progression, delta en direct, DERNIER et MEILLEUR."
     },
     "lap-log": {
-      "description": "Tours récents : temps et écart à votre meilleur. Un widget plus haut affiche davantage de tours."
+      "description": "Temps et écart des derniers tours ; plus de tours dans un widget plus haut."
     },
     "engine-panel": {
       "description": "Températures des fluides, pressions et réglages accessibles depuis la voiture."
     },
     "rpm-lights": {
-      "description": "Barre LED de changement de vitesse selon le régime moteur, avec animations du limiteur des stands."
+      "description": "Voyants de rapport selon le régime, avec animations du limiteur des stands."
     },
     "race-dash": {
-      "description": "Instruments de cockpit : rapport, vitesse, tour, position et régime, avec mode voie des stands."
+      "description": "Instruments : rapport, vitesse, tour, position, régime et mode stands."
     },
     "stream-chat": {
       "description": "Chat en direct Twitch et YouTube dans un seul flux."
@@ -70,13 +70,13 @@
       "description": "Ordre d’arrêt : carburant, pneus, réparations et remorquage."
     },
     "pit-line": {
-      "description": "Vitesse dans la voie des stands par rapport à la limite et distance jusqu’à votre emplacement."
+      "description": "Vitesse aux stands, limite et distance de votre emplacement."
     },
     "coach": {
-      "description": "Indications de freinage et d’accélération avec courbe de vitesse comparée à votre meilleur tour enregistré."
+      "description": "Consignes de frein et d’accélération, vitesse comparée au meilleur tour."
     },
     "invisible-dash": {
-      "description": "Projection sur le pare-brise : moteur et rapport à gauche, position et tour à droite."
+      "description": "Projection pare-brise : moteur/rapport à gauche, position/tour à droite."
     },
     "battery": {
       "description": "Charge hybride, activité du MGU-K et mode de déploiement le cas échéant."

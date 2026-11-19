@@ -5,11 +5,14 @@ import en from '@/locales/en/widgets.json';
 import es from '@/locales/es/widgets.json';
 import ru from '@/locales/ru/widgets.json';
 import zh from '@/locales/zh/widgets.json';
+import de from '@/locales/de/widgets.json';
+import fr from '@/locales/fr/widgets.json';
+import ptBR from '@/locales/pt-BR/widgets.json';
 
 // A widget's strings live in the shared locale files, not in its folder, so
 // deleting the folder leaves them behind without breaking anything. This is
 // what finds them: every block has to belong to a widget the catalog ships.
-const LANGUAGES = { en, es, ru, zh };
+const LANGUAGES = { en, es, ru, zh, de, fr, 'pt-BR': ptBR };
 
 /**
  * The widget list clamps a description to three lines, about 95 characters at
