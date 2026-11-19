@@ -2,8 +2,8 @@
   "format": 3,
   "intents": {
     "pit.fuel": [
-      "(fuel|add|refuel|give me) {number} [(liters|litres|gallons)]",
-      "{number} (liters|litres|gallons) [of fuel]"
+      "(fuel|add|refuel|give me) {number} [{fuelUnit}]",
+      "{number} {fuelUnit} [of fuel]"
     ],
     "pit.fuelToFinish": [
       "(fuel|fill) to (the end|the finish|finish)",
@@ -129,6 +129,10 @@
       "soft": ["soft", "softs"],
       "medium": ["medium", "mediums"],
       "hard": ["hard", "hards"]
+    },
+    "fuelUnit": {
+      "liters": ["liters", "litres"],
+      "gallons": ["gallons"]
     }
   }
 }

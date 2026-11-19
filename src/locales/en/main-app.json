@@ -944,7 +944,10 @@
         "ru": "Russian",
         "en": "English",
         "es": "Spanish",
-        "zh": "Chinese"
+        "zh": "Chinese",
+        "de": "German",
+        "fr": "French",
+        "pt": "Portuguese (Brazil)"
       },
       "voice": "Voice",
       "recommendedVoice": "Recommended",

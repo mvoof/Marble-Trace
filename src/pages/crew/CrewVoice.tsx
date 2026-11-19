@@ -14,7 +14,16 @@ const SPEED_MIN = 0.7;
 const SPEED_MAX = 1.5;
 const SPEED_STEP = 0.05;
 const CONFIDENCE_STEP = 0.05;
-const LANGUAGES: VoiceLanguage[] = ['app', 'ru', 'en', 'es', 'zh'];
+const LANGUAGES: VoiceLanguage[] = [
+  'app',
+  'ru',
+  'en',
+  'es',
+  'zh',
+  'de',
+  'fr',
+  'pt',
+];
 /** Packs nobody who speaks the language has tried with a microphone yet. */
 const EXPERIMENTAL_LANGUAGES: VoiceLanguage[] = ['zh'];
 

@@ -38,7 +38,15 @@ export const resolveAppLanguage = (language: AppLanguage) =>
   language === 'system' ? detectSystemLanguage() : language;
 
 /** The language the crew speaks; `app` follows the interface. */
-export type VoiceLanguage = 'app' | 'ru' | 'en' | 'es' | 'zh';
+export type VoiceLanguage =
+  | 'app'
+  | 'ru'
+  | 'en'
+  | 'es'
+  | 'zh'
+  | 'de'
+  | 'fr'
+  | 'pt';
 
 export type LastGoodRestoreStatus = 'idle' | 'failed' | 'restored';
 

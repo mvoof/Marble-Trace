@@ -211,8 +211,247 @@ fn spelled(language: &str, number: u32) -> Option<String> {
         "en" => Some(spell(&EN, number)),
         "es" => Some(spell_spanish(number)),
         "zh" => Some(spell_chinese(number)),
+        "de" => Some(spell_german(number)),
+        "fr" => Some(spell_french(number)),
+        "pt" => Some(spell_portuguese(number)),
         _ => None,
     }
+}
+
+const DE_UNITS: [&str; 20] = [
+    "null",
+    "eins",
+    "zwei",
+    "drei",
+    "vier",
+    "fünf",
+    "sechs",
+    "sieben",
+    "acht",
+    "neun",
+    "zehn",
+    "elf",
+    "zwölf",
+    "dreizehn",
+    "vierzehn",
+    "fünfzehn",
+    "sechzehn",
+    "siebzehn",
+    "achtzehn",
+    "neunzehn",
+];
+const DE_TENS: [&str; 10] = [
+    "", "", "zwanzig", "dreißig", "vierzig", "fünfzig", "sechzig", "siebzig", "achtzig", "neunzig",
+];
+const DE_HUNDREDS: [&str; 10] = [
+    "",
+    "einhundert",
+    "zweihundert",
+    "dreihundert",
+    "vierhundert",
+    "fünfhundert",
+    "sechshundert",
+    "siebenhundert",
+    "achthundert",
+    "neunhundert",
+];
+
+fn spell_german(number: u32) -> String {
+    if number < 20 {
+        return DE_UNITS[number as usize].to_string();
+    }
+
+    let hundreds = number / 100;
+    let rest = number % 100;
+    let mut result = String::new();
+
+    if hundreds > 0 {
+        result.push_str(DE_HUNDREDS[hundreds as usize]);
+    }
+
+    if rest >= 20 {
+        let units = rest % 10;
+        if units > 0 {
+            let unit = if units == 1 {
+                "ein"
+            } else {
+                DE_UNITS[units as usize]
+            };
+            let remainder = format!("{unit}und{}", DE_TENS[(rest / 10) as usize]);
+            if hundreds > 0 {
+                result.push(' ');
+            }
+            result.push_str(&remainder);
+        } else {
+            if hundreds > 0 {
+                result.push(' ');
+            }
+            result.push_str(DE_TENS[(rest / 10) as usize]);
+        }
+    } else if rest > 0 {
+        let unit = if hundreds > 0 && rest == 1 {
+            "eins"
+        } else {
+            DE_UNITS[rest as usize]
+        };
+        if hundreds > 0 {
+            result.push(' ');
+        }
+        result.push_str(unit);
+    }
+
+    result
+}
+
+const FR_UNITS: [&str; 20] = [
+    "zéro", "un", "deux", "trois", "quatre", "cinq", "six", "sept", "huit", "neuf", "dix", "onze",
+    "douze", "treize", "quatorze", "quinze", "seize", "dix sept", "dix huit", "dix neuf",
+];
+const FR_TENS: [&str; 7] = [
+    "",
+    "",
+    "vingt",
+    "trente",
+    "quarante",
+    "cinquante",
+    "soixante",
+];
+const PT_UNITS: [&str; 20] = [
+    "zero",
+    "um",
+    "dois",
+    "três",
+    "quatro",
+    "cinco",
+    "seis",
+    "sete",
+    "oito",
+    "nove",
+    "dez",
+    "onze",
+    "doze",
+    "treze",
+    "catorze",
+    "quinze",
+    "dezesseis",
+    "dezessete",
+    "dezoito",
+    "dezenove",
+];
+const PT_TENS: [&str; 10] = [
+    "",
+    "",
+    "vinte",
+    "trinta",
+    "quarenta",
+    "cinquenta",
+    "sessenta",
+    "setenta",
+    "oitenta",
+    "noventa",
+];
+const PT_HUNDREDS: [&str; 10] = [
+    "",
+    "cento",
+    "duzentos",
+    "trezentos",
+    "quatrocentos",
+    "quinhentos",
+    "seiscentos",
+    "setecentos",
+    "oitocentos",
+    "novecentos",
+];
+
+fn spell_french(number: u32) -> String {
+    if number < 20 {
+        return FR_UNITS[number as usize].to_string();
+    }
+
+    let hundreds = number / 100;
+    let rest = number % 100;
+    let mut parts = Vec::new();
+
+    if hundreds > 0 {
+        let hundred = if hundreds == 1 {
+            "cent".to_string()
+        } else if rest == 0 {
+            format!("{} cents", FR_UNITS[hundreds as usize])
+        } else {
+            format!("{} cent", FR_UNITS[hundreds as usize])
+        };
+        parts.push(hundred);
+    }
+
+    let rest_words = if rest < 70 {
+        let tens = rest / 10;
+        let units = rest % 10;
+        if tens == 0 {
+            FR_UNITS[units as usize].to_string()
+        } else if tens == 1 {
+            FR_UNITS[rest as usize].to_string()
+        } else if units == 0 {
+            FR_TENS[tens as usize].to_string()
+        } else if units == 1 && tens <= 6 {
+            format!("{} et un", FR_TENS[tens as usize])
+        } else {
+            format!("{} {}", FR_TENS[tens as usize], FR_UNITS[units as usize])
+        }
+    } else if rest < 80 {
+        if rest == 71 {
+            "soixante et onze".to_string()
+        } else if rest == 70 {
+            "soixante dix".to_string()
+        } else {
+            format!("soixante {}", FR_UNITS[(rest - 60) as usize])
+        }
+    } else if rest < 90 {
+        if rest == 80 {
+            "quatre vingt".to_string()
+        } else {
+            format!("quatre vingt {}", FR_UNITS[(rest - 80) as usize])
+        }
+    } else if rest < 100 {
+        format!("quatre vingt {}", FR_UNITS[(rest - 80) as usize])
+    } else {
+        String::new()
+    };
+
+    if !rest_words.is_empty() && (rest > 0 || hundreds == 0) {
+        parts.push(rest_words);
+    }
+
+    parts.join(" ")
+}
+
+fn spell_portuguese(number: u32) -> String {
+    if number < 20 {
+        return PT_UNITS[number as usize].to_string();
+    }
+
+    let hundreds = number / 100;
+    let rest = number % 100;
+    let mut parts = Vec::new();
+
+    if hundreds == 1 && rest == 0 {
+        return "cem".to_string();
+    }
+    if hundreds > 0 {
+        parts.push(PT_HUNDREDS[hundreds as usize].to_string());
+    }
+
+    if rest >= 20 {
+        let tens = PT_TENS[(rest / 10) as usize];
+        if !rest.is_multiple_of(10) {
+            parts.push(format!("{tens} e {}", PT_UNITS[(rest % 10) as usize]));
+        } else {
+            parts.push(tens.to_string());
+        }
+    } else if rest > 0 {
+        parts.push(PT_UNITS[rest as usize].to_string());
+    }
+
+    parts.join(" e ")
 }
 
 /// A character to a word, as the recogniser's dictionary holds them:
@@ -502,9 +741,45 @@ mod tests {
     }
 
     #[test]
+    fn spells_german_numbers() {
+        assert_eq!(spoken("de", 0).as_deref(), Some("null"));
+        assert_eq!(spoken("de", 16).as_deref(), Some("sechzehn"));
+        assert_eq!(spoken("de", 21).as_deref(), Some("einundzwanzig"));
+        assert_eq!(spoken("de", 45).as_deref(), Some("fünfundvierzig"));
+        assert_eq!(spoken("de", 100).as_deref(), Some("einhundert"));
+        assert_eq!(
+            spoken("de", 121).as_deref(),
+            Some("einhundert einundzwanzig")
+        );
+        assert_eq!(spoken("de", 200).as_deref(), Some("zweihundert"));
+    }
+
+    #[test]
+    fn spells_french_numbers() {
+        assert_eq!(spoken("fr", 0).as_deref(), Some("zéro"));
+        assert_eq!(spoken("fr", 16).as_deref(), Some("seize"));
+        assert_eq!(spoken("fr", 21).as_deref(), Some("vingt et un"));
+        assert_eq!(spoken("fr", 71).as_deref(), Some("soixante et onze"));
+        assert_eq!(spoken("fr", 80).as_deref(), Some("quatre vingt"));
+        assert_eq!(spoken("fr", 99).as_deref(), Some("quatre vingt dix neuf"));
+        assert_eq!(spoken("fr", 200).as_deref(), Some("deux cents"));
+    }
+
+    #[test]
+    fn spells_brazilian_portuguese_numbers() {
+        assert_eq!(spoken("pt", 0).as_deref(), Some("zero"));
+        assert_eq!(spoken("pt", 16).as_deref(), Some("dezesseis"));
+        assert_eq!(spoken("pt", 21).as_deref(), Some("vinte e um"));
+        assert_eq!(spoken("pt", 45).as_deref(), Some("quarenta e cinco"));
+        assert_eq!(spoken("pt", 100).as_deref(), Some("cem"));
+        assert_eq!(spoken("pt", 101).as_deref(), Some("cento e um"));
+        assert_eq!(spoken("pt", 200).as_deref(), Some("duzentos"));
+    }
+
+    #[test]
     fn says_nothing_past_the_limit_or_in_an_unknown_language() {
         assert_eq!(spoken("ru", MAX_NUMBER_SLOT_VALUE + 1), None);
-        assert_eq!(spoken("de", 1), None);
+        assert_eq!(spoken("xx", 1), None);
     }
 
     #[test]
@@ -513,5 +788,20 @@ mod tests {
 
         assert_eq!(phrases.len(), MAX_NUMBER_SLOT_VALUE as usize + 1);
         assert_eq!(phrases[45].words, vec!["forty", "five"]);
+    }
+
+    #[test]
+    fn every_number_phrase_has_only_nonempty_words() {
+        for language in ["ru", "en", "es", "zh", "de", "fr", "pt"] {
+            let phrases = number_phrases(language).unwrap();
+
+            for (number, phrase) in phrases.iter().enumerate() {
+                assert!(
+                    phrase.words.iter().all(|word| !word.is_empty()),
+                    "{language} {number}: {:?}",
+                    phrase.words
+                );
+            }
+        }
     }
 }

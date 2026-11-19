@@ -47,7 +47,7 @@ pub const PACK_FORMAT: u32 = 3;
 const OLDEST_FORMAT: u32 = 1;
 pub const PHRASES_FILE: &str = "phrases.json";
 pub const COMMANDS_FILE: &str = "commands.json";
-pub const BUILT_IN_LANGUAGES: &[&str] = &["ru", "en", "es", "zh"];
+pub const BUILT_IN_LANGUAGES: &[&str] = &["ru", "en", "es", "zh", "de", "fr", "pt"];
 
 const BUILT_IN_RU_PHRASES: &str = include_str!("../../packs/ru/phrases.json");
 const BUILT_IN_RU_COMMANDS: &str = include_str!("../../packs/ru/commands.json");
@@ -57,6 +57,12 @@ const BUILT_IN_ES_PHRASES: &str = include_str!("../../packs/es/phrases.json");
 const BUILT_IN_ES_COMMANDS: &str = include_str!("../../packs/es/commands.json");
 const BUILT_IN_ZH_PHRASES: &str = include_str!("../../packs/zh/phrases.json");
 const BUILT_IN_ZH_COMMANDS: &str = include_str!("../../packs/zh/commands.json");
+const BUILT_IN_DE_PHRASES: &str = include_str!("../../packs/de/phrases.json");
+const BUILT_IN_DE_COMMANDS: &str = include_str!("../../packs/de/commands.json");
+const BUILT_IN_FR_PHRASES: &str = include_str!("../../packs/fr/phrases.json");
+const BUILT_IN_FR_COMMANDS: &str = include_str!("../../packs/fr/commands.json");
+const BUILT_IN_PT_PHRASES: &str = include_str!("../../packs/pt/phrases.json");
+const BUILT_IN_PT_COMMANDS: &str = include_str!("../../packs/pt/commands.json");
 
 /// One way to say a phrase, always synthesised. A recording or a file named
 /// by an older pack (`source`, `audio`) is read past and never played.
@@ -398,6 +404,9 @@ pub(crate) fn built_in(language: &str) -> Option<(PhrasesFile, CommandsFile)> {
         "en" => (BUILT_IN_EN_PHRASES, BUILT_IN_EN_COMMANDS),
         "es" => (BUILT_IN_ES_PHRASES, BUILT_IN_ES_COMMANDS),
         "zh" => (BUILT_IN_ZH_PHRASES, BUILT_IN_ZH_COMMANDS),
+        "de" => (BUILT_IN_DE_PHRASES, BUILT_IN_DE_COMMANDS),
+        "fr" => (BUILT_IN_FR_PHRASES, BUILT_IN_FR_COMMANDS),
+        "pt" => (BUILT_IN_PT_PHRASES, BUILT_IN_PT_COMMANDS),
         _ => return None,
     };
 
@@ -744,7 +753,7 @@ pub fn commands_schema() -> Value {
         })
         .collect();
     let phrase_lists = json!({ "type": "array", "items": { "type": "string" } });
-    let slots: serde_json::Map<String, Value> = ["tires", "compound"]
+    let slots: serde_json::Map<String, Value> = ["tires", "compound", "fuelUnit"]
         .iter()
         .map(|slot| {
             let values = match slot_kind(slot) {
@@ -909,6 +918,47 @@ mod tests {
                 .intent,
             "query.fuel"
         );
+    }
+
+    #[test]
+    fn recognises_explicit_fuel_units_in_every_language() {
+        for (language, sentence, unit) in [
+            ("de", "benzin vierzig liter", "liters"),
+            ("en", "fuel forty gallons", "gallons"),
+            ("es", "combustible cuarenta galones", "gallons"),
+            ("fr", "essence quarante litres", "liters"),
+            ("pt", "combustível quarenta litros", "liters"),
+            ("ru", "топливо сорок галлонов", "gallons"),
+        ] {
+            let pack = load(language, None);
+            let recognised = pack.grammar.recognise(sentence).unwrap();
+
+            assert_eq!(recognised.intent, "pit.fuel", "{language}");
+            assert_eq!(
+                recognised.slot("number"),
+                Some(&SlotValue::Number(40)),
+                "{language}"
+            );
+            assert_eq!(
+                recognised.slot("fuelUnit"),
+                Some(&SlotValue::Name(unit.into())),
+                "{language}"
+            );
+        }
+    }
+
+    #[test]
+    fn chinese_fuel_grammar_uses_only_vocabulary_supported_units() {
+        let pack = load("zh", None);
+        let recognised = pack.grammar.recognise("加油 六 十 七 升").unwrap();
+
+        assert_eq!(recognised.intent, "pit.fuel");
+        assert_eq!(recognised.slot("number"), Some(&SlotValue::Number(67)));
+        assert_eq!(
+            recognised.slot("fuelUnit"),
+            Some(&SlotValue::Name("liters".into()))
+        );
+        assert!(!pack.grammar.vosk_grammar().contains("加仑"));
     }
 
     #[test]

@@ -27,7 +27,7 @@ use crate::assets::unpack::unpack_zip;
 const STAGING_DIR: &str = ".staging";
 const CUSTOM_VOICES_DIR: &str = "custom-voices";
 const INSTALLED_MARKER: &str = ".installed.json";
-const PIPER_EXECUTABLE: &str = "piper.exe";
+const PIPER_EXECUTABLE: &str = "python.exe";
 const VOSK_LIBRARY: &str = "libvosk.dll";
 const VOICE_CONFIG_SUFFIX: &str = ".json";
 const HASH_BUFFER_BYTES: usize = 64 * 1024;
@@ -151,7 +151,7 @@ impl VoiceAssets {
         }
     }
 
-    /// `piper.exe`, once the engine is installed — `None` keeps the voice off.
+    /// The portable Python runtime, once Piper is installed — `None` keeps the voice off.
     pub fn piper_executable(&self) -> Option<PathBuf> {
         self.installed_file(PIPER_ENGINE, PIPER_EXECUTABLE)
     }
@@ -878,7 +878,7 @@ mod tests {
         let assets = VoiceAssets::new(&folder);
 
         fs::create_dir_all(folder.join(PIPER_ENGINE)).unwrap();
-        fs::write(folder.join(PIPER_ENGINE).join(PIPER_EXECUTABLE), b"exe").unwrap();
+        fs::write(folder.join(PIPER_ENGINE).join(PIPER_EXECUTABLE), b"python").unwrap();
 
         assert_eq!(assets.piper_executable(), None);
         assert_eq!(assets.vosk_library(), None);
