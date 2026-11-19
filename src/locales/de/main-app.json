@@ -71,8 +71,8 @@
     "resetCancel": "Abbrechen"
   },
   "updateBanner": {
-    "downloading": "Update wird heruntergeladen …",
-    "ready": "Update heruntergeladen. Neustart …",
+    "downloading": "Aktualisierung wird heruntergeladen …",
+    "ready": "Aktualisierung heruntergeladen. Neustart …",
     "available": "Version v{{version}} ist verfügbar",
     "updateAndRestart": "Aktualisieren und neu starten"
   },
@@ -302,11 +302,11 @@
       "valueDesc": "Länge eines Fahrzeugs in Metern. Wandelt den Abstand zwischen Fahrzeugmitten in den Abstand zwischen Stoßfängern um, sodass direkt hintereinander fahrende Fahrzeuge null Abstand haben. Wird von Radar und Close Battle verwendet."
     },
     "applicationUpdates": {
-      "title": "App-Updates",
-      "autoCheckTitle": "Automatisch nach Updates suchen",
+      "title": "App-Aktualisierungen",
+      "autoCheckTitle": "Automatisch nach Aktualisierungen suchen",
       "autoCheckDesc": "Beim Start der Anwendung automatisch nach neuen Versionen suchen.",
       "checkIntervalTitle": "Prüfintervall",
-      "checkIntervalDesc": "Wie oft während des Betriebs nach Updates gesucht wird.",
+      "checkIntervalDesc": "Wie oft während des Betriebs nach Aktualisierungen gesucht wird.",
       "everyHour": "Stündlich",
       "every3Hours": "Alle 3 Stunden",
       "every6Hours": "Alle 6 Stunden",
@@ -315,15 +315,15 @@
       "currentVersion": "Aktuelle Version:",
       "lastChecked": "Zuletzt geprüft:",
       "upToDate": "Deine Anwendung ist auf dem neuesten Stand.",
-      "checkingForUpdates": "Suche nach Updates …",
+      "checkingForUpdates": "Suche nach Aktualisierungen …",
       "newVersionAvailable": "Neue Version v{{version}} ist verfügbar!",
-      "downloadingUpdate": "Update wird heruntergeladen …",
-      "updateDownloaded": "Update heruntergeladen. Neustart …",
-      "updateCheckFailed": "Update-Prüfung fehlgeschlagen.",
+      "downloadingUpdate": "Aktualisierung wird heruntergeladen …",
+      "updateDownloaded": "Aktualisierung heruntergeladen. Neustart …",
+      "updateCheckFailed": "Suche nach Aktualisierungen fehlgeschlagen.",
       "restarting": "Neustart …",
       "installAndRestart": "Installieren und neu starten",
       "checkingEllipsis": "Wird geprüft …",
-      "checkForUpdates": "Nach Updates suchen"
+      "checkForUpdates": "Nach Aktualisierungen suchen"
     },
     "about": {
       "title": "Über Marble Trace",
