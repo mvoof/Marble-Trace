@@ -2,8 +2,8 @@
   "format": 3,
   "intents": {
     "pit.fuel": [
-      "(combustível|gasolina) {number} [(litros|galões)]",
-      "{number} (litros|galões) de (combustível|gasolina)"
+      "(combustível|gasolina) {number} [{fuelUnit}]",
+      "{number} {fuelUnit} de (combustível|gasolina)"
     ],
     "pit.fuelToFinish": [
       "combustível até o fim",
@@ -122,6 +122,10 @@
       "soft": ["macios"],
       "medium": ["médios"],
       "hard": ["duros"]
+    },
+    "fuelUnit": {
+      "liters": ["litros"],
+      "gallons": ["galões"]
     }
   }
 }

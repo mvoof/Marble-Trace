@@ -753,7 +753,7 @@ pub fn commands_schema() -> Value {
         })
         .collect();
     let phrase_lists = json!({ "type": "array", "items": { "type": "string" } });
-    let slots: serde_json::Map<String, Value> = ["tires", "compound"]
+    let slots: serde_json::Map<String, Value> = ["tires", "compound", "fuelUnit"]
         .iter()
         .map(|slot| {
             let values = match slot_kind(slot) {
@@ -921,11 +921,14 @@ mod tests {
     }
 
     #[test]
-    fn recognises_a_pit_command_in_each_new_language() {
-        for (language, sentence) in [
-            ("de", "benzin vierzig liter"),
-            ("fr", "essence quarante litres"),
-            ("pt", "combustível quarenta litros"),
+    fn recognises_explicit_fuel_units_in_every_language() {
+        for (language, sentence, unit) in [
+            ("de", "benzin vierzig liter", "liters"),
+            ("en", "fuel forty gallons", "gallons"),
+            ("es", "combustible cuarenta galones", "gallons"),
+            ("fr", "essence quarante litres", "liters"),
+            ("pt", "combustível quarenta litros", "liters"),
+            ("ru", "топливо сорок галлонов", "gallons"),
         ] {
             let pack = load(language, None);
             let recognised = pack.grammar.recognise(sentence).unwrap();
@@ -934,6 +937,11 @@ mod tests {
             assert_eq!(
                 recognised.slot("number"),
                 Some(&SlotValue::Number(40)),
+                "{language}"
+            );
+            assert_eq!(
+                recognised.slot("fuelUnit"),
+                Some(&SlotValue::Name(unit.into())),
                 "{language}"
             );
         }
@@ -946,6 +954,10 @@ mod tests {
 
         assert_eq!(recognised.intent, "pit.fuel");
         assert_eq!(recognised.slot("number"), Some(&SlotValue::Number(67)));
+        assert_eq!(
+            recognised.slot("fuelUnit"),
+            Some(&SlotValue::Name("liters".into()))
+        );
         assert!(!pack.grammar.vosk_grammar().contains("加仑"));
     }
 

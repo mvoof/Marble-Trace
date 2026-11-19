@@ -25,7 +25,7 @@ use mt_model::utils::lock_or_recover;
 
 use crate::assets::VoiceAssets;
 use crate::pack::catalog::{
-    ask_key, intent_named, COMPOUND_SLOT, NO_KEY, NUMBER_SLOT, TIRES_SLOT, YES_KEY,
+    ask_key, intent_named, COMPOUND_SLOT, FUEL_UNIT_SLOT, NO_KEY, NUMBER_SLOT, TIRES_SLOT, YES_KEY,
 };
 use crate::pack::grammar::Recognised;
 use crate::pack::message::{values_used, Arg, Args};
@@ -692,9 +692,17 @@ pub fn crew_intent(command: &Recognised, units: Units) -> Option<CrewIntent> {
 
     Some(match command.intent.as_str() {
         "pit.fuel" => match command.slot(NUMBER_SLOT) {
-            Some(SlotValue::Number(amount)) => CrewIntent::Fuel {
-                liters: liters_from(units, *amount),
-            },
+            Some(SlotValue::Number(amount)) => {
+                let fuel_units = match command.slot(FUEL_UNIT_SLOT) {
+                    Some(SlotValue::Name(unit)) if unit == "liters" => Units { imperial: false },
+                    Some(SlotValue::Name(unit)) if unit == "gallons" => Units { imperial: true },
+                    _ => units,
+                };
+
+                CrewIntent::Fuel {
+                    liters: liters_from(fuel_units, *amount),
+                }
+            }
             _ => return None,
         },
         "pit.fuelToFinish" => CrewIntent::FuelToFinish,
@@ -1112,6 +1120,35 @@ mod tests {
         assert_eq!(
             crew_intent(&order, Units { imperial: true }),
             Some(CrewIntent::Fuel { liters: 38 })
+        );
+
+        let explicit_gallons = Recognised {
+            intent: "pit.fuel".into(),
+            slots: vec![
+                (NUMBER_SLOT.to_string(), SlotValue::Number(10)),
+                (
+                    FUEL_UNIT_SLOT.to_string(),
+                    SlotValue::Name("gallons".into()),
+                ),
+            ],
+        };
+
+        assert_eq!(
+            crew_intent(&explicit_gallons, Units { imperial: false }),
+            Some(CrewIntent::Fuel { liters: 38 })
+        );
+
+        let explicit_liters = Recognised {
+            slots: vec![
+                (NUMBER_SLOT.to_string(), SlotValue::Number(10)),
+                (FUEL_UNIT_SLOT.to_string(), SlotValue::Name("liters".into())),
+            ],
+            ..explicit_gallons
+        };
+
+        assert_eq!(
+            crew_intent(&explicit_liters, Units { imperial: true }),
+            Some(CrewIntent::Fuel { liters: 10 })
         );
     }
 

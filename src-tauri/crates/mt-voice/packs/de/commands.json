@@ -2,8 +2,8 @@
   "format": 3,
   "intents": {
     "pit.fuel": [
-      "(tanken|benzin) {number} [(liter|gallonen)]",
-      "{number} (liter|gallonen) (benzin|kraftstoff)"
+      "(tanken|benzin) {number} [{fuelUnit}]",
+      "{number} {fuelUnit} (benzin|kraftstoff)"
     ],
     "pit.fuelToFinish": [
       "kraftstoff bis zum ende",
@@ -125,6 +125,10 @@
       "soft": ["weiche"],
       "medium": ["medium"],
       "hard": ["harte"]
+    },
+    "fuelUnit": {
+      "liters": ["liter"],
+      "gallons": ["gallonen"]
     }
   }
 }

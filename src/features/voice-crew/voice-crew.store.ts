@@ -205,10 +205,11 @@ export class VoiceCrewStore {
   /** The language the crew speaks, which is the pack the tab edits. */
   get language(): string {
     const settings = this.root.appSettings.appSettings;
-    const chosen =
+    const resolved =
       settings.voiceLanguage === 'app'
         ? resolveAppLanguage(settings.language)
         : settings.voiceLanguage;
+    const chosen = resolved === 'pt-BR' ? 'pt' : resolved;
 
     return CREW_LANGUAGES.some((language) => language === chosen)
       ? chosen

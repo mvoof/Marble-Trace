@@ -299,15 +299,21 @@ impl<E: VoiceOutEvents> Worker<E> {
 pub fn cache_path(config: &OutputConfig, text: &str) -> PathBuf {
     let engine = catalog()
         .component(PIPER_ENGINE)
-        .and_then(|engine| engine.files.first())
-        .map(|file| file.sha256.as_str())
+        .map(|engine| {
+            engine
+                .files
+                .iter()
+                .map(|file| file.sha256.as_str())
+                .collect::<Vec<_>>()
+                .join("")
+        })
         .unwrap_or_default();
     let mut hasher = Sha256::new();
 
     for part in [
         text,
         &config.voice_id,
-        engine,
+        &engine,
         &config.length_scale.to_string(),
     ] {
         hasher.update(part.as_bytes());

@@ -214,16 +214,19 @@ pub enum SlotKind {
 pub const NUMBER_SLOT: &str = "number";
 pub const TIRES_SLOT: &str = "tires";
 pub const COMPOUND_SLOT: &str = "compound";
+pub const FUEL_UNIT_SLOT: &str = "fuelUnit";
 
 pub const TIRE_SETS: &[&str] = TireSet::NAMES;
 /// `CompoundKind`'s names.
 pub const COMPOUNDS: &[&str] = &["dry", "wet", "soft", "medium", "hard"];
+pub const FUEL_UNITS: &[&str] = &["liters", "gallons"];
 
 pub fn slot_kind(name: &str) -> Option<SlotKind> {
     match name {
         NUMBER_SLOT => Some(SlotKind::Number),
         TIRES_SLOT => Some(SlotKind::Fixed(TIRE_SETS)),
         COMPOUND_SLOT => Some(SlotKind::Fixed(COMPOUNDS)),
+        FUEL_UNIT_SLOT => Some(SlotKind::Fixed(FUEL_UNITS)),
         _ => None,
     }
 }

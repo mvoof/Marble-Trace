@@ -6,6 +6,7 @@ use std::collections::{BTreeMap, HashMap, HashSet};
 
 use crate::pack::catalog::{
     changes_the_car, intent_named, slot_kind, unsaid_value, SlotKind, ASK_WHEN_UNSAID,
+    FUEL_UNIT_SLOT, NUMBER_SLOT,
 };
 use mt_model::app::crew_questions::{
     question_reply_key, CarTarget, CLASS_POSITION_FIELD, NUMBER_FIELD, POSITION_FIELD,
@@ -31,6 +32,7 @@ const CAR_NUMBER_INTENTS: [&str; 3] = ["query.carPosition", "query.carLastLap", 
 /// Past this many sentences recognition slows and confusions grow; the pack
 /// still loads, with a warning.
 pub const LARGE_GRAMMAR_SENTENCES: usize = 50_000;
+const FUEL_COMMAND_SLOTS: &[&str] = &[NUMBER_SLOT, FUEL_UNIT_SLOT];
 
 /// Words that join commands said together ("fuel forty and change fronts").
 /// The recogniser is given them on their own, so it hears them instead of
@@ -260,7 +262,11 @@ pub fn compile_for_cars(
 
         said.push(Said {
             intent_id: intent_id.clone(),
-            slots: intent.slots,
+            slots: if intent_id == "pit.fuel" {
+                FUEL_COMMAND_SLOTS
+            } else {
+                intent.slots
+            },
             question: None,
             unsaid: unsaid.get(intent_id).cloned(),
             templates,

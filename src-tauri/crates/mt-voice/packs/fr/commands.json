@@ -2,8 +2,8 @@
   "format": 3,
   "intents": {
     "pit.fuel": [
-      "(essence|carburant) {number} [(litres|gallons)]",
-      "{number} (litres|gallons) (d'essence|de carburant)"
+      "(essence|carburant) {number} [{fuelUnit}]",
+      "{number} {fuelUnit} (d'essence|de carburant)"
     ],
     "pit.fuelToFinish": [
       "carburant jusqu'à l'arrivée",
@@ -132,6 +132,10 @@
       "soft": ["tendres"],
       "medium": ["medium"],
       "hard": ["dures"]
+    },
+    "fuelUnit": {
+      "liters": ["litres"],
+      "gallons": ["gallons"]
     }
   }
 }
