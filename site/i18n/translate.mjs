@@ -51,6 +51,27 @@ export const LOCALES = [
     label: '中文',
     short: '中文',
   },
+  {
+    code: 'de',
+    htmlLang: 'de',
+    ogLocale: 'de_DE',
+    label: 'Deutsch',
+    short: 'DE',
+  },
+  {
+    code: 'fr',
+    htmlLang: 'fr',
+    ogLocale: 'fr_FR',
+    label: 'Français',
+    short: 'FR',
+  },
+  {
+    code: 'pt-BR',
+    htmlLang: 'pt-BR',
+    ogLocale: 'pt_BR',
+    label: 'Português (Brasil)',
+    short: 'PT-BR',
+  },
 ];
 
 export const TRANSLATED_LOCALES = LOCALES.filter(

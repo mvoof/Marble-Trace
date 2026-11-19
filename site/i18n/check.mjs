@@ -15,8 +15,23 @@ const write = process.argv.includes('--write');
 const strings = extractStrings(
   readFileSync(join(HERE, '..', 'index.html'), 'utf8')
 );
+const REQUIRED_LOCALES = ['de', 'fr', 'pt-BR'];
 
 let gaps = 0;
+
+const registeredLocales = new Set(
+  TRANSLATED_LOCALES.map((locale) => locale.code)
+);
+const missingLocales = REQUIRED_LOCALES.filter(
+  (code) => !registeredLocales.has(code)
+);
+
+if (missingLocales.length) {
+  console.error(
+    `Locales not registered for site checks: ${missingLocales.join(', ')}`
+  );
+  gaps += missingLocales.length;
+}
 
 for (const locale of TRANSLATED_LOCALES) {
   const path = join(HERE, `${locale.code}.json`);

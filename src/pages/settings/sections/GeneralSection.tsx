@@ -19,6 +19,9 @@ export const GeneralSection = observer(() => {
     { value: 'es', label: 'Español' },
     { value: 'ru', label: 'Русский' },
     { value: 'zh', label: '中文' },
+    { value: 'de', label: 'Deutsch' },
+    { value: 'fr', label: 'Français' },
+    { value: 'pt-BR', label: 'Português (Brasil)' },
   ];
 
   return (
