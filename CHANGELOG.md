@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Voice Crew — German, French and Brazilian Portuguese:** Add voice packs and Piper voices for all three languages. Piper 1.5 is downloaded on demand with a portable Python runtime; the app keeps its worker and voice model loaded while the crew is speaking.
 - **Translations:** Add German, French, and Brazilian Portuguese to the main window, widget settings, and website.
 - **Home — Your Statistics:** Marble Trace reads the sim's telemetry files (`.ibt`) into a statistics database of its own, while the sim is closed. Home greets you by name, with what is on now in one strip under the title; your last race with its track outline, finish, incidents and best lap; this week's time in the car, distance, clean laps and podium rate, each against the week before; a year of the days you drove; the cars and tracks you drove longest; and your sessions, filtered by period, track or car, session type and bots, 20 to a page. When iRacing does not save telemetry files, Home offers to switch that on.
 - **Analysis — Compare Laps:** Open a session, pick its laps and compare them on stacked charts — delta to the reference lap, speed, throttle, brake, gear, steering, RPM, and any other channel through "+ Channel" — with one cursor across every chart and the track map, which draws the laps with their sectors and where the car's nose pointed. Zoom by wheel or drag, on the map and the charts alike. The Setup tab shows the garage setup the lap was driven with. Each timed lap's telemetry and setup are kept in the statistics database, so the analysis works after the `.ibt` is gone, and the lap set stays across restarts. A session can be deleted from the database, its files too if you wish.
@@ -50,6 +51,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Voice Crew — French and Chinese:** French Piper voices no longer exit on IPA characters the old executable could not handle. Chinese fuel commands no longer include `加仑`, which the recognition model does not know.
 - **Settings File — Safe Saves:** A save cut short by a crash or a power loss could leave the settings file empty or half-written; the old file now stays whole until the new one is complete. A settings file saved from Notepad no longer locks the settings, a file another program holds for a moment at start is read again instead of being taken as broken, and Reset settings can no longer be undone by a save still on its way.
 - **Track Map — Rotations Kept:** An unreadable track settings file no longer has the angles of every other track replaced by the one you turn next.
 - **Locked Settings File:** With the settings file unreadable, closing Marble Trace wrote an empty file over it, losing what was left of it, and Reset settings came back to the same warning after the restart. The file is now left as it is, and a reset starts on defaults.
