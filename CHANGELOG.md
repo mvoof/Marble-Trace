@@ -93,6 +93,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Voice Crew Fuel Units:** Explicitly spoken liters and gallons are now converted correctly in every language; a number without a unit still follows the selected unit system.
 - **Coach Without a Reference After a Reload:** An overlay window opened or reloaded mid-session now picks up the reference lap at once; before, the coach compared against nothing until your next best lap.
 - **Coach Trace Drawn as Steps:** The reference and live traces are now drawn as smooth lines, not a staircase — most visibly on long tracks like the Nordschleife.
 - **Pace Car Parked on Track:** At tracks where the pace car parks in a pocket off the racing line, such as Zolder, it is no longer shown as out on circuit, and it no longer raises a stopped-car incident.
