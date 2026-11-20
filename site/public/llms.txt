@@ -14,6 +14,18 @@
 - Source: https://github.com/mvoof/Marble-Trace
 - Community: https://discord.gg/GVaRsHbjxV
 
+## Website languages
+
+The website is available in English, Russian, Spanish, Chinese (Simplified), German, French and Brazilian Portuguese:
+
+- English: https://marbletrace.com/
+- Русский: https://marbletrace.com/ru/
+- Español: https://marbletrace.com/es/
+- 中文（简体）: https://marbletrace.com/zh/
+- Deutsch: https://marbletrace.com/de/
+- Français: https://marbletrace.com/fr/
+- Português (Brasil): https://marbletrace.com/pt-BR/
+
 ## Widgets
 
 - Driving HUD: Race Dash, Invisible Dash, RPM Lights, Engine Panel, Battery, DRS, ABS, Input Trace, G-Meter, Coach
