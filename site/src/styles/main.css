@@ -63,13 +63,13 @@ button:focus-visible {
   overflow: hidden;
 }
 
-/* The photograph's own 43:18 at full width, so every widget in the capture
-   stays in frame; the copy is centred in it vertically. */
+/* Keep the frame at the source images' ratio so the cockpit and overlay stay
+   aligned without cropping their outer widgets. */
 .hero-stage {
   position: relative;
   display: flex;
   align-items: center;
-  min-height: max(34rem, calc(100vw * 18 / 43));
+  min-height: calc(100vw * 18 / 43);
 }
 
 .hero-container {
@@ -89,6 +89,7 @@ button:focus-visible {
   position: relative;
   z-index: 10;
   max-width: 600px;
+  transform: translateY(clamp(14px, 2.1vw, 30px));
 }
 
 .hero-kicker {
@@ -286,6 +287,7 @@ button:focus-visible {
   z-index: 5;
   overflow: hidden;
   user-select: none;
+  container-type: inline-size;
 }
 
 .hero-photo {
@@ -337,11 +339,80 @@ button:focus-visible {
    while a toast says what happened and leaves after three seconds. Runs once,
    on load; with reduced motion the widgets are simply there. */
 .hero-overlay {
-  /* The capture is a transparent window: no tone-down, the widgets keep
-     their own colours over the held-down cockpit. */
-  filter: none;
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  pointer-events: none;
+  user-select: none;
   opacity: 0;
   animation: hero-overlay-on 0.9s steps(1, end) 0.7s forwards;
+}
+
+.hero-overlay-widget {
+  position: absolute;
+  height: auto;
+  max-width: none;
+  display: block;
+}
+
+.hero-overlay-standings {
+  left: 0.5cqw;
+  top: 0.5cqw;
+  width: min(24.9cqw, 856px);
+}
+
+.hero-overlay-lap-log {
+  right: 15cqw;
+  bottom: 0cqw;
+  width: min(6.4cqw, 220px);
+}
+
+.hero-overlay-lap-delta {
+  left: 39.725cqw;
+  top: 1cqw;
+  width: min(15.8cqw, 544px);
+}
+
+.hero-overlay-track-map {
+  right: 0.5cqw;
+  top: 1cqw;
+  width: min(13.37cqw, 460px);
+}
+
+.hero-overlay-fuel {
+  right: 0cqw;
+  bottom: 15cqw;
+  width: min(7.9cqw, 272px);
+}
+
+.hero-overlay-proximity {
+  left: 37cqw;
+  bottom: 8cqw;
+  width: min(2.67cqw, 92px);
+}
+
+.hero-overlay-input-trace {
+  left: 41.715cqw;
+  bottom: 10cqw;
+  width: min(13.25cqw, 456px);
+}
+
+.hero-overlay-relative {
+  right: 0cqw;
+  bottom: 0cqw;
+  width: min(11.28cqw, 388px);
+}
+
+.hero-overlay-weather {
+  left: 0cqw;
+  bottom: 0cqw;
+  width: min(9.07cqw, 312px);
+}
+
+.hero-overlay-pit-status {
+  left: 20cqw;
+  bottom: 0cqw;
+  width: min(3.84cqw, 132px);
 }
 
 @keyframes hero-overlay-on {
@@ -370,7 +441,7 @@ button:focus-visible {
   position: absolute;
   top: 46%;
   left: 74%;
-  z-index: 2;
+  z-index: 7;
   display: inline-flex;
   align-items: center;
   gap: 0.6rem;
@@ -428,26 +499,24 @@ button:focus-visible {
   }
 }
 
-/* The copy side: the cockpit blurs out under the text, from sharp on the
-   right to fully blurred at the left edge, with a smoky tint deep enough for
-   the light copy. */
+/* Blur and tint the left side beneath the copy along the hero's diagonal. */
 .hero-fade-left {
   --glass-mask: linear-gradient(
     var(--wash-angle),
     #000 0%,
     #000 30%,
-    rgba(0, 0, 0, 0.6) 48%,
-    rgba(0, 0, 0, 0.25) 62%,
+    rgba(0, 0, 0, 0.45) 35%,
+    rgba(0, 0, 0, 0.25) 52%,
     transparent 76%
   );
 
   position: absolute;
   inset: 0;
-  z-index: 3;
+  z-index: 5;
   pointer-events: none;
-  background: rgba(10, 13, 17, 0.5);
-  -webkit-backdrop-filter: blur(18px);
-  backdrop-filter: blur(18px);
+  background: rgba(10, 13, 17, 0.22);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
   -webkit-mask-image: var(--glass-mask);
   mask-image: var(--glass-mask);
 }
@@ -601,7 +670,7 @@ button:focus-visible {
 /* Two faint cuts across the band at the page angle - the same strokes the
    hero and the light page background are drawn with. */
 .footer-cta::before {
-  content: '';
+  content: "";
   position: absolute;
   inset: 0;
   background:
@@ -814,6 +883,18 @@ button:focus-visible {
   }
 }
 
+@media (min-width: 641px) and (max-width: 1024px) {
+  .hero-badges {
+    transform: translateX(7vw);
+  }
+}
+
+@media (min-width: 1025px) {
+  .hero-badges {
+    transform: translateX(13vw);
+  }
+}
+
 /* ==========================================================================
    Responsive Adaptations for Hero Block
    ========================================================================== */
@@ -833,13 +914,17 @@ button:focus-visible {
 
   .hero-content {
     max-width: 100%;
+    transform: translateY(3.5vw);
+  }
+
+  .hero-overlay-standings {
+    width: min(14cqw, 856px);
   }
 
   /* Narrow screens: the photo drops behind the copy instead of beside it */
   .hero-visual {
     left: 0;
     right: 0;
-    opacity: 0.5;
   }
 
   .hero-overlay-toast {
@@ -1190,7 +1275,7 @@ button:focus-visible {
 }
 
 .screens-hint::before {
-  content: '';
+  content: "";
   display: inline-block;
   width: 0.55rem;
   height: 0.55rem;
@@ -1324,7 +1409,7 @@ button:focus-visible {
 }
 
 .screens-spot::before {
-  content: '';
+  content: "";
   position: absolute;
   inset: -2px;
   border-radius: 50%;
@@ -1333,7 +1418,7 @@ button:focus-visible {
 }
 
 .screens-spot::after {
-  content: '+';
+  content: "+";
 }
 
 @media (max-width: 640px) {
@@ -1822,7 +1907,7 @@ button:focus-visible {
 /* How long until the strip moves on: a line that runs along the active
    step while the strip plays, and is gone while it waits for a reader. */
 .session-step::after {
-  content: '';
+  content: "";
   position: absolute;
   left: 1rem;
   right: 1rem;
@@ -1981,15 +2066,19 @@ button:focus-visible {
 /* A microphone on the air, faint, half out of the lower left corner under
    the copy; it dissolves towards the text so it never competes with it. */
 .crew::before {
-  content: '';
+  content: "";
   position: absolute;
   left: clamp(-8rem, -7vw, -3rem);
   bottom: clamp(-9rem, -8vw, -4rem);
   width: clamp(18rem, 30vw, 28rem);
   aspect-ratio: 1;
-  background: url('../../assets/radio-waves.svg') no-repeat center / contain;
+  background: url("../../assets/radio-waves.svg") no-repeat center / contain;
   opacity: 0.06;
-  -webkit-mask-image: radial-gradient(circle at 35% 60%, #000 30%, transparent 70%);
+  -webkit-mask-image: radial-gradient(
+    circle at 35% 60%,
+    #000 30%,
+    transparent 70%
+  );
   mask-image: radial-gradient(circle at 35% 60%, #000 30%, transparent 70%);
   transform: rotate(-12deg);
   pointer-events: none;
@@ -2038,7 +2127,7 @@ button:focus-visible {
   background-color: rgba(21, 22, 26, 0.94);
   box-shadow: 0 1.8rem 3.6rem -1.2rem rgba(0, 0, 0, 0.6);
   color: #ffffff;
-  font-family: 'Rajdhani', var(--font-family);
+  font-family: "Rajdhani", var(--font-family);
 }
 
 .crew-driver {
@@ -2177,7 +2266,6 @@ button:focus-visible {
     width: 100%;
     margin-top: 1rem;
   }
-
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -2312,7 +2400,7 @@ button:focus-visible {
 
 /* The arrow to the next stop, centred on the icon row between two nodes. */
 .perf-node + .perf-node::before {
-  content: '\2192';
+  content: "\2192";
   position: absolute;
   top: 1.4rem;
   left: 0;
@@ -2414,7 +2502,7 @@ button:focus-visible {
   color: var(--band-ink);
 }
 
-.perf-rate-option[aria-pressed='true'] {
+.perf-rate-option[aria-pressed="true"] {
   color: var(--color-btn-download-text);
   background-color: var(--band-accent);
 }
@@ -2519,7 +2607,7 @@ button:focus-visible {
 }
 
 .perf-fact-name::before {
-  content: '';
+  content: "";
   flex: none;
   width: 0.5rem;
   height: 0.5rem;
@@ -2559,7 +2647,7 @@ button:focus-visible {
 }
 
 .perf-shot::after {
-  content: '';
+  content: "";
   background:
     linear-gradient(to top, rgba(13, 16, 20, 0.85), rgba(13, 16, 20, 0) 50%),
     linear-gradient(to right, rgba(13, 16, 20, 0.35), rgba(13, 16, 20, 0) 40%);
@@ -2626,8 +2714,8 @@ button:focus-visible {
     display: grid;
     grid-template-columns: 4.2rem minmax(0, 1fr);
     grid-template-areas:
-      'icon name'
-      'icon sub';
+      "icon name"
+      "icon sub";
     align-items: center;
     gap: 0 0.9rem;
     text-align: left;
@@ -2750,7 +2838,7 @@ button:focus-visible {
 }
 
 .tape-word::after {
-  content: '';
+  content: "";
   width: 0.55em;
   height: 0.55em;
   margin: 0 0.9em;
@@ -3502,7 +3590,7 @@ body.is-viewer-open {
 /* The plus: two bars, the upright one folds away when the item opens */
 .faq-question::before,
 .faq-question::after {
-  content: '';
+  content: "";
   position: absolute;
   top: 50%;
   right: 0.5rem;
@@ -3599,7 +3687,7 @@ body.is-viewer-open {
 
 .catalog-summary::before,
 .catalog-summary::after {
-  content: '';
+  content: "";
   position: absolute;
   top: 50%;
   right: 0.5rem;
@@ -3780,14 +3868,14 @@ body.is-viewer-open {
 
 /* Chevrons in the empty corner under the controls copy */
 .feature-controls::before {
-  content: '';
+  content: "";
   position: absolute;
   left: clamp(-3rem, -2vw, -1rem);
   bottom: clamp(-2rem, -2vw, -1rem);
   width: clamp(16rem, 30vw, 28rem);
   aspect-ratio: 420 / 180;
   background-color: var(--livery-blue);
-  mask: url('../../assets/chevrons.svg') no-repeat center / contain;
+  mask: url("../../assets/chevrons.svg") no-repeat center / contain;
   opacity: 0.28;
   pointer-events: none;
 }
@@ -3799,13 +3887,13 @@ body.is-viewer-open {
 
 /* A chequered flag waving out of the lower right corner of the download band */
 .download-band::before {
-  content: '';
+  content: "";
   position: absolute;
   right: -4%;
   bottom: -14%;
   width: min(36%, 34rem);
   height: 120%;
-  background: url('../../assets/checkered-flag.svg') no-repeat right bottom /
+  background: url("../../assets/checkered-flag.svg") no-repeat right bottom /
     contain;
   opacity: 0.2;
   /* Dissolves on the side facing the button, so the mark never sits under
@@ -3851,7 +3939,7 @@ body.is-viewer-open {
 }
 
 .settings-media::before {
-  content: '';
+  content: "";
   position: absolute;
   left: clamp(-6rem, -6vw, -2rem);
   bottom: clamp(-6rem, -6vw, -2rem);

@@ -7,6 +7,7 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
+    "hero-widgets": "node scripts/hero-widget-crops.mjs",
     "i18n:check": "node i18n/check.mjs",
     "i18n:sync": "node i18n/check.mjs --write",
     "images": "node scripts/images.mjs"
