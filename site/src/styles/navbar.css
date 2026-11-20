@@ -82,20 +82,21 @@
 }
 
 .brand-icon-wrap {
-  /* The mark is 25:28 */
-  width: 25px;
+  width: 28px;
   height: 28px;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  border-radius: 7px;
+  background: var(--color-brand);
 }
 
 .brand-icon {
-  width: 100%;
-  height: 100%;
+  width: 18px;
+  height: 20px;
   display: block;
-  color: var(--color-brand);
+  color: #ffffff;
 }
 
 .brand-name {
@@ -357,7 +358,11 @@
 }
 
 .drawer-brand .brand-icon {
-  color: var(--color-drawer-text);
+  color: #ffffff;
+}
+
+.drawer-brand .brand-icon-wrap {
+  background: var(--color-drawer-text);
 }
 
 .drawer-brand .brand-name {

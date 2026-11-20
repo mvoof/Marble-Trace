@@ -698,6 +698,8 @@ button:focus-visible {
 }
 
 .footer-logo {
+  width: 1.35rem;
+  height: 1.52rem;
   color: #ffffff;
 }
 
@@ -2341,15 +2343,13 @@ button:focus-visible {
 
 /* The app is the one stop that is ours end to end - the only lit tile. */
 .perf-node-app .perf-node-icon {
-  width: 4.2rem;
-  border: 1px solid var(--band-accent);
-  border-radius: 8px;
-  background-color: rgba(var(--accent-rgb), 0.1);
+  border: 0;
+  background: transparent;
 }
 
-.perf-node-logo {
-  width: 2.3rem;
-  height: 2.6rem;
+.perf-node-app .perf-node-logo {
+  width: 1.8rem;
+  height: 2rem;
   color: #ffffff;
 }
 
@@ -3777,23 +3777,6 @@ body.is-viewer-open {
    the circuit without turning busy: a kerb under the hero, chevrons in the
    controls, a chequered flag where the download is.
    ========================================================================== */
-
-/* A black and white kerb along the foot of the claims strip, where the hero meets the dark
-   gallery and the two would otherwise run together. */
-.hero-claims::after {
-  content: '';
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  height: 12px;
-  background: repeating-linear-gradient(
-    -60deg,
-    var(--livery-blue) 0 26px,
-    #f6f7f9 26px 52px
-  );
-  pointer-events: none;
-}
 
 /* Chevrons in the empty corner under the controls copy */
 .feature-controls::before {
