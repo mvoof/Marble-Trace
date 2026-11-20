@@ -287,7 +287,7 @@ button:focus-visible {
   z-index: 5;
   overflow: hidden;
   user-select: none;
-  container-type: inline-size;
+  container-type: size;
 }
 
 .hero-photo {
@@ -362,8 +362,8 @@ button:focus-visible {
 }
 
 .hero-overlay-lap-log {
-  right: 15cqw;
-  bottom: 0cqw;
+  left: 0.233cqw;
+  top: 32.222cqh;
   width: min(6.4cqw, 220px);
 }
 
@@ -398,14 +398,14 @@ button:focus-visible {
 }
 
 .hero-overlay-relative {
-  right: 0cqw;
-  bottom: 0cqw;
+  left: 0cqw;
+  top: 83.889cqh;
   width: min(11.28cqw, 388px);
 }
 
 .hero-overlay-weather {
-  left: 0cqw;
-  bottom: 0cqw;
+  left: 90.698cqw;
+  top: 88.889cqh;
   width: min(9.07cqw, 312px);
 }
 

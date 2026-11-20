@@ -464,7 +464,7 @@ Marble Trace's Safety Rating estimate comes from the community, not from iRacing
      the footer of site/index.html (footer-legal), which lists the names the
      site uses: a newly named product goes into both. -->
 
-Marble Trace™ and the Marble Trace logo are trademarks of voof. iRacing is a trademark of iRacing.com Motorsport Simulations, LLC. TAURI is trademark of The Tauri Programme within the Commons Conservancy. Rust is a trademark of the Rust Foundation. Windows is a trademark of the Microsoft group of companies. GitHub is a trademark of GitHub, Inc. Discord is a trademark of Discord Inc. Twitch is a trademark of Twitch Interactive, Inc. YouTube is a trademark of Google LLC.
+Marble Trace™ and the Marble Trace logo are trademarks of mvoof. iRacing is a trademark of iRacing.com Motorsport Simulations, LLC. TAURI is trademark of The Tauri Programme within the Commons Conservancy. Rust is a trademark of the Rust Foundation. Windows is a trademark of the Microsoft group of companies. GitHub is a trademark of GitHub, Inc. Discord is a trademark of Discord Inc. Twitch is a trademark of Twitch Interactive, Inc. YouTube is a trademark of Google LLC.
 
 All other names, Aptabase among them, are the property of their respective owners.
 

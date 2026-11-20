@@ -362,7 +362,7 @@
 }
 
 .drawer-brand .brand-icon-wrap {
-  background: var(--color-drawer-text);
+  background: var(--color-drawer-card);
 }
 
 .drawer-brand .brand-name {
