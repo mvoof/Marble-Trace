@@ -651,15 +651,64 @@
               decoding="async"
             />
 
-            <!-- The overlay switching on over the bare cockpit, once, on arrival.
-                 Same frame size as the cockpit, so both cover-fit identically. -->
-            <img
-              src="assets/why/hero-overlay.png"
-              alt="Marble Trace widgets over the iRacing cockpit: standings, lap log, relative, track map, fuel, weather, radar and the race dash"
-              class="hero-photo hero-overlay"
-              fetchpriority="high"
-              decoding="async"
-            />
+            <!-- Widget crops scale and move with the hero frame as its width
+                 changes, keeping their relative layout intact. -->
+            <div
+              class="hero-overlay"
+              role="img"
+              aria-label="Marble Trace widgets over the iRacing cockpit: standings, lap log, relative, track map, fuel, weather, radar and the race dash"
+            >
+              <img
+                class="hero-overlay-widget hero-overlay-standings"
+                src="hero-widgets/standings.png"
+                alt=""
+              />
+              <img
+                class="hero-overlay-widget hero-overlay-lap-log"
+                src="hero-widgets/lap-log.png"
+                alt=""
+              />
+              <img
+                class="hero-overlay-widget hero-overlay-lap-delta"
+                src="hero-widgets/lap-delta.png"
+                alt=""
+              />
+              <img
+                class="hero-overlay-widget hero-overlay-track-map"
+                src="hero-widgets/track-map.png"
+                alt=""
+              />
+              <img
+                class="hero-overlay-widget hero-overlay-fuel"
+                src="hero-widgets/fuel.png"
+                alt=""
+              />
+              <img
+                class="hero-overlay-widget hero-overlay-proximity"
+                src="hero-widgets/proximity.png"
+                alt=""
+              />
+              <img
+                class="hero-overlay-widget hero-overlay-input-trace"
+                src="hero-widgets/input-trace.png"
+                alt=""
+              />
+              <img
+                class="hero-overlay-widget hero-overlay-relative"
+                src="hero-widgets/relative.png"
+                alt=""
+              />
+              <img
+                class="hero-overlay-widget hero-overlay-weather"
+                src="hero-widgets/weather.png"
+                alt=""
+              />
+              <img
+                class="hero-overlay-widget hero-overlay-pit-status"
+                src="hero-widgets/pit-status.png"
+                alt=""
+              />
+            </div>
 
             <p class="hero-overlay-toast" aria-hidden="true">
               <span class="hero-overlay-dot"></span>Overlay on
@@ -5641,7 +5690,7 @@
                newly named product goes into both. The text is the key of its
                translations in site/i18n/, so a change here edits those too. -->
           <p class="footer-legal">
-            Marble Trace™ and the Marble Trace logo are trademarks of voof.
+            Marble Trace™ and the Marble Trace logo are trademarks of mvoof.
             TAURI is trademark of The Tauri Programme within the Commons
             Conservancy. Rust is a trademark of the Rust Foundation. iRacing is
             a trademark of iRacing.com Motorsport Simulations, LLC. Windows is a
