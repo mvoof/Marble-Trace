@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Website — Widget Gallery:** Refresh the widget examples and screenshots, including the pit exit, towing and input trace layouts.
 - **Website — Homepage:** Refine the brand marks and footer attribution; the cockpit widgets keep their positions while scaling with the screen, up to the source image size.
 
 ## [0.29.0] — 2026-11-19

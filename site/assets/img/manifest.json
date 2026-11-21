@@ -573,28 +573,6 @@
       }
     ]
   },
-  "assets/widgets/input-trace-corner-speeds.png": {
-    "width": 1578,
-    "height": 396,
-    "variants": [
-      {
-        "width": 480,
-        "path": "assets/img/widgets/input-trace-corner-speeds-480.webp"
-      },
-      {
-        "width": 960,
-        "path": "assets/img/widgets/input-trace-corner-speeds-960.webp"
-      },
-      {
-        "width": 1440,
-        "path": "assets/img/widgets/input-trace-corner-speeds-1440.webp"
-      },
-      {
-        "width": 1578,
-        "path": "assets/img/widgets/input-trace-corner-speeds-1578.webp"
-      }
-    ]
-  },
   "assets/widgets/input-trace-no-wheel.png": {
     "width": 1560,
     "height": 360,
@@ -614,6 +592,28 @@
       {
         "width": 1560,
         "path": "assets/img/widgets/input-trace-no-wheel-1560.webp"
+      }
+    ]
+  },
+  "assets/widgets/input-trace-only-graphic.png": {
+    "width": 1560,
+    "height": 360,
+    "variants": [
+      {
+        "width": 480,
+        "path": "assets/img/widgets/input-trace-only-graphic-480.webp"
+      },
+      {
+        "width": 960,
+        "path": "assets/img/widgets/input-trace-only-graphic-960.webp"
+      },
+      {
+        "width": 1440,
+        "path": "assets/img/widgets/input-trace-only-graphic-1440.webp"
+      },
+      {
+        "width": 1560,
+        "path": "assets/img/widgets/input-trace-only-graphic-1560.webp"
       }
     ]
   },
@@ -688,8 +688,8 @@
     ]
   },
   "assets/widgets/invisible-dash-compact.png": {
-    "width": 1041,
-    "height": 216,
+    "width": 1332,
+    "height": 363,
     "variants": [
       {
         "width": 480,
@@ -700,8 +700,8 @@
         "path": "assets/img/widgets/invisible-dash-compact-960.webp"
       },
       {
-        "width": 1041,
-        "path": "assets/img/widgets/invisible-dash-compact-1041.webp"
+        "width": 1332,
+        "path": "assets/img/widgets/invisible-dash-compact-1332.webp"
       }
     ]
   },
@@ -899,7 +899,7 @@
   },
   "assets/widgets/pit-line-brake.png": {
     "width": 240,
-    "height": 1140,
+    "height": 1287,
     "variants": [
       {
         "width": 240,
@@ -941,17 +941,17 @@
       }
     ]
   },
-  "assets/widgets/pit-service-no-footer.png": {
+  "assets/widgets/pit-service-towing.png": {
     "width": 708,
-    "height": 822,
+    "height": 1032,
     "variants": [
       {
         "width": 480,
-        "path": "assets/img/widgets/pit-service-no-footer-480.webp"
+        "path": "assets/img/widgets/pit-service-towing-480.webp"
       },
       {
         "width": 708,
-        "path": "assets/img/widgets/pit-service-no-footer-708.webp"
+        "path": "assets/img/widgets/pit-service-towing-708.webp"
       }
     ]
   },
@@ -1200,12 +1200,12 @@
     ]
   },
   "assets/widgets/relative-map-vertical.png": {
-    "width": 168,
-    "height": 900,
+    "width": 120,
+    "height": 930,
     "variants": [
       {
-        "width": 168,
-        "path": "assets/img/widgets/relative-map-vertical-168.webp"
+        "width": 120,
+        "path": "assets/img/widgets/relative-map-vertical-120.webp"
       }
     ]
   },
@@ -1372,8 +1372,8 @@
     ]
   },
   "assets/widgets/standings-all-columns.png": {
-    "width": 3030,
-    "height": 1500,
+    "width": 2514,
+    "height": 1521,
     "variants": [
       {
         "width": 480,
@@ -1392,12 +1392,8 @@
         "path": "assets/img/widgets/standings-all-columns-1920.webp"
       },
       {
-        "width": 2560,
-        "path": "assets/img/widgets/standings-all-columns-2560.webp"
-      },
-      {
-        "width": 2560,
-        "path": "assets/img/widgets/standings-all-columns-2560.webp"
+        "width": 2514,
+        "path": "assets/img/widgets/standings-all-columns-2514.webp"
       }
     ]
   },
@@ -1432,7 +1428,7 @@
     ]
   },
   "assets/widgets/standings-minimal.png": {
-    "width": 3030,
+    "width": 1392,
     "height": 1500,
     "variants": [
       {
@@ -1444,20 +1440,8 @@
         "path": "assets/img/widgets/standings-minimal-960.webp"
       },
       {
-        "width": 1440,
-        "path": "assets/img/widgets/standings-minimal-1440.webp"
-      },
-      {
-        "width": 1920,
-        "path": "assets/img/widgets/standings-minimal-1920.webp"
-      },
-      {
-        "width": 2560,
-        "path": "assets/img/widgets/standings-minimal-2560.webp"
-      },
-      {
-        "width": 2560,
-        "path": "assets/img/widgets/standings-minimal-2560.webp"
+        "width": 1392,
+        "path": "assets/img/widgets/standings-minimal-1392.webp"
       }
     ]
   },

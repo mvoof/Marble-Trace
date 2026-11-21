@@ -10,7 +10,10 @@ import type {
 } from '@storybook/react-vite';
 
 import type { PreviewScenarioId } from '@shared/contracts/preview-scenarios';
+import type { WidgetUserSettings } from '@shared/contracts/widget-settings';
 import type { PreviewCore } from '@app/roots/renderer-core';
+import { WIDGET_BY_ID } from '@entities/widget/widget-catalog';
+import { widgetFrameBorderRadius } from '@entities/widget/widget-frame';
 import { usePreviewStore, withStore } from '../../.storybook/decorators';
 import { widgetDecorator } from './widgetDecorator';
 import { seedFromSnapshot, seedScenario } from './seed-from-snapshot';
@@ -192,9 +195,40 @@ export const defineWidgetStories = <Args,>(
     // --widget-border follows the widget's own borderColor setting, as the
     // app's frame does, so a plate drawn from it obeys the control.
     const { borderColor } = context.args as { borderColor?: string };
+    const widgetManifest = widgetId ? WIDGET_BY_ID.get(widgetId) : undefined;
+    const storyArgs = context.args as Record<string, unknown>;
+    const nestedSettings = storyArgs.settings;
+    const nestedWidgetSettings =
+      nestedSettings !== null &&
+      typeof nestedSettings === 'object' &&
+      !Array.isArray(nestedSettings)
+        ? pickSettings(
+            nestedSettings as Record<string, unknown>,
+            settingsDefaults
+          )
+        : {};
+    const frameSettings = {
+      ...settingsDefaults,
+      ...pickSettings(storyArgs, settingsDefaults),
+      ...nestedWidgetSettings,
+    };
+    const deriveDesignWidth = widgetManifest?.deriveDesignWidth;
+    const derivedWidth = deriveDesignWidth?.(
+      frameSettings as unknown as WidgetUserSettings
+    );
+    const frameShape = widgetId ? widgetManifest?.frameShape : undefined;
+    const frameBorderRadius =
+      widgetId && frameShape
+        ? (widgetFrameBorderRadius(
+            widgetId,
+            context.args as Record<string, unknown>
+          ) ?? 0)
+        : size?.borderRadius;
 
     return widgetDecorator({
       ...size,
+      ...(derivedWidth !== undefined ? { width: derivedWidth } : undefined),
+      borderRadius: frameBorderRadius,
       ...(borderColor ? { widgetBorder: borderColor } : undefined),
       ...override,
     })(Story, context);

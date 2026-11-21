@@ -105,6 +105,7 @@ export const Horizontal: Story = {};
 
 export const Vertical: Story = {
   parameters: { widgetFrame: { width: 40, height: 300 } },
+  args: { settings: { orientation: 'vertical' } },
 };
 
 export const Wide: Story = {
