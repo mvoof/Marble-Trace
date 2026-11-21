@@ -35,7 +35,6 @@ const meta: Meta<StoryArgs> = {
     size: {
       width: 520,
       height: 120,
-      borderRadius: '12px 9999px 9999px 12px',
     },
     seedSnapshot: true,
     seed: (store, args) => {
@@ -110,8 +109,19 @@ export const NoTrace: Story = {
   args: { showTrace: false },
 };
 
-export const FullThrottle: Story = {
-  args: { throttle: 1.0 },
+export const OnlyGraphic: Story = {
+  args: {
+    throttle: 1.0,
+    showSteering: false,
+    showThrottle: true,
+    showBrake: true,
+    showClutch: true,
+    showBars: false,
+    brake: 3,
+    clutch: 2,
+  },
+
+  decorators: [withReplay(seedInputHistory)],
 };
 
 export const HeavyBraking: Story = {
@@ -164,7 +174,15 @@ export const SpeedGear: Story = {
 
 /** Corner speeds, speed and gear, no wheel: the plate's right edge goes straight. */
 export const CornerSpeedsWithoutWheel: Story = {
-  args: { showCornerSpeeds: true, showSpeedGear: true, showSteering: false },
+  args: {
+    showCornerSpeeds: true,
+    showSpeedGear: true,
+    showSteering: false,
+    showInputValues: true,
+    speedBlockSide: 'left',
+    colorizeGearByZone: true,
+    blinkAtShift: true,
+  },
 };
 
 /** At the shift point: the gear in the zone colour, flashing. */

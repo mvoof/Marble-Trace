@@ -93,7 +93,11 @@ const meta: Meta<StoryArgs> = {
 export default meta;
 type Story = StoryObj<StoryArgs>;
 
-export const Default: Story = {};
+export const Default: Story = {
+  args: {
+    showCountryFlag: true,
+  },
+};
 
 /** Sub-second between every car — what the gap column carries a decimal for. */
 export const ClosePack: Story = {
@@ -111,6 +115,22 @@ export const MinimalColumns: Story = {
       showColumnHeaders: false,
       showSessionHeader: false,
     },
+
+    showPosChange: false,
+    showTeamName: false,
+    showBrand: false,
+    showTire: false,
+    showLicBadge: false,
+    showLicenseLetter: false,
+    showSafetyRatingValue: false,
+    showIRating: false,
+    abbreviateIRating: false,
+    showIRatingChip: false,
+    showIrChange: false,
+    showGap: false,
+    showInterval: false,
+    showLapDelta: false,
+    showLapsCompleted: false,
   },
 };
 
@@ -162,6 +182,16 @@ export const WithPitBadges: Story = {
   args: {
     rows: MOCK_PIT_ROWS,
     settings: { driversAhead: 3, driversBehind: 3 },
+    rowPadding: 'medium',
+    showIRating: false,
+    abbreviateIRating: false,
+    showIRatingChip: false,
+    showIrChange: false,
+    showLapsCompleted: false,
+    showWeather: false,
+    showPitStops: false,
+    showIncidentsBadge: false,
+    licBadgeStyle: 'dark',
   },
 };
 

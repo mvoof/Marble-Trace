@@ -138,6 +138,14 @@ export const FullBackdrop: Story = {
 // Default and the clusters keep the two edges — all the narrowing has eaten is
 // the empty middle.
 export const Compact: Story = {
+  args: {
+    bloomIntensity: 35,
+    backdropColor: 'rgba(0, 0, 0, 1)',
+    backdropScope: 'full',
+    depth: 0,
+    curvature: 0,
+  },
+
   parameters: { widgetFrame: { width: 440 } },
 };
 
