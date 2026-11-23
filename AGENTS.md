@@ -51,9 +51,10 @@ Environment variables: `CONTRIBUTING.md` → Environment variables.
   feature's entry describes the result. A release renames `[Unreleased]` to
   `## [x.y.z] — YYYY-MM-DD` and opens a new empty `[Unreleased]` above it.
 - Read external library docs through `context7`.
-- Check UI in the real app: Tauri MCP Bridge, `driver_session` (start, port 9223)
-  with `tauri:dev` running, then `webview_screenshot` / `webview_find_element` /
-  `webview_interact`. Storybook for isolated widgets. Never a plain browser.
+- Check UI in the real app: follow
+  [`docs/agents/mcp-setup.md`](docs/agents/mcp-setup.md) to configure Tauri MCP,
+  run `tauri:dev`, start `driver_session` on port 9223, and use the webview
+  tools. Storybook for isolated widgets. Never a plain browser.
 - Issues and specs: `.scratch/<feature>/` (`docs/agents/issue-tracker.md`).
   Terms: `CONTEXT.md`; decisions: `docs/adr/`.
 

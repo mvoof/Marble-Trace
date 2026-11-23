@@ -80,5 +80,6 @@ same route and writes the files.
 | [perf-methodology.md](perf-methodology.md)           | what the overlay costs the game: the bundle and the clock, metrics, protocol, `npm run perf:game`                          |
 | [adr/](adr/README.md)                                | architecture decision records                                                                                              |
 | [research/](research/)                               | investigations kept for reference (WebView2 flags)                                                                         |
+| [agents/mcp-setup.md](agents/mcp-setup.md)           | connect an agent to Tauri MCP and test the running app                                                                     |
 | [agents/](agents/)                                   | how an agent uses the issue tracker, the domain docs, React Doctor                                                         |
 | [rules/](rules/layers.md)                            | the full rules by area — layers, backend, telemetry, stores, widgets, style — with what holds each                         |
