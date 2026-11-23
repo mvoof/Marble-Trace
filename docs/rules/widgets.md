@@ -288,7 +288,7 @@ Building one from an idea? Follow the route first —
 component, hook and design token that already exists, and
 [`docs/design/widget-design-guide.md`](../design/widget-design-guide.md) says
 which color and chip look goes where. The skill
-`.claude/skills/new-widget/` walks the same route and writes the files. The
+`.agents/skills/new-widget/` walks the same route and writes the files. The
 checklist below is what a reviewer applies to code that already exists.
 
 1. Root element = `<WidgetPanel>`

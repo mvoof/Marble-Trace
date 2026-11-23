@@ -22,7 +22,7 @@ A step enforced by nothing is marked as such, because you have to be able to
 tell a convention from something that fails the build.
 
 The acting half of this route is the **`new-widget` skill**
-(`.claude/skills/new-widget/`): the same steps as imperatives, which asks the
+(`.agents/skills/new-widget/`): the same steps as imperatives, which asks the
 decisions and writes the files. This page is the reasoning behind it.
 
 ---
