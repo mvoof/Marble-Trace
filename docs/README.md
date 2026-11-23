@@ -40,7 +40,7 @@ for the shape of the app.
 | take its pictures for the README and the site       | [widget-screenshots.md](widget-screenshots.md)                                                    |
 | add a steering wheel silhouette to Input Trace      | [steering-wheel-assets.md](steering-wheel-assets.md)                                              |
 
-With an agent, the `new-widget` skill (`.claude/skills/new-widget/`) walks the
+With an agent, the `new-widget` skill (`.agents/skills/new-widget/`) walks the
 same route and writes the files.
 
 ### Change the data or the settings
