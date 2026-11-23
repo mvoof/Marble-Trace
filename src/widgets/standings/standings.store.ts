@@ -141,7 +141,7 @@ export class StandingsWidgetStore implements StandingsHotkeyTarget {
   private readonly seenLapTimes = new Map<number, SeenLap>();
 
   /** carIdx → position the table is currently drawn with (debounced). */
-  private settledPositions = new Map<number, Rank>();
+  private readonly settledPositions = new Map<number, Rank>();
 
   private readonly pendingPositions = new Map<number, PendingPosition>();
 
@@ -199,10 +199,18 @@ export class StandingsWidgetStore implements StandingsHotkeyTarget {
         ([, entries], previous) => {
           const identitiesChanged = entries !== previous?.[1];
 
-          // A pending pass can settle on a frame that only changes distance.
-          if (identitiesChanged || this.pendingPositions.size > 0) {
-            this.settleOrder(entries);
+          if (!identitiesChanged && this.pendingPositions.size === 0) {
+            return;
           }
+
+          const now = performance.now();
+
+          if (identitiesChanged) {
+            this.updateOrder(entries, now);
+          }
+
+          // A pending pass can settle on a frame that only changes distance.
+          this.settlePendingPositions(now);
 
           if (identitiesChanged) {
             this.trackPositionChanges(entries);
@@ -301,7 +309,7 @@ export class StandingsWidgetStore implements StandingsHotkeyTarget {
     this.positionChanges.clear();
     this.previousPositions.clear();
     this.pendingPositions.clear();
-    this.settledPositions = new Map();
+    this.settledPositions.clear();
     this.resetLapDeltas();
   }
 
@@ -315,9 +323,13 @@ export class StandingsWidgetStore implements StandingsHotkeyTarget {
 
       const seen = this.seenLapTimes.get(entry.carIdx);
 
-      // CarIdxLap can fall back to the official completed-lap count when a
-      // car leaves the world. That older count cannot complete a new lap.
-      if (seen && entry.lap < seen.lap) {
+      // The lap counter can drop when a car leaves the world and the
+      // backend falls back to the official completed-lap count.
+      if (
+        seen &&
+        (entry.lap < seen.lap ||
+          (entry.lap === seen.lap && lapTime === seen.time))
+      ) {
         continue;
       }
 
@@ -367,7 +379,7 @@ export class StandingsWidgetStore implements StandingsHotkeyTarget {
 
   // Drops the debounce so the next frame is drawn in its own order immediately.
   private resetSettledOrder() {
-    this.settledPositions = new Map();
+    this.settledPositions.clear();
     this.pendingPositions.clear();
     this.previousPositions.clear();
   }
@@ -375,39 +387,26 @@ export class StandingsWidgetStore implements StandingsHotkeyTarget {
   // Holds back a car's new position until it has survived ORDER_SETTLE_MS, so
   // the table only reorders once a pass has actually stuck. Cars seen for the
   // first time settle immediately — the opening order must not fade in.
-  private settleOrder(entries: CarIdentity[]) {
-    const now = performance.now();
-    const next = new Map(this.settledPositions);
+  private updateOrder(entries: CarIdentity[], now: number) {
     const seen = new Set<number>();
-    let changed = false;
 
     for (const entry of entries) {
       seen.add(entry.carIdx);
 
-      const settled = next.get(entry.carIdx);
+      const settled = this.settledPositions.get(entry.carIdx);
       const rank = {
         overall: this.rankOf(entry),
         inClass: this.classRankOf(entry),
       };
 
-      if (settled === undefined) {
-        next.set(entry.carIdx, rank);
-        this.pendingPositions.delete(entry.carIdx);
-        changed = true;
-        continue;
-      }
-
-      if (sameRank(settled, rank)) {
+      if (settled && sameRank(settled, rank)) {
         this.pendingPositions.delete(entry.carIdx);
         continue;
       }
 
-      // A first place is not an overtake: holding it back is what made the row
-      // jump to the top and then drop to where it belongs.
-      if (!isPlaced(settled.overall)) {
-        next.set(entry.carIdx, rank);
+      if (!settled || !isPlaced(settled.overall)) {
+        this.settledPositions.set(entry.carIdx, rank);
         this.pendingPositions.delete(entry.carIdx);
-        changed = true;
         continue;
       }
 
@@ -418,27 +417,24 @@ export class StandingsWidgetStore implements StandingsHotkeyTarget {
           rank,
           since: now,
         });
-        continue;
-      }
-
-      if (now - pending.since >= ORDER_SETTLE_MS) {
-        next.set(entry.carIdx, rank);
-        this.pendingPositions.delete(entry.carIdx);
-        this.clearArrowAfterMove(entry.carIdx);
-        changed = true;
       }
     }
 
-    for (const carIdx of next.keys()) {
+    for (const carIdx of this.settledPositions.keys()) {
       if (!seen.has(carIdx)) {
-        next.delete(carIdx);
+        this.settledPositions.delete(carIdx);
         this.pendingPositions.delete(carIdx);
-        changed = true;
       }
     }
+  }
 
-    if (changed) {
-      this.settledPositions = next;
+  private settlePendingPositions(now: number) {
+    for (const [carIdx, pending] of this.pendingPositions) {
+      if (now - pending.since >= ORDER_SETTLE_MS) {
+        this.settledPositions.set(carIdx, pending.rank);
+        this.pendingPositions.delete(carIdx);
+        this.clearArrowAfterMove(carIdx);
+      }
     }
   }
 
