@@ -10,7 +10,7 @@ Before creating an issue, check that the problem is not
 - [Workflow](#workflow) — branch, checks, commit, pull request
 - [Where to read next](#where-to-read-next) — the docs, by task
 - [Environment variables](#environment-variables) — every one, in one place
-- [Agent tooling](#agent-tooling) — what is tracked for AI agents, and what is not
+- [Agent tooling](#agent-tooling) — shared agent config and MCP setup
 
 ---
 
@@ -145,7 +145,13 @@ git push --force-with-lease       # after a rebase of an already pushed branch
 > commits, so local and remote have diverged; `pull` merges the two and brings
 > the pre-rebase copies back as duplicates. Force-push instead.
 
-### 6. Open a pull request
+### 6. Discuss the change
+
+Before opening a pull request, create a GitHub issue or discuss the proposed
+change in the [Marble Trace Discord](https://discord.gg/tkdS9sn49b). Include a
+link to the issue or Discord discussion in the pull request description.
+
+### 7. Open a pull request
 
 Against `main`, saying what changed and why. Just before opening it, add the
 branch's entry to `CHANGELOG.md` under `## [Unreleased]` — one per new feature,
@@ -233,9 +239,9 @@ Read by `src-tauri/build.rs` from the environment or from `src-tauri/.env`
 ## Agent tooling
 
 `AGENTS.md`, the shared project skills under `.agents/skills/` and `.mcp.json`
-are tracked. They provide instructions and workflows for agents working in this
-repository; the MCP server supports the visual-testing workflow. Agents must
-also use the relevant engineering skill from
+are tracked. The Tauri MCP setup and app-check workflow are documented in
+[`docs/agents/mcp-setup.md`](docs/agents/mcp-setup.md). Agents must also use the
+relevant engineering skill from
 [mattpocock/skills](https://github.com/mattpocock/skills) for their task. See
 [docs/agents/mattpocock-skills.md](docs/agents/mattpocock-skills.md) for setup
 and use.
