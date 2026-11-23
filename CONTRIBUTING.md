@@ -234,7 +234,10 @@ Read by `src-tauri/build.rs` from the environment or from `src-tauri/.env`
 
 `AGENTS.md`, the project skills under `.claude/skills/` and `.mcp.json` are
 tracked: they are the shared contract an agent working in this repository reads,
-and the MCP server the visual-testing workflow needs.
+and the MCP server the visual-testing workflow needs. Agents must also use the
+relevant engineering skill from [mattpocock/skills](https://github.com/mattpocock/skills)
+for their task. See [docs/agents/mattpocock-skills.md](docs/agents/mattpocock-skills.md)
+for setup and use.
 
 Anything that makes your machine run third-party code is **not** tracked, and is
 yours to opt into. `.claude/settings.json` is gitignored along with

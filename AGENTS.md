@@ -33,6 +33,10 @@ Environment variables: `CONTRIBUTING.md` → Environment variables.
 
 ## Workflow
 
+- **Use the relevant engineering skill** from
+  [mattpocock/skills](https://github.com/mattpocock/skills) for agent work.
+  Follow the repository guidance in
+  [`docs/agents/mattpocock-skills.md`](docs/agents/mattpocock-skills.md).
 - Object when a proposed solution seems wrong: give arguments, wait for confirmation.
 - Work on a branch. Commit when the work is done and the hooks pass, Conventional
   Commits style. **Pushing is the user's call, every time** — a new branch too.
