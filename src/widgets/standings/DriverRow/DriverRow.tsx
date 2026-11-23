@@ -198,7 +198,7 @@ export const DriverRow = observer(
       showsTeamNames && styles.driverRowWithTeam,
       !driver.isPlayer && styles.driverRowHoverable,
       startsPlayerWindow && styles.driverRowWindowStart,
-      standingsWidget.hoveredClassId === driver.carClassId &&
+      standingsWidget.scroll.hoveredClassId === driver.carClassId &&
         styles.driverRowScrollTarget
     );
 

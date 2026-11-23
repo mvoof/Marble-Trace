@@ -155,6 +155,64 @@ describe('StandingsWidgetStore — per instance', () => {
     expect(table.positionChanges.size).toBe(2);
   });
 
+  it('shows unique places during staggered passes at the front', () => {
+    const publishRanks = (positions: number[]) =>
+      setField(
+        core,
+        positions.map((position) => ({ position, livePosition: position }))
+      );
+    const initialOrder = publishRanks([1, 2, 3, 4, 5]);
+    const table = openTable(core, STANDINGS);
+    const clock = vi.spyOn(performance, 'now').mockReturnValue(100);
+
+    const publishMotion = (now: number) => {
+      const frame = core.backendComputed.driverEntries!;
+      clock.mockReturnValue(now);
+
+      runInAction(() =>
+        core.backendComputed.updateDriverEntries({
+          ...frame,
+          entries: frame.entries.map((entry) => ({
+            ...entry,
+            lapDistPct: (entry.lapDistPct ?? 0) + 0.001,
+          })),
+        })
+      );
+    };
+
+    try {
+      publishRanks([2, 1, 3, 5, 4]);
+      clock.mockReturnValue(700);
+      publishRanks([3, 1, 2, 5, 4]);
+      publishMotion(1050);
+
+      expect(
+        table.orderedEntries.map((entry) => table.displayedPositionOf(entry))
+      ).toEqual([1, 2, 3, 4, 5]);
+      expect(table.orderedEntries.map((entry) => entry.carIdx)).toEqual([
+        initialOrder[0],
+        initialOrder[1],
+        initialOrder[2],
+        initialOrder[4],
+        initialOrder[3],
+      ]);
+      expect(table.overallLeader?.carIdx).toBe(initialOrder[0]);
+
+      publishMotion(1650);
+
+      expect(table.orderedEntries.map((entry) => entry.carIdx)).toEqual([
+        initialOrder[1],
+        initialOrder[2],
+        initialOrder[0],
+        initialOrder[4],
+        initialOrder[3],
+      ]);
+      expect(table.overallLeader?.carIdx).toBe(initialOrder[1]);
+    } finally {
+      clock.mockRestore();
+    }
+  });
+
   it('settles a stable pass on a frame that only changes distance', () => {
     const table = openTable(core, STANDINGS);
     const originalLeader = table.orderedEntries[0].carIdx;

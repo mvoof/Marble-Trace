@@ -219,7 +219,9 @@ export const buildPaceCarRowEntries = (
   const player = relativeEntries.find((entry) => entry.isPlayer);
   const playerLapDist = player?.lapDistPct;
 
-  if (!player || playerLapDist == null) return [];
+  if (!player || playerLapDist == null) {
+    return [];
+  }
 
   return cars.flatMap((paceCar): PaceCarRowEntry[] => {
     const idx = paceCar.carIdx;

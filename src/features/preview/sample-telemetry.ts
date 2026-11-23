@@ -11,7 +11,7 @@ import { TrackSurface } from '@shared/contracts/domain';
 import type { PreviewTarget } from './preview-target';
 import { computeDriverEntries } from './mocks/driver-entries';
 import { mockSafetyRating } from './mocks/safety-rating';
-import { mockCarPositions } from './mocks/field';
+import { mockCarPositions, mockRelativeEntries } from './mocks/field';
 import { seedField } from './field-seed';
 import { mockLapDelta, mockLapLog, mockLapTiming } from './mocks/delta';
 import { mockPitService } from './mocks/pit';
@@ -184,7 +184,11 @@ export const seedSampleTelemetry = action((store: PreviewTarget) => {
       playerEntry.trackSurface = TrackSurface.OnTrack;
     }
 
-    seedField(store, { entries, relativeEntries: entries, playerCarIdx });
+    seedField(store, {
+      entries,
+      relativeEntries: mockRelativeEntries(entries),
+      playerCarIdx,
+    });
 
     // The map and the pace-car store read the positions frame rather than the
     // driver list, so the same field is handed to them in the shape they read.
