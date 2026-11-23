@@ -228,18 +228,17 @@ impl<'a> QuestionSource<'a> {
         let me = self.me()?;
 
         self.cars()
-            .filter(|car| {
-                car.entry.car_idx != me.entry.car_idx
+            .filter_map(|car| {
+                let distance = car.entry.relative_lap_dist?;
+
+                (car.entry.car_idx != me.entry.car_idx
                     && !car.entry.on_pit_road
                     && car.entry.track_surface != TrackSurface::NotInWorld
-                    && side(car.entry.relative_lap_dist)
+                    && side(distance))
+                .then_some((car, distance.abs()))
             })
-            .min_by(|left, right| {
-                left.entry
-                    .relative_lap_dist
-                    .abs()
-                    .total_cmp(&right.entry.relative_lap_dist.abs())
-            })
+            .min_by(|(_, left), (_, right)| left.total_cmp(right))
+            .map(|(car, _)| car)
     }
 
     /// The leader of the car's own class.
@@ -458,7 +457,7 @@ mod tests {
             start_pos_overall: None,
             start_pos_class: None,
             lap: 5,
-            lap_dist_pct: 0.0,
+            lap_dist_pct: Some(0.0),
             last_lap_time: None,
             best_lap_time: None,
             qualify_time: None,
@@ -470,7 +469,7 @@ mod tests {
             on_pit_road: false,
             estimated_ir_delta_live: None,
             estimated_ir_delta_official: None,
-            relative_lap_dist: 0.0,
+            relative_lap_dist: Some(0.0),
             class_est_lap_time: 90.0,
             raw_flags: 0,
             results_position_lap: None,
@@ -823,9 +822,9 @@ mod tests {
     fn a_car_just_behind_a_leader_who_crossed_the_line_is_not_a_lap_down() {
         let (mut view, session) = race();
         view.entries[1].lap = 11;
-        view.entries[1].lap_dist_pct = 0.01;
+        view.entries[1].lap_dist_pct = Some(0.01);
         view.entries[0].lap = 10;
-        view.entries[0].lap_dist_pct = 0.99;
+        view.entries[0].lap_dist_pct = Some(0.99);
         let source = QuestionSource {
             view: &view,
             session: Some(&session),
@@ -840,10 +839,10 @@ mod tests {
     fn the_gap_to_a_car_laps_ahead_counts_the_laps() {
         let (mut view, session) = race();
         view.entries[0].lap = 4;
-        view.entries[0].lap_dist_pct = 0.1;
+        view.entries[0].lap_dist_pct = Some(0.1);
         view.entries[0].est_time = 9.0;
         view.entries[1].lap = 5;
-        view.entries[1].lap_dist_pct = 0.1 + 3.0 / 90.0;
+        view.entries[1].lap_dist_pct = Some(0.1 + 3.0 / 90.0);
         view.entries[1].est_time = 12.0;
         let source = QuestionSource {
             view: &view,

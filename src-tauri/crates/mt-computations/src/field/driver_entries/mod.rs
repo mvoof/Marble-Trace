@@ -48,7 +48,7 @@ pub struct DriverEntry {
     pub start_pos_overall: Option<i32>,
     pub start_pos_class: Option<i32>,
     pub lap: i32,
-    pub lap_dist_pct: f32,
+    pub lap_dist_pct: Option<f32>,
     /// `None` until the car completes a timed lap.
     pub last_lap_time: Option<f32>,
     /// `None` until the car sets a lap time.
@@ -68,7 +68,7 @@ pub struct DriverEntry {
     pub on_pit_road: bool,
     pub estimated_ir_delta_live: Option<i32>,
     pub estimated_ir_delta_official: Option<i32>,
-    pub relative_lap_dist: f32,
+    pub relative_lap_dist: Option<f32>,
     pub class_est_lap_time: f32,
     pub raw_flags: u32,
     pub results_position_lap: Option<i32>,
@@ -323,7 +323,7 @@ pub fn compute(
                     .car_idx_lap_dist_pct
                     .get(idx)
                     .copied()
-                    .unwrap_or(-1.0),
+                    .filter(|pct| pct.is_finite() && *pct >= 0.0),
                 // The sim zeroes the live CarIdx lap times once a car leaves the world
                 // (garage after a session, tow, disconnect). `ResultsPositions` keeps
                 // the official times, so they stand in whenever the live value is gone.
@@ -356,7 +356,7 @@ pub fn compute(
                     .unwrap_or(false),
                 estimated_ir_delta_live: None,
                 estimated_ir_delta_official: None,
-                relative_lap_dist: 0.0,
+                relative_lap_dist: None,
                 class_est_lap_time: driver.car_class_est_lap_time,
                 raw_flags: car_idx.car_idx_session_flags.get(idx).copied().unwrap_or(0),
                 results_position_lap: res_lap,
@@ -513,11 +513,14 @@ pub fn compute(
     let player_lap_dist = entries
         .iter()
         .find(|e| e.car_idx == player_car_idx)
-        .map(|e| e.lap_dist_pct)
-        .unwrap_or(0.0);
+        .and_then(|entry| entry.lap_dist_pct);
 
     for entry in &mut entries {
-        let mut diff = entry.lap_dist_pct - player_lap_dist;
+        let Some((lap_dist, player_dist)) = entry.lap_dist_pct.zip(player_lap_dist) else {
+            continue;
+        };
+
+        let mut diff = lap_dist - player_dist;
 
         if diff < -0.5 {
             diff += 1.0;
@@ -527,7 +530,7 @@ pub fn compute(
             diff -= 1.0;
         }
 
-        entry.relative_lap_dist = diff;
+        entry.relative_lap_dist = Some(diff);
     }
 
     // Pit state machine — per-car, persisted across ticks in locked_state.pit_states
@@ -616,11 +619,11 @@ fn live_positions_published(
 /// Distance covered so far, used to rank cars between start/finish crossings.
 /// `None` for cars that are not on track at all — they cannot be ranked by progress.
 fn lap_progress(entry: &DriverEntry) -> Option<f64> {
-    if entry.track_surface == TrackSurface::NotInWorld || entry.lap_dist_pct < 0.0 {
+    if entry.track_surface == TrackSurface::NotInWorld {
         return None;
     }
 
-    Some(entry.lap as f64 + entry.lap_dist_pct as f64)
+    Some(f64::from(entry.lap) + f64::from(entry.lap_dist_pct?))
 }
 
 /// Which order `live_position` reports. Distance covered around the lap only ranks

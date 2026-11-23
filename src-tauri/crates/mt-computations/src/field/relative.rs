@@ -29,12 +29,16 @@ pub struct RelativeFrame {
 /// value; entries behind have a negative value. Sorted descending so that
 /// the furthest-ahead car is first and the furthest-behind car is last.
 ///
-/// Wrap-around near the 0/1 lap boundary is handled in `standings.rs` when
+/// Wrap-around near the 0/1 lap boundary is handled in `driver_entries` when
 /// `relative_lap_dist` is computed. Example: player at 0.98, car at 0.02 →
 /// raw diff = 0.02 - 0.98 = -0.96, then -0.96 + 1.0 = 0.04 (car is 4%
 /// ahead, not 96% behind).
 pub fn compute(entries: &[DriverEntry], player_car_idx: i32) -> RelativeFrame {
-    let mut sorted: Vec<DriverEntry> = entries.to_vec();
+    let mut sorted: Vec<DriverEntry> = entries
+        .iter()
+        .filter(|entry| entry.is_player || entry.relative_lap_dist.is_some())
+        .cloned()
+        .collect();
 
     sorted.sort_by(|a, b| {
         b.relative_lap_dist
@@ -147,7 +151,7 @@ mod tests {
             start_pos_overall: None,
             start_pos_class: None,
             lap: 0,
-            lap_dist_pct,
+            lap_dist_pct: (lap_dist_pct >= 0.0).then_some(lap_dist_pct),
             last_lap_time: None,
             best_lap_time: None,
             qualify_time: None,
@@ -159,7 +163,7 @@ mod tests {
             on_pit_road: false,
             estimated_ir_delta_live: None,
             estimated_ir_delta_official: None,
-            relative_lap_dist: {
+            relative_lap_dist: Some({
                 // Compute relative_lap_dist relative to player_lap_dist=0.0
                 let mut diff = lap_dist_pct - player_lap_dist;
                 if diff < -0.5 {
@@ -169,7 +173,7 @@ mod tests {
                     diff -= 1.0;
                 }
                 diff
-            },
+            }),
             class_est_lap_time: 0.0,
             raw_flags: 0,
             results_position_lap: None,
@@ -245,7 +249,7 @@ mod tests {
         assert_eq!(frame.player_car_idx, 0);
         assert_eq!(frame.entries.len(), 1);
         assert_eq!(frame.entries[0].car_idx, 5);
-        assert!((frame.entries[0].lap_dist_pct - 0.25).abs() < 1e-5);
+        assert_eq!(frame.entries[0].lap_dist_pct, Some(0.25));
     }
 
     #[test]

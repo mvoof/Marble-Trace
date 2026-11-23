@@ -512,15 +512,13 @@ export class StandingsWidgetStore implements StandingsHotkeyTarget {
   get orderedEntries(): CarIdentity[] {
     const entries = this.visibleEntries;
 
-    const positions = this.settledPositions;
-
-    const sortRankOf = (entry: CarIdentity): number =>
-      positions.get(entry.carIdx)?.overall ?? this.rankOf(entry);
-
     // The sort is stable and `visibleEntries` keeps the backend's order, so
     // unplaced cars stay in that order among themselves.
     return [...entries].sort((first, second) =>
-      compareRanks(sortRankOf(first), sortRankOf(second))
+      compareRanks(
+        this.renderedRankOf(first).overall,
+        this.renderedRankOf(second).overall
+      )
     );
   }
 
@@ -531,6 +529,21 @@ export class StandingsWidgetStore implements StandingsHotkeyTarget {
    */
   get renderedRanks(): ReadonlyMap<number, Rank> {
     return this.settledPositions;
+  }
+
+  private renderedRankOf(entry: CarIdentity): Rank {
+    return (
+      this.renderedRanks.get(entry.carIdx) ?? {
+        overall: this.rankOf(entry),
+        inClass: this.classRankOf(entry),
+      }
+    );
+  }
+
+  displayedPositionOf(entry: CarIdentity): number {
+    const rank = this.renderedRankOf(entry);
+
+    return this.settings.viewMode === 'all' ? rank.overall : rank.inClass;
   }
 
   projectedIrDeltaOf(carIdx: number): number | null {
@@ -606,7 +619,19 @@ export class StandingsWidgetStore implements StandingsHotkeyTarget {
     const result = new Map<number, CarIdentity>();
 
     for (const entry of this.root.backendComputed.driverIdentities) {
-      if (this.classRankOf(entry) === 1) {
+      if (this.renderedRankOf(entry).inClass !== 1) {
+        continue;
+      }
+
+      const leader = result.get(entry.carClassId);
+
+      if (
+        !leader ||
+        compareRanks(
+          this.renderedRankOf(entry).overall,
+          this.renderedRankOf(leader).overall
+        ) < 0
+      ) {
         result.set(entry.carClassId, entry);
       }
     }
@@ -617,7 +642,7 @@ export class StandingsWidgetStore implements StandingsHotkeyTarget {
   get overallLeader(): CarIdentity | null {
     return (
       this.root.backendComputed.driverIdentities.find(
-        (entry) => this.rankOf(entry) === 1
+        (entry) => this.renderedRankOf(entry).overall === 1
       ) ?? null
     );
   }

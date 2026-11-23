@@ -15,6 +15,7 @@ import {
   formatLapCell,
   formatLapDelta,
   formatPitStopTime,
+  calculateLapsBehind,
   getStandingsGap,
   getStandingsInterval,
   maxScrollOffset,
@@ -261,6 +262,14 @@ describe('getStandingsGap', () => {
       isLeader: true,
       isEmpty: false,
     });
+  });
+
+  it('ignores missing distance when calculating lap deficits', () => {
+    const leader = { lap: 10, lapDistPct: 0.5 };
+    const driver = { lap: 10, lapDistPct: null };
+
+    expect(calculateLapsBehind(leader, driver)).toBe(0);
+    expect(calculateLapsBehind(driver, leader)).toBe(0);
   });
 });
 

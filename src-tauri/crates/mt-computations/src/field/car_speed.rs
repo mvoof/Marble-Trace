@@ -69,16 +69,17 @@ impl CarSpeedTracker {
     }
 
     fn track(&mut self, entry: &DriverEntry, now: f64, track_length_m: f64) -> Option<f32> {
-        let in_world = entry.track_surface != TrackSurface::NotInWorld && entry.lap_dist_pct >= 0.0;
-
-        if !in_world {
+        let Some(lap_dist_pct) = entry
+            .lap_dist_pct
+            .filter(|_| entry.track_surface != TrackSurface::NotInWorld)
+        else {
             self.samples.remove(&entry.car_idx);
 
             return None;
-        }
+        };
 
         let fresh = Sample {
-            lap_dist_pct: entry.lap_dist_pct,
+            lap_dist_pct,
             session_time: now,
             speed: None,
         };
@@ -96,8 +97,7 @@ impl CarSpeedTracker {
             return previous.speed.map(|speed| speed as f32);
         }
 
-        let raw =
-            wrapped_progress(previous.lap_dist_pct, entry.lap_dist_pct) * track_length_m / elapsed;
+        let raw = wrapped_progress(previous.lap_dist_pct, lap_dist_pct) * track_length_m / elapsed;
 
         if elapsed > MAX_SAMPLE_GAP_S || !(0.0..=MAX_PLAUSIBLE_SPEED_MPS).contains(&raw) {
             self.samples.insert(entry.car_idx, fresh);

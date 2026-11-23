@@ -163,6 +163,7 @@ describe('StandingsWidgetStore — per instance', () => {
     try {
       swapLeaders(core);
       expect(table.orderedEntries[0].carIdx).toBe(originalLeader);
+      expect(table.overallLeader?.carIdx).toBe(originalLeader);
 
       const frame = core.backendComputed.driverEntries!;
 
@@ -172,7 +173,8 @@ describe('StandingsWidgetStore — per instance', () => {
           ...frame,
           entries: frame.entries.map((entry) => ({
             ...entry,
-            lapDistPct: entry.lapDistPct + 0.001,
+            lapDistPct:
+              entry.lapDistPct === null ? null : entry.lapDistPct + 0.001,
           })),
         })
       );
@@ -182,6 +184,53 @@ describe('StandingsWidgetStore — per instance', () => {
     } finally {
       clock.mockRestore();
     }
+  });
+
+  it('keeps the class gap reference on the displayed class leader', () => {
+    const frame = core.backendComputed.driverEntries!;
+    const [leaderIdentity] = core.backendComputed.driverIdentities;
+    const challengerIdentity = core.backendComputed.driverIdentities.find(
+      (entry) =>
+        entry.carIdx !== leaderIdentity.carIdx &&
+        entry.carClassId === leaderIdentity.carClassId
+    )!;
+    const leader = frame.entries.find(
+      (entry) => entry.carIdx === leaderIdentity.carIdx
+    )!;
+    const challenger = frame.entries.find(
+      (entry) => entry.carIdx === challengerIdentity.carIdx
+    )!;
+    const publishRanks = (leaderRank: number, challengerRank: number) => {
+      runInAction(() =>
+        core.backendComputed.updateDriverEntries({
+          ...frame,
+          entries: [
+            {
+              ...leader,
+              position: leaderRank,
+              livePosition: leaderRank,
+              classPosition: leaderRank,
+              liveClassPosition: leaderRank,
+            },
+            {
+              ...challenger,
+              position: challengerRank,
+              livePosition: challengerRank,
+              classPosition: challengerRank,
+              liveClassPosition: challengerRank,
+            },
+          ],
+        })
+      );
+    };
+
+    publishRanks(1, 2);
+    const table = openTable(core, STANDINGS);
+    publishRanks(2, 1);
+
+    expect(table.classLeaders.get(leaderIdentity.carClassId)?.carIdx).toBe(
+      leader.carIdx
+    );
   });
 
   it.each([false, true])(

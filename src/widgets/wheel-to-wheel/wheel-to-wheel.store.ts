@@ -374,7 +374,9 @@ export class WheelToWheelWidgetStore implements SelfHidingWidgetStore {
     return this.heldAheadIdx !== null || this.heldBehindIdx !== null;
   }
 
-  private get nearestClassRival(): DriverEntry | null {
+  private get nearestClassRival():
+    | (DriverEntry & { relativeLapDist: number })
+    | null {
     const player = this.playerEntry;
 
     if (!player || this.hasLiveRival) {
@@ -384,8 +386,9 @@ export class WheelToWheelWidgetStore implements SelfHidingWidgetStore {
     return (
       this.root.backendComputed.relativeEntries
         .filter(
-          (entry) =>
+          (entry): entry is DriverEntry & { relativeLapDist: number } =>
             !entry.isPlayer &&
+            entry.relativeLapDist !== null &&
             !this.root.session.paceCarIdxs.has(entry.carIdx) &&
             entry.carClassId === player.carClassId
         )

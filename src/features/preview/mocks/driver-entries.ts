@@ -117,6 +117,8 @@ export const computeDriverEntries = (
     const trackSurface =
       carIdx.car_idx_track_surface[idx] ?? TrackSurface.NotInWorld;
 
+    const lapDistPct = carIdx.car_idx_lap_dist_pct[idx];
+
     entries.push({
       carIdx: idx,
       userName: car.userName,
@@ -139,7 +141,7 @@ export const computeDriverEntries = (
       startPosOverall: null,
       startPosClass: null,
       lap: carIdx.car_idx_lap[idx] ?? 0,
-      lapDistPct: carIdx.car_idx_lap_dist_pct[idx] ?? 0,
+      lapDistPct: lapDistPct != null && lapDistPct >= 0 ? lapDistPct : null,
       lastLapTime: lapTimeOrNull(carIdx.car_idx_last_lap_time[idx]),
       bestLapTime: lapTimeOrNull(carIdx.car_idx_best_lap_time[idx]),
       qualifyTime: null,
@@ -153,7 +155,7 @@ export const computeDriverEntries = (
       onPitRoad,
       estimatedIrDeltaLive: null,
       estimatedIrDeltaOfficial: null,
-      relativeLapDist: 0,
+      relativeLapDist: null,
       estTime: carIdx.car_idx_est_time?.[idx] ?? 0,
       classEstLapTime: carIdx.car_idx_est_time?.[idx] ?? 0,
       rawFlags: 0,
@@ -172,10 +174,15 @@ export const computeDriverEntries = (
 
   const sorted = entries.sort((a, b) => a.position - b.position);
 
-  const playerLapDist =
-    sorted.find((e) => e.carIdx === playerCarIdx)?.lapDistPct ?? 0;
+  const playerLapDist = sorted.find(
+    (entry) => entry.carIdx === playerCarIdx
+  )?.lapDistPct;
 
   for (const entry of sorted) {
+    if (entry.lapDistPct === null || playerLapDist == null) {
+      continue;
+    }
+
     let diff = entry.lapDistPct - playerLapDist;
     if (diff < -0.5) diff += 1;
     if (diff > 0.5) diff -= 1;

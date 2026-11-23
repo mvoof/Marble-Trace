@@ -217,8 +217,9 @@ export const buildPaceCarRowEntries = (
   if (!carIdx || !cars || relativeEntries.length === 0) return [];
 
   const player = relativeEntries.find((entry) => entry.isPlayer);
+  const playerLapDist = player?.lapDistPct;
 
-  if (!player) return [];
+  if (!player || playerLapDist == null) return [];
 
   return cars.flatMap((paceCar): PaceCarRowEntry[] => {
     const idx = paceCar.carIdx;
@@ -232,7 +233,7 @@ export const buildPaceCarRowEntries = (
       return [];
     }
 
-    let relativeLapDist = paceLapDist - player.lapDistPct;
+    let relativeLapDist = paceLapDist - playerLapDist;
 
     if (relativeLapDist > 0.5) relativeLapDist -= 1;
     if (relativeLapDist < -0.5) relativeLapDist += 1;
@@ -303,7 +304,8 @@ export const mergePaceCarRows = (
   if (paceCarEntries.length === 0) return relativeEntries;
 
   return [...relativeEntries, ...paceCarEntries].sort(
-    (a, b) => b.relativeLapDist - a.relativeLapDist
+    (first, second) =>
+      (second.relativeLapDist ?? 0) - (first.relativeLapDist ?? 0)
   );
 };
 

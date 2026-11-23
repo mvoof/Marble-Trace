@@ -29,12 +29,7 @@ export const PositionCell = observer(
       return null;
     }
 
-    const rank = standingsWidget.renderedRanks.get(carIdx);
-
-    const position =
-      settings.viewMode === 'all'
-        ? (rank?.overall ?? standingsWidget.rankOf(driver))
-        : (rank?.inClass ?? standingsWidget.classRankOf(driver));
+    const position = standingsWidget.displayedPositionOf(driver);
 
     const change = settings.showLivePosChange
       ? standingsWidget.positionChanges.get(carIdx)

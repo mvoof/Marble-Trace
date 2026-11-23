@@ -584,7 +584,7 @@ pub fn class_gaps(entries: &[DriverEntry]) -> (Option<i32>, Option<Gap>, Option<
 /// Laps run plus the share of the current one; `None` before the car has a
 /// lap or a place on track.
 pub(crate) fn progress(entry: &DriverEntry) -> Option<f32> {
-    (entry.lap >= 0 && entry.lap_dist_pct >= 0.0).then_some(entry.lap as f32 + entry.lap_dist_pct)
+    (entry.lap >= 0).then_some(entry.lap as f32 + entry.lap_dist_pct?)
 }
 
 /// The nearest cars ahead and behind the player along the lap, as Relative
@@ -607,28 +607,28 @@ pub fn track_neighbours(
                 !entry.is_player
                     && !entry.on_pit_road
                     && entry.track_surface != TrackSurface::NotInWorld
-                    && (entry.relative_lap_dist > 0.0) == ahead
-                    && entry.relative_lap_dist != 0.0
             })
             .filter_map(|entry| {
+                let distance = entry.relative_lap_dist?;
+
+                if distance == 0.0 || (distance > 0.0) != ahead {
+                    return None;
+                }
+
                 let car = session
                     .cars
                     .iter()
                     .filter(racing)
                     .find(|car| car.car_idx == entry.car_idx)?;
 
-                Some((entry, car))
+                Some((entry, car, distance))
             })
-            .min_by(|(left, _), (right, _)| {
-                left.relative_lap_dist
-                    .abs()
-                    .total_cmp(&right.relative_lap_dist.abs())
-            })
-            .map(|(entry, car)| TrackNeighbour {
+            .min_by(|(_, _, left), (_, _, right)| left.abs().total_cmp(&right.abs()))
+            .map(|(entry, car, distance)| TrackNeighbour {
                 number: car.car_number.trim().to_string(),
                 class_name: multiclass.then(|| car.car_class_short_name.trim().to_string()),
-                gap_s: relative_gap(entry, player).abs(),
-                relation: track_relation(entry, player),
+                gap_s: relative_gap(entry, player, ahead).abs(),
+                relation: track_relation(entry, player, distance),
             })
     };
 
@@ -637,7 +637,7 @@ pub fn track_neighbours(
 
 /// Seconds between a car and the player along the lap, scaled by class pace
 /// so a faster class is not told closer than it is — Relative's gap.
-fn relative_gap(car: &DriverEntry, player: &DriverEntry) -> f32 {
+fn relative_gap(car: &DriverEntry, player: &DriverEntry, ahead: bool) -> f32 {
     // Before a class pace or a best lap, the time into the lap over its
     // share stands in for the lap.
     let lap_time = |entry: &DriverEntry| {
@@ -646,12 +646,13 @@ fn relative_gap(car: &DriverEntry, player: &DriverEntry) -> f32 {
             .or(entry.best_lap_time)
             .filter(|time| *time > 0.0)
             .or_else(|| {
-                (entry.lap_dist_pct >= MIN_LAP_SHARE_FOR_PACE)
-                    .then(|| entry.est_time / entry.lap_dist_pct)
+                entry
+                    .lap_dist_pct
+                    .filter(|pct| *pct >= MIN_LAP_SHARE_FOR_PACE)
+                    .map(|pct| entry.est_time / pct)
                     .filter(|time| *time > 0.0)
             })
     };
-    let ahead = car.relative_lap_dist > 0.0;
     let (front, back) = if ahead { (car, player) } else { (player, car) };
     let (Some(front_lap), Some(back_lap)) = (
         lap_time(front).or(lap_time(back)),
@@ -671,10 +672,10 @@ fn relative_gap(car: &DriverEntry, player: &DriverEntry) -> f32 {
 
 /// Laps the car is up or down on the player, from both cars' progress less
 /// the distance between them on track.
-fn track_relation(car: &DriverEntry, player: &DriverEntry) -> TrackRelation {
+fn track_relation(car: &DriverEntry, player: &DriverEntry, distance: f32) -> TrackRelation {
     let Some(laps_up) = progress(car)
         .zip(progress(player))
-        .map(|(car_progress, mine)| (car_progress - mine - car.relative_lap_dist).round() as i32)
+        .map(|(car_progress, mine)| (car_progress - mine - distance).round() as i32)
     else {
         return TrackRelation::Other;
     };
@@ -1056,7 +1057,7 @@ mod tests {
             start_pos_overall: None,
             start_pos_class: None,
             lap,
-            lap_dist_pct,
+            lap_dist_pct: (lap_dist_pct >= 0.0).then_some(lap_dist_pct),
             last_lap_time: None,
             best_lap_time: None,
             qualify_time: None,
@@ -1068,7 +1069,7 @@ mod tests {
             on_pit_road: false,
             estimated_ir_delta_live: None,
             estimated_ir_delta_official: None,
-            relative_lap_dist: 0.0,
+            relative_lap_dist: Some(0.0),
             class_est_lap_time: 90.0,
             raw_flags: 0,
             results_position_lap: None,
@@ -1085,7 +1086,7 @@ mod tests {
     }
 
     fn placed(mut entry: DriverEntry, relative_lap_dist: f32) -> DriverEntry {
-        entry.relative_lap_dist = relative_lap_dist;
+        entry.relative_lap_dist = Some(relative_lap_dist);
         entry
     }
 
@@ -1214,7 +1215,7 @@ mod tests {
         player.class_est_lap_time = 0.0;
         across_the_line.class_est_lap_time = 0.0;
 
-        let gap = relative_gap(&across_the_line, &player);
+        let gap = relative_gap(&across_the_line, &player, true);
 
         assert!((gap - 9.0).abs() < 1e-3, "gap {gap}");
     }

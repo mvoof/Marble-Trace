@@ -15,7 +15,7 @@ const MAX_LANE_SPAN: f64 = 0.5;
 /// One car's visit to pit road, from the first tick on it.
 struct OpenStop {
     entered_at: f64,
-    entry_pct: f32,
+    entry_pct: Option<f32>,
     lap: i32,
     /// Seconds spent in the stall so far, closed spells only.
     stall_s: f64,
@@ -141,7 +141,7 @@ impl PitTimingTracker {
             match (in_stall, stop.stall_since) {
                 (true, None) => {
                     stop.stall_since = Some(now);
-                    stop.stall_pct = Some(entry.lap_dist_pct);
+                    stop.stall_pct = entry.lap_dist_pct;
                 }
                 (false, Some(since)) => {
                     stop.stall_s += now - since;
@@ -172,24 +172,21 @@ impl PitTimingTracker {
     }
 
     fn measure(&mut self, stop: &OpenStop, exit: &DriverEntry, total: f64, now: f64) {
-        let Some(racing_lap_s) = racing_lap_time(exit) else {
+        let (Some(racing_lap_s), Some(exit_pct)) = (racing_lap_time(exit), exit.lap_dist_pct)
+        else {
             return;
         };
 
-        if stop.drove_in {
+        if let Some(entry_pct) = stop.entry_pct.filter(|_| stop.drove_in) {
             let driving = total - stop.stall_total(now);
 
-            if let Some(loss) =
-                stretch_loss(stop.entry_pct, exit.lap_dist_pct, driving, racing_lap_s)
-            {
+            if let Some(loss) = stretch_loss(entry_pct, exit_pct, driving, racing_lap_s) {
                 self.lane_losses.push(loss);
             }
         }
 
         if let (Some(stall_pct), Some(left_at)) = (stop.stall_pct, stop.left_stall_at) {
-            if let Some(loss) =
-                stretch_loss(stall_pct, exit.lap_dist_pct, now - left_at, racing_lap_s)
-            {
+            if let Some(loss) = stretch_loss(stall_pct, exit_pct, now - left_at, racing_lap_s) {
                 self.exit_losses.push(loss);
             }
         }

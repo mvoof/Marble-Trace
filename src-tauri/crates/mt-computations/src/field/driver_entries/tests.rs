@@ -118,6 +118,8 @@ fn test_classified_opponent_remains_after_live_fields_clear() {
     assert_eq!(opponent.position, 2);
     assert_eq!(opponent.class_position, 2);
     assert_eq!(opponent.last_lap_time, Some(92.5));
+    assert_eq!(opponent.lap_dist_pct, None);
+    assert_eq!(opponent.relative_lap_dist, None);
 }
 
 #[test]
@@ -1028,7 +1030,7 @@ pub(crate) fn make_live_entry(
         start_pos_overall: Some(position),
         start_pos_class: Some(position),
         lap,
-        lap_dist_pct,
+        lap_dist_pct: (lap_dist_pct >= 0.0).then_some(lap_dist_pct),
         last_lap_time: None,
         best_lap_time: None,
         qualify_time: None,
@@ -1040,7 +1042,7 @@ pub(crate) fn make_live_entry(
         on_pit_road: false,
         estimated_ir_delta_live: None,
         estimated_ir_delta_official: None,
-        relative_lap_dist: 0.0,
+        relative_lap_dist: Some(0.0),
         class_est_lap_time: 0.0,
         raw_flags: 0,
         results_position_lap: None,

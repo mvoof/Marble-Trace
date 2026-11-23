@@ -170,8 +170,8 @@ pub fn car_idx(frame: &mut CarIdxFrame) {
 }
 
 fn driver_entry(entry: &mut DriverEntry) {
-    entry.lap_dist_pct = round(entry.lap_dist_pct, POSITION_DP);
-    entry.relative_lap_dist = round(entry.relative_lap_dist, POSITION_DP);
+    round_opt(&mut entry.lap_dist_pct, POSITION_DP);
+    round_opt(&mut entry.relative_lap_dist, POSITION_DP);
     entry.est_time = round(entry.est_time, GAP_DP);
     entry.f2_time = round(entry.f2_time, GAP_DP);
     round_opt(&mut entry.last_lap_time, LAP_TIME_DP);

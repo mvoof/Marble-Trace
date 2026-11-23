@@ -13,6 +13,7 @@ import {
   valueChipWidth,
 } from '@shared/ui/StatChip/rating';
 import { formatLapTime } from '@shared/lib/telemetry-format';
+import { lapProgressOf } from '@shared/lib/driver';
 import { normalizeOrder } from '@shared/lib/widget-settings-dsl';
 import type { StandingsWidgetSettings } from './settings-schema';
 import { STANDINGS_COLUMNS, type StandingsColumn } from './standings-columns';
@@ -432,22 +433,22 @@ export const computeStandingsDesignWidth = (
   return Math.round(columnsWidth + gaps + ROW_PAD_X_PX * 2);
 };
 
-interface DriverLapInfo {
-  lap: number;
-  lapDistPct: number;
-}
+type DriverLapInfo = Pick<DriverEntry, 'lap' | 'lapDistPct'>;
 
 export const calculateLapsBehind = (
   leader: DriverLapInfo | null | undefined,
   driver: DriverLapInfo
 ): number => {
-  if (!leader || leader.lapDistPct < 0 || driver.lapDistPct < 0) {
+  if (!leader) {
     return 0;
   }
 
-  const leaderAbs = leader.lap + leader.lapDistPct;
-  const driverAbs = driver.lap + driver.lapDistPct;
-  return Math.floor(leaderAbs - driverAbs);
+  const leaderProgress = lapProgressOf(leader);
+  const driverProgress = lapProgressOf(driver);
+
+  return leaderProgress === null || driverProgress === null
+    ? 0
+    : Math.floor(leaderProgress - driverProgress);
 };
 
 export interface BestLapDisplay {

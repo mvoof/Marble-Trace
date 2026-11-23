@@ -37,7 +37,7 @@ const seedPaceCars = (store: RendererCore, multiclass: boolean) => {
     (entry) => entry.isPlayer
   );
 
-  if (!sessionInfo || !carIdx || !player) {
+  if (!sessionInfo || !carIdx || !player || player.lapDistPct === null) {
     return;
   }
 
@@ -59,7 +59,7 @@ const seedPaceCars = (store: RendererCore, multiclass: boolean) => {
   lapDist[PACE_CAR_IDX] = player.lapDistPct + PACE_CAR_LEAD_PCT;
   estTime[PACE_CAR_IDX] = player.estTime + PACE_CAR_LEAD_S;
 
-  if (multiclass && otherClassEntry) {
+  if (multiclass && otherClassEntry && otherClassEntry.lapDistPct !== null) {
     paceCars.push(
       mockPaceCarEntry(template, {
         carIdx: SECOND_PACE_CAR_IDX,
