@@ -434,6 +434,31 @@ describe('StandingsWidgetStore — per instance', () => {
     expect(table.lapDeltas.get(driver.carIdx)).toBeCloseTo(-93.3306);
   });
 
+  it('uses the first timed lap after a jump as the next baseline', () => {
+    const frame = core.backendComputed.driverEntries!;
+    const [driver] = frame.entries;
+    const publishLap = (lap: number, lastLapTime: number) =>
+      runInAction(() =>
+        core.backendComputed.updateDriverEntries({
+          ...frame,
+          entries: [{ ...driver, lap, lastLapTime }],
+        })
+      );
+
+    publishLap(3, 92);
+    const table = openTable(core, STANDINGS);
+    publishLap(4, 91);
+    expect(table.lapDeltas.get(driver.carIdx)).toBe(-1);
+
+    publishLap(6, 89);
+    expect(table.lapDeltas.has(driver.carIdx)).toBe(false);
+    publishLap(6, 88);
+    expect(table.lapDeltas.has(driver.carIdx)).toBe(false);
+
+    publishLap(7, 90);
+    expect(table.lapDeltas.get(driver.carIdx)).toBe(2);
+  });
+
   describe('cars without a place', () => {
     const useOfficialOrder = () =>
       runInAction(() =>

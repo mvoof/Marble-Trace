@@ -650,11 +650,11 @@ export const getStandingsGap = (
     return { value: `${lapsBehind} L`, isLeader: false, isEmpty: false };
   }
 
-  // The sim's overall P1 has a legitimate zero. For any other reference a
-  // missing F2 value must not turn a gap to overall P1 into a class interval.
+  // Zero F2 is valid for the telemetry leader. Elsewhere it means the
+  // reference gap is unavailable.
   if (
     driver.f2Time <= 0 ||
-    (leader.f2Time <= 0 && !(leader.f2Time === 0 && leader.position === 1))
+    (leader.f2Time <= 0 && !(leader.f2Time === 0 && leader.livePosition === 1))
   ) {
     return { value: EMPTY_VALUE, isLeader: false, isEmpty: true };
   }

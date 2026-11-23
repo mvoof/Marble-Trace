@@ -212,7 +212,12 @@ export class StandingsWidgetStore implements StandingsHotkeyTarget {
       }
 
       const sameLap = seen?.lap === entry.lap;
-      const previousTime = sameLap ? seen.previousTime : (seen?.time ?? null);
+      const consecutiveLap = seen && entry.lap === seen.lap + 1;
+      const previousTime = sameLap
+        ? seen.previousTime
+        : consecutiveLap
+          ? seen.time
+          : null;
       const crossedInPit = sameLap ? seen.crossedInPit : entry.onPitRoad;
       // At a pit-lane crossing iRacing can keep reporting the previous lap's
       // time before clearing it, including when the driver serves a penalty.

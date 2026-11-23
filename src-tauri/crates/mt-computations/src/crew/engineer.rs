@@ -565,14 +565,12 @@ pub fn class_gaps(entries: &[DriverEntry]) -> (Option<i32>, Option<Gap>, Option<
     };
     let lap_time = player.class_est_lap_time;
     let gap = |front: &DriverEntry, back: &DriverEntry| {
-        let laps_apart = progress(front)
-            .zip(progress(back))
-            .map(|(front, back)| (front - back).floor() as i32)
-            .filter(|laps| *laps >= 1);
+        let laps_apart = (progress(front)? - progress(back)?).floor() as i32;
 
-        match laps_apart {
-            Some(laps) => Some(Gap::Laps(laps)),
-            None => track_gap(back.est_time, front.est_time, lap_time).map(Gap::Seconds),
+        if laps_apart >= 1 {
+            Some(Gap::Laps(laps_apart))
+        } else {
+            track_gap(back.est_time, front.est_time, lap_time).map(Gap::Seconds)
         }
     };
     let ahead = rival(-1).and_then(|car| gap(car, player));
@@ -1114,6 +1112,15 @@ mod tests {
         assert_eq!(position, Some(2));
         assert_eq!(ahead, Some(Gap::Laps(1)));
         assert!(matches!(behind, Some(Gap::Seconds(gap)) if (gap - 4.5).abs() < 1e-3));
+    }
+
+    #[test]
+    fn class_gap_is_unavailable_when_a_rival_loses_progress() {
+        let player = racing(0, GT3, 2, 5, 0.5);
+        let mut ahead = racing(1, GT3, 1, 5, 0.6);
+        ahead.lap_dist_pct = None;
+
+        assert_eq!(class_gaps(&[player, ahead]), (Some(2), None, None));
     }
 
     #[test]

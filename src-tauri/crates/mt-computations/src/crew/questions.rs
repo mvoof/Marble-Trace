@@ -308,7 +308,7 @@ impl<'a> QuestionSource<'a> {
     }
 
     /// Seconds from the car further round the race back to the other, whole
-    /// laps between them included; by place while either has not run a lap.
+    /// laps between them included; by place before either has run a lap.
     fn gap_to_me(&self, entry: &DriverEntry) -> Option<f32> {
         let me = self.me()?.entry;
 
@@ -317,20 +317,17 @@ impl<'a> QuestionSource<'a> {
         }
 
         let lap_time = me.class_est_lap_time;
-        let progresses = progress(entry).zip(progress(me));
-        let ahead = match progresses {
-            Some((theirs, mine)) => theirs > mine,
-            None => {
-                let placed = entry.live_position > 0 && me.live_position > 0;
-
-                if !placed {
-                    return None;
-                }
-
-                entry.live_position < me.live_position
+        let (ahead, laps_apart) = match progress(entry).zip(progress(me)) {
+            Some((theirs, mine)) => (theirs > mine, (theirs - mine).abs().floor()),
+            None if entry.lap <= 0
+                && me.lap <= 0
+                && entry.live_position > 0
+                && me.live_position > 0 =>
+            {
+                (entry.live_position < me.live_position, 0.0)
             }
+            None => return None,
         };
-        let laps_apart = progresses.map_or(0.0, |(theirs, mine)| (theirs - mine).abs().floor());
         let (front, back) = if ahead { (entry, me) } else { (me, entry) };
 
         track_gap(back.est_time, front.est_time, lap_time).map(|gap| laps_apart * lap_time + gap)
@@ -871,6 +868,26 @@ mod tests {
         let replies = source.answer("leader", Some(&AskedCar::Leader), &[car(CarField::GapToMe)]);
 
         assert_eq!(arg(&replies[0], "gapToMe"), None);
+    }
+
+    #[test]
+    fn gaps_use_position_before_laps_but_require_progress_once_either_car_runs_laps() {
+        let (view, session) = race();
+
+        for (player_lap, leader_lap, expected) in [(0, 0, Some(3.0)), (1, 0, None), (0, 1, None)] {
+            let mut view = view.clone();
+            view.entries[0].lap = player_lap;
+            view.entries[0].est_time = 9.0;
+            view.entries[1].lap = leader_lap;
+            view.entries[1].lap_dist_pct = None;
+            view.entries[1].est_time = 12.0;
+            let source = QuestionSource {
+                view: &view,
+                session: Some(&session),
+            };
+
+            assert_eq!(source.gap_to_me(&view.entries[1]), expected);
+        }
     }
 
     #[test]

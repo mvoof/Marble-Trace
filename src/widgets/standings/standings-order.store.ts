@@ -8,7 +8,7 @@ const ARROW_LINGER_MS = 400;
 
 export type Rank = { overall: number; inClass: number };
 type PositionChangeDirection = 'up' | 'down';
-type PendingPosition = { rank: Rank; since: number };
+type PendingPosition = { rank: Rank; classId: number; since: number };
 
 const sameRank = (first: Rank, second: Rank): boolean =>
   first.overall === second.overall && first.inClass === second.inClass;
@@ -58,7 +58,7 @@ export class StandingsOrderStore {
   private readonly settled = new Map<number, Rank>();
   private readonly pending = new Map<number, PendingPosition>();
   private readonly classIds = new Map<number, number>();
-  private readonly occupants = new Map<string, number>();
+  private readonly occupants = new Map<string, Set<number>>();
   private readonly previousPositions = new Map<number, number>();
   private readonly changeTimers = new Map<
     number,
@@ -146,87 +146,93 @@ export class StandingsOrderStore {
       }
     }
 
-    for (const [carIdx, { rank, classId }] of next) {
-      const settled = this.settled.get(carIdx);
-
-      // Grid changes can put a newly placed car into a slot held by the old
-      // order. Publish the new field together so its first rank is immediate.
-      if (
-        (settled && this.classIds.get(carIdx) !== classId) ||
-        ((!settled || !isPlaced(settled.overall)) &&
-          rankKeys(rank, classId).some((key) => {
-            const occupant = this.occupants.get(key);
-
-            return occupant !== undefined && occupant !== carIdx;
-          }))
-      ) {
-        this.clearRanks();
-
-        for (const [index, entry] of next) {
-          this.setRank(index, entry.rank, entry.classId);
-        }
-
-        return;
+    if (this.settled.size === 0) {
+      for (const [carIdx, { rank, classId }] of next) {
+        this.setRank(carIdx, rank, classId);
       }
+
+      return;
     }
 
     for (const [carIdx, { rank, classId }] of next) {
       const settled = this.settled.get(carIdx);
 
-      if (settled && sameRank(settled, rank)) {
-        this.pending.delete(carIdx);
-        continue;
-      }
-
-      if (!settled || !isPlaced(settled.overall)) {
-        if (settled) {
-          this.releaseRanks(carIdx, settled);
-        }
-
-        this.setRank(carIdx, rank, classId);
+      if (!settled) {
+        this.setRank(carIdx, { overall: 0, inClass: 0 }, classId);
+      } else if (
+        sameRank(settled, rank) &&
+        this.classIds.get(carIdx) === classId
+      ) {
         this.pending.delete(carIdx);
         continue;
       }
 
       const pending = this.pending.get(carIdx);
 
-      if (!pending || !sameRank(pending.rank, rank)) {
-        this.pending.set(carIdx, { rank, since: now });
+      if (
+        !pending ||
+        pending.classId !== classId ||
+        !sameRank(pending.rank, rank)
+      ) {
+        this.pending.set(carIdx, { rank, classId, since: now });
       }
     }
   }
 
   private settlePending(now: number) {
-    const ready = new Map<number, Rank>();
+    const ready = new Map<number, PendingPosition>();
+    const claims = new Map<string, number>();
+    const immediate = new Set<number>();
 
     for (const [carIdx, pending] of this.pending) {
+      const { rank, classId } = pending;
+      const previousRank = this.settled.get(carIdx);
+
+      for (const key of rankKeys(rank, classId)) {
+        claims.set(key, (claims.get(key) ?? 0) + 1);
+      }
+
       if (now - pending.since >= ORDER_SETTLE_MS) {
-        ready.set(carIdx, pending.rank);
+        ready.set(carIdx, pending);
+      }
+
+      if (
+        !isPlaced(previousRank?.overall ?? 0) ||
+        this.classIds.get(carIdx) !== classId
+      ) {
+        immediate.add(carIdx);
       }
     }
 
-    // Keep only moves whose destinations are vacated in this batch. Removing
-    // one move can block another, so repeat until all remaining moves can land.
+    for (const carIdx of immediate) {
+      for (const [index, move] of this.immediateMoves(carIdx, claims) ?? []) {
+        ready.set(index, move);
+      }
+    }
+
+    // Land only unique claims whose occupants leave in this batch. Removing
+    // a move can block another, so repeat until the remaining moves can land.
     let removed = true;
 
     while (removed) {
       removed = false;
 
-      for (const [carIdx, rank] of ready) {
-        const classId = this.classIds.get(carIdx);
+      for (const [carIdx, { rank, classId }] of ready) {
+        const blocked = rankKeys(rank, classId).some((key) => {
+          if ((claims.get(key) ?? 0) > 1) {
+            return true;
+          }
 
-        if (
-          classId === undefined ||
-          rankKeys(rank, classId).some((key) => {
-            const occupant = this.occupants.get(key);
+          for (const occupant of this.occupants.get(key) ?? []) {
+            if (occupant !== carIdx && !ready.has(occupant)) {
+              return true;
+            }
+          }
 
-            return (
-              occupant !== undefined &&
-              occupant !== carIdx &&
-              !ready.has(occupant)
-            );
-          })
-        ) {
+          return false;
+        });
+
+        if (blocked) {
           ready.delete(carIdx);
           removed = true;
         }
@@ -241,15 +247,39 @@ export class StandingsOrderStore {
       }
     }
 
-    for (const [carIdx, rank] of ready) {
-      const classId = this.classIds.get(carIdx);
-
-      if (classId !== undefined) {
-        this.setRank(carIdx, rank, classId);
-        this.pending.delete(carIdx);
-        this.clearArrowAfterMove(carIdx);
-      }
+    for (const [carIdx, { rank, classId }] of ready) {
+      this.setRank(carIdx, rank, classId);
+      this.pending.delete(carIdx);
+      this.clearArrowAfterMove(carIdx);
     }
+  }
+
+  // A first placement brings along its dependencies only if they can all move.
+  private immediateMoves(carIdx: number, claims: ReadonlyMap<string, number>) {
+    const required = new Set([carIdx]);
+    const moves = new Map<number, PendingPosition>();
+
+    for (const index of required) {
+      const pending = this.pending.get(index);
+
+      if (!pending) {
+        return null;
+      }
+
+      for (const key of rankKeys(pending.rank, pending.classId)) {
+        if ((claims.get(key) ?? 0) > 1) {
+          return null;
+        }
+
+        for (const occupant of this.occupants.get(key) ?? []) {
+          required.add(occupant);
+        }
+      }
+
+      moves.set(index, pending);
+    }
+
+    return moves;
   }
 
   private setRank(carIdx: number, rank: Rank, classId: number) {
@@ -257,7 +287,10 @@ export class StandingsOrderStore {
     this.classIds.set(carIdx, classId);
 
     for (const key of rankKeys(rank, classId)) {
-      this.occupants.set(key, carIdx);
+      const occupants = this.occupants.get(key) ?? new Set<number>();
+
+      occupants.add(carIdx);
+      this.occupants.set(key, occupants);
     }
   }
 
@@ -269,7 +302,10 @@ export class StandingsOrderStore {
     }
 
     for (const key of rankKeys(rank, classId)) {
-      if (this.occupants.get(key) === carIdx) {
+      const occupants = this.occupants.get(key);
+      occupants?.delete(carIdx);
+
+      if (occupants?.size === 0) {
         this.occupants.delete(key);
       }
     }
