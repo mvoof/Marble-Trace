@@ -441,7 +441,10 @@ export const calculateLapsBehind = (
   leader: DriverLapInfo | null | undefined,
   driver: DriverLapInfo
 ): number => {
-  if (!leader) return 0;
+  if (!leader || leader.lapDistPct < 0 || driver.lapDistPct < 0) {
+    return 0;
+  }
+
   const leaderAbs = leader.lap + leader.lapDistPct;
   const driverAbs = driver.lap + driver.lapDistPct;
   return Math.floor(leaderAbs - driverAbs);
@@ -561,10 +564,6 @@ export const getStandingsInterval = (
   carAhead: DriverEntry | null,
   isRace: boolean
 ): StandingsGapInfo => {
-  if (carAhead === null) {
-    return { value: EMPTY_VALUE, isLeader: false, isEmpty: true };
-  }
-
   return getStandingsGap(
     driver,
     carAhead,
@@ -585,19 +584,17 @@ export const getStandingsGap = (
     return { value: LEADER_LABEL, isLeader: true, isEmpty: false };
   }
 
+  if (leader === null) {
+    return { value: EMPTY_VALUE, isLeader: false, isEmpty: true };
+  }
+
   if (!isRace) {
-    if (
-      driver.bestLapTime !== null &&
-      leader !== null &&
-      leader.bestLapTime !== null
-    ) {
+    if (driver.bestLapTime !== null && leader.bestLapTime !== null) {
       const timeDiff = driver.bestLapTime - leader.bestLapTime;
 
       if (timeDiff > 0) {
         return { value: timeDiff.toFixed(1), isLeader: false, isEmpty: false };
       }
-
-      return { value: EMPTY_VALUE, isLeader: false, isEmpty: true };
     }
 
     return { value: EMPTY_VALUE, isLeader: false, isEmpty: true };
@@ -611,16 +608,19 @@ export const getStandingsGap = (
   // unchanged (the overall leader's gap is zero).
   const resLap = driver.resultsPositionLap;
   const resTime = driver.resultsPositionTime;
+  const leaderLap = leader.resultsPositionLap;
+  const leaderTime = leader.resultsPositionTime;
 
   if (
     resLap !== undefined &&
     resLap !== null &&
     resTime !== undefined &&
-    resTime !== null
+    resTime !== null &&
+    leaderLap !== undefined &&
+    leaderLap !== null &&
+    leaderTime !== undefined &&
+    leaderTime !== null
   ) {
-    const leaderLap = leader?.resultsPositionLap ?? 0;
-    const leaderTime = leader?.resultsPositionTime ?? 0;
-
     const lapsDown = resLap - leaderLap;
 
     if (lapsDown > 0) {
@@ -649,7 +649,16 @@ export const getStandingsGap = (
     return { value: `${lapsBehind} L`, isLeader: false, isEmpty: false };
   }
 
-  const f2Diff = driver.f2Time - (leader?.f2Time ?? 0);
+  // The sim's overall P1 has a legitimate zero. For any other reference a
+  // missing F2 value must not turn a gap to overall P1 into a class interval.
+  if (
+    driver.f2Time <= 0 ||
+    (leader.f2Time <= 0 && !(leader.f2Time === 0 && leader.position === 1))
+  ) {
+    return { value: EMPTY_VALUE, isLeader: false, isEmpty: true };
+  }
+
+  const f2Diff = driver.f2Time - leader.f2Time;
 
   if (f2Diff > 0) {
     return {

@@ -1459,6 +1459,7 @@ fn unpublished_positions_session(session_type: SessionType) -> SessionSnapshot {
     SessionSnapshot {
         player_car_idx: 0,
         current_session_num: 0,
+        is_official: true,
         cars: (0..3)
             .map(|car_idx| CarEntry {
                 car_idx,
@@ -1576,6 +1577,32 @@ fn test_unpublished_live_positions_do_not_project_the_player_as_winner() {
 
     assert!(player_delta.is_some_and(|delta| delta < 0));
     assert!(leader_delta.is_some_and(|delta| delta > 0));
+}
+
+#[test]
+fn test_only_official_races_project_irating() {
+    let mut unofficial_race = unpublished_positions_session(SessionType::Race);
+    unofficial_race.is_official = false;
+
+    let mut league_race = unpublished_positions_session(SessionType::Race);
+    league_race.league_id = Some(1);
+
+    for session in [
+        unpublished_positions_session(SessionType::Practice),
+        unpublished_positions_session(SessionType::Qualify),
+        unofficial_race,
+        league_race,
+    ] {
+        let frame = compute_unpublished(
+            &unpublished_positions_frame(),
+            &session,
+            SessionState::Racing,
+        );
+
+        assert!(frame.entries.iter().all(|entry| {
+            entry.estimated_ir_delta_live.is_none() && entry.estimated_ir_delta_official.is_none()
+        }));
+    }
 }
 
 #[test]

@@ -550,7 +550,7 @@ pub fn compute(
         entry.pit_state = next;
     }
 
-    if compute_ir_delta {
+    if compute_ir_delta && is_race && session.is_official && session.league_id.is_none() {
         let live_deltas = compute_ir_deltas(&entries, true);
         let official_deltas = compute_ir_deltas(&entries, false);
 

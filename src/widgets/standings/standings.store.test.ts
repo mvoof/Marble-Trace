@@ -184,33 +184,90 @@ describe('StandingsWidgetStore — per instance', () => {
     }
   });
 
-  it('keeps official positions when an earlier car is filtered out', () => {
+  it.each([false, true])(
+    'keeps positions after filtering (live: %s)',
+    (useLivePositions) => {
+      const frame = core.backendComputed.driverEntries!;
+      const [retired, active] = frame.entries.filter(
+        (entry) => !entry.isPlayer
+      );
+
+      runInAction(() => {
+        core.liveWidgets.updateUserSettings(STANDINGS, {
+          useLivePositions,
+          hideRetiredDrivers: true,
+        });
+        core.backendComputed.updateDriverEntries({
+          ...frame,
+          entries: [
+            {
+              ...retired,
+              position: 1,
+              classPosition: 1,
+              livePosition: 1,
+              liveClassPosition: 1,
+              isRetired: true,
+            },
+            {
+              ...active,
+              position: 2,
+              classPosition: 2,
+              livePosition: 2,
+              liveClassPosition: 2,
+              isRetired: false,
+            },
+          ],
+        });
+      });
+
+      const table = openTable(core, STANDINGS);
+
+      expect(table.orderedEntries.map((entry) => entry.carIdx)).toEqual([
+        active.carIdx,
+      ]);
+      expect(table.renderedRanks.get(active.carIdx)).toEqual({
+        overall: 2,
+        inClass: 2,
+      });
+    }
+  );
+
+  it('shows the projection only when its rank matches the displayed rank', () => {
     const frame = core.backendComputed.driverEntries!;
-    const [retired, active] = frame.entries.filter((entry) => !entry.isPlayer);
+    const [driver] = frame.entries;
+    const publish = (livePosition: number, estimatedIrDeltaLive: number) =>
+      runInAction(() =>
+        core.backendComputed.updateDriverEntries({
+          ...frame,
+          entries: [
+            {
+              ...driver,
+              livePosition,
+              liveClassPosition: livePosition,
+              estimatedIrDeltaLive,
+            },
+          ],
+        })
+      );
 
-    runInAction(() => {
-      core.liveWidgets.updateUserSettings(STANDINGS, {
-        useLivePositions: false,
-        hideRetiredDrivers: true,
-      });
-      core.backendComputed.updateDriverEntries({
-        ...frame,
-        entries: [
-          { ...retired, position: 1, classPosition: 1, isRetired: true },
-          { ...active, position: 2, classPosition: 2, isRetired: false },
-        ],
-      });
-    });
-
+    publish(9, 12);
     const table = openTable(core, STANDINGS);
+    const clock = vi.spyOn(performance, 'now').mockReturnValue(0);
 
-    expect(table.orderedEntries.map((entry) => entry.carIdx)).toEqual([
-      active.carIdx,
-    ]);
-    expect(table.renderedRanks.get(active.carIdx)).toEqual({
-      overall: 2,
-      inClass: 2,
-    });
+    try {
+      expect(table.projectedIrDeltaOf(driver.carIdx)).toBe(12);
+
+      publish(10, -2);
+      expect(table.renderedRanks.get(driver.carIdx)?.overall).toBe(9);
+      expect(table.projectedIrDeltaOf(driver.carIdx)).toBeNull();
+
+      clock.mockReturnValue(1000);
+      publish(10, -2);
+      expect(table.renderedRanks.get(driver.carIdx)?.overall).toBe(10);
+      expect(table.projectedIrDeltaOf(driver.carIdx)).toBe(-2);
+    } finally {
+      clock.mockRestore();
+    }
   });
 
   it('replaces a lap delta with zero on an identical consecutive lap', () => {

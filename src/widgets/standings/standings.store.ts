@@ -529,30 +529,31 @@ export class StandingsWidgetStore implements StandingsHotkeyTarget {
    * settled order rather than the raw frame, so the ± column flips at the moment
    * the row changes places instead of ahead of it.
    */
-  get renderedRanks(): Map<number, Rank> {
-    const result = new Map<number, Rank>();
-    const classCounts = new Map<number, number>();
+  get renderedRanks(): ReadonlyMap<number, Rank> {
+    return this.settledPositions;
+  }
 
-    this.orderedEntries.forEach((entry, index) => {
-      if (!this.useTrackOrder) {
-        result.set(
-          entry.carIdx,
-          this.settledPositions.get(entry.carIdx) ?? {
-            overall: entry.position,
-            inClass: entry.classPosition,
-          }
-        );
+  projectedIrDeltaOf(carIdx: number): number | null {
+    const entry = this.driverMap.get(carIdx);
+    const displayed = this.renderedRanks.get(carIdx);
 
-        return;
-      }
+    if (!entry || this.root.session.currentSessionType !== 'Race') {
+      return null;
+    }
 
-      const inClass = (classCounts.get(entry.carClassId) ?? 0) + 1;
+    // The backend scores the current frame. Wait for the displayed rank
+    // to catch up before showing the new projection.
+    if (
+      displayed &&
+      (displayed.overall !== this.rankOf(entry) ||
+        displayed.inClass !== this.classRankOf(entry))
+    ) {
+      return null;
+    }
 
-      classCounts.set(entry.carClassId, inClass);
-      result.set(entry.carIdx, { overall: index + 1, inClass });
-    });
-
-    return result;
+    return this.useTrackOrder
+      ? entry.estimatedIrDeltaLive
+      : entry.estimatedIrDeltaOfficial;
   }
 
   private flashPositionChange(
