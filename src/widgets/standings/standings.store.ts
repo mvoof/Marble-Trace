@@ -57,7 +57,12 @@ const OVERALL_REFERENCE = -1;
 
 type Rank = { overall: number; inClass: number };
 type PendingPosition = { rank: Rank; since: number };
-type SeenLap = { lap: number; time: number; previousTime: number | null };
+type SeenLap = {
+  lap: number;
+  time: number | null;
+  previousTime: number | null;
+  crossedInPit: boolean;
+};
 
 const sameRank = (first: Rank, second: Rank): boolean =>
   first.overall === second.overall && first.inClass === second.inClass;
@@ -315,35 +320,39 @@ export class StandingsWidgetStore implements StandingsHotkeyTarget {
 
   private trackLapDeltas(entries: CarIdentity[]) {
     for (const entry of entries) {
-      const lapTime = entry.lastLapTime;
-
-      if (lapTime === null) {
-        continue;
-      }
-
       const seen = this.seenLapTimes.get(entry.carIdx);
 
       // The lap counter can drop when a car leaves the world and the
       // backend falls back to the official completed-lap count.
-      if (
-        seen &&
-        (entry.lap < seen.lap ||
-          (entry.lap === seen.lap && lapTime === seen.time))
-      ) {
+      if (seen && entry.lap < seen.lap) {
         continue;
       }
 
-      const previousTime =
-        seen && entry.lap > seen.lap ? seen.time : (seen?.previousTime ?? null);
+      const sameLap = seen?.lap === entry.lap;
+      const previousTime = sameLap ? seen.previousTime : (seen?.time ?? null);
+      const crossedInPit = sameLap ? seen.crossedInPit : entry.onPitRoad;
+      // At a pit-lane crossing iRacing can keep reporting the previous lap's
+      // time before clearing it, including when the driver serves a penalty.
+      const lapTime =
+        crossedInPit && entry.lastLapTime === previousTime
+          ? null
+          : entry.lastLapTime;
 
-      if (previousTime !== null) {
+      if (sameLap && lapTime === seen.time) {
+        continue;
+      }
+
+      if (lapTime !== null && previousTime !== null) {
         this.lapDeltas.set(entry.carIdx, lapTime - previousTime);
+      } else {
+        this.lapDeltas.delete(entry.carIdx);
       }
 
       this.seenLapTimes.set(entry.carIdx, {
         lap: entry.lap,
         time: lapTime,
         previousTime,
+        crossedInPit,
       });
     }
   }

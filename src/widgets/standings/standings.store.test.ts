@@ -234,6 +234,42 @@ describe('StandingsWidgetStore — per instance', () => {
     expect(table.lapDeltas.get(driver.carIdx)).toBe(0);
   });
 
+  it('clears the delta when the player serves a penalty at Daytona', () => {
+    const frame = core.backendComputed.driverEntries!;
+    const driver = frame.entries.find((entry) => entry.isPlayer)!;
+    const publishLap = (
+      lap: number,
+      lastLapTime: number | null,
+      onPitRoad = false
+    ) =>
+      runInAction(() =>
+        core.backendComputed.updateDriverEntries({
+          ...frame,
+          entries: [{ ...driver, lap, lastLapTime, onPitRoad }],
+        })
+      );
+
+    publishLap(4, 49.3985);
+    const table = openTable(core, STANDINGS);
+
+    publishLap(5, 49.3495);
+    expect(table.lapDeltas.get(driver.carIdx)).toBeCloseTo(-0.049);
+
+    publishLap(5, 49.3495, true);
+    publishLap(6, 49.3495, true);
+    expect(table.lapDeltas.has(driver.carIdx)).toBe(false);
+
+    publishLap(6, null, true);
+    publishLap(6, null);
+    expect(table.lapDeltas.has(driver.carIdx)).toBe(false);
+
+    publishLap(7, 143.3306);
+    expect(table.lapDeltas.has(driver.carIdx)).toBe(false);
+
+    publishLap(8, 50);
+    expect(table.lapDeltas.get(driver.carIdx)).toBeCloseTo(-93.3306);
+  });
+
   describe('cars without a place', () => {
     const useOfficialOrder = () =>
       runInAction(() =>
