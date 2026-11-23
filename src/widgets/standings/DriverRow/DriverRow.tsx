@@ -135,9 +135,7 @@ export const DriverRow = observer(
 
         const isRaceSession = session.currentSessionType === 'Race';
 
-        const leads =
-          (byClass ? liveDriver.liveClassPosition : liveDriver.livePosition) ===
-          1;
+        const leads = leaderIdentity?.carIdx === carIdx;
 
         const gapInfo = getStandingsGap(
           liveDriver,

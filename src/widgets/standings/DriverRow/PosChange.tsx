@@ -39,8 +39,8 @@ export const PosChange = observer(({ carIdx }: PosChangeProps) => {
   const rank = standingsWidget.renderedRanks.get(carIdx);
 
   const position = useClassPos
-    ? (rank?.inClass ?? driver.liveClassPosition)
-    : (rank?.overall ?? driver.livePosition);
+    ? (rank?.inClass ?? standingsWidget.classRankOf(driver))
+    : (rank?.overall ?? standingsWidget.rankOf(driver));
 
   const startPos = useClassPos ? driver.startPosClass : driver.startPosOverall;
 

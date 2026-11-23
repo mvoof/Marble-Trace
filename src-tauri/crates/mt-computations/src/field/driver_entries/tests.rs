@@ -87,6 +87,40 @@ fn two_car_frame(leader_surface: TrackSurface, leader_pct: f32, player_pct: f32)
 }
 
 #[test]
+fn test_classified_opponent_remains_after_live_fields_clear() {
+    let mut session = two_car_race_session();
+    session.sessions[0].results_positions.push(ResultPosition {
+        car_idx: 1,
+        position: 2,
+        class_position: Some(2),
+        last_time: Some(92.5),
+        ..Default::default()
+    });
+    let mut car_idx = two_car_frame(TrackSurface::NotInWorld, -1.0, 0.3);
+    car_idx.car_idx_position[0] = 1;
+    car_idx.car_idx_position[1] = 0;
+    car_idx.car_idx_class_position[1] = 0;
+
+    let frame = compute(
+        &car_idx,
+        &session,
+        &HashMap::new(),
+        false,
+        Some(SessionState::CoolDown),
+        &Mutex::new(DriverEntriesState::default()),
+    );
+
+    let opponent = frame
+        .entries
+        .iter()
+        .find(|entry| entry.car_idx == 1)
+        .unwrap();
+    assert_eq!(opponent.position, 2);
+    assert_eq!(opponent.class_position, 2);
+    assert_eq!(opponent.last_lap_time, Some(92.5));
+}
+
+#[test]
 fn test_a_towed_leader_loses_the_live_lead() {
     let session = two_car_race_session();
     let state = Mutex::new(DriverEntriesState::default());

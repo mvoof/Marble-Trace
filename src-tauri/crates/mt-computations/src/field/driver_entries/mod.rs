@@ -231,6 +231,10 @@ pub fn compute(
                 return false;
             }
 
+            if results_positions_map.contains_key(&d.car_idx) {
+                return true;
+            }
+
             let idx = d.car_idx as usize;
 
             if idx >= car_idx.car_idx_position.len() {
@@ -319,7 +323,7 @@ pub fn compute(
                     .car_idx_lap_dist_pct
                     .get(idx)
                     .copied()
-                    .unwrap_or(0.0),
+                    .unwrap_or(-1.0),
                 // The sim zeroes the live CarIdx lap times once a car leaves the world
                 // (garage after a session, tow, disconnect). `ResultsPositions` keeps
                 // the official times, so they stand in whenever the live value is gone.

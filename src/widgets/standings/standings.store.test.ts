@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { runInAction } from 'mobx';
 
 import { PreviewCore } from '@app/roots/renderer-core';
@@ -153,6 +153,85 @@ describe('StandingsWidgetStore — per instance', () => {
     swapLeaders(core);
 
     expect(table.positionChanges.size).toBe(2);
+  });
+
+  it('settles a stable pass on a frame that only changes distance', () => {
+    const table = openTable(core, STANDINGS);
+    const originalLeader = table.orderedEntries[0].carIdx;
+    const clock = vi.spyOn(performance, 'now').mockReturnValue(0);
+
+    try {
+      swapLeaders(core);
+      expect(table.orderedEntries[0].carIdx).toBe(originalLeader);
+
+      const frame = core.backendComputed.driverEntries!;
+
+      clock.mockReturnValue(1000);
+      runInAction(() =>
+        core.backendComputed.updateDriverEntries({
+          ...frame,
+          entries: frame.entries.map((entry) => ({
+            ...entry,
+            lapDistPct: entry.lapDistPct + 0.001,
+          })),
+        })
+      );
+
+      expect(table.orderedEntries[0].carIdx).toBe(table.overallLeader?.carIdx);
+      expect(table.orderedEntries[0].carIdx).not.toBe(originalLeader);
+    } finally {
+      clock.mockRestore();
+    }
+  });
+
+  it('keeps official positions when an earlier car is filtered out', () => {
+    const frame = core.backendComputed.driverEntries!;
+    const [retired, active] = frame.entries.filter((entry) => !entry.isPlayer);
+
+    runInAction(() => {
+      core.liveWidgets.updateUserSettings(STANDINGS, {
+        useLivePositions: false,
+        hideRetiredDrivers: true,
+      });
+      core.backendComputed.updateDriverEntries({
+        ...frame,
+        entries: [
+          { ...retired, position: 1, classPosition: 1, isRetired: true },
+          { ...active, position: 2, classPosition: 2, isRetired: false },
+        ],
+      });
+    });
+
+    const table = openTable(core, STANDINGS);
+
+    expect(table.orderedEntries.map((entry) => entry.carIdx)).toEqual([
+      active.carIdx,
+    ]);
+    expect(table.renderedRanks.get(active.carIdx)).toEqual({
+      overall: 2,
+      inClass: 2,
+    });
+  });
+
+  it('replaces a lap delta with zero on an identical consecutive lap', () => {
+    const frame = core.backendComputed.driverEntries!;
+    const [driver] = frame.entries;
+    const publishLap = (lap: number, lastLapTime: number) =>
+      runInAction(() =>
+        core.backendComputed.updateDriverEntries({
+          ...frame,
+          entries: [{ ...driver, lap, lastLapTime }],
+        })
+      );
+
+    publishLap(2, 92.3);
+    const table = openTable(core, STANDINGS);
+
+    publishLap(3, 92.1);
+    expect(table.lapDeltas.get(driver.carIdx)).toBeCloseTo(-0.2);
+
+    publishLap(4, 92.1);
+    expect(table.lapDeltas.get(driver.carIdx)).toBe(0);
   });
 
   describe('cars without a place', () => {

@@ -8,6 +8,7 @@ import { useStandingsWidgetStore } from '@widgets/standings/standings.store';
 
 import styles from './DriverRow.module.scss';
 import type { StandingsWidgetSettings } from '../settings-schema';
+import { EMPTY_VALUE } from '../standings-utils';
 
 const ARROW_SIZE_PX = 14;
 
@@ -32,8 +33,8 @@ export const PositionCell = observer(
 
     const position =
       settings.viewMode === 'all'
-        ? (rank?.overall ?? driver.livePosition)
-        : (rank?.inClass ?? driver.liveClassPosition);
+        ? (rank?.overall ?? standingsWidget.rankOf(driver))
+        : (rank?.inClass ?? standingsWidget.classRankOf(driver));
 
     const change = settings.showLivePosChange
       ? standingsWidget.positionChanges.get(carIdx)
@@ -72,7 +73,7 @@ export const PositionCell = observer(
                 : undefined
             }
           >
-            {position}
+            {position > 0 ? position : EMPTY_VALUE}
           </span>
         )}
       </div>

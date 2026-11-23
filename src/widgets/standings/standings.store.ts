@@ -55,7 +55,12 @@ export const SINGLE_LIST_SCROLL_KEY = -1;
 // Key of the one reference the overall view ranks every car against.
 const OVERALL_REFERENCE = -1;
 
-type PendingPosition = { position: number; since: number };
+type Rank = { overall: number; inClass: number };
+type PendingPosition = { rank: Rank; since: number };
+type SeenLap = { lap: number; time: number; previousTime: number | null };
+
+const sameRank = (first: Rank, second: Rank): boolean =>
+  first.overall === second.overall && first.inClass === second.inClass;
 
 // A rank of zero or below is a car the sim has not placed yet (no lap in
 // qualifying). It sorts after every placed car instead of above the leader.
@@ -133,10 +138,10 @@ export class StandingsWidgetStore implements StandingsHotkeyTarget {
    */
   lapDeltas = new Map<number, number>();
 
-  private readonly seenLapTimes = new Map<number, number>();
+  private readonly seenLapTimes = new Map<number, SeenLap>();
 
   /** carIdx → position the table is currently drawn with (debounced). */
-  private settledPositions = new Map<number, number>();
+  private settledPositions = new Map<number, Rank>();
 
   private readonly pendingPositions = new Map<number, PendingPosition>();
 
@@ -186,15 +191,25 @@ export class StandingsWidgetStore implements StandingsHotkeyTarget {
 
     this.disposers.push(
       reaction(
-        // Identities, not the frame: the order and the position flashes are
-        // decided by fields that change once a lap, so this ran sixty times a
-        // second to reach the same answer. See `docs/rendering.md`.
-        () => this.root.backendComputed.driverIdentities,
-        (entries) => {
-          this.settleOrder(entries);
-          this.trackPositionChanges(entries);
-          this.trackLapDeltas(entries);
-        }
+        () =>
+          [
+            this.root.backendComputed.driverEntries,
+            this.root.backendComputed.driverIdentities,
+          ] as const,
+        ([, entries], previous) => {
+          const identitiesChanged = entries !== previous?.[1];
+
+          // A pending pass can settle on a frame that only changes distance.
+          if (identitiesChanged || this.pendingPositions.size > 0) {
+            this.settleOrder(entries);
+          }
+
+          if (identitiesChanged) {
+            this.trackPositionChanges(entries);
+            this.trackLapDeltas(entries);
+          }
+        },
+        { fireImmediately: true }
       )
     );
 
@@ -300,11 +315,24 @@ export class StandingsWidgetStore implements StandingsHotkeyTarget {
 
       const seen = this.seenLapTimes.get(entry.carIdx);
 
-      if (seen !== undefined && seen !== lapTime) {
-        this.lapDeltas.set(entry.carIdx, lapTime - seen);
+      // CarIdxLap can fall back to the official completed-lap count when a
+      // car leaves the world. That older count cannot complete a new lap.
+      if (seen && entry.lap < seen.lap) {
+        continue;
       }
 
-      this.seenLapTimes.set(entry.carIdx, lapTime);
+      const previousTime =
+        seen && entry.lap > seen.lap ? seen.time : (seen?.previousTime ?? null);
+
+      if (previousTime !== null) {
+        this.lapDeltas.set(entry.carIdx, lapTime - previousTime);
+      }
+
+      this.seenLapTimes.set(entry.carIdx, {
+        lap: entry.lap,
+        time: lapTime,
+        previousTime,
+      });
     }
   }
 
@@ -357,23 +385,27 @@ export class StandingsWidgetStore implements StandingsHotkeyTarget {
       seen.add(entry.carIdx);
 
       const settled = next.get(entry.carIdx);
+      const rank = {
+        overall: this.rankOf(entry),
+        inClass: this.classRankOf(entry),
+      };
 
       if (settled === undefined) {
-        next.set(entry.carIdx, this.rankOf(entry));
+        next.set(entry.carIdx, rank);
         this.pendingPositions.delete(entry.carIdx);
         changed = true;
         continue;
       }
 
-      if (settled === this.rankOf(entry)) {
+      if (sameRank(settled, rank)) {
         this.pendingPositions.delete(entry.carIdx);
         continue;
       }
 
       // A first place is not an overtake: holding it back is what made the row
       // jump to the top and then drop to where it belongs.
-      if (!isPlaced(settled)) {
-        next.set(entry.carIdx, this.rankOf(entry));
+      if (!isPlaced(settled.overall)) {
+        next.set(entry.carIdx, rank);
         this.pendingPositions.delete(entry.carIdx);
         changed = true;
         continue;
@@ -381,16 +413,16 @@ export class StandingsWidgetStore implements StandingsHotkeyTarget {
 
       const pending = this.pendingPositions.get(entry.carIdx);
 
-      if (!pending || pending.position !== this.rankOf(entry)) {
+      if (!pending || !sameRank(pending.rank, rank)) {
         this.pendingPositions.set(entry.carIdx, {
-          position: this.rankOf(entry),
+          rank,
           since: now,
         });
         continue;
       }
 
       if (now - pending.since >= ORDER_SETTLE_MS) {
-        next.set(entry.carIdx, this.rankOf(entry));
+        next.set(entry.carIdx, rank);
         this.pendingPositions.delete(entry.carIdx);
         this.clearArrowAfterMove(entry.carIdx);
         changed = true;
@@ -478,7 +510,7 @@ export class StandingsWidgetStore implements StandingsHotkeyTarget {
     const positions = this.settledPositions;
 
     const sortRankOf = (entry: CarIdentity): number =>
-      positions.get(entry.carIdx) ?? this.rankOf(entry);
+      positions.get(entry.carIdx)?.overall ?? this.rankOf(entry);
 
     // The sort is stable and `visibleEntries` keeps the backend's order, so
     // unplaced cars stay in that order among themselves.
@@ -492,11 +524,23 @@ export class StandingsWidgetStore implements StandingsHotkeyTarget {
    * settled order rather than the raw frame, so the ± column flips at the moment
    * the row changes places instead of ahead of it.
    */
-  get renderedRanks(): Map<number, { overall: number; inClass: number }> {
-    const result = new Map<number, { overall: number; inClass: number }>();
+  get renderedRanks(): Map<number, Rank> {
+    const result = new Map<number, Rank>();
     const classCounts = new Map<number, number>();
 
     this.orderedEntries.forEach((entry, index) => {
+      if (!this.useTrackOrder) {
+        result.set(
+          entry.carIdx,
+          this.settledPositions.get(entry.carIdx) ?? {
+            overall: entry.position,
+            inClass: entry.classPosition,
+          }
+        );
+
+        return;
+      }
+
       const inClass = (classCounts.get(entry.carClassId) ?? 0) + 1;
 
       classCounts.set(entry.carClassId, inClass);
