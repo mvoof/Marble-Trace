@@ -76,6 +76,9 @@ npm run tauri:build:release   # what ships
 
 ## Workflow
 
+> [!NOTE]
+> Discuss the proposed change in a GitHub issue or the [Marble Trace Discord](https://discord.gg/tkdS9sn49b) before making changes. Include a link to the discussion in the pull request description.
+
 ### 1. Branch
 
 ```sh
@@ -145,13 +148,7 @@ git push --force-with-lease       # after a rebase of an already pushed branch
 > commits, so local and remote have diverged; `pull` merges the two and brings
 > the pre-rebase copies back as duplicates. Force-push instead.
 
-### 6. Discuss the change
-
-Before opening a pull request, create a GitHub issue or discuss the proposed
-change in the [Marble Trace Discord](https://discord.gg/tkdS9sn49b). Include a
-link to the issue or Discord discussion in the pull request description.
-
-### 7. Open a pull request
+### 6. Open a pull request
 
 Against `main`, saying what changed and why. Just before opening it, add the
 branch's entry to `CHANGELOG.md` under `## [Unreleased]` — one per new feature,
