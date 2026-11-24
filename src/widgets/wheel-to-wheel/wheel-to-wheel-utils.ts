@@ -1,6 +1,6 @@
 import type { DriverEntry } from '@shared/contracts/driver-entry';
 import { TrackSurface } from '@shared/contracts/domain';
-import { computeRelativeGap } from '@shared/lib/driver';
+import { computeRelativeGap, lapProgressOf } from '@shared/lib/driver';
 
 /** Segments in each speed bar. */
 export const SPEED_SEGMENT_COUNT = 7;
@@ -30,16 +30,21 @@ export interface WheelToWheelOpponent {
   gapSeconds: number;
 }
 
-const lapProgress = (entry: DriverEntry): number =>
-  entry.lap + entry.lapDistPct;
-
 const isRacingOnTrack = (entry: DriverEntry): boolean =>
   !entry.onPitRoad &&
   entry.trackSurface !== TrackSurface.NotInWorld &&
   entry.trackSurface !== TrackSurface.InPitStall;
 
-const isOnSameLap = (entry: DriverEntry, player: DriverEntry): boolean =>
-  Math.abs(lapProgress(entry) - lapProgress(player)) < LAPPED_THRESHOLD;
+const isOnSameLap = (entry: DriverEntry, player: DriverEntry): boolean => {
+  const entryProgress = lapProgressOf(entry);
+  const playerProgress = lapProgressOf(player);
+
+  return (
+    entryProgress !== null &&
+    playerProgress !== null &&
+    Math.abs(entryProgress - playerProgress) < LAPPED_THRESHOLD
+  );
+};
 
 export interface WheelToWheelRivals {
   ahead: WheelToWheelOpponent | null;
@@ -102,6 +107,7 @@ export const pickRivals = (
     .filter(
       (entry) =>
         !entry.isPlayer &&
+        entry.relativeLapDist !== null &&
         !options.excludedCarIdxs.has(entry.carIdx) &&
         entry.carClassId === player.carClassId &&
         isRacingOnTrack(entry) &&

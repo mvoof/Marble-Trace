@@ -1,6 +1,6 @@
 import type { NearbyCar } from '@shared/contracts/generated/bindings';
 import type { DriverEntry } from '@shared/contracts/driver-entry';
-import { computeRelativeGap } from '@shared/lib/driver';
+import { computeRelativeGap, lapProgressOf } from '@shared/lib/driver';
 import { splitDriverName } from '@shared/lib/driver';
 import type { UnitSystem } from '@shared/contracts/domain';
 import {
@@ -58,8 +58,14 @@ const LAPPED_THRESHOLD = 0.5;
 
 /** Whole laps between two cars, `0` while they are on the same one. */
 const lapsBetween = (driver: DriverEntry, player: DriverEntry): number => {
-  const delta =
-    driver.lap + driver.lapDistPct - (player.lap + player.lapDistPct);
+  const driverProgress = lapProgressOf(driver);
+  const playerProgress = lapProgressOf(player);
+
+  if (driverProgress === null || playerProgress === null) {
+    return 0;
+  }
+
+  const delta = driverProgress - playerProgress;
 
   if (Math.abs(delta) < LAPPED_THRESHOLD) {
     return 0;
@@ -405,7 +411,12 @@ export const buildOpponents = (
   return nearbyCars.flatMap((car) => {
     const entry = byCarIdx.get(car.carIdx);
 
-    if (!entry || entry.isPlayer || paceCarIdxs.has(car.carIdx)) {
+    if (
+      !entry ||
+      entry.isPlayer ||
+      entry.relativeLapDist === null ||
+      paceCarIdxs.has(car.carIdx)
+    ) {
       return [];
     }
 

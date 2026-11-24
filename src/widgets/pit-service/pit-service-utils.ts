@@ -4,6 +4,7 @@ import type {
 } from '@shared/contracts/generated/bindings';
 import type { DriverEntry } from '@shared/contracts/driver-entry';
 import type { UnitSystem } from '@shared/contracts/domain';
+import { lapProgressOf } from '@shared/lib/driver';
 import type { CornerPosition } from '@features/pit-service/pit-tires';
 
 export interface TireCornerData {
@@ -117,10 +118,6 @@ export const resolveServiceState = (
   return hasOrder ? 'armed' : 'idle';
 };
 
-/** Laps covered so far; null for a car out of the world. */
-const raceProgress = (entry: DriverEntry): number | null =>
-  entry.lapDistPct < 0 ? null : entry.lap + entry.lapDistPct;
-
 /**
  * How many cars behind us in the race get past while the stop still costs us
  * `secondsLost` — the lane and the standing still together.
@@ -149,7 +146,7 @@ export const projectPositionsLost = (
 
   if (!player) return 0;
 
-  const playerProgress = raceProgress(player);
+  const playerProgress = lapProgressOf(player);
 
   if (playerProgress === null) return 0;
 
@@ -177,7 +174,7 @@ export const projectPositionsLost = (
 
     if (!rank || !playerRank || rank <= playerRank) return false;
 
-    const progress = raceProgress(entry);
+    const progress = lapProgressOf(entry);
     const lapTimeS = entry.classEstLapTime || entry.bestLapTime;
 
     if (progress === null || !lapTimeS) return false;

@@ -205,6 +205,21 @@ const applyRows = (
   });
 };
 
+export const mockRelativeEntries = (entries: DriverEntry[]): DriverEntry[] =>
+  entries
+    .filter((entry) => entry.isPlayer || entry.relativeLapDist !== null)
+    .sort((first, second) => {
+      if (first.relativeLapDist === null) {
+        return second.relativeLapDist === null ? 0 : 1;
+      }
+
+      if (second.relativeLapDist === null) {
+        return -1;
+      }
+
+      return second.relativeLapDist - first.relativeLapDist;
+    });
+
 export const mockField = (
   base: DriverEntry[],
   { gapS, lapTimeS = DEFAULT_LAP_TIME_S, rows }: MockFieldOptions
@@ -212,9 +227,7 @@ export const mockField = (
   const playerCarIdx = base.find((entry) => entry.isPlayer)?.carIdx ?? 0;
   const spaced = withClassPositions(spaceField(base, gapS, lapTimeS));
   const field = rows ? applyRows(spaced, rows) : spaced;
-  const relativeEntries = [...field].sort(
-    (first, second) => second.relativeLapDist - first.relativeLapDist
-  );
+  const relativeEntries = mockRelativeEntries(field);
 
   return { entries: field, relativeEntries, playerCarIdx };
 };
@@ -259,7 +272,7 @@ export const mockCarPositions = (entries: DriverEntry[]): CarPositionsFrame => {
   const trackSurface = new Array<number>(size).fill(NOT_IN_WORLD);
 
   for (const entry of entries) {
-    lapDistPct[entry.carIdx] = entry.lapDistPct;
+    lapDistPct[entry.carIdx] = entry.lapDistPct ?? NOT_IN_WORLD;
     trackSurface[entry.carIdx] = TRACK_SURFACE_CODE[entry.trackSurface];
   }
 

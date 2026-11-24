@@ -228,18 +228,17 @@ impl<'a> QuestionSource<'a> {
         let me = self.me()?;
 
         self.cars()
-            .filter(|car| {
-                car.entry.car_idx != me.entry.car_idx
+            .filter_map(|car| {
+                let distance = car.entry.relative_lap_dist?;
+
+                (car.entry.car_idx != me.entry.car_idx
                     && !car.entry.on_pit_road
                     && car.entry.track_surface != TrackSurface::NotInWorld
-                    && side(car.entry.relative_lap_dist)
+                    && side(distance))
+                .then_some((car, distance.abs()))
             })
-            .min_by(|left, right| {
-                left.entry
-                    .relative_lap_dist
-                    .abs()
-                    .total_cmp(&right.entry.relative_lap_dist.abs())
-            })
+            .min_by(|(_, left), (_, right)| left.total_cmp(right))
+            .map(|(car, _)| car)
     }
 
     /// The leader of the car's own class.
@@ -309,7 +308,7 @@ impl<'a> QuestionSource<'a> {
     }
 
     /// Seconds from the car further round the race back to the other, whole
-    /// laps between them included; by place while either has not run a lap.
+    /// laps between them included; by place before either has run a lap.
     fn gap_to_me(&self, entry: &DriverEntry) -> Option<f32> {
         let me = self.me()?.entry;
 
@@ -318,20 +317,17 @@ impl<'a> QuestionSource<'a> {
         }
 
         let lap_time = me.class_est_lap_time;
-        let progresses = progress(entry).zip(progress(me));
-        let ahead = match progresses {
-            Some((theirs, mine)) => theirs > mine,
-            None => {
-                let placed = entry.live_position > 0 && me.live_position > 0;
-
-                if !placed {
-                    return None;
-                }
-
-                entry.live_position < me.live_position
+        let (ahead, laps_apart) = match progress(entry).zip(progress(me)) {
+            Some((theirs, mine)) => (theirs > mine, (theirs - mine).abs().floor()),
+            None if entry.lap <= 0
+                && me.lap <= 0
+                && entry.live_position > 0
+                && me.live_position > 0 =>
+            {
+                (entry.live_position < me.live_position, 0.0)
             }
+            None => return None,
         };
-        let laps_apart = progresses.map_or(0.0, |(theirs, mine)| (theirs - mine).abs().floor());
         let (front, back) = if ahead { (entry, me) } else { (me, entry) };
 
         track_gap(back.est_time, front.est_time, lap_time).map(|gap| laps_apart * lap_time + gap)
@@ -458,7 +454,7 @@ mod tests {
             start_pos_overall: None,
             start_pos_class: None,
             lap: 5,
-            lap_dist_pct: 0.0,
+            lap_dist_pct: Some(0.0),
             last_lap_time: None,
             best_lap_time: None,
             qualify_time: None,
@@ -470,7 +466,7 @@ mod tests {
             on_pit_road: false,
             estimated_ir_delta_live: None,
             estimated_ir_delta_official: None,
-            relative_lap_dist: 0.0,
+            relative_lap_dist: Some(0.0),
             class_est_lap_time: 90.0,
             raw_flags: 0,
             results_position_lap: None,
@@ -823,9 +819,9 @@ mod tests {
     fn a_car_just_behind_a_leader_who_crossed_the_line_is_not_a_lap_down() {
         let (mut view, session) = race();
         view.entries[1].lap = 11;
-        view.entries[1].lap_dist_pct = 0.01;
+        view.entries[1].lap_dist_pct = Some(0.01);
         view.entries[0].lap = 10;
-        view.entries[0].lap_dist_pct = 0.99;
+        view.entries[0].lap_dist_pct = Some(0.99);
         let source = QuestionSource {
             view: &view,
             session: Some(&session),
@@ -840,10 +836,10 @@ mod tests {
     fn the_gap_to_a_car_laps_ahead_counts_the_laps() {
         let (mut view, session) = race();
         view.entries[0].lap = 4;
-        view.entries[0].lap_dist_pct = 0.1;
+        view.entries[0].lap_dist_pct = Some(0.1);
         view.entries[0].est_time = 9.0;
         view.entries[1].lap = 5;
-        view.entries[1].lap_dist_pct = 0.1 + 3.0 / 90.0;
+        view.entries[1].lap_dist_pct = Some(0.1 + 3.0 / 90.0);
         view.entries[1].est_time = 12.0;
         let source = QuestionSource {
             view: &view,
@@ -872,6 +868,26 @@ mod tests {
         let replies = source.answer("leader", Some(&AskedCar::Leader), &[car(CarField::GapToMe)]);
 
         assert_eq!(arg(&replies[0], "gapToMe"), None);
+    }
+
+    #[test]
+    fn gaps_use_position_before_laps_but_require_progress_once_either_car_runs_laps() {
+        let (view, session) = race();
+
+        for (player_lap, leader_lap, expected) in [(0, 0, Some(3.0)), (1, 0, None), (0, 1, None)] {
+            let mut view = view.clone();
+            view.entries[0].lap = player_lap;
+            view.entries[0].est_time = 9.0;
+            view.entries[1].lap = leader_lap;
+            view.entries[1].lap_dist_pct = None;
+            view.entries[1].est_time = 12.0;
+            let source = QuestionSource {
+                view: &view,
+                session: Some(&session),
+            };
+
+            assert_eq!(source.gap_to_me(&view.entries[1]), expected);
+        }
     }
 
     #[test]

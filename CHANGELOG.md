@@ -12,6 +12,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Website — Widget Gallery:** Refresh the widget examples and screenshots, including the pit exit, towing and input trace layouts.
 - **Website — Homepage:** Refine the brand marks and footer attribution; the cockpit widgets keep their positions while scaling with the screen, up to the source image size.
 
+### Fixed
+
+- **Standings:** Keep positions, gaps and iRating estimates in sync during overtakes, retain classified cars when live telemetry drops, and clear the lap delta on untimed laps.
+
 ## [0.29.0] — 2026-11-19
 
 ### Added

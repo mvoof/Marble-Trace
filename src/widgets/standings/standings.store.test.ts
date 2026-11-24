@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { runInAction } from 'mobx';
 
 import { PreviewCore } from '@app/roots/renderer-core';
@@ -153,6 +153,310 @@ describe('StandingsWidgetStore — per instance', () => {
     swapLeaders(core);
 
     expect(table.positionChanges.size).toBe(2);
+  });
+
+  it('shows unique places during staggered passes at the front', () => {
+    const publishRanks = (positions: number[]) =>
+      setField(
+        core,
+        positions.map((position) => ({ position, livePosition: position }))
+      );
+    const initialOrder = publishRanks([1, 2, 3, 4, 5]);
+    const table = openTable(core, STANDINGS);
+    const clock = vi.spyOn(performance, 'now').mockReturnValue(100);
+
+    const publishMotion = (now: number) => {
+      const frame = core.backendComputed.driverEntries!;
+      clock.mockReturnValue(now);
+
+      runInAction(() =>
+        core.backendComputed.updateDriverEntries({
+          ...frame,
+          entries: frame.entries.map((entry) => ({
+            ...entry,
+            lapDistPct: (entry.lapDistPct ?? 0) + 0.001,
+          })),
+        })
+      );
+    };
+
+    try {
+      publishRanks([2, 1, 3, 5, 4]);
+      clock.mockReturnValue(700);
+      publishRanks([3, 1, 2, 5, 4]);
+      publishMotion(1050);
+
+      expect(
+        table.orderedEntries.map((entry) => table.displayedPositionOf(entry))
+      ).toEqual([1, 2, 3, 4, 5]);
+      expect(table.orderedEntries.map((entry) => entry.carIdx)).toEqual([
+        initialOrder[0],
+        initialOrder[1],
+        initialOrder[2],
+        initialOrder[4],
+        initialOrder[3],
+      ]);
+      expect(table.overallLeader?.carIdx).toBe(initialOrder[0]);
+
+      publishMotion(1650);
+
+      expect(table.orderedEntries.map((entry) => entry.carIdx)).toEqual([
+        initialOrder[1],
+        initialOrder[2],
+        initialOrder[0],
+        initialOrder[4],
+        initialOrder[3],
+      ]);
+      expect(table.overallLeader?.carIdx).toBe(initialOrder[1]);
+    } finally {
+      clock.mockRestore();
+    }
+  });
+
+  it('settles a stable pass on a frame that only changes distance', () => {
+    const table = openTable(core, STANDINGS);
+    const originalLeader = table.orderedEntries[0].carIdx;
+    const clock = vi.spyOn(performance, 'now').mockReturnValue(0);
+
+    try {
+      swapLeaders(core);
+      expect(table.orderedEntries[0].carIdx).toBe(originalLeader);
+      expect(table.overallLeader?.carIdx).toBe(originalLeader);
+
+      const frame = core.backendComputed.driverEntries!;
+
+      clock.mockReturnValue(1000);
+      runInAction(() =>
+        core.backendComputed.updateDriverEntries({
+          ...frame,
+          entries: frame.entries.map((entry) => ({
+            ...entry,
+            lapDistPct:
+              entry.lapDistPct === null ? null : entry.lapDistPct + 0.001,
+          })),
+        })
+      );
+
+      expect(table.orderedEntries[0].carIdx).toBe(table.overallLeader?.carIdx);
+      expect(table.orderedEntries[0].carIdx).not.toBe(originalLeader);
+    } finally {
+      clock.mockRestore();
+    }
+  });
+
+  it('keeps the class gap reference on the displayed class leader', () => {
+    const frame = core.backendComputed.driverEntries!;
+    const [leaderIdentity] = core.backendComputed.driverIdentities;
+    const challengerIdentity = core.backendComputed.driverIdentities.find(
+      (entry) =>
+        entry.carIdx !== leaderIdentity.carIdx &&
+        entry.carClassId === leaderIdentity.carClassId
+    )!;
+    const leader = frame.entries.find(
+      (entry) => entry.carIdx === leaderIdentity.carIdx
+    )!;
+    const challenger = frame.entries.find(
+      (entry) => entry.carIdx === challengerIdentity.carIdx
+    )!;
+    const publishRanks = (leaderRank: number, challengerRank: number) => {
+      runInAction(() =>
+        core.backendComputed.updateDriverEntries({
+          ...frame,
+          entries: [
+            {
+              ...leader,
+              position: leaderRank,
+              livePosition: leaderRank,
+              classPosition: leaderRank,
+              liveClassPosition: leaderRank,
+            },
+            {
+              ...challenger,
+              position: challengerRank,
+              livePosition: challengerRank,
+              classPosition: challengerRank,
+              liveClassPosition: challengerRank,
+            },
+          ],
+        })
+      );
+    };
+
+    publishRanks(1, 2);
+    const table = openTable(core, STANDINGS);
+    publishRanks(2, 1);
+
+    expect(table.classLeaders.get(leaderIdentity.carClassId)?.carIdx).toBe(
+      leader.carIdx
+    );
+  });
+
+  it.each([false, true])(
+    'keeps positions after filtering (live: %s)',
+    (useLivePositions) => {
+      const frame = core.backendComputed.driverEntries!;
+      const [retired, active] = frame.entries.filter(
+        (entry) => !entry.isPlayer
+      );
+
+      runInAction(() => {
+        core.liveWidgets.updateUserSettings(STANDINGS, {
+          useLivePositions,
+          hideRetiredDrivers: true,
+        });
+        core.backendComputed.updateDriverEntries({
+          ...frame,
+          entries: [
+            {
+              ...retired,
+              position: 1,
+              classPosition: 1,
+              livePosition: 1,
+              liveClassPosition: 1,
+              isRetired: true,
+            },
+            {
+              ...active,
+              position: 2,
+              classPosition: 2,
+              livePosition: 2,
+              liveClassPosition: 2,
+              isRetired: false,
+            },
+          ],
+        });
+      });
+
+      const table = openTable(core, STANDINGS);
+
+      expect(table.orderedEntries.map((entry) => entry.carIdx)).toEqual([
+        active.carIdx,
+      ]);
+      expect(table.renderedRanks.get(active.carIdx)).toEqual({
+        overall: 2,
+        inClass: 2,
+      });
+    }
+  );
+
+  it('shows the projection only when its rank matches the displayed rank', () => {
+    const frame = core.backendComputed.driverEntries!;
+    const [driver] = frame.entries;
+    const publish = (livePosition: number, estimatedIrDeltaLive: number) =>
+      runInAction(() =>
+        core.backendComputed.updateDriverEntries({
+          ...frame,
+          entries: [
+            {
+              ...driver,
+              livePosition,
+              liveClassPosition: livePosition,
+              estimatedIrDeltaLive,
+            },
+          ],
+        })
+      );
+
+    publish(9, 12);
+    const table = openTable(core, STANDINGS);
+    const clock = vi.spyOn(performance, 'now').mockReturnValue(0);
+
+    try {
+      expect(table.projectedIrDeltaOf(driver.carIdx)).toBe(12);
+
+      publish(10, -2);
+      expect(table.renderedRanks.get(driver.carIdx)?.overall).toBe(9);
+      expect(table.projectedIrDeltaOf(driver.carIdx)).toBeNull();
+
+      clock.mockReturnValue(1000);
+      publish(10, -2);
+      expect(table.renderedRanks.get(driver.carIdx)?.overall).toBe(10);
+      expect(table.projectedIrDeltaOf(driver.carIdx)).toBe(-2);
+    } finally {
+      clock.mockRestore();
+    }
+  });
+
+  it('replaces a lap delta with zero on an identical consecutive lap', () => {
+    const frame = core.backendComputed.driverEntries!;
+    const [driver] = frame.entries;
+    const publishLap = (lap: number, lastLapTime: number) =>
+      runInAction(() =>
+        core.backendComputed.updateDriverEntries({
+          ...frame,
+          entries: [{ ...driver, lap, lastLapTime }],
+        })
+      );
+
+    publishLap(2, 92.3);
+    const table = openTable(core, STANDINGS);
+
+    publishLap(3, 92.1);
+    expect(table.lapDeltas.get(driver.carIdx)).toBeCloseTo(-0.2);
+
+    publishLap(4, 92.1);
+    expect(table.lapDeltas.get(driver.carIdx)).toBe(0);
+  });
+
+  it('clears the delta when the player serves a penalty at Daytona', () => {
+    const frame = core.backendComputed.driverEntries!;
+    const driver = frame.entries.find((entry) => entry.isPlayer)!;
+    const publishLap = (
+      lap: number,
+      lastLapTime: number | null,
+      onPitRoad = false
+    ) =>
+      runInAction(() =>
+        core.backendComputed.updateDriverEntries({
+          ...frame,
+          entries: [{ ...driver, lap, lastLapTime, onPitRoad }],
+        })
+      );
+
+    publishLap(4, 49.3985);
+    const table = openTable(core, STANDINGS);
+
+    publishLap(5, 49.3495);
+    expect(table.lapDeltas.get(driver.carIdx)).toBeCloseTo(-0.049);
+
+    publishLap(5, 49.3495, true);
+    publishLap(6, 49.3495, true);
+    expect(table.lapDeltas.has(driver.carIdx)).toBe(false);
+
+    publishLap(6, null, true);
+    publishLap(6, null);
+    expect(table.lapDeltas.has(driver.carIdx)).toBe(false);
+
+    publishLap(7, 143.3306);
+    expect(table.lapDeltas.has(driver.carIdx)).toBe(false);
+
+    publishLap(8, 50);
+    expect(table.lapDeltas.get(driver.carIdx)).toBeCloseTo(-93.3306);
+  });
+
+  it('uses the first timed lap after a jump as the next baseline', () => {
+    const frame = core.backendComputed.driverEntries!;
+    const [driver] = frame.entries;
+    const publishLap = (lap: number, lastLapTime: number) =>
+      runInAction(() =>
+        core.backendComputed.updateDriverEntries({
+          ...frame,
+          entries: [{ ...driver, lap, lastLapTime }],
+        })
+      );
+
+    publishLap(3, 92);
+    const table = openTable(core, STANDINGS);
+    publishLap(4, 91);
+    expect(table.lapDeltas.get(driver.carIdx)).toBe(-1);
+
+    publishLap(6, 89);
+    expect(table.lapDeltas.has(driver.carIdx)).toBe(false);
+    publishLap(6, 88);
+    expect(table.lapDeltas.has(driver.carIdx)).toBe(false);
+
+    publishLap(7, 90);
+    expect(table.lapDeltas.get(driver.carIdx)).toBe(2);
   });
 
   describe('cars without a place', () => {

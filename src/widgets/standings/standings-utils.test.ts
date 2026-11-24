@@ -15,6 +15,7 @@ import {
   formatLapCell,
   formatLapDelta,
   formatPitStopTime,
+  calculateLapsBehind,
   getStandingsGap,
   getStandingsInterval,
   maxScrollOffset,
@@ -225,6 +226,42 @@ describe('getStandingsGap', () => {
     );
   });
 
+  it('uses F2 for both cars when the reference result is missing', () => {
+    const classLeader = makeGapEntry({ position: 5, f2Time: 10 });
+    const driver = makeGapEntry({
+      resultsPositionLap: 0,
+      resultsPositionTime: 30,
+      f2Time: 12,
+    });
+
+    expect(getStandingsGap(driver, classLeader, true, false, 0).value).toBe(
+      '2.0'
+    );
+    expect(getStandingsInterval(driver, classLeader, true).value).toBe('2.0');
+  });
+
+  it('accepts zero F2 only for the telemetry leader when ranks diverge', () => {
+    const driver = makeGapEntry({ f2Time: 12 });
+    const liveLeader = makeGapEntry({
+      position: 2,
+      livePosition: 1,
+      f2Time: 0,
+    });
+    const officialLeader = makeGapEntry({
+      position: 1,
+      livePosition: 2,
+      f2Time: 0,
+    });
+
+    expect(getStandingsGap(driver, liveLeader, true, false, 0).value).toBe(
+      '12.0'
+    );
+    expect(
+      getStandingsGap(driver, officialLeader, true, false, 0).isEmpty
+    ).toBe(true);
+    expect(getStandingsGap(driver, null, true, false, 0).isEmpty).toBe(true);
+  });
+
   it('names the leader instead of leaving a dash', () => {
     const leader = makeGapEntry({});
 
@@ -233,6 +270,14 @@ describe('getStandingsGap', () => {
       isLeader: true,
       isEmpty: false,
     });
+  });
+
+  it('ignores missing distance when calculating lap deficits', () => {
+    const leader = { lap: 10, lapDistPct: 0.5 };
+    const driver = { lap: 10, lapDistPct: null };
+
+    expect(calculateLapsBehind(leader, driver)).toBe(0);
+    expect(calculateLapsBehind(driver, leader)).toBe(0);
   });
 });
 

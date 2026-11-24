@@ -23,8 +23,8 @@ export const ClassGroup = observer(
     // Every header lights up while the cursor is on one of them: the wheel moves the
     // classes, not the drivers of any single class.
     const isScrollTarget =
-      standingsWidget.isClassScrollHovered ||
-      standingsWidget.hoveredClassId === group.classId;
+      standingsWidget.scroll.isClassScrollHovered ||
+      standingsWidget.scroll.hoveredClassId === group.classId;
 
     return (
       <div className={styles.group}>
@@ -50,10 +50,10 @@ export const ClassGroup = observer(
 
         {showScrollbar && (
           <ScrollIndicator
-            thumb={standingsWidget.listThumb(group.classId)}
+            thumb={standingsWidget.scroll.listThumb(group.classId)}
             visible={
               appSettings.interactMode ||
-              standingsWidget.scrollOffsetFor(group.classId) > 0
+              standingsWidget.scroll.scrollOffsetFor(group.classId) > 0
             }
             inset
           />

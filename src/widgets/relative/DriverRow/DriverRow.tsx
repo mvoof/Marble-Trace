@@ -13,7 +13,7 @@ import { TowTime } from '@entities/player/TowTime/TowTime';
 import { useSessionStore } from '@entities/session/session-context';
 import { useReactiveDomWrite } from '@shared/hooks/useReactiveDomWrite';
 import { cx } from '@shared/lib/class-names';
-import { computeRelativeGap } from '@shared/lib/driver';
+import { computeRelativeGap, lapProgressOf } from '@shared/lib/driver';
 import { CountryFlag } from '@shared/ui/CountryFlag/CountryFlag';
 import {
   useLiveParts,
@@ -85,11 +85,12 @@ export const DriverRow = observer(({ carIdx, index }: DriverRowProps) => {
             ? 'behind'
             : 'player';
 
-      const lapDiff = livePlayer
-        ? liveDriver.lap +
-          liveDriver.lapDistPct -
-          (livePlayer.lap + livePlayer.lapDistPct)
-        : 0;
+      const driverProgress = lapProgressOf(liveDriver);
+      const playerProgress = livePlayer ? lapProgressOf(livePlayer) : null;
+      const lapDiff =
+        driverProgress !== null && playerProgress !== null
+          ? driverProgress - playerProgress
+          : 0;
 
       const lapState = liveDriver.isPlayer
         ? null

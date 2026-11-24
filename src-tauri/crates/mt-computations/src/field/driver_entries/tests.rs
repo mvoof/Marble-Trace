@@ -87,6 +87,42 @@ fn two_car_frame(leader_surface: TrackSurface, leader_pct: f32, player_pct: f32)
 }
 
 #[test]
+fn test_classified_opponent_remains_after_live_fields_clear() {
+    let mut session = two_car_race_session();
+    session.sessions[0].results_positions.push(ResultPosition {
+        car_idx: 1,
+        position: 2,
+        class_position: Some(2),
+        last_time: Some(92.5),
+        ..Default::default()
+    });
+    let mut car_idx = two_car_frame(TrackSurface::NotInWorld, -1.0, 0.3);
+    car_idx.car_idx_position[0] = 1;
+    car_idx.car_idx_position[1] = 0;
+    car_idx.car_idx_class_position[1] = 0;
+
+    let frame = compute(
+        &car_idx,
+        &session,
+        &HashMap::new(),
+        false,
+        Some(SessionState::CoolDown),
+        &Mutex::new(DriverEntriesState::default()),
+    );
+
+    let opponent = frame
+        .entries
+        .iter()
+        .find(|entry| entry.car_idx == 1)
+        .unwrap();
+    assert_eq!(opponent.position, 2);
+    assert_eq!(opponent.class_position, 2);
+    assert_eq!(opponent.last_lap_time, Some(92.5));
+    assert_eq!(opponent.lap_dist_pct, None);
+    assert_eq!(opponent.relative_lap_dist, None);
+}
+
+#[test]
 fn test_a_towed_leader_loses_the_live_lead() {
     let session = two_car_race_session();
     let state = Mutex::new(DriverEntriesState::default());
@@ -994,7 +1030,7 @@ pub(crate) fn make_live_entry(
         start_pos_overall: Some(position),
         start_pos_class: Some(position),
         lap,
-        lap_dist_pct,
+        lap_dist_pct: (lap_dist_pct >= 0.0).then_some(lap_dist_pct),
         last_lap_time: None,
         best_lap_time: None,
         qualify_time: None,
@@ -1006,7 +1042,7 @@ pub(crate) fn make_live_entry(
         on_pit_road: false,
         estimated_ir_delta_live: None,
         estimated_ir_delta_official: None,
-        relative_lap_dist: 0.0,
+        relative_lap_dist: Some(0.0),
         class_est_lap_time: 0.0,
         raw_flags: 0,
         results_position_lap: None,
@@ -1425,6 +1461,7 @@ fn unpublished_positions_session(session_type: SessionType) -> SessionSnapshot {
     SessionSnapshot {
         player_car_idx: 0,
         current_session_num: 0,
+        is_official: true,
         cars: (0..3)
             .map(|car_idx| CarEntry {
                 car_idx,
@@ -1542,6 +1579,32 @@ fn test_unpublished_live_positions_do_not_project_the_player_as_winner() {
 
     assert!(player_delta.is_some_and(|delta| delta < 0));
     assert!(leader_delta.is_some_and(|delta| delta > 0));
+}
+
+#[test]
+fn test_only_official_races_project_irating() {
+    let mut unofficial_race = unpublished_positions_session(SessionType::Race);
+    unofficial_race.is_official = false;
+
+    let mut league_race = unpublished_positions_session(SessionType::Race);
+    league_race.league_id = Some(1);
+
+    for session in [
+        unpublished_positions_session(SessionType::Practice),
+        unpublished_positions_session(SessionType::Qualify),
+        unofficial_race,
+        league_race,
+    ] {
+        let frame = compute_unpublished(
+            &unpublished_positions_frame(),
+            &session,
+            SessionState::Racing,
+        );
+
+        assert!(frame.entries.iter().all(|entry| {
+            entry.estimated_ir_delta_live.is_none() && entry.estimated_ir_delta_official.is_none()
+        }));
+    }
 }
 
 #[test]

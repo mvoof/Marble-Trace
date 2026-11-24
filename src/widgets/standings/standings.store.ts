@@ -1,7 +1,6 @@
 import {
   makeAutoObservable,
   reaction,
-  runInAction,
   type IReactionDisposer,
   compareStructural,
 } from 'mobx';
@@ -10,12 +9,6 @@ import type { CarIdentity } from '@shared/contracts/car-identity';
 import type { DriverGroup } from '@shared/contracts/domain';
 import { computeClassSof, hasSetALap } from '@shared/lib/driver';
 import { hasRaceStarted } from '@shared/lib/timer-utils';
-import {
-  scrollThumbFor,
-  type ScrollMetrics,
-  type ScrollThumb,
-} from '@shared/lib/canvas';
-import { MOVE_DURATION_MS } from '@shared/lib/animation';
 import type { WidgetInstanceContext } from '@entities/widget/widget-instances.store';
 import type { StandingsHotkeyTarget } from '@features/hotkey-bindings/hotkey-targets';
 import { useWidgetInstanceStore } from '@entities/widget/widget-instance-context';
@@ -24,6 +17,12 @@ import type { LiveWidgetsView } from '@entities/layout/live-widgets.store';
 import type { SessionStore } from '@entities/session/session.store';
 import type { PlayerPositionStore } from '@entities/player/player-position.store';
 import type { StandingsWidgetSettings } from './settings-schema';
+import { StandingsScrollStore } from './standings-scroll.store';
+import {
+  StandingsOrderStore,
+  compareRanks,
+  type Rank,
+} from './standings-order.store';
 
 interface StandingsDeps {
   backendComputed: BackendComputedStore;
@@ -32,49 +31,13 @@ interface StandingsDeps {
   playerPosition: PlayerPositionStore;
 }
 
-export type PositionChangeDirection = 'up' | 'down';
-
-// Fallback lifetime of the arrow: it normally clears once the row has finished
-// moving, but a swap that keeps flapping never settles, so it must expire anyway.
-const POSITION_CHANGE_MAX_MS = 3000;
-
-// The arrow lingers for this long after the row has slid into its new place.
-const ARROW_LINGER_MS = 400;
-
-// A swap must hold this long before the rows are allowed to trade places. Cars
-// side by side in a fight (and the whole field on the opening lap) exchange
-// live positions several times a second, which would otherwise shake the table.
-const ORDER_SETTLE_MS = 900;
-
-const MS_PER_SECOND = 1000;
-
-// Scroll key for the view modes that draw a single list. Real class ids are
-// positive, so it can never collide with one.
-export const SINGLE_LIST_SCROLL_KEY = -1;
-
-// Key of the one reference the overall view ranks every car against.
 const OVERALL_REFERENCE = -1;
 
-type PendingPosition = { position: number; since: number };
-
-// A rank of zero or below is a car the sim has not placed yet (no lap in
-// qualifying). It sorts after every placed car instead of above the leader.
-const isPlaced = (rank: number): boolean => rank > 0;
-
-const compareRanks = (first: number, second: number): number => {
-  if (isPlaced(first) && isPlaced(second)) {
-    return first - second;
-  }
-
-  if (isPlaced(first)) {
-    return -1;
-  }
-
-  if (isPlaced(second)) {
-    return 1;
-  }
-
-  return 0;
+type SeenLap = {
+  lap: number;
+  time: number | null;
+  previousTime: number | null;
+  crossedInPit: boolean;
 };
 
 /**
@@ -85,46 +48,11 @@ const compareRanks = (first: number, second: number): number => {
 export class StandingsWidgetStore implements StandingsHotkeyTarget {
   activeClassIndex = 0;
 
-  /**
-   * Rows each list is scrolled down by, away from the automatic view, keyed by
-   * class id — grouped view draws every class as its own list and scrolls them
-   * independently. `SINGLE_LIST_SCROLL_KEY` holds the one list the other view
-   * modes draw. A missing or zero entry means the automatic view is in charge
-   * again (leaders on top plus the player window).
-   */
-  scrollOffsets = new Map<number, number>();
+  readonly scroll = new StandingsScrollStore(
+    () => this.settings.scrollResetSeconds
+  );
 
-  /**
-   * Size of every drawn list against the window it is drawn into, keyed the same
-   * way as `scrollOffsets` — published by the rendered rows. The largest usable
-   * offset and the scrollbar thumb both come out of it.
-   */
-  private scrollMetrics = new Map<number, ScrollMetrics>();
-
-  /**
-   * First class the grouped view draws. Classes past the widget height are simply
-   * cut off, so scrolling past the end of the top class raises this instead and
-   * brings the hidden ones into view.
-   */
-  groupScrollIndex = 0;
-
-  /** Every class in drawing order, drawn or cut off — published with the bounds. */
-  private groupKeys: number[] = [];
-
-  /** How many classes fit the widget height — published with the bounds. */
-  private groupWindowSize = 0;
-
-  /**
-   * Class whose drivers the cursor sits on in grouped view, so the rows about to be
-   * scrolled can say so. Null while the cursor is not on any driver row.
-   */
-  hoveredClassId: number | null = null;
-
-  /** Cursor is on a class header, where the wheel moves the classes themselves. */
-  isClassScrollHovered = false;
-
-  /** carIdx → direction of the position change currently being flashed. */
-  positionChanges = new Map<number, PositionChangeDirection>();
+  private readonly order = new StandingsOrderStore();
 
   /**
    * carIdx → last lap minus the lap before it. The sim keeps only the last lap
@@ -133,23 +61,9 @@ export class StandingsWidgetStore implements StandingsHotkeyTarget {
    */
   lapDeltas = new Map<number, number>();
 
-  private readonly seenLapTimes = new Map<number, number>();
-
-  /** carIdx → position the table is currently drawn with (debounced). */
-  private settledPositions = new Map<number, number>();
-
-  private readonly pendingPositions = new Map<number, PendingPosition>();
-
-  private readonly previousPositions = new Map<number, number>();
-
-  private readonly changeTimers = new Map<
-    number,
-    ReturnType<typeof setTimeout>
-  >();
+  private readonly seenLapTimes = new Map<number, SeenLap>();
 
   private readonly disposers: IReactionDisposer[] = [];
-
-  private scrollResetTimer: ReturnType<typeof setTimeout> | null = null;
 
   private readonly root: StandingsDeps;
 
@@ -163,38 +77,44 @@ export class StandingsWidgetStore implements StandingsHotkeyTarget {
 
     makeAutoObservable<
       StandingsWidgetStore,
-      | 'root'
-      | 'previousPositions'
-      | 'seenLapTimes'
-      | 'pendingPositions'
-      | 'changeTimers'
-      | 'disposers'
-      | 'scrollResetTimer'
+      'root' | 'order' | 'seenLapTimes' | 'disposers'
     >(
       this,
       {
         root: false,
-        previousPositions: false,
+        order: false,
+        scroll: false,
         seenLapTimes: false,
-        pendingPositions: false,
-        changeTimers: false,
         disposers: false,
-        scrollResetTimer: false,
       },
       { autoBind: true }
     );
 
     this.disposers.push(
       reaction(
-        // Identities, not the frame: the order and the position flashes are
-        // decided by fields that change once a lap, so this ran sixty times a
-        // second to reach the same answer. See `docs/rendering.md`.
-        () => this.root.backendComputed.driverIdentities,
-        (entries) => {
-          this.settleOrder(entries);
-          this.trackPositionChanges(entries);
-          this.trackLapDeltas(entries);
-        }
+        () =>
+          [
+            this.root.backendComputed.driverEntries,
+            this.root.backendComputed.driverIdentities,
+          ] as const,
+        ([, entries], previous) => {
+          const identitiesChanged = entries !== previous?.[1];
+
+          if (!identitiesChanged && !this.order.hasPending()) {
+            return;
+          }
+
+          this.order.process(
+            identitiesChanged ? entries : null,
+            this.useTrackOrder,
+            performance.now()
+          );
+
+          if (identitiesChanged) {
+            this.trackLapDeltas(entries);
+          }
+        },
+        { fireImmediately: true }
       )
     );
 
@@ -211,7 +131,7 @@ export class StandingsWidgetStore implements StandingsHotkeyTarget {
     this.disposers.push(
       reaction(
         () => [this.activeClassIndex, this.settings.viewMode],
-        () => this.resetScroll()
+        () => this.scroll.resetScroll()
       )
     );
 
@@ -220,7 +140,7 @@ export class StandingsWidgetStore implements StandingsHotkeyTarget {
     this.disposers.push(
       reaction(
         () => this.useTrackOrder,
-        () => this.resetSettledOrder()
+        () => this.order.reset()
       )
     );
 
@@ -235,7 +155,7 @@ export class StandingsWidgetStore implements StandingsHotkeyTarget {
           this.root.session.sessionInfo?.currentSessionNum,
           hasRaceStarted(this.root.session.session?.session_state ?? null),
         ],
-        () => this.resetSettledOrder(),
+        () => this.order.reset(),
         { equals: compareStructural }
       )
     );
@@ -276,35 +196,52 @@ export class StandingsWidgetStore implements StandingsHotkeyTarget {
 
     this.disposers.length = 0;
 
-    for (const timer of this.changeTimers.values()) {
-      clearTimeout(timer);
-    }
-
-    this.clearScrollReset();
-
-    this.changeTimers.clear();
-    this.positionChanges.clear();
-    this.previousPositions.clear();
-    this.pendingPositions.clear();
-    this.settledPositions = new Map();
+    this.order.dispose();
+    this.scroll.resetScroll();
     this.resetLapDeltas();
   }
 
   private trackLapDeltas(entries: CarIdentity[]) {
     for (const entry of entries) {
-      const lapTime = entry.lastLapTime;
+      const seen = this.seenLapTimes.get(entry.carIdx);
 
-      if (lapTime === null) {
+      // The lap counter can drop when a car leaves the world and the
+      // backend falls back to the official completed-lap count.
+      if (seen && entry.lap < seen.lap) {
         continue;
       }
 
-      const seen = this.seenLapTimes.get(entry.carIdx);
+      const sameLap = seen?.lap === entry.lap;
+      const consecutiveLap = seen && entry.lap === seen.lap + 1;
+      const previousTime = sameLap
+        ? seen.previousTime
+        : consecutiveLap
+          ? seen.time
+          : null;
+      const crossedInPit = sameLap ? seen.crossedInPit : entry.onPitRoad;
+      // At a pit-lane crossing iRacing can keep reporting the previous lap's
+      // time before clearing it, including when the driver serves a penalty.
+      const lapTime =
+        crossedInPit && entry.lastLapTime === previousTime
+          ? null
+          : entry.lastLapTime;
 
-      if (seen !== undefined && seen !== lapTime) {
-        this.lapDeltas.set(entry.carIdx, lapTime - seen);
+      if (sameLap && lapTime === seen.time) {
+        continue;
       }
 
-      this.seenLapTimes.set(entry.carIdx, lapTime);
+      if (lapTime !== null && previousTime !== null) {
+        this.lapDeltas.set(entry.carIdx, lapTime - previousTime);
+      } else {
+        this.lapDeltas.delete(entry.carIdx);
+      }
+
+      this.seenLapTimes.set(entry.carIdx, {
+        lap: entry.lap,
+        time: lapTime,
+        previousTime,
+        crossedInPit,
+      });
     }
   }
 
@@ -335,105 +272,6 @@ export class StandingsWidgetStore implements StandingsHotkeyTarget {
     }
 
     return result;
-  }
-
-  // Drops the debounce so the next frame is drawn in its own order immediately.
-  private resetSettledOrder() {
-    this.settledPositions = new Map();
-    this.pendingPositions.clear();
-    this.previousPositions.clear();
-  }
-
-  // Holds back a car's new position until it has survived ORDER_SETTLE_MS, so
-  // the table only reorders once a pass has actually stuck. Cars seen for the
-  // first time settle immediately — the opening order must not fade in.
-  private settleOrder(entries: CarIdentity[]) {
-    const now = performance.now();
-    const next = new Map(this.settledPositions);
-    const seen = new Set<number>();
-    let changed = false;
-
-    for (const entry of entries) {
-      seen.add(entry.carIdx);
-
-      const settled = next.get(entry.carIdx);
-
-      if (settled === undefined) {
-        next.set(entry.carIdx, this.rankOf(entry));
-        this.pendingPositions.delete(entry.carIdx);
-        changed = true;
-        continue;
-      }
-
-      if (settled === this.rankOf(entry)) {
-        this.pendingPositions.delete(entry.carIdx);
-        continue;
-      }
-
-      // A first place is not an overtake: holding it back is what made the row
-      // jump to the top and then drop to where it belongs.
-      if (!isPlaced(settled)) {
-        next.set(entry.carIdx, this.rankOf(entry));
-        this.pendingPositions.delete(entry.carIdx);
-        changed = true;
-        continue;
-      }
-
-      const pending = this.pendingPositions.get(entry.carIdx);
-
-      if (!pending || pending.position !== this.rankOf(entry)) {
-        this.pendingPositions.set(entry.carIdx, {
-          position: this.rankOf(entry),
-          since: now,
-        });
-        continue;
-      }
-
-      if (now - pending.since >= ORDER_SETTLE_MS) {
-        next.set(entry.carIdx, this.rankOf(entry));
-        this.pendingPositions.delete(entry.carIdx);
-        this.clearArrowAfterMove(entry.carIdx);
-        changed = true;
-      }
-    }
-
-    for (const carIdx of next.keys()) {
-      if (!seen.has(carIdx)) {
-        next.delete(carIdx);
-        this.pendingPositions.delete(carIdx);
-        changed = true;
-      }
-    }
-
-    if (changed) {
-      this.settledPositions = next;
-    }
-  }
-
-  // Arrows read the raw frame, not the settled order: the flash is the instant
-  // signal that a place changed hands, while the row itself only slides once the
-  // swap has held.
-  private trackPositionChanges(entries: CarIdentity[]) {
-    for (const entry of entries) {
-      const previous = this.previousPositions.get(entry.carIdx);
-      const current = this.rankOf(entry);
-
-      this.previousPositions.set(entry.carIdx, current);
-
-      if (
-        previous === undefined ||
-        previous === current ||
-        !isPlaced(previous) ||
-        !isPlaced(current)
-      ) {
-        continue;
-      }
-
-      this.flashPositionChange(
-        entry.carIdx,
-        current < previous ? 'up' : 'down'
-      );
-    }
   }
 
   /**
@@ -475,15 +313,13 @@ export class StandingsWidgetStore implements StandingsHotkeyTarget {
   get orderedEntries(): CarIdentity[] {
     const entries = this.visibleEntries;
 
-    const positions = this.settledPositions;
-
-    const sortRankOf = (entry: CarIdentity): number =>
-      positions.get(entry.carIdx) ?? this.rankOf(entry);
-
     // The sort is stable and `visibleEntries` keeps the backend's order, so
     // unplaced cars stay in that order among themselves.
     return [...entries].sort((first, second) =>
-      compareRanks(sortRankOf(first), sortRankOf(second))
+      compareRanks(
+        this.renderedRankOf(first).overall,
+        this.renderedRankOf(second).overall
+      )
     );
   }
 
@@ -492,55 +328,50 @@ export class StandingsWidgetStore implements StandingsHotkeyTarget {
    * settled order rather than the raw frame, so the ± column flips at the moment
    * the row changes places instead of ahead of it.
    */
-  get renderedRanks(): Map<number, { overall: number; inClass: number }> {
-    const result = new Map<number, { overall: number; inClass: number }>();
-    const classCounts = new Map<number, number>();
-
-    this.orderedEntries.forEach((entry, index) => {
-      const inClass = (classCounts.get(entry.carClassId) ?? 0) + 1;
-
-      classCounts.set(entry.carClassId, inClass);
-      result.set(entry.carIdx, { overall: index + 1, inClass });
-    });
-
-    return result;
+  get renderedRanks(): ReadonlyMap<number, Rank> {
+    return this.order.renderedRanks;
   }
 
-  private flashPositionChange(
-    carIdx: number,
-    direction: PositionChangeDirection
-  ) {
-    this.positionChanges.set(carIdx, direction);
-    this.clearChangeAfter(carIdx, POSITION_CHANGE_MAX_MS);
+  get positionChanges() {
+    return this.order.positionChanges;
   }
 
-  // The row starts sliding on the render that follows the settle, so the arrow
-  // is given the move duration plus a short tail before it hands the cell back
-  // to the position number.
-  private clearArrowAfterMove(carIdx: number) {
-    if (!this.positionChanges.has(carIdx)) {
-      return;
-    }
-
-    this.clearChangeAfter(carIdx, MOVE_DURATION_MS + ARROW_LINGER_MS);
-  }
-
-  private clearChangeAfter(carIdx: number, delayMs: number) {
-    const running = this.changeTimers.get(carIdx);
-
-    if (running) {
-      clearTimeout(running);
-    }
-
-    this.changeTimers.set(
-      carIdx,
-      setTimeout(() => {
-        runInAction(() => {
-          this.positionChanges.delete(carIdx);
-          this.changeTimers.delete(carIdx);
-        });
-      }, delayMs)
+  private renderedRankOf(entry: CarIdentity): Rank {
+    return (
+      this.renderedRanks.get(entry.carIdx) ?? {
+        overall: this.rankOf(entry),
+        inClass: this.classRankOf(entry),
+      }
     );
+  }
+
+  displayedPositionOf(entry: CarIdentity): number {
+    const rank = this.renderedRankOf(entry);
+
+    return this.settings.viewMode === 'all' ? rank.overall : rank.inClass;
+  }
+
+  projectedIrDeltaOf(carIdx: number): number | null {
+    const entry = this.driverMap.get(carIdx);
+    const displayed = this.renderedRanks.get(carIdx);
+
+    if (!entry || this.root.session.currentSessionType !== 'Race') {
+      return null;
+    }
+
+    // The backend scores the current frame. Wait for the displayed rank
+    // to catch up before showing the new projection.
+    if (
+      displayed &&
+      (displayed.overall !== this.rankOf(entry) ||
+        displayed.inClass !== this.classRankOf(entry))
+    ) {
+      return null;
+    }
+
+    return this.useTrackOrder
+      ? entry.estimatedIrDeltaLive
+      : entry.estimatedIrDeltaOfficial;
   }
 
   get driverMap(): Map<number, CarIdentity> {
@@ -556,7 +387,19 @@ export class StandingsWidgetStore implements StandingsHotkeyTarget {
     const result = new Map<number, CarIdentity>();
 
     for (const entry of this.root.backendComputed.driverIdentities) {
-      if (this.classRankOf(entry) === 1) {
+      if (this.renderedRankOf(entry).inClass !== 1) {
+        continue;
+      }
+
+      const leader = result.get(entry.carClassId);
+
+      if (
+        !leader ||
+        compareRanks(
+          this.renderedRankOf(entry).overall,
+          this.renderedRankOf(leader).overall
+        ) < 0
+      ) {
         result.set(entry.carClassId, entry);
       }
     }
@@ -567,7 +410,7 @@ export class StandingsWidgetStore implements StandingsHotkeyTarget {
   get overallLeader(): CarIdentity | null {
     return (
       this.root.backendComputed.driverIdentities.find(
-        (entry) => this.rankOf(entry) === 1
+        (entry) => this.renderedRankOf(entry).overall === 1
       ) ?? null
     );
   }
@@ -675,194 +518,8 @@ export class StandingsWidgetStore implements StandingsHotkeyTarget {
     }
   }
 
-  setScrollHover(classId: number | null, onClassHeader = false) {
-    this.hoveredClassId = classId;
-    this.isClassScrollHovered = onClassHeader;
-  }
-
-  /**
-   * Moves the classes themselves — the class at the top leaves and the next one,
-   * including the ones cut off by the widget height, takes its place. The class
-   * leaving keeps no row offset: it comes back showing its leaders.
-   */
-  scrollClasses(delta: number) {
-    const next = Math.min(
-      Math.max(0, this.groupScrollIndex + Math.sign(delta)),
-      Math.max(0, this.groupKeys.length - 1)
-    );
-
-    if (next === this.groupScrollIndex) {
-      return;
-    }
-
-    if (next > this.groupScrollIndex) {
-      // Taken from the published order, not from the drawn bounds: two scrolls
-      // before the next commit would otherwise drop the same class twice.
-      const leavingKey = this.groupKeys[this.groupScrollIndex];
-
-      if (leavingKey !== undefined) {
-        this.scrollOffsets.delete(leavingKey);
-      }
-    }
-
-    this.groupScrollIndex = next;
-    this.armScrollReset();
-  }
-
-  scrollOffsetFor(key: number): number {
-    return this.scrollOffsets.get(key) ?? 0;
-  }
-
-  /** Any list scrolled away from its automatic view. */
-  get isScrolled(): boolean {
-    if (this.groupScrollIndex > 0) return true;
-
-    for (const offset of this.scrollOffsets.values()) {
-      if (offset > 0) return true;
-    }
-
-    return false;
-  }
-
-  /**
-   * Published by the rendered rows every time their number or the field changes —
-   * hotkeys fire outside the render tree and have no other way to know the limits.
-   * `groupKeys` lists every class, drawn or not, so the scroll knows there are
-   * more classes waiting below the ones that fit the widget.
-   */
-  setScrollBounds(
-    metrics: Map<number, ScrollMetrics>,
-    groupKeys: number[] = [],
-    groupWindowSize = 0
-  ) {
-    this.scrollMetrics = metrics;
-    this.groupKeys = groupKeys;
-    this.groupWindowSize = groupWindowSize;
-
-    if (this.groupScrollIndex >= groupKeys.length) {
-      this.groupScrollIndex = Math.max(0, groupKeys.length - 1);
-    }
-
-    for (const [key, offset] of this.scrollOffsets) {
-      const bound = this.boundFor(key);
-
-      if (offset > bound) {
-        this.scrollOffsets.set(key, bound);
-      }
-    }
-  }
-
-  /** Largest offset for a list that still fills the window it is drawn into. */
-  private boundFor(key: number): number {
-    const metrics = this.scrollMetrics.get(key);
-
-    if (!metrics) {
-      return 0;
-    }
-
-    return Math.max(0, metrics.total - metrics.windowSize);
-  }
-
-  /** Thumb for one list, or null while all of it is on screen. */
-  listThumb(key: number): ScrollThumb | null {
-    return scrollThumbFor(
-      this.scrollMetrics.get(key),
-      this.scrollOffsetFor(key)
-    );
-  }
-
-  /**
-   * Thumb for the classes themselves in grouped view: it tracks which slice of
-   * the class list the widget height is showing, not the drivers inside them.
-   */
-  get groupThumb(): ScrollThumb | null {
-    return scrollThumbFor(
-      { total: this.groupKeys.length, windowSize: this.groupWindowSize },
-      this.groupScrollIndex
-    );
-  }
-
-  /**
-   * Scrolls one list. `key` is the class the cursor sits on; without one — hotkeys,
-   * or a cursor between the rows — the lists scroll in turn instead, so every class
-   * stays reachable when there is nothing to point at.
-   */
-  scrollByRows(delta: number, key?: number) {
-    if (key === undefined) {
-      this.scrollListsInTurn(delta);
-
-      return;
-    }
-
-    const current = this.scrollOffsetFor(key);
-    const next = Math.min(Math.max(0, current + delta), this.boundFor(key));
-
-    if (next === current) {
-      return;
-    }
-
-    this.scrollOffsets.set(key, next);
-    this.armScrollReset();
-  }
-
-  /**
-   * Walks the classes one at a time: the class on top scrolls through its own
-   * drivers, and once it runs out the whole table shifts up a class, bringing the
-   * next one — including the ones that never fit the widget height — to the top.
-   * Scrolling back unwinds the same path.
-   */
-  private scrollListsInTurn(delta: number) {
-    const topKey = Array.from(this.scrollMetrics.keys())[0];
-
-    if (topKey === undefined) {
-      return;
-    }
-
-    const current = this.scrollOffsetFor(topKey);
-    const room = delta < 0 ? current : this.boundFor(topKey) - current;
-
-    const taken = Math.min(Math.abs(delta), Math.max(0, room));
-
-    if (taken > 0) {
-      this.scrollOffsets.set(topKey, current + (delta < 0 ? -taken : taken));
-      this.armScrollReset();
-
-      return;
-    }
-
-    // The top class has nothing left to give, so the classes themselves move.
-    this.scrollClasses(delta);
-  }
-
-  resetScroll() {
-    this.clearScrollReset();
-    this.scrollOffsets.clear();
-    this.groupScrollIndex = 0;
-  }
-
-  private armScrollReset() {
-    this.clearScrollReset();
-
-    const resetSeconds = this.settings.scrollResetSeconds;
-
-    if (!this.isScrolled || resetSeconds <= 0) {
-      return;
-    }
-
-    this.scrollResetTimer = setTimeout(() => {
-      runInAction(() => {
-        this.scrollOffsets.clear();
-        this.groupScrollIndex = 0;
-        this.scrollResetTimer = null;
-      });
-    }, resetSeconds * MS_PER_SECOND);
-  }
-
-  private clearScrollReset() {
-    if (this.scrollResetTimer !== null) {
-      clearTimeout(this.scrollResetTimer);
-      this.scrollResetTimer = null;
-    }
+  scrollByRows(delta: number) {
+    this.scroll.scrollByRows(delta);
   }
 }
 

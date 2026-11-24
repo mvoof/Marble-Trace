@@ -11,14 +11,7 @@ interface IrChangeCellProps {
 export const IrChangeCell = observer(({ carIdx }: IrChangeCellProps) => {
   const standingsWidget = useStandingsWidgetStore();
 
-  const entry = standingsWidget.driverMap.get(carIdx);
-
-  // Both projections ride on every frame; the table's own ordering picks which one
-  // is honest here — a gain shown against an order the table is not drawing reads
-  // as a contradiction.
-  const delta = standingsWidget.useTrackOrder
-    ? entry?.estimatedIrDeltaLive
-    : entry?.estimatedIrDeltaOfficial;
+  const delta = standingsWidget.projectedIrDeltaOf(carIdx);
 
   if (delta == null || delta === 0) {
     return <span className={styles.irChange}>-</span>;

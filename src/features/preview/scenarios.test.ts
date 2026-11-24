@@ -225,6 +225,21 @@ describe('the field the baseline already holds', () => {
     expect(classes.size).toBeGreaterThan(2);
   });
 
+  it('keeps cars without distance in standings and leaves them out of relative', () => {
+    const { backendComputed } = seed(DEFAULT_PREVIEW_SCENARIO_ID);
+    const missing = backendComputed.fieldEntries.filter(
+      (entry) => !entry.isPlayer && entry.relativeLapDist === null
+    );
+    const relativeCarIndices = new Set(
+      backendComputed.relativeEntries.map((entry) => entry.carIdx)
+    );
+
+    expect(missing.length).toBeGreaterThan(0);
+    expect(missing.some((entry) => relativeCarIndices.has(entry.carIdx))).toBe(
+      false
+    );
+  });
+
   it('resolves a badge for every class it fields', () => {
     // Every class in the recording is badged by `car_badges.rs`; one that fell
     // back to the car's own name would spill a model name into a column three

@@ -33,7 +33,6 @@ const KNOWN_LONG_FILES = new Set([
   'widgets/proximity-radar/RadarScope/RadarScope.tsx',
   'widgets/standings/DriverRow/DriverRow.tsx',
   'widgets/standings/StandingsContent/StandingsContent.tsx',
-  'widgets/standings/standings.store.ts',
   'widgets/track-map/TrackMapSvg/TrackMapSvg.tsx',
 ]);
 

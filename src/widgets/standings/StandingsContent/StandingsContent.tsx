@@ -15,7 +15,7 @@ import { useSimStore } from '@entities/sim/sim-context';
 import { useStandingsWidgetStore } from '@widgets/standings/standings.store';
 import { buildVisibleRows } from '@widgets/standings/standings-utils';
 import { computeClassSof } from '@shared/lib/driver';
-import { SINGLE_LIST_SCROLL_KEY } from '@widgets/standings/standings.store';
+import { SINGLE_LIST_SCROLL_KEY } from '@widgets/standings/standings-scroll.store';
 import type { ScrollMetrics } from '@shared/lib/canvas';
 import { ScrollIndicator } from '@shared/ui/ScrollIndicator/ScrollIndicator';
 import { useVisibleRowCount } from '@shared/hooks/useVisibleRowCount';
@@ -58,7 +58,7 @@ export const StandingsContent = observer(() => {
   // While the table is scrolled the rows shift because the window moved, not
   // because anyone passed anyone — sliding them would just smear the scroll.
   const animateRows = useRowMoveAnimation<HTMLDivElement>(
-    !standingsWidget.isScrolled
+    !standingsWidget.scroll.isScrolled
   );
 
   const { ref: measureRows, count: visibleRowCount } =
@@ -85,7 +85,7 @@ export const StandingsContent = observer(() => {
   // Classes below the widget height are cut off, so the drawn set starts at the
   // class the scroll has raised to the top.
   const drawnClassGroups = isGrouped
-    ? allClassGroups.slice(standingsWidget.groupScrollIndex)
+    ? allClassGroups.slice(standingsWidget.scroll.groupScrollIndex)
     : allClassGroups;
 
   const rowsPerGroupedClass = (() => {
@@ -147,7 +147,7 @@ export const StandingsContent = observer(() => {
     .map(([key, metrics]) => `${key}:${metrics.total}/${metrics.windowSize}`)
     .join();
 
-  const singleListOffset = standingsWidget.scrollOffsetFor(
+  const singleListOffset = standingsWidget.scroll.scrollOffsetFor(
     SINGLE_LIST_SCROLL_KEY
   );
 
@@ -155,7 +155,11 @@ export const StandingsContent = observer(() => {
   const groupKeysSignature = groupKeys.join();
 
   useEffect(() => {
-    standingsWidget.setScrollBounds(scrollBounds, groupKeys, visibleClassCount);
+    standingsWidget.scroll.setScrollBounds(
+      scrollBounds,
+      groupKeys,
+      visibleClassCount
+    );
     // The Map and the key array are rebuilt every render, so the effect keys off
     // their value signatures instead; the closure still holds the latest values.
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -213,22 +217,22 @@ export const StandingsContent = observer(() => {
     const { classId, onClassHeader } = scrollTargetAt(event.target);
 
     if (onClassHeader) {
-      standingsWidget.scrollClasses(delta);
+      standingsWidget.scroll.scrollClasses(delta);
 
       return;
     }
 
-    standingsWidget.scrollByRows(delta, classId ?? undefined);
+    standingsWidget.scroll.scrollByRows(delta, classId ?? undefined);
   };
 
   const handleMouseMove = (event: MouseEvent<HTMLDivElement>) => {
     const { classId, onClassHeader } = scrollTargetAt(event.target);
 
-    standingsWidget.setScrollHover(classId, onClassHeader);
+    standingsWidget.scroll.setScrollHover(classId, onClassHeader);
   };
 
   const handleMouseLeave = () => {
-    standingsWidget.setScrollHover(null);
+    standingsWidget.scroll.setScrollHover(null);
   };
 
   const displayGroup = (): DriverGroup => {
@@ -287,7 +291,7 @@ export const StandingsContent = observer(() => {
                     ...visibleRows(
                       group.drivers,
                       rowsPerGroupedClass,
-                      standingsWidget.scrollOffsetFor(group.classId)
+                      standingsWidget.scroll.scrollOffsetFor(group.classId)
                     ),
                   }}
                   showHeader
@@ -303,10 +307,12 @@ export const StandingsContent = observer(() => {
             <ScrollIndicator
               thumb={
                 isGrouped
-                  ? standingsWidget.groupThumb
-                  : standingsWidget.listThumb(SINGLE_LIST_SCROLL_KEY)
+                  ? standingsWidget.scroll.groupThumb
+                  : standingsWidget.scroll.listThumb(SINGLE_LIST_SCROLL_KEY)
               }
-              visible={appSettings.interactMode || standingsWidget.isScrolled}
+              visible={
+                appSettings.interactMode || standingsWidget.scroll.isScrolled
+              }
             />
           </div>
 

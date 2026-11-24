@@ -13,6 +13,7 @@ import {
   valueChipWidth,
 } from '@shared/ui/StatChip/rating';
 import { formatLapTime } from '@shared/lib/telemetry-format';
+import { lapProgressOf } from '@shared/lib/driver';
 import { normalizeOrder } from '@shared/lib/widget-settings-dsl';
 import type { StandingsWidgetSettings } from './settings-schema';
 import { STANDINGS_COLUMNS, type StandingsColumn } from './standings-columns';
@@ -432,19 +433,22 @@ export const computeStandingsDesignWidth = (
   return Math.round(columnsWidth + gaps + ROW_PAD_X_PX * 2);
 };
 
-interface DriverLapInfo {
-  lap: number;
-  lapDistPct: number;
-}
+type DriverLapInfo = Pick<DriverEntry, 'lap' | 'lapDistPct'>;
 
 export const calculateLapsBehind = (
   leader: DriverLapInfo | null | undefined,
   driver: DriverLapInfo
 ): number => {
-  if (!leader) return 0;
-  const leaderAbs = leader.lap + leader.lapDistPct;
-  const driverAbs = driver.lap + driver.lapDistPct;
-  return Math.floor(leaderAbs - driverAbs);
+  if (!leader) {
+    return 0;
+  }
+
+  const leaderProgress = lapProgressOf(leader);
+  const driverProgress = lapProgressOf(driver);
+
+  return leaderProgress === null || driverProgress === null
+    ? 0
+    : Math.floor(leaderProgress - driverProgress);
 };
 
 export interface BestLapDisplay {
@@ -561,10 +565,6 @@ export const getStandingsInterval = (
   carAhead: DriverEntry | null,
   isRace: boolean
 ): StandingsGapInfo => {
-  if (carAhead === null) {
-    return { value: EMPTY_VALUE, isLeader: false, isEmpty: true };
-  }
-
   return getStandingsGap(
     driver,
     carAhead,
@@ -585,19 +585,17 @@ export const getStandingsGap = (
     return { value: LEADER_LABEL, isLeader: true, isEmpty: false };
   }
 
+  if (leader === null) {
+    return { value: EMPTY_VALUE, isLeader: false, isEmpty: true };
+  }
+
   if (!isRace) {
-    if (
-      driver.bestLapTime !== null &&
-      leader !== null &&
-      leader.bestLapTime !== null
-    ) {
+    if (driver.bestLapTime !== null && leader.bestLapTime !== null) {
       const timeDiff = driver.bestLapTime - leader.bestLapTime;
 
       if (timeDiff > 0) {
         return { value: timeDiff.toFixed(1), isLeader: false, isEmpty: false };
       }
-
-      return { value: EMPTY_VALUE, isLeader: false, isEmpty: true };
     }
 
     return { value: EMPTY_VALUE, isLeader: false, isEmpty: true };
@@ -611,16 +609,19 @@ export const getStandingsGap = (
   // unchanged (the overall leader's gap is zero).
   const resLap = driver.resultsPositionLap;
   const resTime = driver.resultsPositionTime;
+  const leaderLap = leader.resultsPositionLap;
+  const leaderTime = leader.resultsPositionTime;
 
   if (
     resLap !== undefined &&
     resLap !== null &&
     resTime !== undefined &&
-    resTime !== null
+    resTime !== null &&
+    leaderLap !== undefined &&
+    leaderLap !== null &&
+    leaderTime !== undefined &&
+    leaderTime !== null
   ) {
-    const leaderLap = leader?.resultsPositionLap ?? 0;
-    const leaderTime = leader?.resultsPositionTime ?? 0;
-
     const lapsDown = resLap - leaderLap;
 
     if (lapsDown > 0) {
@@ -649,7 +650,16 @@ export const getStandingsGap = (
     return { value: `${lapsBehind} L`, isLeader: false, isEmpty: false };
   }
 
-  const f2Diff = driver.f2Time - (leader?.f2Time ?? 0);
+  // Zero F2 is valid for the telemetry leader. Elsewhere it means the
+  // reference gap is unavailable.
+  if (
+    driver.f2Time <= 0 ||
+    (leader.f2Time <= 0 && !(leader.f2Time === 0 && leader.livePosition === 1))
+  ) {
+    return { value: EMPTY_VALUE, isLeader: false, isEmpty: true };
+  }
+
+  const f2Diff = driver.f2Time - leader.f2Time;
 
   if (f2Diff > 0) {
     return {

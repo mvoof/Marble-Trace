@@ -1229,7 +1229,7 @@ export type DriverEntry = {
   startPosOverall: number | null;
   startPosClass: number | null;
   lap: number;
-  lapDistPct: number;
+  lapDistPct: number | null;
   /**
    * `None` until the car completes a timed lap.
    */
@@ -1252,7 +1252,7 @@ export type DriverEntry = {
   onPitRoad: boolean;
   estimatedIrDeltaLive: number | null;
   estimatedIrDeltaOfficial: number | null;
-  relativeLapDist: number;
+  relativeLapDist: number | null;
   classEstLapTime: number;
   rawFlags: number;
   resultsPositionLap: number | null;

@@ -94,6 +94,9 @@ pub struct SessionSnapshot {
     /// The league the session runs in (`WeekendInfo.LeagueID`); `None` outside
     /// a league. A league session never changes Safety Rating.
     pub league_id: Option<i32>,
+    /// Whether the sim marks the event as official. Only used by backend rating calculations.
+    #[serde(skip)]
+    pub is_official: bool,
     /// The event this server runs (`WeekendInfo.SubSessionID`): practice,
     /// qualifying and race share it. `None` offline, where the sim sends none.
     pub sub_session_id: Option<i32>,

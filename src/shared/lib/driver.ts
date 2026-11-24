@@ -193,14 +193,22 @@ export const hasSetALap = (driver: {
  * prints. `null` before the track length is known.
  */
 export const trackGapMeters = (
-  relativeLapDist: number,
+  relativeLapDist: number | null,
   trackLengthM: number | null | undefined
 ): number | null => {
-  if (trackLengthM == null || trackLengthM <= 0) {
+  if (relativeLapDist === null || trackLengthM == null || trackLengthM <= 0) {
     return null;
   }
 
   return relativeLapDist * trackLengthM;
+};
+
+export const lapProgressOf = (
+  entry: Pick<DriverEntry, 'lap' | 'lapDistPct'>
+): number | null => {
+  const { lap, lapDistPct } = entry;
+
+  return lapDistPct != null && lapDistPct >= 0 ? lap + lapDistPct : null;
 };
 
 /**
@@ -223,7 +231,9 @@ export const computeRelativeGap = (
   driver: DriverEntry,
   player: DriverEntry
 ): number => {
-  if (driver.isPlayer) return 0;
+  if (driver.isPlayer || driver.relativeLapDist === null) {
+    return 0;
+  }
 
   const isAhead = driver.relativeLapDist > 0;
   const aheadClassLapTime = isAhead
