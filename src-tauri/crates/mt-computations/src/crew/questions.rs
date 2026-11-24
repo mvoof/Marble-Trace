@@ -281,8 +281,7 @@ impl<'a> QuestionSource<'a> {
             CarField::GapToLeader => {
                 let leader = self.class_leader_of(car)?.entry;
 
-                (leader.f2_time >= 0.0 && entry.f2_time >= 0.0)
-                    .then(|| measured((entry.f2_time - leader.f2_time).max(0.0)))
+                Some(measured((entry.f2_time? - leader.f2_time?).max(0.0)))
             }
             CarField::LapDeltaToMe => {
                 let mine = self.me()?.entry.last_lap_time.filter(|lap| *lap > 0.0)?;
@@ -453,12 +452,14 @@ mod tests {
             live_class_position: class_position,
             start_pos_overall: None,
             start_pos_class: None,
+            laps_completed: 4,
             lap: 5,
             lap_dist_pct: Some(0.0),
             last_lap_time: None,
+            last_lap_time_confirmed: false,
             best_lap_time: None,
             qualify_time: None,
-            f2_time: 0.0,
+            f2_time: None,
             est_time: 0.0,
             track_surface: TrackSurface::OnTrack,
             i_rating: 0,
@@ -510,8 +511,8 @@ mod tests {
         entries[0].start_pos_class = Some(5);
         entries[0].lap = 4;
         entries[1].lap = 5;
-        entries[0].f2_time = 12.5;
-        entries[1].f2_time = 0.0;
+        entries[0].f2_time = Some(12.5);
+        entries[1].f2_time = Some(0.0);
 
         let session = SessionSnapshot {
             player_car_idx: PLAYER,

@@ -130,8 +130,28 @@ export class StandingsWidgetStore implements StandingsHotkeyTarget {
     // offset collected for the previous one no longer points anywhere sensible.
     this.disposers.push(
       reaction(
-        () => [this.activeClassIndex, this.settings.viewMode],
-        () => this.scroll.resetScroll()
+        () => [
+          this.activeClassIndex,
+          this.allClassGroups[this.activeClassIndex]?.classId,
+          this.settings.viewMode,
+        ],
+        () => this.scroll.resetScroll(),
+        { equals: compareStructural }
+      )
+    );
+
+    this.disposers.push(
+      reaction(
+        () => this.allClassGroups.map((group) => group.classId),
+        () => this.clampActiveClassIndex(this.allClassGroups.length),
+        { fireImmediately: true }
+      )
+    );
+
+    this.disposers.push(
+      reaction(
+        () => this.settings.scrollResetSeconds,
+        () => this.scroll.settingsChanged()
       )
     );
 
@@ -211,8 +231,9 @@ export class StandingsWidgetStore implements StandingsHotkeyTarget {
         continue;
       }
 
-      const sameLap = seen?.lap === entry.lap;
-      const consecutiveLap = seen && entry.lap === seen.lap + 1;
+      const lapIdentifier = entry.resultsPositionLap ?? entry.lapsCompleted;
+      const sameLap = seen?.lap === lapIdentifier;
+      const consecutiveLap = seen && lapIdentifier === seen.lap + 1;
       const previousTime = sameLap
         ? seen.previousTime
         : consecutiveLap
@@ -222,7 +243,9 @@ export class StandingsWidgetStore implements StandingsHotkeyTarget {
       // At a pit-lane crossing iRacing can keep reporting the previous lap's
       // time before clearing it, including when the driver serves a penalty.
       const lapTime =
-        crossedInPit && entry.lastLapTime === previousTime
+        crossedInPit &&
+        !entry.lastLapTimeConfirmed &&
+        entry.lastLapTime === previousTime
           ? null
           : entry.lastLapTime;
 
@@ -237,7 +260,7 @@ export class StandingsWidgetStore implements StandingsHotkeyTarget {
       }
 
       this.seenLapTimes.set(entry.carIdx, {
-        lap: entry.lap,
+        lap: lapIdentifier,
         time: lapTime,
         previousTime,
         crossedInPit,
@@ -312,13 +335,14 @@ export class StandingsWidgetStore implements StandingsHotkeyTarget {
   /** Field ordered by the debounced positions — the order the table renders. */
   get orderedEntries(): CarIdentity[] {
     const entries = this.visibleEntries;
+    const rankField = this.settings.viewMode === 'all' ? 'overall' : 'inClass';
 
     // The sort is stable and `visibleEntries` keeps the backend's order, so
     // unplaced cars stay in that order among themselves.
     return [...entries].sort((first, second) =>
       compareRanks(
-        this.renderedRankOf(first).overall,
-        this.renderedRankOf(second).overall
+        this.renderedRankOf(first)[rankField],
+        this.renderedRankOf(second)[rankField]
       )
     );
   }
@@ -421,6 +445,17 @@ export class StandingsWidgetStore implements StandingsHotkeyTarget {
     if (entries.length === 0) return [];
 
     const classMap = new Map<number, CarIdentity[]>();
+    const classSofMap = new Map<number, CarIdentity[]>();
+
+    for (const driver of this.root.backendComputed.driverIdentities) {
+      const existing = classSofMap.get(driver.carClassId);
+
+      if (existing) {
+        existing.push(driver);
+      } else {
+        classSofMap.set(driver.carClassId, [driver]);
+      }
+    }
 
     for (const driver of entries) {
       const existing = classMap.get(driver.carClassId);
@@ -454,9 +489,8 @@ export class StandingsWidgetStore implements StandingsHotkeyTarget {
           classShortName: first.carClassShortName,
           classColor: first.carClassColor,
           totalDrivers: driversInClass.length,
-          classSof: computeClassSof(driversInClass),
+          classSof: computeClassSof(classSofMap.get(classId) ?? driversInClass),
           windowStartIndex: -1,
-          // Already in settled overall order, which within a class is the class order.
           drivers: driversInClass,
         };
       });
@@ -507,9 +541,13 @@ export class StandingsWidgetStore implements StandingsHotkeyTarget {
     this.activeClassIndex = clamped === totalClasses - 1 ? 0 : clamped + 1;
   }
 
-  /** A class hotkey: steps through every class the session has entered. */
+  /** A class hotkey steps through the classes visible in the current table. */
   stepClass(direction: number) {
-    const totalClasses = this.root.backendComputed.carClassCount;
+    if (this.settings.viewMode !== 'cycling') {
+      return;
+    }
+
+    const totalClasses = this.allClassGroups.length;
 
     if (direction < 0) {
       this.cyclePrev(totalClasses);

@@ -51,15 +51,18 @@ describe('StandingsOrderStore', () => {
     }
   );
 
-  it('accounts for every settled occupant when a shared rank is partially vacated', () => {
+  it('leaves contested initial positions blank until the ranks resolve', () => {
     const order = new StandingsOrderStore();
 
     try {
       const holding = entry(1, 1);
       order.process([holding, entry(2, 1), entry(3, 3)], true, 0);
-      order.process([holding, entry(2, 2), entry(3, 1)], true, 100);
-      order.process(null, true, 1000);
+      expect(order.renderedRanks.get(1)).toEqual({ overall: 0, inClass: 0 });
+      expect(order.renderedRanks.get(2)).toEqual({ overall: 0, inClass: 0 });
 
+      order.process([holding, entry(2, 2), entry(3, 3)], true, 100);
+
+      expect(order.renderedRanks.get(1)?.overall).toBe(1);
       expect(order.renderedRanks.get(2)?.overall).toBe(2);
       expect(order.renderedRanks.get(3)?.overall).toBe(3);
     } finally {

@@ -11,12 +11,8 @@
   background-color: $widget-row-hover;
 }
 
-// First row of the "around the player" block — detaches it from the top block
-// by a little more air than a row's own height, and nothing written in it.
 .driverRowWindowStart {
-  margin-top: sp(md);
-  border-top: 1px solid $widget-border-default;
-  box-shadow: 0 -4px 6px -4px rgba(0, 0, 0, 0.6);
+  box-shadow: inset 0 1px $widget-border-default;
 }
 
 // Rows the wheel is about to scroll — the cursor sits on this class. No highlight

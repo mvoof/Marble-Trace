@@ -88,12 +88,18 @@ describe('buildVisibleRows', () => {
     expect(result.windowStartIndex).toBe(2);
   });
 
-  it('trims the block from the back when the budget is tight', () => {
+  it('keeps the requested rows behind the player when the budget is tight', () => {
     const result = buildVisibleRows(makeField(20, 12), 4, 5, 5);
 
-    // The leader keeps the top block; what is left goes to the cars ahead.
-    expect(carIndices(result.drivers)).toEqual([0, 10, 11, 12]);
+    expect(carIndices(result.drivers)).toEqual([0, 12, 13, 14]);
     expect(result.windowStartIndex).toBe(1);
+  });
+
+  it('uses the leader row for the player when the player leads', () => {
+    const result = buildVisibleRows(makeField(20, 0), 4, 5, 5);
+
+    expect(carIndices(result.drivers)).toEqual([0, 1, 2, 3]);
+    expect(result.windowStartIndex).toBe(-1);
   });
 
   it('keeps the player row when the budget leaves room for a single row', () => {
@@ -121,14 +127,14 @@ describe('buildVisibleRows', () => {
   it('scrolls the top block while keeping the player window pinned', () => {
     const result = buildVisibleRows(makeField(20, 12), 5, 2, 2, 6);
 
-    expect(carIndices(result.drivers)).toEqual([6, 10, 11, 12, 13]);
+    expect(carIndices(result.drivers)).toEqual([6, 11, 12, 13, 14]);
     expect(result.windowStartIndex).toBe(1);
   });
 
   it('absorbs the player window once the scroll reaches the player', () => {
-    const result = buildVisibleRows(makeField(20, 12), 5, 2, 2, 9);
+    const result = buildVisibleRows(makeField(20, 12), 5, 2, 2, 10);
 
-    expect(carIndices(result.drivers)).toEqual([9, 10, 11, 12, 13]);
+    expect(carIndices(result.drivers)).toEqual([10, 11, 12, 13, 14]);
     expect(result.windowStartIndex).toBe(-1);
   });
 
@@ -191,6 +197,7 @@ describe('getStandingsGap', () => {
     const overallLeader = makeGapEntry({
       resultsPositionLap: 0,
       resultsPositionTime: 0,
+      livePosition: 1,
     });
     const driver = makeGapEntry({
       resultsPositionLap: 0,
@@ -240,7 +247,7 @@ describe('getStandingsGap', () => {
     expect(getStandingsInterval(driver, classLeader, true).value).toBe('2.0');
   });
 
-  it('accepts zero F2 only for the telemetry leader when ranks diverge', () => {
+  it('uses the live F2 leader when official and live leaders differ', () => {
     const driver = makeGapEntry({ f2Time: 12 });
     const liveLeader = makeGapEntry({
       position: 2,
@@ -250,7 +257,7 @@ describe('getStandingsGap', () => {
     const officialLeader = makeGapEntry({
       position: 1,
       livePosition: 2,
-      f2Time: 0,
+      f2Time: null,
     });
 
     expect(getStandingsGap(driver, liveLeader, true, false, 0).value).toBe(
@@ -306,6 +313,13 @@ describe('getStandingsInterval', () => {
     });
 
     expect(getStandingsInterval(driver, carAhead, true).value).toBe('1 L');
+  });
+
+  it('shows known lap gaps when result times are missing', () => {
+    const carAhead = makeGapEntry({ resultsPositionLap: 2 });
+    const driver = makeGapEntry({ resultsPositionLap: 4 });
+
+    expect(getStandingsInterval(driver, carAhead, true).value).toBe('2 L');
   });
 
   it('is empty, not a leader, for the car with nobody ahead', () => {

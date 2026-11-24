@@ -5,6 +5,7 @@ import { PreviewCore } from '@app/roots/renderer-core';
 import { standingsHotkeyTargets } from '@features/hotkey-bindings/hotkey-targets';
 import { seedScenario } from '@features/preview/scenarios';
 import { DEFAULT_PREVIEW_SCENARIO_ID } from '@features/preview/scenarios';
+import { computeClassSof } from '@shared/lib/driver';
 import type { WidgetStoreFactory } from '@entities/widget/widget-instances.store';
 import type { WidgetCore } from '@widgets/widget-mount';
 import { StandingsWidgetStore } from './standings.store';
@@ -120,6 +121,11 @@ describe('StandingsWidgetStore — per instance', () => {
     const marked = openTable(core, STANDINGS);
     const unmarked = openTable(core, COPY_ID);
 
+    runInAction(() => {
+      core.liveWidgets.updateUserSettings(STANDINGS, { viewMode: 'cycling' });
+      core.liveWidgets.updateUserSettings(COPY_ID, { viewMode: 'cycling' });
+    });
+
     runInAction(() => core.liveWidgets.setHotkeysActOn(COPY_ID, false));
 
     for (const table of standingsHotkeyTargets(core)) {
@@ -133,6 +139,87 @@ describe('StandingsWidgetStore — per instance', () => {
     unmarked.cycleNext(core.backendComputed.carClassCount);
 
     expect(unmarked.activeClassIndex).toBe(1);
+  });
+
+  it('ignores class hotkeys outside cycling mode', () => {
+    const table = openTable(core, STANDINGS);
+
+    table.stepClass(1);
+
+    expect(table.activeClassIndex).toBe(0);
+  });
+
+  it('cycles only through classes that remain after filtering', () => {
+    const frame = core.backendComputed.driverEntries!;
+    const identities = core.backendComputed.driverIdentities;
+    const playerClassId = identities.find(
+      (entry) => entry.isPlayer
+    )!.carClassId;
+    const classByCarIdx = new Map(
+      identities.map((entry) => [entry.carIdx, entry.carClassId])
+    );
+    const hiddenClassId = frame.entries.find(
+      (entry) => classByCarIdx.get(entry.carIdx) !== playerClassId
+    )!;
+    const hiddenClass = classByCarIdx.get(hiddenClassId.carIdx)!;
+    const table = openTable(core, STANDINGS);
+
+    runInAction(() => {
+      core.liveWidgets.updateUserSettings(STANDINGS, {
+        viewMode: 'cycling',
+        hideRetiredDrivers: true,
+      });
+      core.backendComputed.updateDriverEntries({
+        ...frame,
+        entries: frame.entries.map((entry) =>
+          classByCarIdx.get(entry.carIdx) === hiddenClass
+            ? { ...entry, isRetired: true }
+            : entry
+        ),
+      });
+    });
+
+    expect(table.allClassGroups.length).toBeGreaterThan(0);
+    table.activeClassIndex = table.allClassGroups.length - 1;
+    table.stepClass(1);
+
+    expect(table.activeClassIndex).toBe(0);
+  });
+
+  it('calculates class SOF from the full roster when rows are filtered', () => {
+    const frame = core.backendComputed.driverEntries!;
+    runInAction(() =>
+      core.liveWidgets.updateUserSettings(STANDINGS, {
+        hideRetiredDrivers: true,
+      })
+    );
+    const table = openTable(core, STANDINGS);
+    const groupToFilter = table.allClassGroups.find(
+      (group) => group.drivers.length > 1
+    )!;
+    const classToFilter = groupToFilter.classId;
+    const classRoster = core.backendComputed.driverIdentities.filter(
+      (entry) => entry.carClassId === classToFilter
+    );
+    const retiredCarIdx = groupToFilter.drivers.find(
+      (entry) => !entry.isPlayer
+    )!.carIdx;
+
+    runInAction(() => {
+      core.backendComputed.updateDriverEntries({
+        ...frame,
+        entries: frame.entries.map((entry) =>
+          entry.carIdx === retiredCarIdx ? { ...entry, isRetired: true } : entry
+        ),
+      });
+    });
+
+    const group = table.allClassGroups.find(
+      (candidate) => candidate.classId === classToFilter
+    );
+
+    expect(group).toBeDefined();
+    expect(group?.classSof).toBe(computeClassSof(classRoster));
   });
 
   it('stops reacting to the field once its instance unmounts', () => {
@@ -384,7 +471,7 @@ describe('StandingsWidgetStore — per instance', () => {
       runInAction(() =>
         core.backendComputed.updateDriverEntries({
           ...frame,
-          entries: [{ ...driver, lap, lastLapTime }],
+          entries: [{ ...driver, lap, lapsCompleted: lap - 1, lastLapTime }],
         })
       );
 
@@ -398,6 +485,75 @@ describe('StandingsWidgetStore — per instance', () => {
     expect(table.lapDeltas.get(driver.carIdx)).toBe(0);
   });
 
+  it('accepts an identical pit-lane lap once the result confirms its time', () => {
+    const frame = core.backendComputed.driverEntries!;
+    const driver = frame.entries.find((entry) => entry.isPlayer)!;
+    const publish = (
+      lap: number,
+      onPitRoad: boolean,
+      lastLapTimeConfirmed: boolean
+    ) =>
+      runInAction(() =>
+        core.backendComputed.updateDriverEntries({
+          ...frame,
+          entries: [
+            {
+              ...driver,
+              lap,
+              lapsCompleted: lap - 1,
+              lastLapTime: 92.1,
+              onPitRoad,
+              lastLapTimeConfirmed,
+            },
+          ],
+        })
+      );
+
+    publish(3, false, true);
+    const table = openTable(core, STANDINGS);
+    publish(4, true, false);
+    expect(table.lapDeltas.has(driver.carIdx)).toBe(false);
+    publish(4, true, true);
+    expect(table.lapDeltas.get(driver.carIdx)).toBe(0);
+  });
+
+  it.each(['grouped', 'cycling'] as const)(
+    'orders %s rows and intervals by class rank',
+    (viewMode) => {
+      const frame = core.backendComputed.driverEntries!;
+      const identities = core.backendComputed.driverIdentities;
+      const classId = identities[0].carClassId;
+      const [first, second] = identities.filter(
+        (entry) => entry.carClassId === classId
+      );
+
+      runInAction(() => {
+        core.liveWidgets.updateUserSettings(STANDINGS, {
+          viewMode,
+          useLivePositions: false,
+          hideRetiredDrivers: false,
+        });
+        core.backendComputed.updateDriverEntries({
+          ...frame,
+          entries: frame.entries.flatMap((entry) => {
+            if (entry.carIdx === first.carIdx)
+              return [{ ...entry, position: 1, classPosition: 2 }];
+            if (entry.carIdx === second.carIdx)
+              return [{ ...entry, position: 2, classPosition: 1 }];
+            return [];
+          }),
+        });
+      });
+      const table = openTable(core, STANDINGS);
+
+      expect(
+        table.allClassGroups[0].drivers.map((entry) => entry.carIdx)
+      ).toEqual([second.carIdx, first.carIdx]);
+      expect(table.carAheadMap.get(first.carIdx)).toBe(second.carIdx);
+      expect(table.carAheadMap.has(second.carIdx)).toBe(false);
+    }
+  );
+
   it('clears the delta when the player serves a penalty at Daytona', () => {
     const frame = core.backendComputed.driverEntries!;
     const driver = frame.entries.find((entry) => entry.isPlayer)!;
@@ -409,7 +565,9 @@ describe('StandingsWidgetStore — per instance', () => {
       runInAction(() =>
         core.backendComputed.updateDriverEntries({
           ...frame,
-          entries: [{ ...driver, lap, lastLapTime, onPitRoad }],
+          entries: [
+            { ...driver, lap, lapsCompleted: lap - 1, lastLapTime, onPitRoad },
+          ],
         })
       );
 
@@ -441,7 +599,7 @@ describe('StandingsWidgetStore — per instance', () => {
       runInAction(() =>
         core.backendComputed.updateDriverEntries({
           ...frame,
-          entries: [{ ...driver, lap, lastLapTime }],
+          entries: [{ ...driver, lap, lapsCompleted: lap - 1, lastLapTime }],
         })
       );
 

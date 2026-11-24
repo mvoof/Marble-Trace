@@ -550,7 +550,7 @@ fn test_the_official_results_stand_in_for_a_zeroed_lap_counter() {
 
     let state = Mutex::new(DriverEntriesState::default());
 
-    compute(
+    let frame = compute(
         &racing_car_idx_frame_on_lap(0, 13),
         &session,
         &HashMap::new(),
@@ -558,6 +558,8 @@ fn test_the_official_results_stand_in_for_a_zeroed_lap_counter() {
         Some(SessionState::Checkered),
         &state,
     );
+    assert_eq!(frame.entries[0].lap, 13);
+    assert_eq!(frame.entries[0].laps_completed, 12);
 
     // The live counter goes to -1 and `ResultsPositions` takes over. Both count
     // completed laps, so the baseline of 12 is beaten by the 13 the results
@@ -577,6 +579,174 @@ fn test_the_official_results_stand_in_for_a_zeroed_lap_counter() {
     );
 
     assert!(frame.entries[0].is_finished);
+    assert_eq!(frame.entries[0].laps_completed, 13);
+}
+
+#[test]
+fn test_out_of_world_car_uses_recorded_completed_laps() {
+    let mut session = session_with_result(ResultPosition {
+        car_idx: 0,
+        laps_complete: Some(13),
+        ..Default::default()
+    });
+    let state = Mutex::new(DriverEntriesState::default());
+
+    let frame = compute(
+        &garaged_car_idx_frame(),
+        &session,
+        &HashMap::new(),
+        false,
+        Some(SessionState::Racing),
+        &state,
+    );
+
+    assert_eq!(frame.entries[0].track_surface, TrackSurface::NotInWorld);
+    assert_eq!(frame.entries[0].laps_completed, 13);
+
+    session.sessions[0].results_positions[0].laps_complete = Some(0);
+    let frame = compute(
+        &garaged_car_idx_frame(),
+        &session,
+        &HashMap::new(),
+        false,
+        Some(SessionState::Racing),
+        &state,
+    );
+
+    assert_eq!(frame.entries[0].laps_completed, 0);
+}
+
+#[test]
+fn test_pre_flag_tow_is_only_classified_finished_at_cooldown() {
+    let mut session = two_car_race_session();
+    session.sessions[0].results_positions.push(ResultPosition {
+        car_idx: 0,
+        position: 2,
+        laps_complete: Some(11),
+        ..Default::default()
+    });
+    let state = Mutex::new(DriverEntriesState::default());
+
+    compute(
+        &trailing_and_leading_frame(12, 12),
+        &session,
+        &HashMap::new(),
+        false,
+        Some(SessionState::Racing),
+        &state,
+    );
+
+    let mut towed = trailing_and_leading_frame(12, 12);
+    towed.car_idx_track_surface[0] = TrackSurface::NotInWorld;
+    towed.car_idx_lap_dist_pct[0] = -1.0;
+    towed.car_idx_lap[0] = 0;
+    towed.car_idx_laps_completed[0] = 0;
+    let frame = compute(
+        &towed,
+        &session,
+        &HashMap::new(),
+        false,
+        Some(SessionState::Racing),
+        &state,
+    );
+    assert!(
+        frame
+            .entries
+            .iter()
+            .find(|entry| entry.car_idx == 0)
+            .unwrap()
+            .is_towed
+    );
+
+    let mut flag_out = trailing_and_leading_frame(12, 13);
+    flag_out.car_idx_track_surface[0] = TrackSurface::NotInWorld;
+    flag_out.car_idx_lap_dist_pct[0] = -1.0;
+    flag_out.car_idx_lap[0] = 0;
+    flag_out.car_idx_laps_completed[0] = 0;
+    let frame = compute(
+        &flag_out,
+        &session,
+        &HashMap::new(),
+        false,
+        Some(SessionState::Checkered),
+        &state,
+    );
+    let player = frame
+        .entries
+        .iter()
+        .find(|entry| entry.car_idx == 0)
+        .unwrap();
+    assert!(player.is_towed);
+    assert!(!player.is_finished);
+
+    let frame = compute(
+        &flag_out,
+        &session,
+        &HashMap::new(),
+        false,
+        Some(SessionState::CoolDown),
+        &state,
+    );
+    assert!(
+        frame
+            .entries
+            .iter()
+            .find(|entry| entry.car_idx == 0)
+            .unwrap()
+            .is_finished
+    );
+}
+
+#[test]
+fn test_post_flag_departure_from_track_finishes_retained_car() {
+    let mut session = two_car_race_session();
+    session.sessions[0].results_positions.push(ResultPosition {
+        car_idx: 0,
+        position: 2,
+        laps_complete: Some(11),
+        ..Default::default()
+    });
+    let state = Mutex::new(DriverEntriesState::default());
+
+    compute(
+        &trailing_and_leading_frame(12, 12),
+        &session,
+        &HashMap::new(),
+        false,
+        Some(SessionState::Checkered),
+        &state,
+    );
+    compute(
+        &trailing_and_leading_frame(12, 13),
+        &session,
+        &HashMap::new(),
+        false,
+        Some(SessionState::Checkered),
+        &state,
+    );
+
+    let mut departed = trailing_and_leading_frame(12, 13);
+    departed.car_idx_track_surface[0] = TrackSurface::NotInWorld;
+    departed.car_idx_lap_dist_pct[0] = -1.0;
+    departed.car_idx_lap[0] = 0;
+    departed.car_idx_laps_completed[0] = 0;
+    let frame = compute(
+        &departed,
+        &session,
+        &HashMap::new(),
+        false,
+        Some(SessionState::Checkered),
+        &state,
+    );
+
+    assert!(
+        frame
+            .entries
+            .iter()
+            .find(|entry| entry.car_idx == 0)
+            .unwrap()
+            .is_finished
+    );
 }
 
 #[test]
@@ -845,6 +1015,105 @@ fn test_live_values_win_over_results_positions() {
     assert_eq!(entry.lap, 19);
     assert_eq!(entry.best_lap_time, Some(90.0));
     assert_eq!(entry.last_lap_time, Some(90.5));
+    assert!(!entry.last_lap_time_confirmed);
+}
+
+#[test]
+fn confirms_lap_time_only_when_the_result_covers_the_completed_lap() {
+    let mut session = session_with_result(ResultPosition {
+        car_idx: 0,
+        position: 1,
+        class_position: Some(1),
+        lap: Some(0),
+        time: Some(0.0),
+        fastest_time: Some(92.1),
+        last_time: Some(92.1),
+        laps_complete: Some(2),
+        reason_out_id: Some(0),
+    });
+    let mut car_idx = garaged_car_idx_frame();
+    car_idx.car_idx_lap = vec![4];
+    car_idx.car_idx_laps_completed = vec![3];
+    car_idx.car_idx_lap_dist_pct = vec![0.02];
+    car_idx.car_idx_on_pit_road = vec![true];
+    car_idx.car_idx_track_surface = vec![TrackSurface::OffTrack];
+    car_idx.car_idx_last_lap_time = vec![92.1];
+    let state = Mutex::new(DriverEntriesState::default());
+    let start_positions = HashMap::new();
+    let frame = compute(&car_idx, &session, &start_positions, false, None, &state);
+    assert!(!frame.entries[0].last_lap_time_confirmed);
+
+    session.sessions[0].results_positions[0].laps_complete = Some(3);
+    let frame = compute(&car_idx, &session, &start_positions, false, None, &state);
+    assert!(frame.entries[0].last_lap_time_confirmed);
+
+    car_idx.car_idx_last_lap_time[0] = -1.0;
+    let frame = compute(&car_idx, &session, &start_positions, false, None, &state);
+    assert_eq!(frame.entries[0].last_lap_time, None);
+    assert!(!frame.entries[0].last_lap_time_confirmed);
+}
+
+#[test]
+fn f2_zero_belongs_to_the_live_leader_when_official_order_differs() {
+    let session = two_car_race_session();
+    let state = Mutex::new(DriverEntriesState::default());
+    let mut car_idx = two_car_frame(TrackSurface::OnTrack, 0.6, 0.5);
+    car_idx.car_idx_position = vec![1, 2];
+    car_idx.car_idx_f2_time = vec![12.0, 0.0];
+
+    let frame = compute(
+        &car_idx,
+        &session,
+        &HashMap::new(),
+        false,
+        Some(SessionState::Racing),
+        &state,
+    );
+    let live_leader = frame
+        .entries
+        .iter()
+        .find(|entry| entry.car_idx == 1)
+        .unwrap();
+    let official_leader = frame
+        .entries
+        .iter()
+        .find(|entry| entry.car_idx == 0)
+        .unwrap();
+
+    assert_eq!(live_leader.position, 2);
+    assert_eq!(live_leader.live_position, 1);
+    assert_eq!(live_leader.f2_time, Some(0.0));
+    assert_eq!(official_leader.position, 1);
+    assert_eq!(official_leader.live_position, 2);
+    assert_eq!(official_leader.f2_time, Some(12.0));
+
+    car_idx.car_idx_f2_time[0] = 0.0;
+    let frame = compute(
+        &car_idx,
+        &session,
+        &HashMap::new(),
+        false,
+        Some(SessionState::Racing),
+        &state,
+    );
+    let non_leader = frame
+        .entries
+        .iter()
+        .find(|entry| entry.car_idx == 0)
+        .unwrap();
+    assert_eq!(non_leader.live_position, 2);
+    assert_eq!(non_leader.f2_time, None);
+
+    car_idx.car_idx_f2_time.clear();
+    let frame = compute(
+        &car_idx,
+        &session,
+        &HashMap::new(),
+        false,
+        Some(SessionState::Racing),
+        &state,
+    );
+    assert!(frame.entries.iter().all(|entry| entry.f2_time.is_none()));
 }
 
 #[test]
@@ -1029,12 +1298,14 @@ pub(crate) fn make_live_entry(
         live_class_position: 0,
         start_pos_overall: Some(position),
         start_pos_class: Some(position),
+        laps_completed: lap.saturating_sub(1),
         lap,
         lap_dist_pct: (lap_dist_pct >= 0.0).then_some(lap_dist_pct),
         last_lap_time: None,
+        last_lap_time_confirmed: false,
         best_lap_time: None,
         qualify_time: None,
-        f2_time: 0.0,
+        f2_time: None,
         est_time: 0.0,
         track_surface,
         i_rating: 0,

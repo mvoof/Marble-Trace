@@ -302,7 +302,11 @@ pub fn parse_session(yaml: &str) -> Option<ParsedSession> {
         track_num_turns: weekend.track_num_turns.filter(|turns| *turns > 0),
         team_racing: weekend.team_racing.unwrap_or(0) != 0,
         league_id: weekend.league_id.filter(|league| *league > 0),
-        is_official: weekend.official == Some(1) && weekend.unofficial != Some(1),
+        is_official: weekend.official == Some(1)
+            && weekend_options
+                .as_ref()
+                .and_then(|options| options.unofficial)
+                != Some(1),
         event_type: weekend.event_type.unwrap_or_default(),
         sub_session_id: weekend.sub_session_id.filter(|id| *id > 0),
         current_session_num: session_info.current_session_num.unwrap_or(0),
@@ -370,7 +374,6 @@ struct RawWeekendInfo {
     #[serde(rename = "LeagueID")]
     league_id: Option<i32>,
     official: Option<i32>,
-    unofficial: Option<i32>,
     event_type: Option<String>,
     #[serde(rename = "SubSessionID")]
     sub_session_id: Option<i32>,
@@ -385,6 +388,7 @@ struct RawWeekendInfo {
 #[serde(rename_all = "PascalCase")]
 struct RawWeekendOptions {
     date: Option<String>,
+    unofficial: Option<i32>,
     /// Either a plain count or the literal "unlimited", so the raw node is kept
     /// and narrowed in `parse_incident_count`. Same for the two penalty steps.
     incident_limit: Option<serde_yaml_ng::Value>,
@@ -662,12 +666,19 @@ QualifyResultsInfo:
     #[test]
     fn reads_official_status_for_rating_without_exporting_it() {
         let ranked = SAMPLE_YAML.replace("WeekendInfo:", "WeekendInfo:\n Official: 1");
-        let unranked =
-            SAMPLE_YAML.replace("WeekendInfo:", "WeekendInfo:\n Official: 1\n Unofficial: 1");
+        let unranked = ranked.replace(" WeekendOptions:", " WeekendOptions:\n  Unofficial: 1");
+        let ranked_with_zero_unofficial =
+            ranked.replace(" WeekendOptions:", " WeekendOptions:\n  Unofficial: 0");
 
         let snapshot = parse_session(&ranked).unwrap().snapshot;
         assert!(snapshot.is_official);
         assert!(!parse_session(&unranked).unwrap().snapshot.is_official);
+        assert!(
+            parse_session(&ranked_with_zero_unofficial)
+                .unwrap()
+                .snapshot
+                .is_official
+        );
         assert!(!parse_session(SAMPLE_YAML).unwrap().snapshot.is_official);
         assert!(serde_json::to_value(snapshot)
             .unwrap()

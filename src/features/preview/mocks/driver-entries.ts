@@ -140,12 +140,20 @@ export const computeDriverEntries = (
       liveClassPosition: carIdx.car_idx_class_position[idx] ?? 0,
       startPosOverall: null,
       startPosClass: null,
+      lapsCompleted:
+        carIdx.car_idx_laps_completed?.[idx] ??
+        Math.max(0, (carIdx.car_idx_lap[idx] ?? 0) - 1),
       lap: carIdx.car_idx_lap[idx] ?? 0,
       lapDistPct: lapDistPct != null && lapDistPct >= 0 ? lapDistPct : null,
       lastLapTime: lapTimeOrNull(carIdx.car_idx_last_lap_time[idx]),
+      lastLapTimeConfirmed: false,
       bestLapTime: lapTimeOrNull(carIdx.car_idx_best_lap_time[idx]),
       qualifyTime: null,
-      f2Time: carIdx.car_idx_f2_time[idx] ?? 0,
+      f2Time:
+        (carIdx.car_idx_f2_time[idx] ?? 0) > 0 ||
+        carIdx.car_idx_position[idx] === 1
+          ? (carIdx.car_idx_f2_time[idx] ?? null)
+          : null,
       trackSurface,
       iRating: car.iRating,
       licString: car.licString,

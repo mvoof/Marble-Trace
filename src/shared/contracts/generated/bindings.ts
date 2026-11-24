@@ -1228,12 +1228,20 @@ export type DriverEntry = {
    */
   startPosOverall: number | null;
   startPosClass: number | null;
+  /**
+   * Number of fully completed laps; unlike `lap`, this excludes the lap in progress.
+   */
+  lapsCompleted: number;
   lap: number;
   lapDistPct: number | null;
   /**
    * `None` until the car completes a timed lap.
    */
   lastLapTime: number | null;
+  /**
+   * The session result agrees on both the completed lap and its time.
+   */
+  lastLapTimeConfirmed: boolean;
   /**
    * `None` until the car sets a lap time.
    */
@@ -1245,7 +1253,10 @@ export type DriverEntry = {
    * completed.
    */
   qualifyTime: number | null;
-  f2Time: number;
+  /**
+   * The gap to the sim's F2 leader, with zero reserved for that leader.
+   */
+  f2Time: number | null;
   estTime: number;
   trackSurface: TrackSurface;
   isPlayer: boolean;

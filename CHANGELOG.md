@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - **Standings:** Keep positions, gaps and iRating estimates in sync during overtakes, retain classified cars when live telemetry drops, and clear the lap delta on untimed laps.
+- **Standings:** Preserve scrolling during telemetry updates, fit more drivers in grouped view, and keep completed laps accurate when a car leaves the track.
 
 ## [0.29.0] — 2026-11-19
 

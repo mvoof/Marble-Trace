@@ -124,6 +124,7 @@ const spaceField = (
       // Half the snapshot's field never set a lap, which would leave the lap
       // time columns blank in the one scenario written to size them.
       lastLapTime: lapTime,
+      lastLapTimeConfirmed: true,
       bestLapTime: lapTime - LAP_TIME_SPREAD_S,
       qualifyTime: lapTime,
       // The gap column prefers the sim's own results gap and falls back to

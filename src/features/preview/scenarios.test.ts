@@ -348,7 +348,9 @@ describe('the close-pack scenario', () => {
     const entries = seed('field-close-pack').backendComputed.fieldEntries;
     const gaps = entries
       .slice(1)
-      .map((entry, index) => entry.f2Time - (entries[index]?.f2Time ?? 0));
+      .map(
+        (entry, index) => (entry.f2Time ?? 0) - (entries[index]?.f2Time ?? 0)
+      );
 
     expect(gaps.length).toBeGreaterThan(0);
 

@@ -245,6 +245,9 @@ export const DriverRow = observer(
               <CarNumberBadge
                 carNumber={driver.carNumber}
                 classColor={driver.carClassColor}
+                accentColor={
+                  driver.isPlayer ? settings.playerAccentColor : undefined
+                }
               />
             </div>
           );
@@ -282,7 +285,7 @@ export const DriverRow = observer(
               column={column}
               driver={driver}
               settings={settings}
-              className={cellClass(column, styles.cellCenter)}
+              className={cellClass(column, `${styles.cellCenter} ${dimClass}`)}
             />
           );
         case 'irChange':
@@ -295,7 +298,7 @@ export const DriverRow = observer(
           return (
             <div className={cellClass('laps', styles.cellCenter)}>
               <span className={`${styles.lapsCompleted} ${dimClass}`}>
-                {driver.lap}
+                {driver.lapsCompleted}
               </span>
             </div>
           );
@@ -354,7 +357,9 @@ export const DriverRow = observer(
           );
         case 'brand':
           return (
-            <div className={cellClass('brand', styles.cellCenter)}>
+            <div
+              className={cellClass('brand', `${styles.cellCenter} ${dimClass}`)}
+            >
               <span title={driver.carScreenName}>
                 <StatChip
                   lead={formatBrand(driver.carScreenName)}

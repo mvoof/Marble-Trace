@@ -178,13 +178,11 @@ export const computeClassSof = (
 };
 
 /**
- * Whether the car has a lap time to be ranked by — its own in this session, or
- * the qualifying time standing in for it before the first flying lap.
+ * Whether the car has set a lap time in the current session. A carried-over
+ * qualifying time is not a lap in a later practice session.
  */
-export const hasSetALap = (driver: {
-  bestLapTime: number | null;
-  qualifyTime: number | null;
-}): boolean => driver.bestLapTime !== null || driver.qualifyTime !== null;
+export const hasSetALap = (driver: { bestLapTime: number | null }): boolean =>
+  driver.bestLapTime !== null;
 
 /**
  * Meters along the track between a car and the player, from `relativeLapDist`

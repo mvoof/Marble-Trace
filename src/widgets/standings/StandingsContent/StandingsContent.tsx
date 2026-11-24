@@ -68,7 +68,7 @@ export const StandingsContent = observer(() => {
         : settings.rowPadding === 'medium'
           ? 3.25
           : 2.75,
-      5,
+      1,
       '[data-driver-row]'
     );
 
@@ -94,11 +94,13 @@ export const StandingsContent = observer(() => {
     }
 
     if (settings.groupedRowsPerClass > 0) {
-      return settings.groupedRowsPerClass;
+      return Math.min(settings.groupedRowsPerClass, visibleRowCount);
     }
 
-    const classHeaderRows = drawnClassGroups.length;
-    const rowsLeftForDrivers = Math.max(1, visibleRowCount - classHeaderRows);
+    // The measured window starts at the first driver row, so its class header
+    // is already excluded. Each later class header costs one additional row.
+    const headersAfterFirst = Math.max(0, drawnClassGroups.length - 1);
+    const rowsLeftForDrivers = Math.max(1, visibleRowCount - headersAfterFirst);
 
     return Math.max(
       1,
@@ -118,12 +120,29 @@ export const StandingsContent = observer(() => {
 
   // Grouped view draws every class as its own list, so each one gets its own limit.
   const scrollBounds: Map<number, ScrollMetrics> = isGrouped
-    ? new Map(
-        drawnClassGroups.map((group) => [
-          group.classId,
-          { total: group.drivers.length, windowSize: rowsPerGroupedClass },
-        ])
-      )
+    ? (() => {
+        const bounds = new Map<number, ScrollMetrics>();
+        let rowsRemaining = visibleRowCount;
+
+        drawnClassGroups.forEach((group, index) => {
+          if (index > 0) {
+            rowsRemaining = Math.max(0, rowsRemaining - 1);
+          }
+
+          const windowSize = Math.min(
+            rowsPerGroupedClass,
+            rowsRemaining,
+            group.drivers.length
+          );
+          bounds.set(group.classId, {
+            total: group.drivers.length,
+            windowSize,
+          });
+          rowsRemaining -= windowSize;
+        });
+
+        return bounds;
+      })()
     : new Map([
         [
           SINGLE_LIST_SCROLL_KEY,
@@ -137,7 +156,7 @@ export const StandingsContent = observer(() => {
   // How many classes the widget height actually shows, each one costing its
   // header plus the driver rows under it — the travel the outer bar reports.
   const visibleClassCount = isGrouped
-    ? Math.max(1, Math.floor(visibleRowCount / (rowsPerGroupedClass + 1)))
+    ? Math.max(1, Math.floor((visibleRowCount + 1) / (rowsPerGroupedClass + 1)))
     : 0;
 
   // A fresh Map every render would re-run the effect forever, so the limits are
@@ -290,7 +309,7 @@ export const StandingsContent = observer(() => {
                     ...group,
                     ...visibleRows(
                       group.drivers,
-                      rowsPerGroupedClass,
+                      scrollBounds.get(group.classId)?.windowSize ?? 0,
                       standingsWidget.scroll.scrollOffsetFor(group.classId)
                     ),
                   }}

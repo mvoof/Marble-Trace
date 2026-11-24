@@ -92,26 +92,17 @@ export const buildVisibleRows = (
     return { drivers: topBlock, windowStartIndex: NO_WINDOW };
   }
 
-  const availableAhead = Math.max(
-    0,
-    Math.min(requestedAhead, playerIndex - start - MIN_TOP_ROWS)
+  const reservedTopRows = Math.min(
+    MIN_TOP_ROWS,
+    maxRows - 1,
+    playerIndex - start
   );
-
-  // Rows the requested window asks for beyond what is left once the top block
-  // keeps its leader. Trimmed from the back first: the car you are chasing
-  // matters more than the one chasing you.
-  const excessRows = Math.max(
-    0,
-    availableAhead + 1 + availableBehind - (maxRows - MIN_TOP_ROWS)
-  );
-
-  const behindRows = Math.max(0, availableBehind - excessRows);
-  // Clamped at zero: a single available row cannot hold both the leader and the
-  // player, and the window the player sits in wins — a standings block without
-  // the player row is useless.
-  const aheadRows = Math.max(
-    0,
-    availableAhead - Math.max(0, excessRows - availableBehind)
+  const companionRows = maxRows - reservedTopRows - 1;
+  const behindRows = Math.min(availableBehind, companionRows);
+  const aheadRows = Math.min(
+    requestedAhead,
+    playerIndex - start - reservedTopRows,
+    companionRows - behindRows
   );
 
   const windowRowCount = aheadRows + 1 + behindRows;
@@ -615,12 +606,8 @@ export const getStandingsGap = (
   if (
     resLap !== undefined &&
     resLap !== null &&
-    resTime !== undefined &&
-    resTime !== null &&
     leaderLap !== undefined &&
-    leaderLap !== null &&
-    leaderTime !== undefined &&
-    leaderTime !== null
+    leaderLap !== null
   ) {
     const lapsDown = resLap - leaderLap;
 
@@ -630,7 +617,13 @@ export const getStandingsGap = (
 
     // A lapped leader row would make the time difference meaningless — the two
     // gaps are then measured over a different number of laps.
-    if (lapsDown === 0) {
+    if (
+      lapsDown === 0 &&
+      resTime !== undefined &&
+      resTime !== null &&
+      leaderTime !== undefined &&
+      leaderTime !== null
+    ) {
       const timeDiff = resTime - leaderTime;
 
       if (timeDiff > 0) {
@@ -650,12 +643,7 @@ export const getStandingsGap = (
     return { value: `${lapsBehind} L`, isLeader: false, isEmpty: false };
   }
 
-  // Zero F2 is valid for the telemetry leader. Elsewhere it means the
-  // reference gap is unavailable.
-  if (
-    driver.f2Time <= 0 ||
-    (leader.f2Time <= 0 && !(leader.f2Time === 0 && leader.livePosition === 1))
-  ) {
+  if (driver.f2Time === null || leader.f2Time === null) {
     return { value: EMPTY_VALUE, isLeader: false, isEmpty: true };
   }
 

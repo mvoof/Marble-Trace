@@ -40,6 +40,12 @@ export class StandingsScrollStore {
   /** How many classes fit the widget height — published with the bounds. */
   private groupWindowSize = 0;
 
+  /** Group whose metrics were last published by the rendered rows. */
+  private boundsGroupScrollIndex = 0;
+
+  /** Row-scroll inputs received while the newly selected group's bounds render. */
+  private pendingRowScrollDeltas: number[] = [];
+
   /**
    * Class whose drivers the cursor sits on in grouped view, so the rows about to be
    * scrolled can say so. Null while the cursor is not on any driver row.
@@ -50,14 +56,23 @@ export class StandingsScrollStore {
   isClassScrollHovered = false;
 
   private scrollResetTimer: ReturnType<typeof setTimeout> | null = null;
+  private lastScrollAt: number | null = null;
 
   constructor(private readonly resetSeconds: () => number) {
     makeAutoObservable<
       StandingsScrollStore,
-      'resetSeconds' | 'scrollResetTimer'
+      | 'resetSeconds'
+      | 'scrollResetTimer'
+      | 'boundsGroupScrollIndex'
+      | 'pendingRowScrollDeltas'
     >(
       this,
-      { resetSeconds: false, scrollResetTimer: false },
+      {
+        resetSeconds: false,
+        scrollResetTimer: false,
+        boundsGroupScrollIndex: false,
+        pendingRowScrollDeltas: false,
+      },
       { autoBind: true }
     );
   }
@@ -134,12 +149,25 @@ export class StandingsScrollStore {
       this.groupScrollIndex = Math.max(0, groupKeys.length - 1);
     }
 
+    this.boundsGroupScrollIndex = this.groupScrollIndex;
+
     for (const [key, offset] of this.scrollOffsets) {
       const bound = this.boundFor(key);
 
       if (offset > bound) {
         this.scrollOffsets.set(key, bound);
       }
+    }
+
+    while (this.pendingRowScrollDeltas.length > 0) {
+      const delta = this.pendingRowScrollDeltas[0];
+
+      if (!this.hasCurrentTopBounds()) {
+        break;
+      }
+
+      this.pendingRowScrollDeltas.shift();
+      this.scrollListsInTurn(delta);
     }
   }
 
@@ -203,12 +231,38 @@ export class StandingsScrollStore {
    * Scrolling back unwinds the same path.
    */
   private scrollListsInTurn(delta: number) {
-    const topKey = Array.from(this.scrollMetrics.keys())[0];
+    if (this.scrollMetrics.has(SINGLE_LIST_SCROLL_KEY)) {
+      this.scrollList(SINGLE_LIST_SCROLL_KEY, delta);
+
+      return;
+    }
+
+    const topKey = this.groupKeys[this.groupScrollIndex];
 
     if (topKey === undefined) {
       return;
     }
 
+    if (!this.hasCurrentTopBounds()) {
+      this.pendingRowScrollDeltas.push(delta);
+
+      return;
+    }
+
+    this.scrollList(topKey, delta);
+  }
+
+  private hasCurrentTopBounds(): boolean {
+    const topKey = this.groupKeys[this.groupScrollIndex];
+
+    return (
+      this.boundsGroupScrollIndex === this.groupScrollIndex &&
+      topKey !== undefined &&
+      this.scrollMetrics.has(topKey)
+    );
+  }
+
+  private scrollList(topKey: number, delta: number) {
     const current = this.scrollOffsetFor(topKey);
     const room = delta < 0 ? current : this.boundFor(topKey) - current;
 
@@ -227,26 +281,41 @@ export class StandingsScrollStore {
 
   resetScroll() {
     this.clearScrollReset();
+    this.lastScrollAt = null;
     this.scrollOffsets.clear();
     this.groupScrollIndex = 0;
+    this.pendingRowScrollDeltas = [];
+  }
+
+  /** Reapplies the current setting without extending the inactivity period. */
+  settingsChanged() {
+    this.scheduleScrollReset();
   }
 
   private armScrollReset() {
+    this.lastScrollAt = Date.now();
+    this.scheduleScrollReset();
+  }
+
+  private scheduleScrollReset() {
     this.clearScrollReset();
 
     const resetSeconds = this.resetSeconds();
 
-    if (!this.isScrolled || resetSeconds <= 0) {
+    if (!this.isScrolled || resetSeconds <= 0 || this.lastScrollAt === null) {
       return;
     }
 
+    const remainingMs = Math.max(
+      0,
+      resetSeconds * MS_PER_SECOND - (Date.now() - this.lastScrollAt)
+    );
+
     this.scrollResetTimer = setTimeout(() => {
       runInAction(() => {
-        this.scrollOffsets.clear();
-        this.groupScrollIndex = 0;
-        this.scrollResetTimer = null;
+        this.resetScroll();
       });
-    }, resetSeconds * MS_PER_SECOND);
+    }, remainingMs);
   }
 
   private clearScrollReset() {

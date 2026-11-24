@@ -2,12 +2,20 @@ import { describe, expect, it } from 'vitest';
 
 import {
   getIncidentPenaltyStatus,
+  hasSetALap,
   isNearIncidentLimit,
   isNearIncidentPenalty,
   parseDriverFlags,
   trackGapMeters,
   bumperGapMeters,
 } from './driver';
+
+describe('hasSetALap', () => {
+  it('requires a lap time from this session', () => {
+    expect(hasSetALap({ bestLapTime: 92.4 })).toBe(true);
+    expect(hasSetALap({ bestLapTime: null })).toBe(false);
+  });
+});
 
 describe('bumperGapMeters', () => {
   it('takes one car length off, keeping the sign', () => {

@@ -147,8 +147,27 @@ export class StandingsOrderStore {
     }
 
     if (this.settled.size === 0) {
+      const claims = new Map<string, number>();
+
+      for (const { rank, classId } of next.values()) {
+        for (const key of rankKeys(rank, classId)) {
+          claims.set(key, (claims.get(key) ?? 0) + 1);
+        }
+      }
+
       for (const [carIdx, { rank, classId }] of next) {
-        this.setRank(carIdx, rank, classId);
+        this.setRank(
+          carIdx,
+          {
+            overall:
+              (claims.get(String(rank.overall)) ?? 0) > 1 ? 0 : rank.overall,
+            inClass:
+              (claims.get(`${classId}:${rank.inClass}`) ?? 0) > 1
+                ? 0
+                : rank.inClass,
+          },
+          classId
+        );
       }
 
       return;
@@ -198,6 +217,7 @@ export class StandingsOrderStore {
 
       if (
         !isPlaced(previousRank?.overall ?? 0) ||
+        (!isPlaced(previousRank?.inClass ?? 0) && isPlaced(rank.inClass)) ||
         this.classIds.get(carIdx) !== classId
       ) {
         immediate.add(carIdx);
