@@ -622,7 +622,7 @@ fn test_pre_flag_tow_is_only_classified_finished_at_cooldown() {
     session.sessions[0].results_positions.push(ResultPosition {
         car_idx: 0,
         position: 2,
-        laps_complete: Some(11),
+        laps_complete: Some(10),
         ..Default::default()
     });
     let state = Mutex::new(DriverEntriesState::default());

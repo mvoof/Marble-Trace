@@ -37,6 +37,7 @@ describe('StandingsScrollStore reset setting', () => {
     store.setScrollBounds(
       new Map([[20, { total: 5, windowSize: 2 }]]),
       [10, 20],
+      1,
       1
     );
 
@@ -79,6 +80,16 @@ describe('StandingsScrollStore reset setting', () => {
     store.setScrollBounds(
       new Map([[20, { total: 5, windowSize: 2 }]]),
       [10, 20],
+      1,
+      0
+    );
+
+    expect(store.scrollOffsetFor(20)).toBe(0);
+
+    store.setScrollBounds(
+      new Map([[20, { total: 5, windowSize: 2 }]]),
+      [10, 20],
+      1,
       1
     );
 

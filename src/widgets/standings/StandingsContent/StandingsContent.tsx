@@ -84,8 +84,9 @@ export const StandingsContent = observer(() => {
 
   // Classes below the widget height are cut off, so the drawn set starts at the
   // class the scroll has raised to the top.
+  const renderedGroupScrollIndex = standingsWidget.scroll.groupScrollIndex;
   const drawnClassGroups = isGrouped
-    ? allClassGroups.slice(standingsWidget.scroll.groupScrollIndex)
+    ? allClassGroups.slice(renderedGroupScrollIndex)
     : allClassGroups;
 
   const rowsPerGroupedClass = (() => {
@@ -177,12 +178,19 @@ export const StandingsContent = observer(() => {
     standingsWidget.scroll.setScrollBounds(
       scrollBounds,
       groupKeys,
-      visibleClassCount
+      visibleClassCount,
+      renderedGroupScrollIndex
     );
     // The Map and the key array are rebuilt every render, so the effect keys off
     // their value signatures instead; the closure still holds the latest values.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [standingsWidget, boundsSignature, groupKeysSignature, visibleClassCount]);
+  }, [
+    standingsWidget,
+    boundsSignature,
+    groupKeysSignature,
+    visibleClassCount,
+    renderedGroupScrollIndex,
+  ]);
 
   const visibleRows = (
     drivers: CarIdentity[],

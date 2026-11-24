@@ -233,6 +233,24 @@ describe('getStandingsGap', () => {
     );
   });
 
+  it.each([true, false])(
+    'uses F2 for matching result laps when one result time is missing (%s)',
+    (leaderTimeMissing) => {
+      const leader = makeGapEntry({
+        resultsPositionLap: 0,
+        resultsPositionTime: leaderTimeMissing ? null : 5,
+        f2Time: 5,
+      });
+      const driver = makeGapEntry({
+        resultsPositionLap: 0,
+        resultsPositionTime: leaderTimeMissing ? 9 : null,
+        f2Time: 9,
+      });
+
+      expect(getStandingsGap(driver, leader, true, false, 0).value).toBe('4.0');
+    }
+  );
+
   it('uses F2 for both cars when the reference result is missing', () => {
     const classLeader = makeGapEntry({ position: 5, f2Time: 10 });
     const driver = makeGapEntry({

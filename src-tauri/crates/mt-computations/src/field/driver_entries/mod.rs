@@ -477,7 +477,16 @@ pub fn compute(
             // The leader needs no special case: on the tick it crosses, the previous
             // tick still holds the lap it was on, so the same comparison that latches
             // everyone behind latches the leader too.
-            locked_state.laps_at_checkered = Some(locked_state.previous_laps.clone());
+            let mut baseline = locked_state.previous_laps.clone();
+
+            // Results can trail the last live lap count when a car is towed.
+            for car_idx in locked_state.towed_cars.keys() {
+                if let Some(completed) = locked_state.last_in_world_laps.get(car_idx) {
+                    baseline.insert(*car_idx, *completed);
+                }
+            }
+
+            locked_state.laps_at_checkered = Some(baseline);
         }
 
         let race_has_ended = matches!(session_state, Some(SessionState::CoolDown));

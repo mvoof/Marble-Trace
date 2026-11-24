@@ -615,26 +615,19 @@ export const getStandingsGap = (
       return { value: `${lapsDown} L`, isLeader: false, isEmpty: false };
     }
 
-    // A lapped leader row would make the time difference meaningless — the two
-    // gaps are then measured over a different number of laps.
-    if (
-      lapsDown === 0 &&
-      resTime !== undefined &&
-      resTime !== null &&
-      leaderTime !== undefined &&
-      leaderTime !== null
-    ) {
+    if (lapsDown < 0) {
+      return { value: EMPTY_VALUE, isLeader: false, isEmpty: true };
+    }
+
+    if (resTime != null && leaderTime != null) {
       const timeDiff = resTime - leaderTime;
 
       if (timeDiff > 0) {
         return { value: timeDiff.toFixed(1), isLeader: false, isEmpty: false };
       }
-    }
 
-    // Only the row the caller marked as leader may render as leader. A
-    // non-positive difference here means the reference row is not actually
-    // ahead of this car — showing a second '-' would read as a second leader.
-    return { value: EMPTY_VALUE, isLeader: false, isEmpty: true };
+      return { value: EMPTY_VALUE, isLeader: false, isEmpty: true };
+    }
   }
 
   // Fallback if resultsPosition values are not available (e.g. at the start of a

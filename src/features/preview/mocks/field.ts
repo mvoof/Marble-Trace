@@ -116,6 +116,7 @@ const spaceField = (
       // speed readouts put a parked car in the middle of the pack.
       speed: entry.speed || PACK_SPEED_MPS,
       lap,
+      lapsCompleted: Math.max(0, lap - 1),
       lapDistPct,
       relativeLapDist: signedLapDistDiff(lapDistPct),
       estTime: lapDistPct * lapTimeS,

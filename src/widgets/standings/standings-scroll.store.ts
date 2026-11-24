@@ -139,7 +139,8 @@ export class StandingsScrollStore {
   setScrollBounds(
     metrics: Map<number, ScrollMetrics>,
     groupKeys: number[] = [],
-    groupWindowSize = 0
+    groupWindowSize = 0,
+    renderedGroupScrollIndex = 0
   ) {
     this.scrollMetrics = metrics;
     this.groupKeys = groupKeys;
@@ -149,7 +150,7 @@ export class StandingsScrollStore {
       this.groupScrollIndex = Math.max(0, groupKeys.length - 1);
     }
 
-    this.boundsGroupScrollIndex = this.groupScrollIndex;
+    this.boundsGroupScrollIndex = renderedGroupScrollIndex;
 
     for (const [key, offset] of this.scrollOffsets) {
       const bound = this.boundFor(key);
