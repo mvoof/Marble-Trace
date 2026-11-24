@@ -5,6 +5,38 @@ import { StandingsScrollStore } from './standings-scroll.store';
 describe('StandingsScrollStore reset setting', () => {
   afterEach(() => vi.useRealTimers());
 
+  it('keeps all remaining visible classes on screen when scrolling forward', () => {
+    const store = new StandingsScrollStore(() => 0);
+    const groupKeys = [10, 20, 30];
+    const lastGroups = new Map([
+      [20, { total: 1, windowSize: 1 }],
+      [30, { total: 1, windowSize: 1 }],
+    ]);
+    store.setScrollBounds(
+      new Map([[10, { total: 5, windowSize: 5 }]]),
+      groupKeys,
+      1
+    );
+    store.scrollClasses(1);
+    store.setScrollBounds(lastGroups, groupKeys, 2, 1);
+
+    store.scrollClasses(1);
+    store.scrollByRows(1);
+    expect(store.groupScrollIndex).toBe(1);
+
+    store.scrollClasses(-1);
+    expect(store.groupScrollIndex).toBe(0);
+    store.setScrollBounds(
+      new Map([[10, { total: 1, windowSize: 1 }], ...lastGroups]),
+      groupKeys,
+      3
+    );
+
+    expect(store.groupThumb).toBeNull();
+    store.scrollClasses(1);
+    expect(store.groupScrollIndex).toBe(0);
+  });
+
   it('reschedules from the last scroll when the delay changes', () => {
     vi.useFakeTimers();
     let resetSeconds = 8;

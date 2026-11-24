@@ -142,8 +142,8 @@ export class StandingsWidgetStore implements StandingsHotkeyTarget {
 
     this.disposers.push(
       reaction(
-        () => this.allClassGroups.map((group) => group.classId),
-        () => this.clampActiveClassIndex(this.allClassGroups.length),
+        () => this.allClassGroups.length,
+        (totalClasses) => this.clampActiveClassIndex(totalClasses),
         { fireImmediately: true }
       )
     );

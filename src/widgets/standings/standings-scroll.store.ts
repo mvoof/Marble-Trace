@@ -95,6 +95,14 @@ export class StandingsScrollStore {
   }
 
   private moveClasses(delta: number): boolean {
+    if (
+      delta > 0 &&
+      this.boundsGroupScrollIndex === this.groupScrollIndex &&
+      this.groupScrollIndex + this.groupWindowSize >= this.groupKeys.length
+    ) {
+      return false;
+    }
+
     const next = Math.min(
       Math.max(0, this.groupScrollIndex + Math.sign(delta)),
       Math.max(0, this.groupKeys.length - 1)

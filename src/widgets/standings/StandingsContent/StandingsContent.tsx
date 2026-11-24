@@ -154,10 +154,10 @@ export const StandingsContent = observer(() => {
         ],
       ]);
 
-  // How many classes the widget height actually shows, each one costing its
-  // header plus the driver rows under it — the travel the outer bar reports.
   const visibleClassCount = isGrouped
-    ? Math.max(1, Math.floor((visibleRowCount + 1) / (rowsPerGroupedClass + 1)))
+    ? Array.from(scrollBounds.values()).filter(
+        ({ windowSize }) => windowSize > 0
+      ).length
     : 0;
 
   // A fresh Map every render would re-run the effect forever, so the limits are

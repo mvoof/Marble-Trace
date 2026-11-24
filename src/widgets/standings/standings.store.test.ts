@@ -180,7 +180,9 @@ describe('StandingsWidgetStore — per instance', () => {
     });
 
     expect(table.allClassGroups.length).toBeGreaterThan(0);
-    table.activeClassIndex = table.allClassGroups.length - 1;
+    runInAction(() => {
+      table.activeClassIndex = table.allClassGroups.length - 1;
+    });
     table.stepClass(1);
 
     expect(table.activeClassIndex).toBe(0);
