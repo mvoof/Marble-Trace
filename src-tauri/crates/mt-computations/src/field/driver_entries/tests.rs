@@ -617,6 +617,135 @@ fn test_out_of_world_car_uses_recorded_completed_laps() {
 }
 
 #[test]
+fn test_result_update_on_tow_departure_does_not_arm_the_flag() {
+    let mut session = two_car_race_session();
+    session.sessions[0].results_positions.push(ResultPosition {
+        car_idx: 0,
+        position: 1,
+        laps_complete: Some(10),
+        ..Default::default()
+    });
+    let state = Mutex::new(DriverEntriesState::default());
+
+    compute(
+        &trailing_and_leading_frame(12, 11),
+        &session,
+        &HashMap::new(),
+        false,
+        Some(SessionState::Racing),
+        &state,
+    );
+
+    session.sessions[0].results_positions[0].laps_complete = Some(12);
+    let mut towed = trailing_and_leading_frame(12, 12);
+    towed.car_idx_track_surface[0] = TrackSurface::NotInWorld;
+    towed.car_idx_lap_dist_pct[0] = -1.0;
+    towed.car_idx_lap[0] = 0;
+    towed.car_idx_laps_completed[0] = 0;
+
+    let frame = compute(
+        &towed,
+        &session,
+        &HashMap::new(),
+        false,
+        Some(SessionState::Checkered),
+        &state,
+    );
+
+    assert!(!frame.entries.iter().any(|entry| entry.is_finished));
+    assert!(frame.entries.iter().any(|entry| entry.is_towed));
+    assert!(state.lock().unwrap().laps_at_checkered.is_none());
+
+    towed.car_idx_lap[1] = 13;
+    towed.car_idx_laps_completed[1] = 12;
+    let frame = compute(
+        &towed,
+        &session,
+        &HashMap::new(),
+        false,
+        Some(SessionState::Checkered),
+        &state,
+    );
+
+    assert!(frame
+        .entries
+        .iter()
+        .any(|entry| entry.car_idx == 1 && entry.is_finished));
+    assert!(frame
+        .entries
+        .iter()
+        .any(|entry| entry.car_idx == 0 && entry.is_towed && !entry.is_finished));
+}
+
+#[test]
+fn test_towed_car_result_update_does_not_arm_the_flag() {
+    let mut session = two_car_race_session();
+    session.sessions[0].results_positions.push(ResultPosition {
+        car_idx: 0,
+        position: 1,
+        laps_complete: Some(10),
+        ..Default::default()
+    });
+    let state = Mutex::new(DriverEntriesState::default());
+
+    compute(
+        &trailing_and_leading_frame(12, 11),
+        &session,
+        &HashMap::new(),
+        false,
+        Some(SessionState::Racing),
+        &state,
+    );
+
+    let mut towed = trailing_and_leading_frame(12, 11);
+    towed.car_idx_track_surface[0] = TrackSurface::NotInWorld;
+    towed.car_idx_lap_dist_pct[0] = -1.0;
+    towed.car_idx_lap[0] = 0;
+    towed.car_idx_laps_completed[0] = 0;
+    compute(
+        &towed,
+        &session,
+        &HashMap::new(),
+        false,
+        Some(SessionState::Racing),
+        &state,
+    );
+
+    session.sessions[0].results_positions[0].laps_complete = Some(12);
+    for completed in [10, 11, 12] {
+        towed.car_idx_lap[1] = completed + 1;
+        towed.car_idx_laps_completed[1] = completed;
+        let frame = compute(
+            &towed,
+            &session,
+            &HashMap::new(),
+            false,
+            Some(SessionState::Checkered),
+            &state,
+        );
+
+        let towed_entry = frame
+            .entries
+            .iter()
+            .find(|entry| entry.car_idx == 0)
+            .unwrap();
+        let racing_entry = frame
+            .entries
+            .iter()
+            .find(|entry| entry.car_idx == 1)
+            .unwrap();
+        assert!(towed_entry.is_towed);
+        assert_eq!(towed_entry.laps_completed, 12);
+        assert!(!towed_entry.is_finished);
+        assert_eq!(
+            state.lock().unwrap().laps_at_checkered.is_some(),
+            completed == 12
+        );
+        assert_eq!(racing_entry.is_finished, completed == 12);
+    }
+}
+
+#[test]
 fn test_pre_flag_tow_is_only_classified_finished_at_cooldown() {
     let mut session = two_car_race_session();
     session.sessions[0].results_positions.push(ResultPosition {

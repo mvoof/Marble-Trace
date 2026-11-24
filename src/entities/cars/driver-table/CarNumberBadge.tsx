@@ -8,17 +8,16 @@ import styles from './CarNumberBadge.module.scss';
 interface CarNumberBadgeProps {
   carNumber: string;
   classColor: string;
-  accentColor?: string;
 }
 
 /** The car's number on its class color, one box for one to three digits. */
 export const CarNumberBadge = observer(
-  ({ carNumber, classColor, accentColor }: CarNumberBadgeProps) => (
+  ({ carNumber, classColor }: CarNumberBadgeProps) => (
     <span
       className={styles.carNumber}
       style={{
-        backgroundColor: accentColor ?? classColor,
-        color: getContrastTextColor(accentColor ?? classColor),
+        backgroundColor: classColor,
+        color: getContrastTextColor(classColor),
       }}
     >
       {formatCarNumber(carNumber)}

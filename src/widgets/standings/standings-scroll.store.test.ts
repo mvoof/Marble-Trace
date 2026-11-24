@@ -45,6 +45,34 @@ describe('StandingsScrollStore reset setting', () => {
     expect(store.scrollOffsetFor(20)).toBe(0);
   });
 
+  it('resets from deferred input arrival when bounds are late', () => {
+    vi.useFakeTimers();
+    const store = new StandingsScrollStore(() => 1);
+    const groupKeys = [10, 20];
+    store.setScrollBounds(
+      new Map([[10, { total: 5, windowSize: 2 }]]),
+      groupKeys,
+      1
+    );
+    store.scrollClasses(1);
+    vi.advanceTimersByTime(600);
+    store.scrollByRows(1);
+    vi.advanceTimersByTime(600);
+
+    store.setScrollBounds(
+      new Map([[20, { total: 5, windowSize: 2 }]]),
+      groupKeys,
+      1,
+      1
+    );
+    expect(store.scrollOffsetFor(20)).toBe(1);
+
+    vi.advanceTimersByTime(399);
+    expect(store.scrollOffsetFor(20)).toBe(1);
+    vi.advanceTimersByTime(1);
+    expect(store.isScrolled).toBe(false);
+  });
+
   it('cancels reset while disabled and resets when re-enabled after expiry', () => {
     vi.useFakeTimers();
     let resetSeconds = 0;
@@ -60,6 +88,30 @@ describe('StandingsScrollStore reset setting', () => {
     vi.advanceTimersByTime(0);
 
     expect(store.isScrolled).toBe(false);
+  });
+
+  it('discards deferred row scrolling when class navigation changes the destination', () => {
+    const store = new StandingsScrollStore(() => 0);
+    const groupKeys = [10, 20, 30];
+    store.setScrollBounds(
+      new Map([[10, { total: 5, windowSize: 2 }]]),
+      groupKeys,
+      1
+    );
+
+    store.scrollClasses(1);
+    store.scrollByRows(1);
+    store.scrollClasses(1);
+    store.setScrollBounds(
+      new Map([[30, { total: 5, windowSize: 2 }]]),
+      groupKeys,
+      1,
+      2
+    );
+
+    expect(store.groupScrollIndex).toBe(2);
+    expect(store.scrollOffsetFor(20)).toBe(0);
+    expect(store.scrollOffsetFor(30)).toBe(0);
   });
 
   it('defers row scrolling until the selected class publishes its bounds', () => {

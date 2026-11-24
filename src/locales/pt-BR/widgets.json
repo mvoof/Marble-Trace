@@ -168,7 +168,7 @@
       "rowPaddingDesc": "Espaçamento vertical de cada linha de piloto.",
       "showPitIndicatorDesc": "Mostrar ícone quando o piloto estiver nos boxes.",
       "playerRowColorDesc": "Destaca a sua própria linha.",
-      "playerAccentColorDesc": "Cor da sua posição e do número do carro.",
+      "playerAccentColorDesc": "Cor do número da sua posição.",
       "showCornerSpeeds": "Velocidades nas curvas",
       "showCornerSpeedsDesc": "Velocidades de entrada, ápice e saída de cada curva da sua volta de referência; o próximo ponto fica iluminado. Sem volta de referência, usa suas próprias velocidades.",
       "entrySpeedColor": "Cor de entrada",

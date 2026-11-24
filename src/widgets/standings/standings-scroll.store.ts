@@ -88,13 +88,20 @@ export class StandingsScrollStore {
    * leaving keeps no row offset: it comes back showing its leaders.
    */
   scrollClasses(delta: number) {
+    if (this.moveClasses(delta)) {
+      this.pendingRowScrollDeltas = [];
+      this.armScrollReset();
+    }
+  }
+
+  private moveClasses(delta: number): boolean {
     const next = Math.min(
       Math.max(0, this.groupScrollIndex + Math.sign(delta)),
       Math.max(0, this.groupKeys.length - 1)
     );
 
     if (next === this.groupScrollIndex) {
-      return;
+      return false;
     }
 
     if (next > this.groupScrollIndex) {
@@ -108,7 +115,8 @@ export class StandingsScrollStore {
     }
 
     this.groupScrollIndex = next;
-    this.armScrollReset();
+
+    return true;
   }
 
   scrollOffsetFor(key: number): number {
@@ -142,12 +150,17 @@ export class StandingsScrollStore {
     groupWindowSize = 0,
     renderedGroupScrollIndex = 0
   ) {
+    const previousTopKey = this.groupKeys[this.groupScrollIndex];
     this.scrollMetrics = metrics;
     this.groupKeys = groupKeys;
     this.groupWindowSize = groupWindowSize;
 
     if (this.groupScrollIndex >= groupKeys.length) {
       this.groupScrollIndex = Math.max(0, groupKeys.length - 1);
+    }
+
+    if (this.groupKeys[this.groupScrollIndex] !== previousTopKey) {
+      this.pendingRowScrollDeltas = [];
     }
 
     this.boundsGroupScrollIndex = renderedGroupScrollIndex;
@@ -209,7 +222,9 @@ export class StandingsScrollStore {
    */
   scrollByRows(delta: number, key?: number) {
     if (key === undefined) {
-      this.scrollListsInTurn(delta);
+      if (this.scrollListsInTurn(delta)) {
+        this.armScrollReset();
+      }
 
       return;
     }
@@ -231,26 +246,24 @@ export class StandingsScrollStore {
    * next one — including the ones that never fit the widget height — to the top.
    * Scrolling back unwinds the same path.
    */
-  private scrollListsInTurn(delta: number) {
+  private scrollListsInTurn(delta: number): boolean {
     if (this.scrollMetrics.has(SINGLE_LIST_SCROLL_KEY)) {
-      this.scrollList(SINGLE_LIST_SCROLL_KEY, delta);
-
-      return;
+      return this.scrollList(SINGLE_LIST_SCROLL_KEY, delta);
     }
 
     const topKey = this.groupKeys[this.groupScrollIndex];
 
     if (topKey === undefined) {
-      return;
+      return false;
     }
 
     if (!this.hasCurrentTopBounds()) {
       this.pendingRowScrollDeltas.push(delta);
 
-      return;
+      return true;
     }
 
-    this.scrollList(topKey, delta);
+    return this.scrollList(topKey, delta);
   }
 
   private hasCurrentTopBounds(): boolean {
@@ -263,7 +276,7 @@ export class StandingsScrollStore {
     );
   }
 
-  private scrollList(topKey: number, delta: number) {
+  private scrollList(topKey: number, delta: number): boolean {
     const current = this.scrollOffsetFor(topKey);
     const room = delta < 0 ? current : this.boundFor(topKey) - current;
 
@@ -271,13 +284,12 @@ export class StandingsScrollStore {
 
     if (taken > 0) {
       this.scrollOffsets.set(topKey, current + (delta < 0 ? -taken : taken));
-      this.armScrollReset();
 
-      return;
+      return true;
     }
 
     // The top class has nothing left to give, so the classes themselves move.
-    this.scrollClasses(delta);
+    return this.moveClasses(delta);
   }
 
   resetScroll() {
@@ -303,7 +315,11 @@ export class StandingsScrollStore {
 
     const resetSeconds = this.resetSeconds();
 
-    if (!this.isScrolled || resetSeconds <= 0 || this.lastScrollAt === null) {
+    if (
+      (!this.isScrolled && this.pendingRowScrollDeltas.length === 0) ||
+      resetSeconds <= 0 ||
+      this.lastScrollAt === null
+    ) {
       return;
     }
 

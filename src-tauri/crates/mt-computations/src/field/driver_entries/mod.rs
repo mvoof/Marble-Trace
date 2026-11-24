@@ -409,13 +409,7 @@ pub fn compute(
         .collect();
 
     entries.sort_by_key(official_sort_key);
-
-    // The same completed-lap count is published to the table and used by the
-    // finish latch, so both agree when the live lap counter disappears.
-    let laps_completed: HashMap<i32, i32> = entries
-        .iter()
-        .map(|entry| (entry.car_idx, entry.laps_completed))
-        .collect();
+    update_tow_states(&mut entries, &mut locked_state);
 
     // Finish latch. A car has finished once it crosses the line after the flag came
     // out, which the lap counter records against a baseline snapshotted from the tick
@@ -437,7 +431,6 @@ pub fn compute(
     // every car one crossing early. So the leader's lap count is recorded there and
     // the latch arms on the tick that count grows.
     if is_race {
-        let flag_was_out_before_tick = locked_state.laps_at_checkered.is_some();
         let is_ending = matches!(
             session_state,
             Some(SessionState::Checkered) | Some(SessionState::CoolDown)
@@ -445,7 +438,7 @@ pub fn compute(
 
         let leader_laps = entries
             .iter()
-            .filter_map(|entry| laps_completed.get(&entry.car_idx).copied())
+            .map(|entry| completed_laps_for_finish(entry, &locked_state))
             .max()
             .unwrap_or(0);
 
@@ -477,16 +470,7 @@ pub fn compute(
             // The leader needs no special case: on the tick it crosses, the previous
             // tick still holds the lap it was on, so the same comparison that latches
             // everyone behind latches the leader too.
-            let mut baseline = locked_state.previous_laps.clone();
-
-            // Results can trail the last live lap count when a car is towed.
-            for car_idx in locked_state.towed_cars.keys() {
-                if let Some(completed) = locked_state.last_in_world_laps.get(car_idx) {
-                    baseline.insert(*car_idx, *completed);
-                }
-            }
-
-            locked_state.laps_at_checkered = Some(baseline);
+            locked_state.laps_at_checkered = Some(locked_state.previous_laps.clone());
         }
 
         let race_has_ended = matches!(session_state, Some(SessionState::CoolDown));
@@ -498,21 +482,19 @@ pub fn compute(
             // came out (it joined, rejoined, or this is the first tick after a
             // reconnect). Seed its baseline with the lap it has right now, so it
             // can still latch on its next crossing instead of never at all.
-            let observed_completed = laps_completed.get(&entry.car_idx).copied().unwrap_or(0);
-            let is_out_of_world = entry.track_surface == TrackSurface::NotInWorld;
-            if !is_out_of_world {
+            if entry.track_surface != TrackSurface::NotInWorld {
                 state
                     .last_in_world_laps
-                    .insert(entry.car_idx, observed_completed);
+                    .insert(entry.car_idx, entry.laps_completed);
             }
-            let completed = if is_out_of_world && state.towed_cars.contains_key(&entry.car_idx) {
-                state
-                    .last_in_world_laps
-                    .get(&entry.car_idx)
-                    .copied()
-                    .unwrap_or(observed_completed)
+
+            let departed = departed_track(entry, state);
+            // Once the flag is out, a departing finisher can be recorded by
+            // results before its live crossing is observed.
+            let completed = if departed {
+                entry.laps_completed
             } else {
-                observed_completed
+                completed_laps_for_finish(entry, state)
             };
 
             let crossed_the_line = state.laps_at_checkered.as_mut().is_some_and(|laps| {
@@ -526,42 +508,35 @@ pub fn compute(
             // tow, and its live lap counter is zeroed on the way out, so the
             // crossing itself may never be observed on any tick. Without this the
             // finisher who quits is never latched and is towed instead.
-            let flag_armed_this_tick = !flag_was_out_before_tick
-                && state.laps_at_checkered.as_ref().is_some_and(|laps| {
-                    completed <= laps.get(&entry.car_idx).copied().unwrap_or(completed)
-                });
-            let left_after_the_flag = (flag_was_out_before_tick || flag_armed_this_tick)
-                && state.previous_location.get(&entry.car_idx).is_some_and(
-                    |(surface, on_pit_road)| {
-                        !on_pit_road
-                            && matches!(surface, TrackSurface::OnTrack | TrackSurface::OffTrack)
-                    },
-                )
-                && entry.track_surface == TrackSurface::NotInWorld
-                && !entry.is_retired
-                && entry.lap > 0;
+            let left_after_the_flag =
+                state.laps_at_checkered.is_some() && departed && !entry.is_retired && entry.lap > 0;
 
             let classified = race_has_ended && !entry.is_retired && entry.lap > 0;
 
             if crossed_the_line || left_after_the_flag || classified {
                 state.finished_cars.insert(entry.car_idx);
+                state.towed_cars.remove(&entry.car_idx);
+                entry.is_towed = false;
             }
 
             entry.is_finished = state.finished_cars.contains(&entry.car_idx);
         }
     }
 
+    locked_state.previous_location = entries
+        .iter()
+        .map(|entry| (entry.car_idx, (entry.track_surface, entry.on_pit_road)))
+        .collect();
+
     locked_state.previous_laps = entries
         .iter()
-        .map(|e| {
+        .map(|entry| {
             (
-                e.car_idx,
-                laps_completed.get(&e.car_idx).copied().unwrap_or(0),
+                entry.car_idx,
+                completed_laps_for_finish(entry, &locked_state),
             )
         })
         .collect();
-
-    update_tow_states(&mut entries, &mut locked_state);
 
     match ranking_mode {
         RankingMode::TrackOrder => assign_live_positions(&mut entries, &locked_state.towed_cars),
@@ -806,31 +781,46 @@ fn resolve_laps_completed(
     }
 }
 
+// The results feed can revise a towed car's count without a crossing.
+fn completed_laps_for_finish(entry: &DriverEntry, state: &DriverEntriesState) -> i32 {
+    if entry.track_surface == TrackSurface::NotInWorld
+        && state.towed_cars.contains_key(&entry.car_idx)
+    {
+        return state
+            .last_in_world_laps
+            .get(&entry.car_idx)
+            .copied()
+            .unwrap_or(entry.laps_completed);
+    }
+
+    entry.laps_completed
+}
+
+fn departed_track(entry: &DriverEntry, state: &DriverEntriesState) -> bool {
+    entry.track_surface == TrackSurface::NotInWorld
+        && state
+            .previous_location
+            .get(&entry.car_idx)
+            .is_some_and(|(surface, on_pit_road)| {
+                !on_pit_road && matches!(surface, TrackSurface::OnTrack | TrackSurface::OffTrack)
+            })
+}
+
 fn update_tow_states(entries: &mut [DriverEntry], state: &mut DriverEntriesState) {
     let active_car_indices: HashSet<i32> = entries.iter().map(|e| e.car_idx).collect();
 
-    state
-        .previous_location
-        .retain(|car_idx, _| active_car_indices.contains(car_idx));
     state
         .towed_cars
         .retain(|car_idx, _| active_car_indices.contains(car_idx));
 
     for entry in entries.iter_mut() {
-        let previous = state.previous_location.get(&entry.car_idx).copied();
-
-        let left_the_track_surface = previous.is_some_and(|(surface, on_pit_road)| {
-            !on_pit_road && matches!(surface, TrackSurface::OnTrack | TrackSurface::OffTrack)
-        });
-
-        let vanished = entry.track_surface == TrackSurface::NotInWorld;
         let has_finished = state.finished_cars.contains(&entry.car_idx);
 
         if has_finished {
             state.towed_cars.remove(&entry.car_idx);
         }
 
-        if vanished && left_the_track_surface && !entry.is_retired && !has_finished {
+        if departed_track(entry, state) && !entry.is_retired && !has_finished {
             let frozen = state
                 .previous_progress
                 .get(&entry.car_idx)
@@ -849,10 +839,6 @@ fn update_tow_states(entries: &mut [DriverEntry], state: &mut DriverEntriesState
         }
 
         entry.is_towed = state.towed_cars.contains_key(&entry.car_idx);
-
-        state
-            .previous_location
-            .insert(entry.car_idx, (entry.track_surface, entry.on_pit_road));
 
         if let Some(progress) = lap_progress(entry) {
             state.previous_progress.insert(entry.car_idx, progress);

@@ -245,9 +245,6 @@ export const DriverRow = observer(
               <CarNumberBadge
                 carNumber={driver.carNumber}
                 classColor={driver.carClassColor}
-                accentColor={
-                  driver.isPlayer ? settings.playerAccentColor : undefined
-                }
               />
             </div>
           );

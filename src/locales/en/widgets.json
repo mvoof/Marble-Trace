@@ -145,7 +145,7 @@
       "rowPaddingDesc": "Vertical padding of each driver row.",
       "showPitIndicatorDesc": "Show icon when driver is in pits.",
       "playerRowColorDesc": "Highlight color for your own row.",
-      "playerAccentColorDesc": "Color of your position and car number.",
+      "playerAccentColorDesc": "Color of your position number.",
       "showCornerSpeeds": "Corner Speeds",
       "showCornerSpeedsDesc": "Entry, apex and exit speed of each corner from your reference lap; the point you are heading for is lit. With no reference lap yet, your own speeds.",
       "entrySpeedColor": "Entry Color",
