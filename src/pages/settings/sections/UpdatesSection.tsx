@@ -5,6 +5,7 @@ import { AlertCircle, ArrowUpCircle, Clock, RefreshCw } from 'lucide-react';
 import { ReleaseNotesButton } from '@pages/settings/ReleaseNotesButton/ReleaseNotesButton';
 import { useAppSettingsStore } from '@entities/app-settings/app-settings-context';
 import { useAppUpdateStore } from '@features/app-update/app-update-context';
+import { UpdateProgress } from '@features/app-update/UpdateProgress';
 import { SettingsCard } from '@shared/ui/SettingsCard/SettingsCard';
 import styles from '../SettingsPage.module.scss';
 
@@ -106,8 +107,14 @@ export const UpdatesSection = observer(() => {
                 </span>
               )}
 
-              {appUpdate.status === 'downloading' &&
-                t('settingsPage.applicationUpdates.downloadingUpdate')}
+              {appUpdate.status === 'downloading' && (
+                <>
+                  {appUpdate.downloadProgress?.finished
+                    ? t('updateBanner.installing')
+                    : t('settingsPage.applicationUpdates.downloadingUpdate')}
+                  <UpdateProgress />
+                </>
+              )}
 
               {appUpdate.status === 'ready' &&
                 t('settingsPage.applicationUpdates.updateDownloaded')}
@@ -129,8 +136,7 @@ export const UpdatesSection = observer(() => {
                 type="primary"
                 icon={<ArrowUpCircle size={16} />}
                 onClick={() => void appUpdate.installUpdate()}
-                loading={appUpdate.status === 'downloading'}
-                disabled={appUpdate.status === 'ready'}
+                disabled={appUpdate.status !== 'available'}
               >
                 {appUpdate.status === 'ready'
                   ? t('settingsPage.applicationUpdates.restarting')

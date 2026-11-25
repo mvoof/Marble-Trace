@@ -72,6 +72,7 @@
   },
   "updateBanner": {
     "downloading": "Téléchargement de la mise à jour…",
+    "installing": "Installation de la mise à jour…",
     "ready": "Mise à jour téléchargée. Redémarrage…",
     "available": "La version v{{version}} est disponible",
     "updateAndRestart": "Mettre à jour et redémarrer"

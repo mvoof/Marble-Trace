@@ -5,6 +5,7 @@ import {
   checkForUpdate,
   getAppVersion,
   installUpdateAndRelaunch,
+  type UpdateDownloadProgress,
 } from '@shared/api/updater.service';
 
 export type UpdateStatus =
@@ -28,6 +29,7 @@ export class AppUpdateStore {
   releaseNotes: string | null = null;
   currentVersion = '';
   error: string | null = null;
+  downloadProgress: UpdateDownloadProgress | null = null;
 
   private timer: number | null = null;
   private stopFollowingSettings: (() => void) | null = null;
@@ -127,9 +129,16 @@ export class AppUpdateStore {
     this.error = null;
 
     try {
-      const installed = await installUpdateAndRelaunch();
+      const onProgress = (progress: UpdateDownloadProgress) => {
+        runInAction(() => {
+          this.downloadProgress = progress;
+        });
+      };
+      const installed = await installUpdateAndRelaunch(onProgress);
 
       runInAction(() => {
+        this.downloadProgress = null;
+
         if (installed) {
           this.status = 'ready';
         } else {
@@ -141,6 +150,7 @@ export class AppUpdateStore {
       console.error('Failed to install update:', error);
 
       runInAction(() => {
+        this.downloadProgress = null;
         this.status = 'error';
         this.error = String(error);
       });
