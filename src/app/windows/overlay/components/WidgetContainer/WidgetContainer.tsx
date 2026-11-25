@@ -50,7 +50,14 @@ export const WidgetContainer = observer(
     const { onDragMouseDown, onResizeMouseDown } = useWidgetGestures(
       widgetId,
       geometryWriter,
-      { widgets: liveWidgets, viewScale: 1, enabled: dragMode }
+      {
+        widgets: liveWidgets,
+        viewScale: 1,
+        enabled: dragMode,
+        snap: appSettings.editorSnapToGrid
+          ? { gridSize: appSettings.editorGridSize }
+          : null,
+      }
     );
 
     const isConnected = simStore.status === 'connected';

@@ -274,7 +274,8 @@
     "unavailable": "此模拟器不支持"
   },
   "overlayCanvas": {
-    "exitEditMode": "退出编辑模式",
+    "finishEditing": "完成编辑",
+    "switchLayout": "切换布局",
     "interactMode": "交互模式",
     "interactModeHold": "交互模式 — 松开 {{key}} 退出",
     "interactModeToggle": "交互模式 — 按 {{key}} 退出",

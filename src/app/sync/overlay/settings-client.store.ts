@@ -2,7 +2,10 @@ import { makeAutoObservable, runInAction, compareStructural } from 'mobx';
 
 import { emitToMain } from '@shared/api/events.service';
 import type { LiveWidgetsView } from '@entities/layout/live-widgets.store';
-import type { ClientCommand } from '@shared/contracts/client-protocol';
+import type {
+  ClientCommand,
+  OverlaySnapshot,
+} from '@shared/contracts/client-protocol';
 import type { WidgetUserSettings } from '@shared/contracts/widget-settings';
 
 /**
@@ -41,6 +44,8 @@ export class SettingsClientStore {
   /** This window's label, set when the overlay connects; main replies to it. */
   clientId: string | null = null;
 
+  layoutChoices: OverlaySnapshot['layoutChoices'] = [];
+
   /** Counts this window's commands from 1, and starts over with the window. */
   private commandNo = 0;
 
@@ -75,6 +80,41 @@ export class SettingsClientStore {
 
   connect(clientId: string) {
     this.clientId = clientId;
+  }
+
+  installLayoutChoices(layoutChoices: OverlaySnapshot['layoutChoices']) {
+    if (!compareStructural(this.layoutChoices, layoutChoices)) {
+      this.layoutChoices = layoutChoices;
+    }
+  }
+
+  switchLayout(targetLayoutId: string) {
+    this.send({ kind: 'switchLayout', targetLayoutId });
+  }
+
+  setGridVisibility(visible: boolean) {
+    this.send({ kind: 'setGridVisibility', visible });
+  }
+
+  setGridSnapping(enabled: boolean) {
+    this.send({ kind: 'setGridSnapping', enabled });
+  }
+
+  discardPendingWidgetEdits() {
+    for (const { timer } of this.geometry.values()) {
+      if (timer !== null) {
+        clearTimeout(timer);
+      }
+    }
+
+    if (this.settingsTimer !== null) {
+      clearTimeout(this.settingsTimer);
+      this.settingsTimer = null;
+    }
+
+    this.geometry.clear();
+    this.settingsBuffer.clear();
+    this.overrides.clear();
   }
 
   /** A drag step. Drawn now, clamped to the monitor as main will clamp it. */

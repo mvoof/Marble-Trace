@@ -6,7 +6,7 @@ import { OverlayRoot } from '@app/roots/overlay-root';
 import type {
   ClientToMainMessage,
   CommandMessage,
-  ClientSnapshot,
+  OverlaySnapshot,
   SnapshotMessage,
 } from '@shared/contracts/client-protocol';
 
@@ -101,7 +101,7 @@ const mainWithTwoMonitors = () => {
   return root;
 };
 
-const asMessage = (snapshot: ClientSnapshot): SnapshotMessage => ({
+const asMessage = (snapshot: OverlaySnapshot): SnapshotMessage => ({
   kind: 'snapshot',
   clientId: 'overlay-LEFT',
   lastHandledCommandNo: 0,
@@ -189,6 +189,15 @@ describe('the snapshot main builds for one overlay', () => {
 
   it('is nothing for a monitor the live layout does not have', () => {
     expect(overlaySnapshotFor(mainWithTwoMonitors(), 'GONE')).toBeNull();
+  });
+
+  it('uses the default pitch when saved grid spacing is zero', () => {
+    const root = mainWithTwoMonitors();
+    const defaultPitch = root.appSettings.appSettings.editorGridSize;
+
+    root.appSettings.update({ editorGridSize: 0 });
+
+    expect(overlaySnapshotFor(root, 'LEFT')?.editorGridSize).toBe(defaultPitch);
   });
 
   it('derives off-track hiding from auto-switch and the garage layout', () => {
@@ -305,6 +314,58 @@ describe('main answering its clients', () => {
 
     expect(added?.userSettings.enabled).toBe(true);
     expect(main.liveWidgets.history.canUndo).toBe(false);
+
+    publishing.dispose();
+  });
+
+  it('switches both overlays from the right monitor while the editor holds its layout', async () => {
+    const { main, overlay: left, publishing } = await connected();
+    const right = overlayOn('RIGHT');
+
+    wire.toMain!({ kind: 'hello', clientId: 'overlay-RIGHT' });
+    applyOverlaySnapshot(right, lastSnapshotTo('overlay-RIGHT')!);
+    main.layoutEditor.setOpen(true);
+
+    expect(right.settingsClient.layoutChoices.map(({ id }) => id)).toEqual([
+      'layout-race',
+      'layout-qualify',
+    ]);
+
+    left.settingsClient.patchSettings('fuel', { opacity: 0.5 });
+    right.settingsClient.switchLayout('layout-qualify');
+    await publishing.publishAll();
+    deliverLatest(left);
+    applyOverlaySnapshot(right, lastSnapshotTo('overlay-RIGHT')!);
+    vi.advanceTimersByTime(SETTINGS_MERGE_MS);
+
+    expect(main.layouts.editingLayoutId).toBe('layout-race');
+    expect(main.layouts.liveLayoutId).toBe('layout-qualify');
+    expect(left.layouts.liveLayoutId).toBe('layout-qualify');
+    expect(right.layouts.liveLayoutId).toBe('layout-qualify');
+    expect(wire.commands.map(({ command }) => command.kind)).toEqual([
+      'switchLayout',
+    ]);
+
+    publishing.dispose();
+  });
+
+  it('publishes visibility and snapping independently to both overlays', async () => {
+    const { main, overlay: left, publishing } = await connected();
+    const right = overlayOn('RIGHT');
+
+    left.settingsClient.setGridVisibility(true);
+    await vi.advanceTimersByTimeAsync(20);
+    applyOverlaySnapshot(right, lastSnapshotTo('overlay-RIGHT')!);
+    expect(right.appSettings.appSettings.editorShowGrid).toBe(true);
+    expect(right.appSettings.appSettings.editorSnapToGrid).toBe(true);
+
+    right.settingsClient.setGridSnapping(false);
+    await vi.advanceTimersByTimeAsync(20);
+    deliverLatest(left);
+
+    expect(main.appSettings.appSettings.editorShowGrid).toBe(true);
+    expect(left.appSettings.appSettings.editorShowGrid).toBe(true);
+    expect(left.appSettings.appSettings.editorSnapToGrid).toBe(false);
 
     publishing.dispose();
   });

@@ -29,7 +29,19 @@ export const applyOverlaySnapshot = (
   }
 
   runInAction(() => {
-    applyClientSnapshot(root, message.snapshot);
+    const snapshot = message.snapshot;
+
+    if (root.layouts.liveLayoutId !== snapshot.layoutId) {
+      root.settingsClient.discardPendingWidgetEdits();
+    }
+
+    applyClientSnapshot(root, snapshot);
+    root.settingsClient.installLayoutChoices(snapshot.layoutChoices);
+    Object.assign(root.appSettings.appSettings, {
+      editorShowGrid: snapshot.editorShowGrid,
+      editorSnapToGrid: snapshot.editorSnapToGrid,
+      editorGridSize: snapshot.editorGridSize,
+    });
 
     if (
       !compareStructural(root.bindings.overrides, message.snapshot.bindings)

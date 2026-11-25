@@ -1,4 +1,5 @@
 import {
+  DEFAULT_APP_SETTINGS,
   fuelStrategyOf,
   pitStrategyOf,
 } from '@entities/app-settings/app-settings.store';
@@ -9,7 +10,10 @@ import {
 import { widgetsOnMonitor } from '@entities/layout/virtual-desktop';
 import { cloneMonitor } from '@shared/lib/remote-screen';
 import type { MainRoot } from '@app/roots/main-root';
-import type { ClientSnapshot } from '@shared/contracts/client-protocol';
+import type {
+  ClientSnapshot,
+  OverlaySnapshot,
+} from '@shared/contracts/client-protocol';
 import type {
   LayoutMonitor,
   SavedLayout,
@@ -71,11 +75,27 @@ export const clientSnapshotFor = (
 export const overlaySnapshotFor = (
   root: MainRoot,
   monitorName: string
-): ClientSnapshot | null => {
+): OverlaySnapshot | null => {
   const layout = root.layouts.liveLayout;
   const monitor = layout?.monitors.find((entry) => entry.name === monitorName);
 
-  return layout && monitor ? clientSnapshotFor(root, layout, monitor) : null;
+  if (!layout || !monitor) {
+    return null;
+  }
+
+  const { editorShowGrid, editorSnapToGrid, editorGridSize } =
+    root.appSettings.appSettings;
+
+  return {
+    ...clientSnapshotFor(root, layout, monitor),
+    layoutChoices: root.layouts.layouts.map(({ id, name }) => ({ id, name })),
+    editorShowGrid,
+    editorSnapToGrid,
+    editorGridSize:
+      Number.isFinite(editorGridSize) && editorGridSize > 0
+        ? editorGridSize
+        : DEFAULT_APP_SETTINGS.editorGridSize,
+  };
 };
 
 /**

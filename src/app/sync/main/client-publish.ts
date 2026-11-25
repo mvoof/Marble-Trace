@@ -124,6 +124,28 @@ const runCommand = (
 
       return null;
     }
+
+    case 'switchLayout': {
+      if (!root.layouts.byId(command.targetLayoutId)) {
+        return 'the selected layout no longer exists';
+      }
+
+      root.layoutEditor.applySessionLayout(command.targetLayoutId);
+
+      return null;
+    }
+
+    case 'setGridVisibility': {
+      root.appSettings.update({ editorShowGrid: command.visible });
+
+      return null;
+    }
+
+    case 'setGridSnapping': {
+      root.appSettings.update({ editorSnapToGrid: command.enabled });
+
+      return null;
+    }
   }
 };
 
@@ -157,11 +179,15 @@ export const registerClientPublishing = async (root: MainRoot) => {
 
     if (!snapshot) return;
 
-    const state = stateOf(clientId);
-    const { lastHandledCommandNo, rejected } = state;
-
-    runInAction(() => {
+    const { lastHandledCommandNo, rejected } = runInAction(() => {
+      const state = stateOf(clientId);
+      const acknowledgement = {
+        lastHandledCommandNo: state.lastHandledCommandNo,
+        rejected: state.rejected,
+      };
       state.rejected = [];
+
+      return acknowledgement;
     });
 
     void emitSnapshotToClient({
@@ -241,6 +267,9 @@ export const registerClientPublishing = async (root: MainRoot) => {
     () => [
       root.settingsMutations.changeToken,
       ...snapshotAppInputs(root),
+      root.appSettings.appSettings.editorShowGrid,
+      root.appSettings.appSettings.editorSnapToGrid,
+      root.appSettings.appSettings.editorGridSize,
       Array.from(clients.values(), (state) => state.lastHandledCommandNo),
     ],
     () => void publishAll(),

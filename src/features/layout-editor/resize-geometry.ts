@@ -31,7 +31,7 @@ export interface ResizeInput {
     scaleFromHeight?: boolean;
     lockAspectRatio?: boolean;
   };
-  /** The editor's grid pitch with snapping on; the overlay has none. */
+  /** The grid pitch for resize snapping. */
   snapGrid?: number | null;
   /** Shift held, or the ratio pinned in the editor: keep the start's shape. */
   keepRatio?: boolean;
@@ -43,10 +43,10 @@ export const snapToGrid = (value: number, gridSize: number): number =>
 /** Snap distance (layout px) for centring a dragged widget on its screen. */
 const SNAP_CENTER_THRESHOLD = 24;
 
-/** The editor's snapping: the grid pitch, and the screen to centre on. */
+/** The grid pitch, and optionally the screen to centre on. */
 export interface DragSnap {
   gridSize: number;
-  area: WidgetBox;
+  area?: WidgetBox;
 }
 
 export interface DragInput {
@@ -57,7 +57,7 @@ export interface DragInput {
   start: { x: number; y: number };
   /** The stored size, which the centring measures. */
   size: { width: number; height: number };
-  /** The editor's snapping with it on; the overlay has none. */
+  /** The active placement grid. */
   snap?: DragSnap | null;
 }
 
@@ -82,6 +82,10 @@ export const dragPosition = ({
 
   x = snapToGrid(x, snap.gridSize);
   y = snapToGrid(y, snap.gridSize);
+
+  if (!snap.area) {
+    return { x, y };
+  }
 
   const centreX = snap.area.x + snap.area.width / 2;
   const centreY = snap.area.y + snap.area.height / 2;

@@ -278,7 +278,8 @@
     "unavailable": "Not available in this sim"
   },
   "overlayCanvas": {
-    "exitEditMode": "Exit Edit Mode",
+    "finishEditing": "Finish editing",
+    "switchLayout": "Switch layout",
     "interactMode": "Interact mode",
     "interactModeHold": "Interact mode — release {{key}} to exit",
     "interactModeToggle": "Interact mode — {{key}} to exit",

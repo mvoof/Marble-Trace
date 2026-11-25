@@ -33,6 +33,30 @@
   left: auto;
 }
 
+.rootCentered {
+  position: static;
+  flex-shrink: 1;
+  min-width: 0;
+
+  > button {
+    flex-shrink: 1;
+    min-width: 0;
+
+    > svg {
+      flex-shrink: 0;
+    }
+  }
+}
+
+.panelCentered {
+  left: 50%;
+  width: max-content;
+  min-width: min(#{rem(220)}, calc(100vw - #{rem(24)}));
+  max-width: calc(100vw - #{rem(24)});
+  max-height: min(#{rem(420)}, calc(100vh - #{rem(60)}));
+  transform: translateX(-50%);
+}
+
 // Placed by the component from the trigger's box, over the whole window.
 // Outside the app's root, so it names the app's type and colour itself.
 .panelDetached {
