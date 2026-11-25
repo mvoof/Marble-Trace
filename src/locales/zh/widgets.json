@@ -196,7 +196,10 @@
       "barChipStyleDesc": "警告保留提示色。",
       "barChipStyle_semantic": "彩色",
       "barChipStyle_neutral": "中性",
-      "barChipStyle_text": "仅文本"
+      "barChipStyle_text": "无边框",
+      "chipLabelMode": "标签内容",
+      "chipLabelMode_text": "文字",
+      "chipLabelMode_icon": "图标"
     },
     "delta": {
       "deltaReference": "差值参考",

@@ -1,5 +1,5 @@
 import { observer } from 'mobx-react-lite';
-import { Users } from 'lucide-react';
+import { Gauge, Repeat, Users } from 'lucide-react';
 
 import { computeClassSof, formatIRating } from '@shared/lib/driver';
 import { resolveSessionLaps } from '@shared/lib/telemetry-format';
@@ -46,6 +46,7 @@ export const SessionHeader = observer(
   }: SessionHeaderProps) => {
     const {
       headerChipStyle: chipStyle,
+      headerChipLabelMode,
       showSessionType,
       showTotalDrivers,
       abbreviateSof,
@@ -53,6 +54,7 @@ export const SessionHeader = observer(
       showLapProgress,
       showSessionTime,
     } = settings;
+    const useIcons = headerChipLabelMode === 'icon';
     const showSof = settings.showSOF && !hasClassHeaders;
     const { driverIdentities, leaderLap } = useBackendComputedStore();
     const playerPosition = usePlayerPositionStore();
@@ -130,7 +132,8 @@ export const SessionHeader = observer(
           {showTotalDrivers && (
             <StatChip
               presentation={chipStyle}
-              icon={Users}
+              lead="DRIVERS"
+              labelIcon={useIcons ? Users : undefined}
               look="reading"
               tone="info"
             >
@@ -142,6 +145,7 @@ export const SessionHeader = observer(
             <StatChip
               presentation={chipStyle}
               lead="SOF"
+              labelIcon={useIcons ? Gauge : undefined}
               look="reading"
               tone="accent"
             >
@@ -157,6 +161,7 @@ export const SessionHeader = observer(
             <StatChip
               presentation={lapProgress.isFinalLap ? 'semantic' : chipStyle}
               lead="LAPS"
+              labelIcon={useIcons ? Repeat : undefined}
               look="reading"
               tone={lapProgress.isFinalLap ? 'accent' : 'positive'}
             >
@@ -176,7 +181,9 @@ export const SessionHeader = observer(
             </StatChip>
           )}
 
-          {showSessionTime && <SessionClock chipStyle={chipStyle} />}
+          {showSessionTime && (
+            <SessionClock chipStyle={chipStyle} useIcon={useIcons} />
+          )}
         </div>
       </div>
     );

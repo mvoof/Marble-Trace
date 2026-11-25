@@ -1,4 +1,5 @@
 import { observer } from 'mobx-react-lite';
+import { Clock } from 'lucide-react';
 
 import {
   isLapLimitedSession,
@@ -36,12 +37,14 @@ const CLOCK_WIDTH_CHARS = 9;
 
 interface SessionClockProps {
   chipStyle: StatChipPresentation;
+  useIcon: boolean;
 }
 
 /** The last minutes of a timed session: the clock dims and returns each second. */
 const CRITICAL_BLINK: BlinkCycle = { stepMs: 1000, steps: 2 };
 
-export const SessionClock = observer(({ chipStyle }: SessionClockProps) => {
+export const SessionClock = observer((props: SessionClockProps) => {
+  const { chipStyle, useIcon } = props;
   const { session, currentSession } = useSessionStore();
 
   const sessionState = session?.session_state ?? null;
@@ -71,6 +74,7 @@ export const SessionClock = observer(({ chipStyle }: SessionClockProps) => {
       <StatChip
         presentation={chipStyle}
         lead="TIME"
+        labelIcon={useIcon ? Clock : undefined}
         look="reading"
         tone="muted"
       >
@@ -83,14 +87,14 @@ export const SessionClock = observer(({ chipStyle }: SessionClockProps) => {
 
   const isLead = !isLapLimited;
 
-  // A session past its clock counts up — the "+" is what tells the two apart
-  // now that neither carries an icon.
+  // A session past its clock counts up and carries a "+" prefix.
   const prefix = isCountdown ? '' : '+';
 
   return (
     <StatChip
       presentation={chipStyle}
       lead="TIME"
+      labelIcon={useIcon ? Clock : undefined}
       look="reading"
       tone={URGENCY_TONE[urgency]}
     >

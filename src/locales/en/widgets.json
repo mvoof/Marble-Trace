@@ -196,7 +196,10 @@
       "barChipStyleDesc": "Warnings keep their signal colors.",
       "barChipStyle_semantic": "Colored",
       "barChipStyle_neutral": "Neutral",
-      "barChipStyle_text": "Text only"
+      "barChipStyle_text": "Frameless",
+      "chipLabelMode": "Chip labels",
+      "chipLabelMode_text": "Text",
+      "chipLabelMode_icon": "Icons"
     },
     "delta": {
       "deltaReference": "Delta Reference",

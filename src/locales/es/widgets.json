@@ -196,7 +196,10 @@
       "barChipStyleDesc": "Las advertencias conservan sus colores de alerta.",
       "barChipStyle_semantic": "De color",
       "barChipStyle_neutral": "Neutro",
-      "barChipStyle_text": "Solo texto"
+      "barChipStyle_text": "Sin marco",
+      "chipLabelMode": "Rótulos de indicadores",
+      "chipLabelMode_text": "Texto",
+      "chipLabelMode_icon": "Iconos"
     },
     "delta": {
       "deltaReference": "Referencia del delta",

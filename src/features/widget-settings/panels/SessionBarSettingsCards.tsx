@@ -23,6 +23,7 @@ export const SessionBarSettingsCards = observer(
           <Row setting="lapCounter" dependsOn="showLapProgress" />
           <Row setting="showSessionTime" />
           <Row setting="headerChipStyle" stacked wrapOptions />
+          <Row setting="headerChipLabelMode" stacked wrapOptions />
         </Card>
         <Card title={t('settingsPanels.common.footerInfo')}>
           <Row setting="showAirTemp" />
@@ -32,6 +33,7 @@ export const SessionBarSettingsCards = observer(
           <Row setting="showIncidentsBadge" />
           <Row setting="showPenalties" />
           <Row setting="footerChipStyle" stacked wrapOptions />
+          <Row setting="footerChipLabelMode" stacked wrapOptions />
         </Card>
       </>
     );
