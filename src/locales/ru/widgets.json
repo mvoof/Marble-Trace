@@ -196,7 +196,10 @@
       "barChipStyleDesc": "Предупреждения сохраняют сигнальный цвет.",
       "barChipStyle_semantic": "Цветные",
       "barChipStyle_neutral": "Нейтральные",
-      "barChipStyle_text": "Текст"
+      "barChipStyle_text": "Текст",
+      "chipLabelMode": "Подписи чипов",
+      "chipLabelMode_text": "Текст",
+      "chipLabelMode_icon": "Иконки"
     },
     "delta": {
       "deltaReference": "Эталон дельты",

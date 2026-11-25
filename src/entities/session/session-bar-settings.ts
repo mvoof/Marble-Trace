@@ -23,6 +23,9 @@ export const SESSION_BAR_SETTINGS = defineSettings('common', {
   footerChipStyle: choice(STAT_CHIP_PRESENTATIONS, 'semantic', {
     label: 'common.barChipStyle',
   }),
+  chipLabelMode: choice(['text', 'icon'], 'text', {
+    label: 'common.chipLabelMode',
+  }),
   showAirTemp: bool(true, { label: 'common.showAirTemp' }),
   showTrackTemp: bool(true, { label: 'common.showTrackTemp' }),
   showTrackWetness: bool(true, { label: 'common.showTrackWetness' }),

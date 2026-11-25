@@ -1,6 +1,6 @@
 import { useWidgetSettings } from '@entities/layout/useWidgetSettings';
 import { observer } from 'mobx-react-lite';
-import { Users } from 'lucide-react';
+import { Gauge, Users } from 'lucide-react';
 
 import { formatIRating } from '@shared/lib/driver';
 
@@ -33,6 +33,7 @@ export const ClassGroupHeader = observer(
     isScrollTarget = false,
   }: ClassGroupHeaderProps) => {
     const settings = useWidgetSettings<StandingsWidgetSettings>('standings');
+    const useIcons = settings.chipLabelMode === 'icon';
 
     return (
       <div
@@ -63,6 +64,7 @@ export const ClassGroupHeader = observer(
             <StatChip
               presentation={settings.headerChipStyle}
               lead="SOF"
+              labelIcon={useIcons ? Gauge : undefined}
               look="reading"
               tone="accent"
             >
@@ -72,7 +74,8 @@ export const ClassGroupHeader = observer(
 
           <StatChip
             presentation={settings.headerChipStyle}
-            icon={Users}
+            lead="DRIVERS"
+            labelIcon={useIcons ? Users : undefined}
             look="reading"
             tone="info"
           >

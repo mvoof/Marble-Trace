@@ -90,6 +90,8 @@ export const RelativeSettingsPanel = observer(() => {
       <SessionBarSettingsCards />
 
       <Card group="display">
+        <Row setting="chipLabelMode" stacked />
+
         <div className={styles.fieldGroup}>
           <Row setting="rowPadding" />
         </div>

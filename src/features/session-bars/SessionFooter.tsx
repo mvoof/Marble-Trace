@@ -1,4 +1,13 @@
 import { observer } from 'mobx-react-lite';
+import {
+  Flag,
+  Road,
+  ThermometerSun,
+  Timer,
+  TrafficCone,
+  TriangleAlert,
+  Wind,
+} from 'lucide-react';
 
 import { formatTemp, tempUnit } from '@shared/lib/telemetry-format';
 import { parseWeekendTemp } from './session-bars-format';
@@ -28,6 +37,7 @@ interface SessionFooterProps {
 export const SessionFooter = observer(({ settings }: SessionFooterProps) => {
   const {
     footerChipStyle: chipStyle,
+    chipLabelMode,
     showAirTemp,
     showTrackTemp,
     showTrackWetness,
@@ -35,6 +45,7 @@ export const SessionFooter = observer(({ settings }: SessionFooterProps) => {
     showIncidentsBadge: showIncidents,
     showPenalties,
   } = settings;
+  const useIcons = chipLabelMode === 'icon';
   const { pitStops, driverIdentities } = useBackendComputedStore();
   const { sessionInfo } = useSessionStore();
   const { environment } = useEnvironmentStore();
@@ -92,6 +103,7 @@ export const SessionFooter = observer(({ settings }: SessionFooterProps) => {
             presentation={chipStyle}
             tone="accent"
             lead="AIR"
+            labelIcon={useIcons ? Wind : undefined}
             look="reading"
           >
             {`${formatTemp(airCelsius, unitSystem)}${tUnit}`}
@@ -103,6 +115,7 @@ export const SessionFooter = observer(({ settings }: SessionFooterProps) => {
             presentation={chipStyle}
             tone="info"
             lead="TRACK"
+            labelIcon={useIcons ? ThermometerSun : undefined}
             look="reading"
           >
             {`${formatTemp(trkCelsius, unitSystem)}${tUnit}`}
@@ -114,6 +127,7 @@ export const SessionFooter = observer(({ settings }: SessionFooterProps) => {
             presentation={chipStyle}
             tone="accent"
             lead="SURFACE"
+            labelIcon={useIcons ? Road : undefined}
             look="reading"
           >
             {wetnessInfo.label}
@@ -126,6 +140,7 @@ export const SessionFooter = observer(({ settings }: SessionFooterProps) => {
           <StatChip
             presentation={chipStyle}
             lead="PIT"
+            labelIcon={useIcons ? TrafficCone : undefined}
             look="reading"
             tone="accent"
           >
@@ -139,6 +154,7 @@ export const SessionFooter = observer(({ settings }: SessionFooterProps) => {
             look="reading"
             tone={isNearLimit ? 'danger' : 'accent'}
             lead="INC"
+            labelIcon={useIcons ? TriangleAlert : undefined}
             limit={incidentLimit ?? undefined}
             valueDanger={isNearLimit}
           >
@@ -152,6 +168,7 @@ export const SessionFooter = observer(({ settings }: SessionFooterProps) => {
             look="reading"
             tone={isNearPenalty ? 'danger' : 'accent'}
             lead="TO PEN"
+            labelIcon={useIcons ? Timer : undefined}
             valueDanger={isNearPenalty}
           >
             {incidentsToPenalty}
@@ -162,6 +179,7 @@ export const SessionFooter = observer(({ settings }: SessionFooterProps) => {
           <StatChip
             presentation={chipStyle}
             lead="PEN"
+            labelIcon={useIcons ? Flag : undefined}
             look="reading"
             tone="accent"
           >
