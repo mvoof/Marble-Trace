@@ -1,3 +1,4 @@
+import { SessionBarSettingsCards } from '@features/widget-settings/panels/SessionBarSettingsCards';
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
 import { Segmented, Slider } from 'antd';
@@ -60,9 +61,6 @@ const SCROLL_RESET_OPTIONS = [0, 5, 8, 15, 30];
 
 const NAME_COLUMN_SLIDER_WIDTH_PX = 160;
 
-const isLapProgressShown = (settings: StandingsWidgetSettings): boolean =>
-  settings.showSessionHeader && settings.showLapProgress;
-
 export const StandingsSettingsPanel = observer(() => {
   const [settings, update] =
     usePanelSettings<StandingsWidgetSettings>('standings');
@@ -75,6 +73,7 @@ export const StandingsSettingsPanel = observer(() => {
   return (
     <>
       <Card group="columns">
+        <Row setting="showColumnHeaders" />
         <ColumnRows setting="columnOrder" toggles={COLUMN_TOGGLES} />
       </Card>
 
@@ -190,22 +189,7 @@ export const StandingsSettingsPanel = observer(() => {
         </div>
       </Card>
 
-      <Card title={t('settingsPanels.standings.headerInfo')}>
-        <Row setting="showColumnHeaders" />
-        <Row setting="showSessionHeader" />
-        <Row setting="showSessionTime" dependsOn="showSessionHeader" />
-        <Row setting="showLapProgress" dependsOn="showSessionHeader" />
-        <Row setting="lapCounter" dependsOn={isLapProgressShown} />
-        <Row setting="showSOF" />
-        <Row setting="abbreviateSof" dependsOn="showSOF" />
-        <Row setting="showTotalDrivers" />
-      </Card>
-
-      <Card title={t('settingsPanels.standings.footerInfo')}>
-        <Row setting="showPitStops" />
-        <Row setting="showIncidentsBadge" />
-        <Row setting="showWeather" />
-      </Card>
+      <SessionBarSettingsCards trackNameRow={<Row setting="showTrackName" />} />
 
       <Card title={t('settingsPanels.standings.scrolling')}>
         <div className={styles.fieldGroup}>
@@ -229,7 +213,6 @@ export const StandingsSettingsPanel = observer(() => {
       </Card>
 
       <Card group="display">
-        <Row setting="sessionChipStyle" stacked />
         <div className={styles.fieldGroup}>
           <Row setting="rowPadding" />
         </div>

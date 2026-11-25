@@ -108,12 +108,21 @@ export const ClassCycling: Story = {
   args: { settings: { viewMode: 'cycling' }, activeClassIndex: 0 },
 };
 
+const hiddenHeader = {
+  showTrackName: false,
+  showSessionType: false,
+  showSessionTime: false,
+  showTotalDrivers: false,
+  showSOF: false,
+  showLapProgress: false,
+};
+
 export const MinimalColumns: Story = {
   args: {
     settings: {
       showPosChange: false,
       showColumnHeaders: false,
-      showSessionHeader: false,
+      ...hiddenHeader,
     },
 
     showPosChange: false,
@@ -153,7 +162,7 @@ export const AbbreviatedNames: Story = {
 };
 
 export const NoHeaders: Story = {
-  args: { settings: { showColumnHeaders: false, showSessionHeader: false } },
+  args: { settings: { showColumnHeaders: false, ...hiddenHeader } },
 };
 
 export const GroupedByClass: Story = {
@@ -188,7 +197,10 @@ export const WithPitBadges: Story = {
     showIRatingChip: false,
     showIrChange: false,
     showLapsCompleted: false,
-    showWeather: false,
+    showAirTemp: false,
+    showTrackTemp: false,
+    showTrackWetness: false,
+    showPenalties: false,
     showPitStops: false,
     showIncidentsBadge: false,
     licBadgeStyle: 'dark',

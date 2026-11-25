@@ -152,6 +152,14 @@ export const ClosePack: Story = {
   parameters: previewScenario('field-close-pack'),
 };
 
+export const SessionBars: Story = {
+  args: {
+    settings: {
+      footerChipStyle: 'text',
+    },
+  },
+};
+
 export const MinimalView: Story = {
   // Three columns fewer: the frame narrows with them
   parameters: { widgetFrame: { width: 346 } },

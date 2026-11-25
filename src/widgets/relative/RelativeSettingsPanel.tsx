@@ -1,3 +1,4 @@
+import { SessionBarSettingsCards } from '@features/widget-settings/panels/SessionBarSettingsCards';
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
 import { Slider } from 'antd';
@@ -85,6 +86,8 @@ export const RelativeSettingsPanel = observer(() => {
           <Row setting="paceCarShowInPits" />
         </div>
       </Card>
+
+      <SessionBarSettingsCards />
 
       <Card group="display">
         <div className={styles.fieldGroup}>

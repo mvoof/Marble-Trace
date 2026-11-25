@@ -40,3 +40,21 @@
   font-weight: 800;
   letter-spacing: 0.02em;
 }
+
+.compact {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  flex-shrink: 0;
+  row-gap: sp(xxs);
+
+  .sessionLeft,
+  .sessionRight {
+    flex-wrap: wrap;
+  }
+}
+
+.compact .sessionLeft:empty,
+.compact .sessionRight:empty {
+  display: none;
+}

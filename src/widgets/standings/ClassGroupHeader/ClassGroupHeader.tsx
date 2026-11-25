@@ -46,7 +46,7 @@ export const ClassGroupHeader = observer(
         <div className={styles.left}>
           {paginationLabel && (
             <StatChip
-              presentation={settings.sessionChipStyle}
+              presentation={settings.headerChipStyle}
               lead={paginationLabel}
               leadKind="number"
               tone="neutral"
@@ -61,7 +61,7 @@ export const ClassGroupHeader = observer(
         <div className={styles.pills}>
           {settings.showSOF && (
             <StatChip
-              presentation={settings.sessionChipStyle}
+              presentation={settings.headerChipStyle}
               lead="SOF"
               look="reading"
               tone="accent"
@@ -71,7 +71,7 @@ export const ClassGroupHeader = observer(
           )}
 
           <StatChip
-            presentation={settings.sessionChipStyle}
+            presentation={settings.headerChipStyle}
             icon={Users}
             look="reading"
             tone="info"

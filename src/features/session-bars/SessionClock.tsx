@@ -1,4 +1,3 @@
-import { useWidgetSettings } from '@entities/layout/useWidgetSettings';
 import { observer } from 'mobx-react-lite';
 
 import {
@@ -14,7 +13,7 @@ import { useBlink, type BlinkCycle } from '@shared/hooks/useBlink';
 
 import { StatChip, type StatChipTone } from '@shared/ui/StatChip/StatChip';
 import styles from './SessionClock.module.scss';
-import type { StandingsWidgetSettings } from '../settings-schema';
+import type { StatChipPresentation } from '@shared/contracts/widget-choices';
 import { cx } from '@shared/lib/class-names';
 
 const URGENCY_CLASS: Record<ClockUrgency, string> = {
@@ -35,13 +34,15 @@ const URGENCY_TONE: Record<ClockUrgency, StatChipTone> = {
 // countdown runs out and the elapsed time takes over.
 const CLOCK_WIDTH_CHARS = 9;
 
+interface SessionClockProps {
+  chipStyle: StatChipPresentation;
+}
+
 /** The last minutes of a timed session: the clock dims and returns each second. */
 const CRITICAL_BLINK: BlinkCycle = { stepMs: 1000, steps: 2 };
 
-export const SessionClock = observer(() => {
+export const SessionClock = observer(({ chipStyle }: SessionClockProps) => {
   const { session, currentSession } = useSessionStore();
-
-  const settings = useWidgetSettings<StandingsWidgetSettings>('standings');
 
   const sessionState = session?.session_state ?? null;
   const isEnded = isSessionEnded(sessionState);
@@ -62,19 +63,13 @@ export const SessionClock = observer(() => {
   const urgency = isCountdown ? resolveClockUrgency(remain) : 'normal';
 
   const clockRef = useBlink<HTMLSpanElement>(
-    settings.showSessionTime && !isEnded && urgency === 'critical'
-      ? CRITICAL_BLINK
-      : null
+    !isEnded && urgency === 'critical' ? CRITICAL_BLINK : null
   );
-
-  if (!settings.showSessionTime) {
-    return null;
-  }
 
   if (isEnded) {
     return (
       <StatChip
-        presentation={settings.sessionChipStyle}
+        presentation={chipStyle}
         lead="TIME"
         look="reading"
         tone="muted"
@@ -94,9 +89,7 @@ export const SessionClock = observer(() => {
 
   return (
     <StatChip
-      presentation={
-        urgency === 'normal' ? settings.sessionChipStyle : 'semantic'
-      }
+      presentation={chipStyle}
       lead="TIME"
       look="reading"
       tone={URGENCY_TONE[urgency]}
@@ -105,6 +98,7 @@ export const SessionClock = observer(() => {
         ref={clockRef}
         className={cx(
           styles.clockValue,
+          chipStyle === 'semantic' ? styles.clockAccent : '',
           isLead ? '' : styles.clockMuted,
           URGENCY_CLASS[urgency]
         )}

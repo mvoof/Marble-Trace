@@ -1,8 +1,7 @@
-import { useWidgetSettings } from '@entities/layout/useWidgetSettings';
 import { observer } from 'mobx-react-lite';
 
 import { formatTemp, tempUnit } from '@shared/lib/telemetry-format';
-import { parseWeekendTemp } from '@widgets/standings/standings-utils';
+import { parseWeekendTemp } from './session-bars-format';
 import { getTrackWetnessInfo } from '@shared/lib/weather-utils';
 import {
   getIncidentPenaltyStatus,
@@ -16,27 +15,30 @@ import { useBackendComputedStore } from '@entities/cars/computed-context';
 import { useEnvironmentStore } from '@entities/environment/environment-context';
 import { useSessionStore } from '@entities/session/session-context';
 import { useUnitsStore } from '@entities/app-settings/units-context';
-import type { StandingsWidgetSettings } from '../settings-schema';
+import type { SessionBarSettings } from '@entities/session/session-bar-settings';
+
+interface SessionFooterProps {
+  settings: SessionBarSettings;
+}
 
 /**
  * The strip under the rows: track conditions at the left, the player's own
  * counts at the right, each a chip in the shape the rows use.
  */
-export const SessionFooter = observer(() => {
+export const SessionFooter = observer(({ settings }: SessionFooterProps) => {
+  const {
+    footerChipStyle: chipStyle,
+    showAirTemp,
+    showTrackTemp,
+    showTrackWetness,
+    showPitStops,
+    showIncidentsBadge: showIncidents,
+    showPenalties,
+  } = settings;
   const { pitStops, driverIdentities } = useBackendComputedStore();
   const { sessionInfo } = useSessionStore();
   const { environment } = useEnvironmentStore();
   const { unitSystem } = useUnitsStore();
-
-  const settings = useWidgetSettings<StandingsWidgetSettings>('standings');
-
-  const showWeather = settings.showWeather;
-  const showPitStops = settings.showPitStops;
-  const showIncidents = settings.showIncidentsBadge;
-
-  if (!showWeather && !showPitStops && !showIncidents) {
-    return null;
-  }
 
   const playerIncidents =
     driverIdentities.find((entry) => entry.isPlayer)?.incidents ?? 0;
@@ -71,12 +73,23 @@ export const SessionFooter = observer(() => {
 
   const wetnessInfo = getTrackWetnessInfo(environment?.trackWetness);
 
+  if (
+    !(showAirTemp && airCelsius !== null) &&
+    !(showTrackTemp && trkCelsius !== null) &&
+    !(showTrackWetness && wetnessInfo) &&
+    !showPitStops &&
+    !showIncidents &&
+    !(showPenalties && penaltyStatus)
+  ) {
+    return null;
+  }
+
   return (
     <div className={styles.sessionFooter}>
       <div className={styles.footerGroup}>
-        {showWeather && airCelsius !== null && (
+        {showAirTemp && airCelsius !== null && (
           <StatChip
-            presentation={settings.sessionChipStyle}
+            presentation={chipStyle}
             tone="accent"
             lead="AIR"
             look="reading"
@@ -85,9 +98,9 @@ export const SessionFooter = observer(() => {
           </StatChip>
         )}
 
-        {showWeather && trkCelsius !== null && (
+        {showTrackTemp && trkCelsius !== null && (
           <StatChip
-            presentation={settings.sessionChipStyle}
+            presentation={chipStyle}
             tone="info"
             lead="TRACK"
             look="reading"
@@ -96,9 +109,9 @@ export const SessionFooter = observer(() => {
           </StatChip>
         )}
 
-        {showWeather && wetnessInfo && (
+        {showTrackWetness && wetnessInfo && (
           <StatChip
-            presentation={settings.sessionChipStyle}
+            presentation={chipStyle}
             tone="accent"
             lead="SURFACE"
             look="reading"
@@ -111,7 +124,7 @@ export const SessionFooter = observer(() => {
       <div className={styles.footerGroup}>
         {showPitStops && (
           <StatChip
-            presentation={settings.sessionChipStyle}
+            presentation={chipStyle}
             lead="PIT"
             look="reading"
             tone="accent"
@@ -122,7 +135,7 @@ export const SessionFooter = observer(() => {
 
         {showIncidents && (
           <StatChip
-            presentation={isNearLimit ? 'semantic' : settings.sessionChipStyle}
+            presentation={isNearLimit ? 'semantic' : chipStyle}
             look="reading"
             tone={isNearLimit ? 'danger' : 'accent'}
             lead="INC"
@@ -133,11 +146,9 @@ export const SessionFooter = observer(() => {
           </StatChip>
         )}
 
-        {showIncidents && incidentsToPenalty !== null && (
+        {showPenalties && incidentsToPenalty !== null && (
           <StatChip
-            presentation={
-              isNearPenalty ? 'semantic' : settings.sessionChipStyle
-            }
+            presentation={isNearPenalty ? 'semantic' : chipStyle}
             look="reading"
             tone={isNearPenalty ? 'danger' : 'accent'}
             lead="TO PEN"
@@ -147,9 +158,9 @@ export const SessionFooter = observer(() => {
           </StatChip>
         )}
 
-        {showIncidents && penaltyStatus && (
+        {showPenalties && penaltyStatus && (
           <StatChip
-            presentation={settings.sessionChipStyle}
+            presentation={chipStyle}
             lead="PEN"
             look="reading"
             tone="accent"

@@ -1,9 +1,8 @@
+import { SESSION_BAR_SETTINGS } from '@entities/session/session-bar-settings';
 import {
-  LAP_COUNTER,
   LIC_BADGE_STYLE,
   ROW_PADDING,
   STANDINGS_VIEW_MODE,
-  STAT_CHIP_PRESENTATIONS,
 } from '@shared/contracts/widget-choices';
 import {
   bool,
@@ -120,34 +119,15 @@ export const STANDINGS_SETTINGS = defineSettings('standings', {
   driversBehind: num(0, PLAYER_WINDOW),
   /** Driver rows each class gets in grouped view (0 = split the widget height evenly between classes). */
   groupedRowsPerClass: num(0, { min: 0, max: 30, step: 1 }),
-  sessionChipStyle: choice(STAT_CHIP_PRESENTATIONS, 'semantic'),
+  ...SESSION_BAR_SETTINGS.shape,
   showColumnHeaders: bool(true),
-  /** The whole bar above the table: session type, field, SOF, track, laps and clock. */
-  showSessionHeader: bool(true),
-  /** Session time remaining (or elapsed) in the header, same clock as the Timer widget. */
-  showSessionTime: bool(true),
-  /** The lap out of the session's total, in the header. */
-  showLapProgress: bool(true),
-  /** Whose lap the header counts: the race's (the leader's) or the player's. */
-  lapCounter: choice(LAP_COUNTER, 'session', { label: 'common.lapCounter' }),
-  showWeather: bool(true),
-  showSOF: bool(true),
-  /**
-   * Round the SOF to a thousand ("6.1k") instead of spelling it out ("6148").
-   * Applies to the session header and to the per-class headers alike — the same
-   * number in two places must not be written two ways.
-   */
-  abbreviateSof: bool(true),
-  showTotalDrivers: bool(true),
+  showTrackName: bool(true),
   /** Badge marking a car that is on pit road or in its stall. */
   showPitIndicator: bool(true, { label: 'common.showPitIndicator' }),
   /** Mic beside the driver on the radio, in the channel's colour. */
   showRadioMark: bool(true, { label: 'common.showRadioMark' }),
   /** Lap and time on pit road of each car's latest stop, beside its name. */
   showPitStopTime: bool(true),
-  /** Player-only pit stop counter (counted on the frontend). */
-  showPitStops: bool(true),
-  showIncidentsBadge: bool(true),
   abbreviateNames: bool(false),
   showDriverFlags: bool(true),
   /**
