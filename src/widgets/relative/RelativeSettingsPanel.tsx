@@ -31,6 +31,7 @@ const COLUMN_TOGGLES: Record<
   sr: 'showLicBadge',
   ir: 'showIRating',
   gap: 'showGap',
+  speed: 'showSpeed',
   distance: 'showDistance',
 };
 const { nameColumnWidth } = RELATIVE_SETTINGS.shape;
@@ -73,6 +74,10 @@ export const RelativeSettingsPanel = observer(() => {
         />
         <Row setting="abbreviateIRating" disabled={!settings.showIRating} />
         <Row setting="showIRatingChip" disabled={!settings.showIRating} />
+      </Card>
+
+      <Card title={t('settingsPanels.common.speedCard')}>
+        <Row setting="showSpeedUnits" disabled={!settings.showSpeed} />
       </Card>
 
       <Card title={t('settingsPanels.common.positions')}>

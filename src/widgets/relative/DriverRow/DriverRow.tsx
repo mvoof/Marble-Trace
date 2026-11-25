@@ -29,6 +29,7 @@ import {
 import type { RelativeColumn } from '@widgets/relative/relative-columns';
 
 import { TrackDistance } from '../TrackDistance/TrackDistance';
+import { CarSpeed } from '../CarSpeed/CarSpeed';
 import type { RelativeWidgetSettings } from '../settings-schema';
 import styles from './DriverRow.module.scss';
 
@@ -203,6 +204,14 @@ export const DriverRow = observer(({ carIdx, index }: DriverRowProps) => {
             carIdx={driver.carIdx}
             isPaceCar={false}
             className={cellWithRule('distance', '')}
+          />
+        );
+      case 'speed':
+        return (
+          <CarSpeed
+            carIdx={driver.carIdx}
+            showUnits={settings.showSpeedUnits}
+            className={cellWithRule('speed', '')}
           />
         );
     }

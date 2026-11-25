@@ -72,6 +72,53 @@ describe('distance column', () => {
   });
 });
 
+describe('speed column', () => {
+  it('inserts speed after gap in an existing custom column order', () => {
+    const settings: RelativeWidgetSettings = {
+      ...RELATIVE_SETTINGS.defaults,
+      columnOrder: [
+        'distance',
+        'gap',
+        'name',
+        'pos',
+        'carNumber',
+        'countryFlag',
+        'sr',
+        'ir',
+      ],
+      showDistance: true,
+      showSpeed: true,
+    };
+
+    expect(visibleRelativeColumns(settings)).toEqual([
+      'distance',
+      'gap',
+      'speed',
+      'name',
+      'pos',
+      'carNumber',
+      'sr',
+      'ir',
+    ]);
+  });
+
+  it('narrows the visible speed column when its units are hidden', () => {
+    const base = RELATIVE_SETTINGS.defaults;
+    const withUnits = { ...base, showSpeed: true };
+    const withoutUnits = { ...withUnits, showSpeedUnits: false };
+
+    expect(computeRelativeDesignWidth(withUnits)).toBeGreaterThan(
+      computeRelativeDesignWidth(withoutUnits)
+    );
+    expect(computeRelativeDesignWidth(withoutUnits)).toBeGreaterThan(
+      computeRelativeDesignWidth(base)
+    );
+    expect(computeRelativeDesignWidth({ ...base, showSpeedUnits: false })).toBe(
+      computeRelativeDesignWidth(base)
+    );
+  });
+});
+
 describe('column order', () => {
   const withOrder = (
     columnOrder: readonly RelativeColumn[]

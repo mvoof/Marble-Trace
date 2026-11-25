@@ -16,6 +16,7 @@ import { useBackendComputedStore } from '@entities/cars/computed-context';
 import { useRelativeWidgetStore } from '@widgets/relative/relative.store';
 import type { RelativeWidgetSettings } from '../settings-schema';
 import { TrackDistance } from '../TrackDistance/TrackDistance';
+import { CarSpeed } from '../CarSpeed/CarSpeed';
 import { cx } from '@shared/lib/class-names';
 
 const RATING_COLUMNS: ReadonlySet<RelativeColumn> = new Set(['sr', 'ir']);
@@ -124,6 +125,14 @@ export const PaceCarRow = observer(({ carIdx, index }: PaceCarRowProps) => {
         );
       case 'distance':
         return <TrackDistance carIdx={driver.carIdx} isPaceCar />;
+      case 'speed':
+        return (
+          <CarSpeed
+            carIdx={driver.carIdx}
+            showUnits={settings.showSpeedUnits}
+            isPaceCar
+          />
+        );
       // No flag and no ratings for the safety car: the column stays empty.
       case 'countryFlag':
       case 'sr':
