@@ -37,7 +37,7 @@ interface SessionFooterProps {
 export const SessionFooter = observer(({ settings }: SessionFooterProps) => {
   const {
     footerChipStyle: chipStyle,
-    chipLabelMode,
+    footerChipLabelMode,
     showAirTemp,
     showTrackTemp,
     showTrackWetness,
@@ -45,7 +45,7 @@ export const SessionFooter = observer(({ settings }: SessionFooterProps) => {
     showIncidentsBadge: showIncidents,
     showPenalties,
   } = settings;
-  const useIcons = chipLabelMode === 'icon';
+  const useIcons = footerChipLabelMode === 'icon';
   const { pitStops, driverIdentities } = useBackendComputedStore();
   const { sessionInfo } = useSessionStore();
   const { environment } = useEnvironmentStore();

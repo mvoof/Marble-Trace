@@ -46,7 +46,7 @@ export const SessionHeader = observer(
   }: SessionHeaderProps) => {
     const {
       headerChipStyle: chipStyle,
-      chipLabelMode,
+      headerChipLabelMode,
       showSessionType,
       showTotalDrivers,
       abbreviateSof,
@@ -54,7 +54,7 @@ export const SessionHeader = observer(
       showLapProgress,
       showSessionTime,
     } = settings;
-    const useIcons = chipLabelMode === 'icon';
+    const useIcons = headerChipLabelMode === 'icon';
     const showSof = settings.showSOF && !hasClassHeaders;
     const { driverIdentities, leaderLap } = useBackendComputedStore();
     const playerPosition = usePlayerPositionStore();

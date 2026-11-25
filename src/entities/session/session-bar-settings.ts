@@ -9,6 +9,10 @@ import {
   type SettingsOf,
 } from '@shared/lib/widget-settings-dsl';
 
+const CHIP_LABEL_MODE = choice(['text', 'icon'], 'text', {
+  label: 'common.chipLabelMode',
+});
+
 export const SESSION_BAR_SETTINGS = defineSettings('common', {
   showSessionType: bool(true, { label: 'common.showSessionType' }),
   showTotalDrivers: bool(true, { label: 'common.showTotalDrivers' }),
@@ -20,12 +24,11 @@ export const SESSION_BAR_SETTINGS = defineSettings('common', {
   headerChipStyle: choice(STAT_CHIP_PRESENTATIONS, 'semantic', {
     label: 'common.barChipStyle',
   }),
+  headerChipLabelMode: CHIP_LABEL_MODE,
   footerChipStyle: choice(STAT_CHIP_PRESENTATIONS, 'semantic', {
     label: 'common.barChipStyle',
   }),
-  chipLabelMode: choice(['text', 'icon'], 'text', {
-    label: 'common.chipLabelMode',
-  }),
+  footerChipLabelMode: CHIP_LABEL_MODE,
   showAirTemp: bool(true, { label: 'common.showAirTemp' }),
   showTrackTemp: bool(true, { label: 'common.showTrackTemp' }),
   showTrackWetness: bool(true, { label: 'common.showTrackWetness' }),

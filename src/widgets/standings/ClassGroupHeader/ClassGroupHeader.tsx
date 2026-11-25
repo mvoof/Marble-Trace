@@ -33,7 +33,7 @@ export const ClassGroupHeader = observer(
     isScrollTarget = false,
   }: ClassGroupHeaderProps) => {
     const settings = useWidgetSettings<StandingsWidgetSettings>('standings');
-    const useIcons = settings.chipLabelMode === 'icon';
+    const useIcons = settings.headerChipLabelMode === 'icon';
 
     return (
       <div

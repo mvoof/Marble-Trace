@@ -213,8 +213,6 @@ export const StandingsSettingsPanel = observer(() => {
       </Card>
 
       <Card group="display">
-        <Row setting="chipLabelMode" stacked wrapOptions />
-
         <div className={styles.fieldGroup}>
           <Row setting="rowPadding" />
         </div>
