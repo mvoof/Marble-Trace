@@ -7,8 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Standings** gains a choice of colored, neutral or text-only chips in the header and footer of each widget instance. Final laps, urgent countdowns and incident warnings keep their signal colors.
+
 ### Changed
 
+- **Sector Matrix** shows the last lap as plain text so the best lap stands out.
 - **Website — Widget Gallery:** Refresh the widget examples and screenshots, including the pit exit, towing and input trace layouts.
 - **Website — Homepage:** Refine the brand marks and footer attribution; the cockpit widgets keep their positions while scaling with the screen, up to the source image size.
 
