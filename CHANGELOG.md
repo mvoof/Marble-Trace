@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Relative — Session Header and Footer:** See session type, driver count, SOF, laps and time above the table, with temperatures, track wetness, pit stops, incidents and penalties below. Relative and Standings now share controls for individual items and separate chip styles for each bar. Turn off all items in a bar to hide it.
 - **Standings** gains a choice of colored, neutral or text-only chips in the header and footer of each widget instance. Final laps, urgent countdowns and incident warnings keep their signal colors.
 
 ### Changed
