@@ -72,6 +72,7 @@
   },
   "updateBanner": {
     "downloading": "Aktualisierung wird heruntergeladen …",
+    "installing": "Aktualisierung wird installiert …",
     "ready": "Aktualisierung heruntergeladen. Neustart …",
     "available": "Version v{{version}} ist verfügbar",
     "updateAndRestart": "Aktualisieren und neu starten"

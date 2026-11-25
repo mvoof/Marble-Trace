@@ -5,6 +5,7 @@ import { ReleaseNotesButton } from '@pages/settings/ReleaseNotesButton/ReleaseNo
 import styles from './UpdateBanner.module.scss';
 import { useAppUpdateStore } from '@features/app-update/app-update-context';
 import type { UpdateStatus } from '@features/app-update/app-update.store';
+import { UpdateProgress } from '@features/app-update/UpdateProgress';
 
 const BANNER_STATUSES: UpdateStatus[] = ['available', 'downloading', 'ready'];
 
@@ -25,7 +26,9 @@ export const UpdateBanner = observer(() => {
   if (!BANNER_STATUSES.includes(updateStatus)) return null;
 
   const titles: Partial<Record<UpdateStatus, string>> = {
-    downloading: t('updateBanner.downloading'),
+    downloading: appUpdate.downloadProgress?.finished
+      ? t('updateBanner.installing')
+      : t('updateBanner.downloading'),
     ready: t('updateBanner.ready'),
   };
 
@@ -37,6 +40,9 @@ export const UpdateBanner = observer(() => {
   return (
     <Alert
       title={title}
+      description={
+        updateStatus === 'downloading' ? <UpdateProgress /> : undefined
+      }
       type={ALERT_TYPES[updateStatus] ?? 'info'}
       showIcon
       closable={

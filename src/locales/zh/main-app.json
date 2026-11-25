@@ -71,6 +71,7 @@
   },
   "updateBanner": {
     "downloading": "正在下载更新...",
+    "installing": "正在安装更新...",
     "ready": "更新已下载，正在重启...",
     "available": "v{{version}} 版本可用",
     "updateAndRestart": "更新并重启"

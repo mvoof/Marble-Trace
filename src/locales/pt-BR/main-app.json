@@ -72,6 +72,7 @@
   },
   "updateBanner": {
     "downloading": "Baixando atualização…",
+    "installing": "Instalando atualização…",
     "ready": "Atualização baixada. Reiniciando…",
     "available": "A versão v{{version}} está disponível",
     "updateAndRestart": "Atualizar e reiniciar"

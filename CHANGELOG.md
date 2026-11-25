@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Standings** gains a choice of colored, neutral or frameless chips in the header and footer of each widget instance. Final laps, urgent countdowns and incident warnings keep their signal colors.
 - **Standings and Relative — Chip Labels:** Choose text or icons separately for the header and footer. For example, the surface chip can show a road icon beside the track condition.
 - **Relative — Speed Column:** Turn on Speed to see how fast nearby cars are going in km/h or mph. It starts after Gap and can be dragged to another position. Hide the unit labels for a narrower column.
+- **Application Updates — Download Progress:** See how much of the update has downloaded in the banner and in Settings → Updates. A progress bar shows the downloaded and total size when the server provides it. If the total is unknown, a spinner appears alongside the amount received.
 
 ### Changed
 
