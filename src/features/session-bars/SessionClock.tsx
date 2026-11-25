@@ -89,7 +89,7 @@ export const SessionClock = observer(({ chipStyle }: SessionClockProps) => {
 
   return (
     <StatChip
-      presentation={urgency === 'normal' ? chipStyle : 'semantic'}
+      presentation={chipStyle}
       lead="TIME"
       look="reading"
       tone={URGENCY_TONE[urgency]}
@@ -98,6 +98,7 @@ export const SessionClock = observer(({ chipStyle }: SessionClockProps) => {
         ref={clockRef}
         className={cx(
           styles.clockValue,
+          chipStyle === 'semantic' ? styles.clockAccent : '',
           isLead ? '' : styles.clockMuted,
           URGENCY_CLASS[urgency]
         )}

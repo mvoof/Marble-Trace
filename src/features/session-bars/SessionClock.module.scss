@@ -1,9 +1,12 @@
 // Holds the reserved width, so a countdown running out never shifts the header.
 .clockValue {
   display: inline-block;
-  color: $chip-accent;
   text-align: right;
   font-variant-numeric: tabular-nums;
+}
+
+.clockAccent {
+  color: $chip-accent;
 }
 
 // The value that ends the session leads; the other recedes.
