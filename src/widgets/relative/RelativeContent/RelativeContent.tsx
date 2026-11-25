@@ -1,3 +1,5 @@
+import { SessionFooter } from '@features/session-bars/SessionFooter';
+import { SessionHeader } from '@features/session-bars/SessionHeader';
 import { useWidgetSettings } from '@entities/layout/useWidgetSettings';
 import { useMemo } from 'react';
 import { observer } from 'mobx-react-lite';
@@ -29,7 +31,7 @@ export const RelativeContent = observer(() => {
   const relativeWidget = useRelativeWidgetStore();
   const sim = useSimStore();
 
-  const { rowPadding } = useWidgetSettings<RelativeWidgetSettings>('relative');
+  const settings = useWidgetSettings<RelativeWidgetSettings>('relative');
 
   const rows = relativeWidget.rowOrder;
 
@@ -39,9 +41,9 @@ export const RelativeContent = observer(() => {
 
   const { ref: driverListRef, count: visibleRowCount } =
     useVisibleRowCount<HTMLDivElement>(
-      rowPadding === 'wide'
+      settings.rowPadding === 'wide'
         ? WIDE_ROW_HEIGHT
-        : rowPadding === 'medium'
+        : settings.rowPadding === 'medium'
           ? MEDIUM_ROW_HEIGHT
           : NARROW_ROW_HEIGHT,
       MIN_VISIBLE_ROWS,
@@ -80,14 +82,40 @@ export const RelativeContent = observer(() => {
   }
 
   return (
-    <div ref={driverListRef} className={styles.driverList}>
-      {displayRows.map((row, index) =>
-        row.isPaceCar ? (
-          <PaceCarRow key={row.carIdx} carIdx={row.carIdx} index={index} />
-        ) : (
-          <DriverRow key={row.carIdx} carIdx={row.carIdx} index={index} />
-        )
+    <>
+      {settings.showSessionHeader && (
+        <SessionHeader
+          chipStyle={settings.headerChipStyle}
+          showSessionType={settings.showSessionType}
+          showTrackName={false}
+          showSof={settings.showSOF}
+          showTotalDrivers={settings.showTotalDrivers}
+          abbreviateSof={settings.abbreviateSof}
+          lapCounter={settings.lapCounter}
+          showLapProgress={settings.showLapProgress}
+          showSessionTime={settings.showSessionTime}
+        />
       )}
-    </div>
+      <div ref={driverListRef} className={styles.driverList}>
+        {displayRows.map((row, index) =>
+          row.isPaceCar ? (
+            <PaceCarRow key={row.carIdx} carIdx={row.carIdx} index={index} />
+          ) : (
+            <DriverRow key={row.carIdx} carIdx={row.carIdx} index={index} />
+          )
+        )}
+      </div>
+      {settings.showSessionFooter && (
+        <SessionFooter
+          chipStyle={settings.footerChipStyle}
+          showAirTemp={settings.showAirTemp}
+          showTrackTemp={settings.showTrackTemp}
+          showTrackWetness={settings.showTrackWetness}
+          showPitStops={settings.showPitStops}
+          showIncidents={settings.showIncidentsBadge}
+          showPenalties={settings.showPenalties}
+        />
+      )}
+    </>
   );
 });

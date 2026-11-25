@@ -13,7 +13,10 @@ import { useAppSettingsStore } from '@entities/app-settings/app-settings-context
 import { useBackendComputedStore } from '@entities/cars/computed-context';
 import { useSimStore } from '@entities/sim/sim-context';
 import { useStandingsWidgetStore } from '@widgets/standings/standings.store';
-import { buildVisibleRows } from '@widgets/standings/standings-utils';
+import {
+  buildVisibleRows,
+  drawsClassHeaders,
+} from '@widgets/standings/standings-utils';
 import { computeClassSof } from '@shared/lib/driver';
 import { SINGLE_LIST_SCROLL_KEY } from '@widgets/standings/standings-scroll.store';
 import type { ScrollMetrics } from '@shared/lib/canvas';
@@ -24,12 +27,12 @@ import {
   ROW_KEY_ATTRIBUTE,
 } from '@shared/hooks/useRowMoveAnimation';
 import { NoDataPlaceholder } from '@shared/ui/NoDataPlaceholder/NoDataPlaceholder';
-import { SessionHeader } from '@widgets/standings/SessionHeader/SessionHeader';
+import { SessionHeader } from '@features/session-bars/SessionHeader';
 import { ClassGroup } from '@widgets/standings/ClassGroup/ClassGroup';
 import { CLASS_HEADER_ATTRIBUTE } from '@widgets/standings/ClassGroupHeader/ClassGroupHeader';
 import { ClassSwitcher } from '@widgets/standings/ClassSwitcher/ClassSwitcher';
 import { StandingsHeader } from '@widgets/standings/StandingsHeader/StandingsHeader';
-import { SessionFooter } from '@widgets/standings/SessionFooter/SessionFooter';
+import { SessionFooter } from '@features/session-bars/SessionFooter';
 
 import styles from './StandingsContent.module.scss';
 import type { StandingsWidgetSettings } from '../settings-schema';
@@ -265,7 +268,22 @@ export const StandingsContent = observer(() => {
 
   return (
     <>
-      <SessionHeader />
+      {settings.showSessionHeader && (
+        <SessionHeader
+          chipStyle={settings.sessionChipStyle}
+          showSessionType={true}
+          showTrackName={true}
+          showSof={
+            settings.showSOF &&
+            !drawsClassHeaders(settings.viewMode, allClassGroups.length)
+          }
+          showTotalDrivers={settings.showTotalDrivers}
+          abbreviateSof={settings.abbreviateSof}
+          lapCounter={settings.lapCounter}
+          showLapProgress={settings.showLapProgress}
+          showSessionTime={settings.showSessionTime}
+        />
+      )}
 
       {!hasData ? (
         <NoDataPlaceholder />
@@ -316,7 +334,15 @@ export const StandingsContent = observer(() => {
             />
           </div>
 
-          <SessionFooter />
+          <SessionFooter
+            chipStyle={settings.sessionChipStyle}
+            showAirTemp={settings.showWeather}
+            showTrackTemp={settings.showWeather}
+            showTrackWetness={settings.showWeather}
+            showPitStops={settings.showPitStops}
+            showIncidents={settings.showIncidentsBadge}
+            showPenalties={settings.showIncidentsBadge}
+          />
         </>
       )}
     </>

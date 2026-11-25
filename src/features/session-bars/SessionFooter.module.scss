@@ -19,3 +19,14 @@
   gap: sp(xs);
   min-width: 0;
 }
+
+.sessionFooter,
+.footerGroup {
+  flex-wrap: wrap;
+}
+.sessionFooter {
+  flex-shrink: 0;
+}
+.footerGroup:empty {
+  display: none;
+}

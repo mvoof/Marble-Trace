@@ -1,0 +1,181 @@
+import { observer } from 'mobx-react-lite';
+
+import { formatTemp, tempUnit } from '@shared/lib/telemetry-format';
+import { parseWeekendTemp } from './session-bars-format';
+import { getTrackWetnessInfo } from '@shared/lib/weather-utils';
+import {
+  getIncidentPenaltyStatus,
+  isNearIncidentLimit,
+  isNearIncidentPenalty,
+} from '@shared/lib/driver';
+
+import { StatChip } from '@shared/ui/StatChip/StatChip';
+import styles from './SessionFooter.module.scss';
+import { useBackendComputedStore } from '@entities/cars/computed-context';
+import { useEnvironmentStore } from '@entities/environment/environment-context';
+import { useSessionStore } from '@entities/session/session-context';
+import { useUnitsStore } from '@entities/app-settings/units-context';
+import type { StatChipPresentation } from '@shared/contracts/widget-choices';
+
+interface SessionFooterProps {
+  chipStyle: StatChipPresentation;
+  showAirTemp: boolean;
+  showTrackTemp: boolean;
+  showTrackWetness: boolean;
+  showPitStops: boolean;
+  showIncidents: boolean;
+  showPenalties: boolean;
+}
+
+/**
+ * The strip under the rows: track conditions at the left, the player's own
+ * counts at the right, each a chip in the shape the rows use.
+ */
+export const SessionFooter = observer(
+  ({
+    chipStyle,
+    showAirTemp,
+    showTrackTemp,
+    showTrackWetness,
+    showPitStops,
+    showIncidents,
+    showPenalties,
+  }: SessionFooterProps) => {
+    const { pitStops, driverIdentities } = useBackendComputedStore();
+    const { sessionInfo } = useSessionStore();
+    const { environment } = useEnvironmentStore();
+    const { unitSystem } = useUnitsStore();
+
+    const playerIncidents =
+      driverIdentities.find((entry) => entry.isPlayer)?.incidents ?? 0;
+
+    // Null in practice and most hosted sessions, where incidents are uncapped.
+    const incidentLimit = sessionInfo?.incidentLimit ?? null;
+    const isNearLimit = isNearIncidentLimit(playerIncidents, incidentLimit);
+
+    // Sessions with a drive-through every N incidents, whether or not they also
+    // disqualify. Null when the session hands out no penalties.
+    const penaltyStatus = getIncidentPenaltyStatus(playerIncidents, {
+      initial: sessionInfo?.incidentPenaltyInitial ?? null,
+      subsequent: sessionInfo?.incidentPenaltySubsequent ?? null,
+      limit: incidentLimit,
+    });
+    const isNearPenalty = isNearIncidentPenalty(playerIncidents, penaltyStatus);
+
+    const incidentsToPenalty =
+      penaltyStatus?.nextAt == null
+        ? null
+        : Math.max(0, penaltyStatus.nextAt - playerIncidents);
+
+    const playerPitStops = pitStops?.playerStops ?? 0;
+
+    const airCelsius =
+      environment?.airTemp ?? parseWeekendTemp(sessionInfo?.trackAirTemp);
+
+    const trkCelsius =
+      environment?.trackTemp ?? parseWeekendTemp(sessionInfo?.trackSurfaceTemp);
+
+    const tUnit = tempUnit(unitSystem);
+
+    const wetnessInfo = getTrackWetnessInfo(environment?.trackWetness);
+
+    if (
+      !(showAirTemp && airCelsius !== null) &&
+      !(showTrackTemp && trkCelsius !== null) &&
+      !(showTrackWetness && wetnessInfo) &&
+      !showPitStops &&
+      !showIncidents &&
+      !(showPenalties && penaltyStatus)
+    ) {
+      return null;
+    }
+
+    return (
+      <div className={styles.sessionFooter}>
+        <div className={styles.footerGroup}>
+          {showAirTemp && airCelsius !== null && (
+            <StatChip
+              presentation={chipStyle}
+              tone="accent"
+              lead="AIR"
+              look="reading"
+            >
+              {`${formatTemp(airCelsius, unitSystem)}${tUnit}`}
+            </StatChip>
+          )}
+
+          {showTrackTemp && trkCelsius !== null && (
+            <StatChip
+              presentation={chipStyle}
+              tone="info"
+              lead="TRACK"
+              look="reading"
+            >
+              {`${formatTemp(trkCelsius, unitSystem)}${tUnit}`}
+            </StatChip>
+          )}
+
+          {showTrackWetness && wetnessInfo && (
+            <StatChip
+              presentation={chipStyle}
+              tone="accent"
+              lead="SURFACE"
+              look="reading"
+            >
+              {wetnessInfo.label}
+            </StatChip>
+          )}
+        </div>
+
+        <div className={styles.footerGroup}>
+          {showPitStops && (
+            <StatChip
+              presentation={chipStyle}
+              lead="PIT"
+              look="reading"
+              tone="accent"
+            >
+              {playerPitStops}
+            </StatChip>
+          )}
+
+          {showIncidents && (
+            <StatChip
+              presentation={isNearLimit ? 'semantic' : chipStyle}
+              look="reading"
+              tone={isNearLimit ? 'danger' : 'accent'}
+              lead="INC"
+              limit={incidentLimit ?? undefined}
+              valueDanger={isNearLimit}
+            >
+              {incidentLimit === null ? `${playerIncidents}x` : playerIncidents}
+            </StatChip>
+          )}
+
+          {showPenalties && incidentsToPenalty !== null && (
+            <StatChip
+              presentation={isNearPenalty ? 'semantic' : chipStyle}
+              look="reading"
+              tone={isNearPenalty ? 'danger' : 'accent'}
+              lead="TO PEN"
+              valueDanger={isNearPenalty}
+            >
+              {incidentsToPenalty}
+            </StatChip>
+          )}
+
+          {showPenalties && penaltyStatus && (
+            <StatChip
+              presentation={chipStyle}
+              lead="PEN"
+              look="reading"
+              tone="accent"
+            >
+              {penaltyStatus.served}
+            </StatChip>
+          )}
+        </div>
+      </div>
+    );
+  }
+);

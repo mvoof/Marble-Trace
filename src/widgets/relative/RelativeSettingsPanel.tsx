@@ -86,6 +86,37 @@ export const RelativeSettingsPanel = observer(() => {
         </div>
       </Card>
 
+      <Card title={t('settingsPanels.standings.headerInfo')}>
+        <Row setting="showSessionHeader" />
+        <Row setting="showSessionType" dependsOn="showSessionHeader" />
+        <Row setting="showTotalDrivers" dependsOn="showSessionHeader" />
+        <Row setting="showSOF" dependsOn="showSessionHeader" />
+        <Row
+          setting="abbreviateSof"
+          dependsOn={(current) => current.showSessionHeader && current.showSOF}
+        />
+        <Row setting="showLapProgress" dependsOn="showSessionHeader" />
+        <Row
+          setting="lapCounter"
+          dependsOn={(current) =>
+            current.showSessionHeader && current.showLapProgress
+          }
+        />
+        <Row setting="showSessionTime" dependsOn="showSessionHeader" />
+        <Row setting="headerChipStyle" dependsOn="showSessionHeader" stacked />
+      </Card>
+
+      <Card title={t('settingsPanels.standings.footerInfo')}>
+        <Row setting="showSessionFooter" />
+        <Row setting="showAirTemp" dependsOn="showSessionFooter" />
+        <Row setting="showTrackTemp" dependsOn="showSessionFooter" />
+        <Row setting="showTrackWetness" dependsOn="showSessionFooter" />
+        <Row setting="showPitStops" dependsOn="showSessionFooter" />
+        <Row setting="showIncidentsBadge" dependsOn="showSessionFooter" />
+        <Row setting="showPenalties" dependsOn="showSessionFooter" />
+        <Row setting="footerChipStyle" dependsOn="showSessionFooter" stacked />
+      </Card>
+
       <Card group="display">
         <div className={styles.fieldGroup}>
           <Row setting="rowPadding" />
