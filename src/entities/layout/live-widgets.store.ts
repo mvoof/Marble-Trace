@@ -192,10 +192,10 @@ export class LiveWidgetsStore implements WidgetMap {
 
   /**
    * Main side, while a client's command runs (`applyClientCommand`): every
-   * write lands in the live layout instead of the edited one, and leaves no
+   * write lands in the command's layout instead of the edited one, and leaves no
    * undo step.
    */
-  private applyingClientCommand = false;
+  private clientCommandLayoutId: string | null = null;
 
   constructor(
     private readonly mutations: SettingsMutationLog,
@@ -311,7 +311,7 @@ export class LiveWidgetsStore implements WidgetMap {
   pushUndo() {
     // The editor's history is the editor's: a drag on an overlay is not a step
     // the editor's undo button walks back.
-    if (this.applyingClientCommand) return;
+    if (this.clientCommandLayoutId !== null) return;
 
     this.history.push(this.snapshotWidgets());
   }
@@ -319,16 +319,20 @@ export class LiveWidgetsStore implements WidgetMap {
   /**
    * Runs an overlay's command (ADR-0007) through the same methods the editor
    * uses — clamping to the monitor, the layout resize of a column toggle, the
-   * fuel values the backend keeps — but against the layout on screen, which
-   * is the one the overlay draws, and without an undo step.
+   * fuel values the backend keeps — against the layout the client drew when
+   * it made the edit, without an undo step.
    */
-  applyClientCommand<Result>(command: () => Result): Result {
-    this.applyingClientCommand = true;
+  applyClientCommand<Result>(
+    command: () => Result,
+    layoutId = this.layoutRecords.liveLayoutId
+  ): Result {
+    const previousLayoutId = this.clientCommandLayoutId;
+    this.clientCommandLayoutId = layoutId;
 
     try {
       return command();
     } finally {
-      this.applyingClientCommand = false;
+      this.clientCommandLayoutId = previousLayoutId;
     }
   }
 
@@ -642,11 +646,16 @@ export class LiveWidgetsStore implements WidgetMap {
    * Where `updatePosition` would put a widget, without putting it there — an
    * overlay draws a drag at once and lets main make it so.
    */
-  clampedPosition(id: string, x: number, y: number): { x: number; y: number } {
+  clampedPosition(
+    id: string,
+    x: number,
+    y: number,
+    gridSize?: number
+  ): { x: number; y: number } {
     const widget = this.getWidget(id);
 
     return widget
-      ? clampOnOwnMonitor(widget, this.editingMonitors, { x, y })
+      ? clampOnOwnMonitor(widget, this.editingMonitors, { x, y }, gridSize)
       : { x, y };
   }
 
@@ -983,8 +992,8 @@ export class LiveWidgetsStore implements WidgetMap {
    * working copy, not the record behind it.
    */
   private get editingLayout(): SavedLayout | undefined {
-    return this.applyingClientCommand
-      ? this.layoutRecords.liveLayout
+    return this.clientCommandLayoutId !== null
+      ? this.layoutRecords.byId(this.clientCommandLayoutId)
       : this.layoutRecords.editingLayout;
   }
 

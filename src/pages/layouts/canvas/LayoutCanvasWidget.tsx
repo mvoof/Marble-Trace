@@ -80,7 +80,6 @@ export const LayoutCanvasWidget = observer(
           mainSettings.pushUndo();
         },
         snap: snap ? { gridSize, area: world } : null,
-        resizeSnapGrid: snap ? gridSize : undefined,
         keepsRatio: (moveEvent) => moveEvent.shiftKey || isRatioLocked,
       }
     );

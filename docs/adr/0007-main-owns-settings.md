@@ -68,7 +68,9 @@ that logic never leaks into a client.
 | `patchSettings`       | `widgetId, partial`                      | `updateUserSettings`            |
 
 Every command also carries `commandNo` (the client's own counter, from 1) and
-`layoutId`; main rejects a command whose `layoutId` is not the live layout.
+`layoutId`. Main rejects commands for a different layout, with one exception:
+a pending `patchSettings` can finish on its original layout after a switch if
+the layout, monitor, and widget still exist there.
 
 - **Coalescing.** `patchSettings` for one widget is merged over 50 ms and the
   last value sent; `setGeometry` is sent every 50–100 ms during a drag or

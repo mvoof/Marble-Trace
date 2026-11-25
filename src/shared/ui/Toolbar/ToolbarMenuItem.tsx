@@ -11,6 +11,7 @@ const ICON_SIZE = 14;
 interface ToolbarMenuItemProps {
   icon?: LucideIcon;
   label: ReactNode;
+  wrapLabel?: boolean;
   /** Muted text after the label: a hint, a size, a state. */
   note?: ReactNode;
   /** A toggle or a choice: a tick when on. */
@@ -26,6 +27,7 @@ export const ToolbarMenuItem = observer(
   ({
     icon: Icon,
     label,
+    wrapLabel,
     note,
     isChecked,
     isDisabled = false,
@@ -35,7 +37,7 @@ export const ToolbarMenuItem = observer(
     <div className={cx(styles.row, isChecked && styles.rowChecked)}>
       <button
         type="button"
-        className={styles.item}
+        className={cx(styles.item, wrapLabel && styles.itemWrap)}
         role={isChecked === undefined ? 'menuitem' : 'menuitemcheckbox'}
         aria-checked={isChecked}
         disabled={isDisabled}

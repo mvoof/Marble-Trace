@@ -325,7 +325,7 @@ export class AppSettingsStore {
 
   applySettings(saved: Partial<AppSettings>) {
     const merged = mergeWithDefaults(DEFAULT_APP_SETTINGS, saved);
-    Object.assign(this.appSettings, merged);
+    this.update(merged);
 
     void i18n.changeLanguage(resolveAppLanguage(this.appSettings.language));
   }
@@ -335,6 +335,15 @@ export class AppSettingsStore {
    * the save reaction watches the settings themselves.
    */
   update(patch: Partial<AppSettings>) {
+    const { editorGridSize } = patch;
+
+    if (
+      editorGridSize !== undefined &&
+      (!Number.isFinite(editorGridSize) || editorGridSize <= 0)
+    ) {
+      patch = { ...patch, editorGridSize: DEFAULT_APP_SETTINGS.editorGridSize };
+    }
+
     Object.assign(this.appSettings, patch);
   }
 

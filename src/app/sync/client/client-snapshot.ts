@@ -1,5 +1,4 @@
 import {
-  DEFAULT_APP_SETTINGS,
   fuelStrategyOf,
   pitStrategyOf,
 } from '@entities/app-settings/app-settings.store';
@@ -83,18 +82,26 @@ export const overlaySnapshotFor = (
     return null;
   }
 
+  return {
+    ...clientSnapshotFor(root, layout, monitor),
+    ...overlaySnapshotInputs(root),
+  };
+};
+
+export const overlaySnapshotInputs = (
+  root: MainRoot
+): Omit<OverlaySnapshot, keyof ClientSnapshot> => {
   const { editorShowGrid, editorSnapToGrid, editorGridSize } =
     root.appSettings.appSettings;
 
   return {
-    ...clientSnapshotFor(root, layout, monitor),
-    layoutChoices: root.layouts.layouts.map(({ id, name }) => ({ id, name })),
+    layoutChoices: root.layouts.layouts.map(({ id: layoutId, name }) => ({
+      id: layoutId,
+      name,
+    })),
     editorShowGrid,
     editorSnapToGrid,
-    editorGridSize:
-      Number.isFinite(editorGridSize) && editorGridSize > 0
-        ? editorGridSize
-        : DEFAULT_APP_SETTINGS.editorGridSize,
+    editorGridSize,
   };
 };
 

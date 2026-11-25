@@ -52,10 +52,8 @@ export interface WidgetGestureOptions {
   enabled: boolean;
   /** Runs at the press, before the start is read: the editor selects the widget and takes an undo step. */
   onGestureStart?: () => void;
-  /** The active placement grid. */
+  /** The placement grid for drags and resizes. */
   snap?: DragSnap | null;
-  /** The editor also snaps during resize. */
-  resizeSnapGrid?: number;
   /** Whether a resize step keeps the start's shape: Shift or the editor's ratio lock. */
   keepsRatio?: (moveEvent: MouseEvent) => boolean;
 }
@@ -204,7 +202,7 @@ export const useWidgetGestures = (
               scaleFromHeight: widget?.scaleFromHeight,
               lockAspectRatio: widget?.lockAspectRatio,
             },
-            snapGrid: gesture.resizeSnapGrid,
+            snapGrid: gesture.snap?.gridSize,
             keepRatio: gesture.keepsRatio?.(moveEvent) ?? false,
           });
 

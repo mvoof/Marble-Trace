@@ -18,7 +18,8 @@ export const DragModeBar = observer(() => {
   const { liveLayout } = useLayoutsStore();
   const { settingsClient } = useOverlayRoot();
   const { t } = useTranslation('main-app');
-  const { editorShowGrid, editorSnapToGrid } = appSettings.appSettings;
+  const { gridVisible, gridSnapping } = settingsClient;
+  const gridLabel = t('layoutEditor.grid');
   const switchLayout = t('overlayCanvas.switchLayout');
   const finishEditing = t('overlayCanvas.finishEditing');
 
@@ -42,13 +43,14 @@ export const DragModeBar = observer(() => {
       >
         {({ close }) => (
           <div role="menu" aria-label={switchLayout}>
-            {settingsClient.layoutChoices.map(({ id, name }) => (
+            {settingsClient.layoutChoices.map(({ id: layoutId, name }) => (
               <ToolbarMenuItem
-                key={id}
+                key={layoutId}
                 label={name}
-                isChecked={id === liveLayout?.id}
+                wrapLabel
+                isChecked={layoutId === liveLayout?.id}
                 onClick={() => {
-                  settingsClient.switchLayout(id);
+                  settingsClient.switchLayout(layoutId);
                   close();
                 }}
               />
@@ -66,7 +68,8 @@ export const DragModeBar = observer(() => {
         trigger={({ isOpen, toggle }) => (
           <ToolbarButton
             icon={Grid3x3}
-            title={t('layoutEditor.grid')}
+            label={gridLabel}
+            title={gridLabel}
             isSelect
             isExpanded={isOpen}
             isDisabled={!liveLayout}
@@ -75,19 +78,23 @@ export const DragModeBar = observer(() => {
         )}
       >
         {() => (
-          <div role="menu" aria-label={t('layoutEditor.grid')}>
+          <div role="menu" aria-label={gridLabel}>
             <ToolbarMenuItem
               icon={Grid3x3}
               label={t('layoutEditor.toggleGridTooltip')}
-              isChecked={editorShowGrid}
-              onClick={() => settingsClient.setGridVisibility(!editorShowGrid)}
+              isChecked={gridVisible}
+              onClick={() =>
+                settingsClient.setGridVisibility(!settingsClient.gridVisible)
+              }
             />
 
             <ToolbarMenuItem
               icon={Magnet}
               label={t('layoutEditor.snapToGridTooltip')}
-              isChecked={editorSnapToGrid}
-              onClick={() => settingsClient.setGridSnapping(!editorSnapToGrid)}
+              isChecked={gridSnapping}
+              onClick={() =>
+                settingsClient.setGridSnapping(!settingsClient.gridSnapping)
+              }
             />
           </div>
         )}

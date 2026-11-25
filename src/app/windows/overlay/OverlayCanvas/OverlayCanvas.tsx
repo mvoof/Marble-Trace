@@ -15,6 +15,7 @@ import { useSimStore } from '@entities/sim/sim-context';
 import { useLayoutsStore } from '@entities/layout/layouts-context';
 import { useLayoutToastStore } from '@entities/layout/layout-toast-context';
 import { useLiveWidgetsStore } from '@entities/layout/live-widgets-context';
+import { useOverlayRoot } from '@app/roots/overlay-root-context';
 
 // The editing controls and widget picker stay out of the initial bundle.
 const DragModeBar = lazy(() =>
@@ -25,6 +26,7 @@ const DragModeBar = lazy(() =>
 
 export const OverlayCanvas = observer(() => {
   const appSettings = useAppSettingsStore();
+  const { settingsClient } = useOverlayRoot();
   const liveWidgets = useLiveWidgetsStore();
   const layoutToast = useLayoutToastStore();
   const layouts = useLayoutsStore();
@@ -42,8 +44,7 @@ export const OverlayCanvas = observer(() => {
   }, [mouseEnabled]);
 
   const { dragMode } = appSettings;
-  const { hideAllWidgets, editorShowGrid, editorGridSize } =
-    appSettings.appSettings;
+  const { hideAllWidgets, editorGridSize } = appSettings.appSettings;
 
   // Placing widgets with the game closed, the real stores are empty and every
   // widget draws a fraction of its running self. Sample telemetry stands in for
@@ -98,7 +99,7 @@ export const OverlayCanvas = observer(() => {
         </Suspense>
       )}
 
-      {dragMode && editorShowGrid && ownBounds && (
+      {dragMode && settingsClient.gridVisible && ownBounds && (
         <div
           className={styles.grid}
           aria-hidden="true"
@@ -122,7 +123,9 @@ export const OverlayCanvas = observer(() => {
           liveWidgets.ownMonitorWidgets.map((widget) => {
             const WidgetComponent = componentForWidget(widget.type);
 
-            if (!WidgetComponent) return null;
+            if (!WidgetComponent) {
+              return null;
+            }
 
             return (
               <WidgetInstanceScope

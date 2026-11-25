@@ -116,8 +116,9 @@ and the full payloads: `docs/adr/0007-main-owns-settings.md`.
 - **An overlay changes a setting only by command**, through `root.settingsClient`
   (the popup's panels reach it through `WidgetEditorProvider`). It draws its own
   edit at once as an override, until main has handled the command. Main runs a
-  command through the editor's own methods inside `applyClientCommand` — the
-  live layout, no undo step.
+  command through the editor's own methods inside `applyClientCommand`, with
+  no undo step. Pending popup edits go to the layout they started on, even
+  when another layout has gone live.
 - **A remote screen never sends a command**; the hub refuses one.
 - Main's own edits — the editor, the settings pages — write its stores
   directly, and `changeToken` (`SettingsMutationLog`) is what saves and
