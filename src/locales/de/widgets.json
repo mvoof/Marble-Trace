@@ -219,7 +219,7 @@
       "barChipStyleDesc": "Warnungen behalten ihre Signalfarben.",
       "barChipStyle_semantic": "Farbig",
       "barChipStyle_neutral": "Neutral",
-      "barChipStyle_text": "Nur Text",
+      "barChipStyle_text": "Rahmenlos",
       "chipLabelMode": "Chip-Beschriftungen",
       "chipLabelMode_text": "Text",
       "chipLabelMode_icon": "Symbole"

@@ -219,7 +219,7 @@
       "barChipStyleDesc": "Os avisos mantêm suas cores de alerta.",
       "barChipStyle_semantic": "Colorido",
       "barChipStyle_neutral": "Neutro",
-      "barChipStyle_text": "Só texto",
+      "barChipStyle_text": "Sem borda",
       "chipLabelMode": "Rótulos dos indicadores",
       "chipLabelMode_text": "Texto",
       "chipLabelMode_icon": "Ícones"

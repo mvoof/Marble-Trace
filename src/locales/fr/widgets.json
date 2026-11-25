@@ -219,7 +219,7 @@
       "barChipStyleDesc": "Les avertissements conservent leurs couleurs d’alerte.",
       "barChipStyle_semantic": "Coloré",
       "barChipStyle_neutral": "Neutre",
-      "barChipStyle_text": "Texte seul",
+      "barChipStyle_text": "Sans cadre",
       "chipLabelMode": "Libellés des badges",
       "chipLabelMode_text": "Texte",
       "chipLabelMode_icon": "Icônes"
