@@ -25,6 +25,24 @@ Three levels, quietest first:
 
 ---
 
+## Choosing a StatChip presentation
+
+[Compare session readings in all three presentations](colors.html#stat-chip-presentations).
+
+| Presentation         | Ground and edge                                                                     | Use in a session bar                                                                                                                                     |
+| -------------------- | ----------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `semantic` (default) | The existing tone and look choose the label fill, frame and emphasis.               | Session type, final lap, urgent countdown and incident or penalty warnings. Keep flag, license, class and record colors wherever they carry the reading. |
+| `neutral`            | A `$chip-bg` plate, `$chip-neutral-bg` label and 1 px `$chip-neutral-border` frame. | Group a driver count, SOF, lap counter or clock so it reads as one item across different widget backgrounds.                                             |
+| `text`               | Transparent throughout, with a dark text shadow for contrast over the scene.        | Compact secondary facts such as weather, pit stops and routine incident counts. Switch to semantic when a threshold is reached.                          |
+
+Standings offers this choice per widget instance under Display. The session bars and class headers follow it. Final laps, urgent countdowns and incident warnings always use semantic color. Existing layouts default to the colored presentation.
+
+Both quiet alternatives use a medium-weight uppercase label in `$chip-text` and
+keep the mono value, unit, type scale and reserved digit width. Neutral keeps
+chip padding. Text drops horizontal padding and separates label and value by
+`sp(xxs)`. The enclosing bar spaces adjacent readings. All three are read-only
+and have no hover or focus treatment.
+
 ## Quiet — the default
 
 A deep shade of the tone (the tone's fill at 40 % over the chip ground) with

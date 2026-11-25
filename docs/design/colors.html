@@ -170,6 +170,20 @@
         text-transform: none;
       }
 
+      .chip.text-only {
+        gap: 4px;
+        border: 0;
+        background: transparent;
+        text-shadow:
+          0 0 2px var(--chip-bg),
+          0 1px 2px var(--chip-bg);
+      }
+
+      .text-only .lead,
+      .text-only .value {
+        padding-inline: 0;
+      }
+
       .lead.filled {
         padding-inline: 8px;
         letter-spacing: 0.06em;
@@ -320,6 +334,25 @@
         now.
       </p>
       <div class="levels" id="levels"></div>
+
+      <h2 id="stat-chip-presentations">StatChip presentations</h2>
+      <p>
+        Standings applies the selected style to its header and footer. Each
+        style keeps the uppercase label, monospace value and unit together. A
+        final lap, urgent clock or approaching penalty keeps its warning color.
+      </p>
+      <div class="scroll">
+        <table>
+          <thead>
+            <tr>
+              <th>Colored (default)</th>
+              <th>Neutral</th>
+              <th>Text only</th>
+            </tr>
+          </thead>
+          <tbody id="presentation-samples"></tbody>
+        </table>
+      </div>
 
       <h2>Chip tones</h2>
       <p>
@@ -566,8 +599,15 @@
 
       const isNumber = (text) => /\d/.test(text);
 
-      const chip = ({ lead, value, leadStyle, edge, filled }) =>
-        `<span class="chip" style="border-color:${edge}">` +
+      const chip = ({
+        lead,
+        value,
+        leadStyle,
+        edge,
+        filled,
+        textOnly = false,
+      }) =>
+        `<span class="chip${textOnly ? ' text-only' : ''}" style="border-color:${edge}">` +
         `<span class="lead ${isNumber(lead) ? 'number' : ''} ${filled ? 'filled' : ''}" style="${leadStyle}">${lead}</span>` +
         (value ? `<span class="value">${value}</span>` : '') +
         '</span>';
@@ -615,6 +655,43 @@
       const fill = (id, html) => {
         document.getElementById(id).innerHTML = html;
       };
+
+      const sessionReadings = [
+        ['RACE', '', 'positive'],
+        ['DRIVERS', '28', 'info'],
+        ['SOF', '2.4k', 'accent'],
+        ['LAPS', '12/30', 'positive'],
+        ['TIME', '18:42', 'accent'],
+        ['AIR', '24°C', 'accent'],
+        ['TRACK', '32°C', 'info'],
+        ['SURFACE', 'DRY', 'accent'],
+        ['PIT', '1', 'accent'],
+        ['INC', '2/17', 'accent'],
+      ];
+
+      fill(
+        'presentation-samples',
+        sessionReadings
+          .map(([lead, value, tone]) => {
+            const colored = quietChip(toneNamed(tone), lead, value);
+            const neutral = chip({
+              lead,
+              value,
+              edge: '#252830',
+              leadStyle: 'background:#181b20;font-weight:500',
+            });
+            const text = chip({
+              lead,
+              value,
+              textOnly: true,
+              edge: 'transparent',
+              leadStyle: 'font-weight:500',
+            });
+
+            return `<tr><td>${colored}</td><td>${neutral}</td><td>${text}</td></tr>`;
+          })
+          .join('')
+      );
 
       fill(
         'levels',

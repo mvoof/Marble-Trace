@@ -2,6 +2,7 @@ import type { CSSProperties, ReactNode } from 'react';
 import { observer } from 'mobx-react-lite';
 import type { LucideIcon } from 'lucide-react';
 
+import type { StatChipPresentation } from '@shared/contracts/widget-choices';
 import styles from './StatChip.module.scss';
 import { cx } from '@shared/lib/class-names';
 
@@ -174,6 +175,7 @@ export const clearStatChip = (element: HTMLElement): void => {
 const ICON_SIZE_PX = 12;
 
 interface StatChipProps {
+  presentation?: StatChipPresentation;
   icon?: LucideIcon;
   /** The lead part: a label, a status, a rating. */
   lead?: ReactNode;
@@ -209,6 +211,7 @@ export const StatChip = observer(
     leadKind = 'label',
     look = 'plain',
     size = 'sm',
+    presentation = 'semantic',
     children,
     limit,
     valueChars,
@@ -217,8 +220,9 @@ export const StatChip = observer(
     valueDanger = false,
     className,
   }: StatChipProps) => {
+    const semantic = presentation === 'semantic';
     const toneStyle =
-      toneColor === undefined
+      !semantic || toneColor === undefined
         ? undefined
         : ({ '--chip-data': toneColor } as CSSProperties);
 
@@ -231,17 +235,24 @@ export const StatChip = observer(
 
     const hasLead = Icon !== undefined || lead !== undefined;
     const hasValue = children !== undefined;
-    const isFilled = FILLED_LOOKS.has(look);
+    const isFilled = semantic && FILLED_LOOKS.has(look);
+    const presentationClass = semantic
+      ? toneClass
+      : presentation === 'text'
+        ? styles.text
+        : styles.neutral;
 
     return (
       <span
         className={cx(
           styles.chip,
           hasValue ? '' : styles.chipSingle,
-          !hasValue && UNFRAMED_ALONE.has(look) ? styles.chipSolid : '',
+          semantic && !hasValue && UNFRAMED_ALONE.has(look)
+            ? styles.chipSolid
+            : '',
           SIZE_CLASS[size],
-          toneClass,
-          LOOK_CLASS[look],
+          presentationClass,
+          semantic ? LOOK_CLASS[look] : '',
           className ?? ''
         )}
         style={toneStyle}
@@ -266,7 +277,7 @@ export const StatChip = observer(
             {/* Only the count turns red; its limit keeps the value's white. */}
             <span
               className={cx(
-                valueDanger ? styles.valueDanger : '',
+                semantic && valueDanger ? styles.valueDanger : '',
                 valueChars === undefined ? '' : styles.valueFixed
               )}
               style={

@@ -17,6 +17,9 @@ export type QualifyingVisibility = (typeof QUALIFYING_VISIBILITY)[number];
 export const TIME_VISIBILITY = ['always', 'withTime', 'never'] as const;
 export type TimeVisibility = (typeof TIME_VISIBILITY)[number];
 
+export const STAT_CHIP_PRESENTATIONS = ['semantic', 'neutral', 'text'] as const;
+export type StatChipPresentation = (typeof STAT_CHIP_PRESENTATIONS)[number];
+
 export const ROW_PADDING = ['narrow', 'medium', 'wide'] as const;
 export type RowPadding = (typeof ROW_PADDING)[number];
 

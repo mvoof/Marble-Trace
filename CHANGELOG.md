@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Standings** gains a choice of colored, neutral or text-only chips in the header and footer of each widget instance. Final laps, urgent countdowns and incident warnings keep their signal colors.
+
 ### Changed
 
 - **Website — Widget Gallery:** Refresh the widget examples and screenshots, including the pit exit, towing and input trace layouts.

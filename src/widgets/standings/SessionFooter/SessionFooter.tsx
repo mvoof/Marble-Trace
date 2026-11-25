@@ -75,19 +75,34 @@ export const SessionFooter = observer(() => {
     <div className={styles.sessionFooter}>
       <div className={styles.footerGroup}>
         {showWeather && airCelsius !== null && (
-          <StatChip tone="accent" lead="AIR" look="reading">
+          <StatChip
+            presentation={settings.sessionChipStyle}
+            tone="accent"
+            lead="AIR"
+            look="reading"
+          >
             {`${formatTemp(airCelsius, unitSystem)}${tUnit}`}
           </StatChip>
         )}
 
         {showWeather && trkCelsius !== null && (
-          <StatChip tone="info" lead="TRACK" look="reading">
+          <StatChip
+            presentation={settings.sessionChipStyle}
+            tone="info"
+            lead="TRACK"
+            look="reading"
+          >
             {`${formatTemp(trkCelsius, unitSystem)}${tUnit}`}
           </StatChip>
         )}
 
         {showWeather && wetnessInfo && (
-          <StatChip tone="accent" lead="SURFACE" look="reading">
+          <StatChip
+            presentation={settings.sessionChipStyle}
+            tone="accent"
+            lead="SURFACE"
+            look="reading"
+          >
             {wetnessInfo.label}
           </StatChip>
         )}
@@ -95,13 +110,19 @@ export const SessionFooter = observer(() => {
 
       <div className={styles.footerGroup}>
         {showPitStops && (
-          <StatChip lead="PIT" look="reading" tone="accent">
+          <StatChip
+            presentation={settings.sessionChipStyle}
+            lead="PIT"
+            look="reading"
+            tone="accent"
+          >
             {playerPitStops}
           </StatChip>
         )}
 
         {showIncidents && (
           <StatChip
+            presentation={isNearLimit ? 'semantic' : settings.sessionChipStyle}
             look="reading"
             tone={isNearLimit ? 'danger' : 'accent'}
             lead="INC"
@@ -114,6 +135,9 @@ export const SessionFooter = observer(() => {
 
         {showIncidents && incidentsToPenalty !== null && (
           <StatChip
+            presentation={
+              isNearPenalty ? 'semantic' : settings.sessionChipStyle
+            }
             look="reading"
             tone={isNearPenalty ? 'danger' : 'accent'}
             lead="TO PEN"
@@ -124,7 +148,12 @@ export const SessionFooter = observer(() => {
         )}
 
         {showIncidents && penaltyStatus && (
-          <StatChip lead="PEN" look="reading" tone="accent">
+          <StatChip
+            presentation={settings.sessionChipStyle}
+            lead="PEN"
+            look="reading"
+            tone="accent"
+          >
             {penaltyStatus.served}
           </StatChip>
         )}
