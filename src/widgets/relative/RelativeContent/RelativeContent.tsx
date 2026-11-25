@@ -83,19 +83,7 @@ export const RelativeContent = observer(() => {
 
   return (
     <>
-      {settings.showSessionHeader && (
-        <SessionHeader
-          chipStyle={settings.headerChipStyle}
-          showSessionType={settings.showSessionType}
-          showTrackName={false}
-          showSof={settings.showSOF}
-          showTotalDrivers={settings.showTotalDrivers}
-          abbreviateSof={settings.abbreviateSof}
-          lapCounter={settings.lapCounter}
-          showLapProgress={settings.showLapProgress}
-          showSessionTime={settings.showSessionTime}
-        />
-      )}
+      <SessionHeader settings={settings} />
       <div ref={driverListRef} className={styles.driverList}>
         {displayRows.map((row, index) =>
           row.isPaceCar ? (
@@ -105,17 +93,7 @@ export const RelativeContent = observer(() => {
           )
         )}
       </div>
-      {settings.showSessionFooter && (
-        <SessionFooter
-          chipStyle={settings.footerChipStyle}
-          showAirTemp={settings.showAirTemp}
-          showTrackTemp={settings.showTrackTemp}
-          showTrackWetness={settings.showTrackWetness}
-          showPitStops={settings.showPitStops}
-          showIncidents={settings.showIncidentsBadge}
-          showPenalties={settings.showPenalties}
-        />
-      )}
+      <SessionFooter settings={settings} />
     </>
   );
 });

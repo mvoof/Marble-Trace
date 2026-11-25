@@ -17,10 +17,7 @@ import { useBackendComputedStore } from '@entities/cars/computed-context';
 import { useCarsStore } from '@entities/cars/cars-context';
 import { useSessionStore } from '@entities/session/session-context';
 import { usePlayerPositionStore } from '@entities/player/player-position-context';
-import type {
-  StatChipPresentation,
-  LapCounter,
-} from '@shared/contracts/widget-choices';
+import type { SessionBarSettings } from '@entities/session/session-bar-settings';
 import { cx } from '@shared/lib/class-names';
 
 // The session's own color, filled, with the type written near-black on it.
@@ -32,15 +29,9 @@ const SESSION_TYPE_TONE: Record<SessionColorKey, StatChipTone> = {
 };
 
 interface SessionHeaderProps {
-  chipStyle: StatChipPresentation;
-  showSessionType: boolean;
-  showTrackName: boolean;
-  showTotalDrivers: boolean;
-  showSof: boolean;
-  abbreviateSof: boolean;
-  lapCounter: LapCounter;
-  showLapProgress: boolean;
-  showSessionTime: boolean;
+  settings: SessionBarSettings;
+  showTrackName?: boolean;
+  hasClassHeaders?: boolean;
 }
 
 /**
@@ -49,16 +40,20 @@ interface SessionHeaderProps {
  */
 export const SessionHeader = observer(
   ({
-    chipStyle,
-    showSessionType,
-    showTrackName,
-    showTotalDrivers,
-    showSof,
-    abbreviateSof,
-    lapCounter,
-    showLapProgress,
-    showSessionTime,
+    settings,
+    showTrackName = false,
+    hasClassHeaders = false,
   }: SessionHeaderProps) => {
+    const {
+      headerChipStyle: chipStyle,
+      showSessionType,
+      showTotalDrivers,
+      abbreviateSof,
+      lapCounter,
+      showLapProgress,
+      showSessionTime,
+    } = settings;
+    const showSof = settings.showSOF && !hasClassHeaders;
     const { driverIdentities, leaderLap } = useBackendComputedStore();
     const playerPosition = usePlayerPositionStore();
     const { sessionInfo, session, currentSession } = useSessionStore();
@@ -89,6 +84,19 @@ export const SessionHeader = observer(
       ? buildLapProgress(shownLap, totalLaps, !isLapLimited)
       : null;
 
+    const hasTrackName = showTrackName && trackName.length > 0;
+
+    if (
+      !(showSessionType && currentSession) &&
+      !showTotalDrivers &&
+      !showSof &&
+      !hasTrackName &&
+      !lapProgress &&
+      !showSessionTime
+    ) {
+      return null;
+    }
+
     // "12/~16": the laps run in the value's white, the total quieter behind it.
     const lapsSplit = lapProgress?.value.indexOf('/') ?? -1;
     const lapsDone =
@@ -100,7 +108,7 @@ export const SessionHeader = observer(
 
     return (
       <div
-        className={cx(styles.sessionHeader, !showTrackName && styles.compact)}
+        className={cx(styles.sessionHeader, !hasTrackName && styles.compact)}
       >
         <div className={styles.sessionLeft}>
           {showSessionType && currentSession && (
@@ -142,7 +150,7 @@ export const SessionHeader = observer(
           )}
         </div>
 
-        {showTrackName && <div className={styles.trackName}>{trackName}</div>}
+        {hasTrackName && <div className={styles.trackName}>{trackName}</div>}
 
         <div className={styles.sessionRight}>
           {lapProgress && (

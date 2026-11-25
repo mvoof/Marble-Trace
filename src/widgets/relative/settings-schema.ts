@@ -1,6 +1,5 @@
+import { SESSION_BAR_SETTINGS } from '@entities/session/session-bar-settings';
 import {
-  LAP_COUNTER,
-  STAT_CHIP_PRESENTATIONS,
   LIC_BADGE_STYLE,
   QUALIFYING_VISIBILITY,
   ROW_PADDING,
@@ -74,27 +73,7 @@ export const RELATIVE_COLUMN_KEYS = Object.keys(COLUMNS) as Array<
 >;
 
 export const RELATIVE_SETTINGS = defineSettings('relative', {
-  showSessionHeader: bool(false),
-  showSessionFooter: bool(false),
-  showSessionType: bool(true),
-  showTotalDrivers: bool(true),
-  showSOF: bool(true),
-  abbreviateSof: bool(true),
-  showLapProgress: bool(true),
-  lapCounter: choice(LAP_COUNTER, 'session', { label: 'common.lapCounter' }),
-  showSessionTime: bool(true),
-  headerChipStyle: choice(STAT_CHIP_PRESENTATIONS, 'semantic', {
-    label: 'relative.barChipStyle',
-  }),
-  showAirTemp: bool(true),
-  showTrackTemp: bool(true),
-  showTrackWetness: bool(true),
-  showPitStops: bool(true),
-  showIncidentsBadge: bool(true),
-  showPenalties: bool(true),
-  footerChipStyle: choice(STAT_CHIP_PRESENTATIONS, 'semantic', {
-    label: 'relative.barChipStyle',
-  }),
+  ...SESSION_BAR_SETTINGS.shape,
   /**
    * Source of the position number in the leftmost column. Row order is always by
    * gap on track — that is what the widget is for — so this affects the number only.

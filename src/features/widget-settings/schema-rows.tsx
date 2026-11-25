@@ -10,6 +10,7 @@ import type {
 } from '@shared/lib/widget-settings-dsl';
 import { columnRows } from './column-rows';
 import { SettingRow } from './SettingRow';
+import styles from './WidgetSettings.module.scss';
 import { untypedRows, useBoundSetting } from './setting-rows';
 
 /**
@@ -46,6 +47,8 @@ interface RowProps<Shape extends SettingsShape> {
   disabled?: boolean;
   /** A choice or a number: the control below the texts, full width. */
   stacked?: boolean;
+  /** Give segmented labels room to wrap on narrow panels. */
+  wrapOptions?: boolean;
   /** A number typed in rather than slid — for a wide range or exact values. */
   input?: boolean;
 }
@@ -109,6 +112,7 @@ export const schemaRows = <Shape extends SettingsShape>(
       setting,
       disabled,
       stacked,
+      wrapOptions,
       input,
     }: Omit<RowProps<Shape>, 'dependsOn'>) => {
       const { t, i18n } = useTranslation('widgets');
@@ -121,6 +125,7 @@ export const schemaRows = <Shape extends SettingsShape>(
           <SettingRow title={title} desc={desc} stacked={stacked}>
             <Segmented<string | number>
               block={stacked}
+              className={wrapOptions ? styles.wrapSegmentedOptions : undefined}
               value={current as string | number}
               disabled={disabled}
               onChange={write}
@@ -172,7 +177,14 @@ export const schemaRows = <Shape extends SettingsShape>(
   );
 
   const Row = observer(
-    ({ setting, dependsOn, disabled, stacked, input }: RowProps<Shape>) => {
+    ({
+      setting,
+      dependsOn,
+      disabled,
+      stacked,
+      wrapOptions,
+      input,
+    }: RowProps<Shape>) => {
       const labels = useLabels(setting);
       const field = schema.shape[setting];
       const dependency = dependsOn as string | ((settings: never) => boolean);
@@ -208,6 +220,7 @@ export const schemaRows = <Shape extends SettingsShape>(
             setting={setting}
             disabled={disabled}
             stacked={stacked}
+            wrapOptions={wrapOptions}
             input={input}
           />
         );
@@ -219,6 +232,7 @@ export const schemaRows = <Shape extends SettingsShape>(
             setting={setting}
             disabled={disabled}
             stacked={stacked}
+            wrapOptions={wrapOptions}
             input={input}
           />
         </DependentBlock>

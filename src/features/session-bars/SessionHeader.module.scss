@@ -58,6 +58,3 @@
 .compact .sessionRight:empty {
   display: none;
 }
-.compact:not(:has(.sessionLeft > *, .sessionRight > *)) {
-  display: none;
-}

@@ -155,8 +155,6 @@ export const ClosePack: Story = {
 export const SessionBars: Story = {
   args: {
     settings: {
-      showSessionHeader: true,
-      showSessionFooter: true,
       footerChipStyle: 'text',
     },
   },

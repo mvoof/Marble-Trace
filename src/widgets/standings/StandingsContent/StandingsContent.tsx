@@ -268,22 +268,14 @@ export const StandingsContent = observer(() => {
 
   return (
     <>
-      {settings.showSessionHeader && (
-        <SessionHeader
-          chipStyle={settings.sessionChipStyle}
-          showSessionType={true}
-          showTrackName={true}
-          showSof={
-            settings.showSOF &&
-            !drawsClassHeaders(settings.viewMode, allClassGroups.length)
-          }
-          showTotalDrivers={settings.showTotalDrivers}
-          abbreviateSof={settings.abbreviateSof}
-          lapCounter={settings.lapCounter}
-          showLapProgress={settings.showLapProgress}
-          showSessionTime={settings.showSessionTime}
-        />
-      )}
+      <SessionHeader
+        settings={settings}
+        showTrackName={settings.showTrackName}
+        hasClassHeaders={drawsClassHeaders(
+          settings.viewMode,
+          allClassGroups.length
+        )}
+      />
 
       {!hasData ? (
         <NoDataPlaceholder />
@@ -334,15 +326,7 @@ export const StandingsContent = observer(() => {
             />
           </div>
 
-          <SessionFooter
-            chipStyle={settings.sessionChipStyle}
-            showAirTemp={settings.showWeather}
-            showTrackTemp={settings.showWeather}
-            showTrackWetness={settings.showWeather}
-            showPitStops={settings.showPitStops}
-            showIncidents={settings.showIncidentsBadge}
-            showPenalties={settings.showIncidentsBadge}
-          />
+          <SessionFooter settings={settings} />
         </>
       )}
     </>
