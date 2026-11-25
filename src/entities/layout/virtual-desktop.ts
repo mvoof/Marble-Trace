@@ -40,6 +40,27 @@ export const defaultMonitorOf = (layout: {
 export const hotkeysActOn = (widget: WidgetDefaultConfig): boolean =>
   widget.hotkeys ?? true;
 
+const clampAxis = (
+  value: number,
+  min: number,
+  max: number,
+  gridSize?: number
+): number => {
+  if (gridSize !== undefined) {
+    const firstLine = Math.ceil(min / gridSize) * gridSize;
+    const lastLine = Math.floor(max / gridSize) * gridSize;
+
+    if (firstLine <= lastLine) {
+      return Math.min(
+        Math.max(Math.round(value / gridSize) * gridSize, firstLine),
+        lastLine
+      );
+    }
+  }
+
+  return Math.min(Math.max(value, min), max);
+};
+
 /**
  * Where a widget's top-left corner may go so the whole widget stays on its
  * monitor. A widget larger than the monitor is pinned to its top-left edge.
@@ -47,14 +68,15 @@ export const hotkeysActOn = (widget: WidgetDefaultConfig): boolean =>
 export const clampToBounds = (
   bounds: MonitorBounds,
   position: { x: number; y: number },
-  size: { width: number; height: number }
+  size: { width: number; height: number },
+  gridSize?: number
 ): { x: number; y: number } => {
   const maxX = Math.max(bounds.x, bounds.x + bounds.width - size.width);
   const maxY = Math.max(bounds.y, bounds.y + bounds.height - size.height);
 
   return {
-    x: Math.min(Math.max(position.x, bounds.x), maxX),
-    y: Math.min(Math.max(position.y, bounds.y), maxY),
+    x: clampAxis(position.x, bounds.x, maxX, gridSize),
+    y: clampAxis(position.y, bounds.y, maxY, gridSize),
   };
 };
 

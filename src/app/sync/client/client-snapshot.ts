@@ -9,7 +9,10 @@ import {
 import { widgetsOnMonitor } from '@entities/layout/virtual-desktop';
 import { cloneMonitor } from '@shared/lib/remote-screen';
 import type { MainRoot } from '@app/roots/main-root';
-import type { ClientSnapshot } from '@shared/contracts/client-protocol';
+import type {
+  ClientSnapshot,
+  OverlaySnapshot,
+} from '@shared/contracts/client-protocol';
 import type {
   LayoutMonitor,
   SavedLayout,
@@ -71,11 +74,35 @@ export const clientSnapshotFor = (
 export const overlaySnapshotFor = (
   root: MainRoot,
   monitorName: string
-): ClientSnapshot | null => {
+): OverlaySnapshot | null => {
   const layout = root.layouts.liveLayout;
   const monitor = layout?.monitors.find((entry) => entry.name === monitorName);
 
-  return layout && monitor ? clientSnapshotFor(root, layout, monitor) : null;
+  if (!layout || !monitor) {
+    return null;
+  }
+
+  return {
+    ...clientSnapshotFor(root, layout, monitor),
+    ...overlaySnapshotInputs(root),
+  };
+};
+
+export const overlaySnapshotInputs = (
+  root: MainRoot
+): Omit<OverlaySnapshot, keyof ClientSnapshot> => {
+  const { editorShowGrid, editorSnapToGrid, editorGridSize } =
+    root.appSettings.appSettings;
+
+  return {
+    layoutChoices: root.layouts.layouts.map(({ id: layoutId, name }) => ({
+      id: layoutId,
+      name,
+    })),
+    editorShowGrid,
+    editorSnapToGrid,
+    editorGridSize,
+  };
 };
 
 /**

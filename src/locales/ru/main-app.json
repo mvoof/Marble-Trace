@@ -286,7 +286,8 @@
     "unavailable": "Недоступно в этом симуляторе"
   },
   "overlayCanvas": {
-    "exitEditMode": "Выйти из режима редактирования",
+    "finishEditing": "Завершить редактирование",
+    "switchLayout": "Переключить раскладку",
     "interactMode": "Режим взаимодействия",
     "interactModeHold": "Режим взаимодействия — отпустите {{key}} для выхода",
     "interactModeToggle": "Режим взаимодействия — {{key}} для выхода",

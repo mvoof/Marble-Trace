@@ -1,3 +1,5 @@
+@use '@/styles/floating-toolbar' as toolbar;
+
 // The overview's band: one row across the top of the editor. Below ~1280 px
 // the collapsible labels go (ToolbarButton), never onto a second row.
 .toolbar {
@@ -57,21 +59,10 @@
 // Full size and On the monitor: a pill of icons centred at the top of the
 // canvas, moved by its grip (`--dock-x`/`--dock-y`, reset on each entry).
 .toolbarFloating {
-  position: absolute;
-  top: rem(12);
-  left: 50%;
+  @include toolbar.floating-toolbar;
+
   z-index: 50;
-  gap: rem(5);
-  max-width: calc(100% - #{rem(24)});
-  padding: rem(5) rem(8);
-  background: rgba(13, 14, 18, 0.88);
-  border: 1px solid rgba(255, 255, 255, 0.11);
-  border-radius: rem(11);
-  box-shadow:
-    0 14px 42px rgba(0, 0, 0, 0.75),
-    0 0 0 1px rgba(0, 0, 0, 0.6);
   transform: translate(calc(-50% + var(--dock-x, 0px)), var(--dock-y, 0px));
-  backdrop-filter: blur(16px) saturate(140%);
 
   .spacer {
     flex: 0 0 rem(4);

@@ -72,12 +72,13 @@ export const withoutGeometry = (
 export const clampOnOwnMonitor = (
   widget: WidgetDefaultConfig,
   monitors: LayoutMonitor[],
-  position: Position
+  position: Position,
+  gridSize?: number
 ): Position => {
   const monitor = monitorForWidget(widget, monitors);
 
   return monitor
-    ? clampToBounds(monitor.bounds, position, clampSizeOf(widget))
+    ? clampToBounds(monitor.bounds, position, clampSizeOf(widget), gridSize)
     : position;
 };
 

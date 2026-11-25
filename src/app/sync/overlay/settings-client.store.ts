@@ -1,8 +1,12 @@
 import { makeAutoObservable, runInAction, compareStructural } from 'mobx';
 
 import { emitToMain } from '@shared/api/events.service';
+import type { AppSettingsStore } from '@entities/app-settings/app-settings.store';
 import type { LiveWidgetsView } from '@entities/layout/live-widgets.store';
-import type { ClientCommand } from '@shared/contracts/client-protocol';
+import type {
+  ClientCommand,
+  OverlaySnapshot,
+} from '@shared/contracts/client-protocol';
 import type { WidgetUserSettings } from '@shared/contracts/widget-settings';
 
 /**
@@ -27,6 +31,7 @@ interface PendingGeometry {
 }
 
 type SettingsRecord = Record<string, unknown>;
+type GridSetting = 'editorShowGrid' | 'editorSnapToGrid';
 
 /**
  * An overlay's side of the client protocol (ADR-0007). A setting changes from
@@ -41,6 +46,13 @@ export class SettingsClientStore {
   /** This window's label, set when the overlay connects; main replies to it. */
   clientId: string | null = null;
 
+  layoutChoices: OverlaySnapshot['layoutChoices'] = [];
+
+  private gridOverrides = new Map<
+    GridSetting,
+    { value: boolean; commandNo: number }
+  >();
+
   /** Counts this window's commands from 1, and starts over with the window. */
   private commandNo = 0;
 
@@ -50,24 +62,35 @@ export class SettingsClientStore {
 
   private settingsBuffer = new Map<string, SettingsRecord>();
 
+  private settingsDeliveries = new Set<Promise<void>>();
+
   private settingsTimer: ReturnType<typeof setTimeout> | null = null;
 
   constructor(
     private readonly liveWidgets: LiveWidgetsView,
+    private readonly appSettings: AppSettingsStore,
     /** The live layout this window draws, from its last snapshot. */
     private readonly layoutIdOf: () => string | null
   ) {
     makeAutoObservable<
       SettingsClientStore,
-      'liveWidgets' | 'layoutIdOf' | 'overrides' | 'geometry' | 'settingsBuffer'
+      | 'liveWidgets'
+      | 'appSettings'
+      | 'layoutIdOf'
+      | 'overrides'
+      | 'geometry'
+      | 'settingsBuffer'
+      | 'settingsDeliveries'
     >(
       this,
       {
         liveWidgets: false,
+        appSettings: false,
         layoutIdOf: false,
         overrides: false,
         geometry: false,
         settingsBuffer: false,
+        settingsDeliveries: false,
       },
       { autoBind: true }
     );
@@ -77,9 +100,77 @@ export class SettingsClientStore {
     this.clientId = clientId;
   }
 
+  installLayoutChoices(layoutChoices: OverlaySnapshot['layoutChoices']) {
+    if (!compareStructural(this.layoutChoices, layoutChoices)) {
+      this.layoutChoices = layoutChoices;
+    }
+  }
+
+  switchLayout(targetLayoutId: string) {
+    this.flushWidgetEdits();
+    this.send({ kind: 'switchLayout', targetLayoutId });
+  }
+
+  get gridVisible() {
+    return (
+      this.gridOverrides.get('editorShowGrid')?.value ??
+      this.appSettings.appSettings.editorShowGrid
+    );
+  }
+
+  get gridSnapping() {
+    return (
+      this.gridOverrides.get('editorSnapToGrid')?.value ??
+      this.appSettings.appSettings.editorSnapToGrid
+    );
+  }
+
+  setGridVisibility(visible: boolean) {
+    const commandNo = this.send({ kind: 'setGridVisibility', visible });
+
+    if (commandNo !== null) {
+      this.gridOverrides.set('editorShowGrid', { value: visible, commandNo });
+    }
+  }
+
+  setGridSnapping(enabled: boolean) {
+    const commandNo = this.send({ kind: 'setGridSnapping', enabled });
+
+    if (commandNo !== null) {
+      this.gridOverrides.set('editorSnapToGrid', { value: enabled, commandNo });
+    }
+  }
+
+  leaveLayout() {
+    for (const { timer } of this.geometry.values()) {
+      if (timer !== null) {
+        clearTimeout(timer);
+      }
+    }
+
+    this.geometry.clear();
+    this.flushSettings();
+    this.overrides.clear();
+  }
+
+  async flushSettingsBeforeClose() {
+    this.flushSettings();
+    await Promise.all(this.settingsDeliveries);
+  }
+
+  private flushWidgetEdits() {
+    for (const widgetId of this.geometry.keys()) {
+      this.endGeometry(widgetId);
+    }
+
+    if (this.settingsTimer !== null) {
+      this.flushSettings();
+    }
+  }
+
   /** A drag step. Drawn now, clamped to the monitor as main will clamp it. */
-  moveWidget(widgetId: string, x: number, y: number) {
-    const position = this.liveWidgets.clampedPosition(widgetId, x, y);
+  moveWidget(widgetId: string, x: number, y: number, gridSize?: number) {
+    const position = this.liveWidgets.clampedPosition(widgetId, x, y, gridSize);
 
     this.override(widgetId, { x: position.x, y: position.y });
     this.scheduleGeometry(widgetId, false);
@@ -172,6 +263,12 @@ export class SettingsClientStore {
    * what it has not over the snapshot again.
    */
   acknowledge(lastHandledCommandNo: number) {
+    for (const [setting, { commandNo }] of this.gridOverrides) {
+      if (commandNo <= lastHandledCommandNo) {
+        this.gridOverrides.delete(setting);
+      }
+    }
+
     for (const [widgetId, fields] of this.overrides) {
       for (const [field, entry] of fields) {
         if (
@@ -193,7 +290,10 @@ export class SettingsClientStore {
   }
 
   private flushSettings() {
-    this.settingsTimer = null;
+    if (this.settingsTimer !== null) {
+      clearTimeout(this.settingsTimer);
+      this.settingsTimer = null;
+    }
 
     for (const [widgetId, partial] of this.settingsBuffer) {
       const commandNo = this.send({
@@ -301,7 +401,7 @@ export class SettingsClientStore {
 
     const commandNo = this.commandNo;
 
-    void emitToMain({
+    const delivery = emitToMain({
       kind: 'command',
       clientId,
       commandNo,
@@ -310,6 +410,11 @@ export class SettingsClientStore {
     }).catch((error: unknown) =>
       console.error('[settings-client] command not sent:', error)
     );
+
+    if (command.kind === 'patchSettings') {
+      this.settingsDeliveries.add(delivery);
+      void delivery.then(() => this.settingsDeliveries.delete(delivery));
+    }
 
     return commandNo;
   }

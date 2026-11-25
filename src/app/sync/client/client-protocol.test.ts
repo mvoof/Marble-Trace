@@ -6,7 +6,7 @@ import { OverlayRoot } from '@app/roots/overlay-root';
 import type {
   ClientToMainMessage,
   CommandMessage,
-  ClientSnapshot,
+  OverlaySnapshot,
   SnapshotMessage,
 } from '@shared/contracts/client-protocol';
 
@@ -101,7 +101,7 @@ const mainWithTwoMonitors = () => {
   return root;
 };
 
-const asMessage = (snapshot: ClientSnapshot): SnapshotMessage => ({
+const asMessage = (snapshot: OverlaySnapshot): SnapshotMessage => ({
   kind: 'snapshot',
   clientId: 'overlay-LEFT',
   lastHandledCommandNo: 0,
@@ -189,6 +189,15 @@ describe('the snapshot main builds for one overlay', () => {
 
   it('is nothing for a monitor the live layout does not have', () => {
     expect(overlaySnapshotFor(mainWithTwoMonitors(), 'GONE')).toBeNull();
+  });
+
+  it('uses the default pitch when saved grid spacing is zero', () => {
+    const root = mainWithTwoMonitors();
+    const defaultPitch = root.appSettings.appSettings.editorGridSize;
+
+    root.appSettings.update({ editorGridSize: 0 });
+
+    expect(overlaySnapshotFor(root, 'LEFT')?.editorGridSize).toBe(defaultPitch);
   });
 
   it('derives off-track hiding from auto-switch and the garage layout', () => {
@@ -309,6 +318,117 @@ describe('main answering its clients', () => {
     publishing.dispose();
   });
 
+  it('switches both overlays from the right monitor while the editor holds its layout', async () => {
+    const { main, overlay: left, publishing } = await connected();
+    const right = overlayOn('RIGHT');
+
+    wire.toMain!({ kind: 'hello', clientId: 'overlay-RIGHT' });
+    applyOverlaySnapshot(right, lastSnapshotTo('overlay-RIGHT')!);
+    main.layoutEditor.setOpen(true);
+
+    expect(right.settingsClient.layoutChoices.map(({ id }) => id)).toEqual([
+      'layout-race',
+      'layout-qualify',
+    ]);
+
+    left.settingsClient.patchSettings('fuel', { opacity: 0.5 });
+    right.settingsClient.switchLayout('layout-qualify');
+    await publishing.publishAll();
+    deliverLatest(left);
+    applyOverlaySnapshot(right, lastSnapshotTo('overlay-RIGHT')!);
+    vi.advanceTimersByTime(SETTINGS_MERGE_MS);
+
+    expect(main.layouts.editingLayoutId).toBe('layout-race');
+    expect(main.layouts.liveLayoutId).toBe('layout-qualify');
+    expect(left.layouts.liveLayoutId).toBe('layout-qualify');
+    expect(right.layouts.liveLayoutId).toBe('layout-qualify');
+    expect(wire.commands.map(({ command }) => command.kind)).toEqual([
+      'switchLayout',
+      'patchSettings',
+    ]);
+    expect(
+      main.layouts
+        .byId('layout-race')
+        ?.widgets.find((widget) => widget.id === 'fuel')?.userSettings.opacity
+    ).toBe(0.5);
+
+    publishing.dispose();
+  });
+
+  it('publishes visibility and snapping independently to both overlays', async () => {
+    const { main, overlay: left, publishing } = await connected();
+    const right = overlayOn('RIGHT');
+
+    left.settingsClient.setGridVisibility(true);
+    await vi.advanceTimersByTimeAsync(20);
+    applyOverlaySnapshot(right, lastSnapshotTo('overlay-RIGHT')!);
+    expect(right.appSettings.appSettings.editorShowGrid).toBe(true);
+    expect(right.appSettings.appSettings.editorSnapToGrid).toBe(true);
+
+    right.settingsClient.setGridSnapping(false);
+    await vi.advanceTimersByTimeAsync(20);
+    deliverLatest(left);
+
+    expect(main.appSettings.appSettings.editorShowGrid).toBe(true);
+    expect(left.appSettings.appSettings.editorShowGrid).toBe(true);
+    expect(left.appSettings.appSettings.editorSnapToGrid).toBe(false);
+
+    publishing.dispose();
+  });
+
+  it('keeps the previous layout’s widgets when switching with the editor closed', async () => {
+    const { main, overlay, publishing } = await connected();
+
+    overlay.settingsClient.switchLayout('layout-qualify');
+
+    expect(main.layouts.liveLayoutId).toBe('layout-qualify');
+    expect(
+      main.layouts
+        .byId('layout-race')
+        ?.widgets.find((widget) => widget.id === 'fuel')?.userSettings.enabled
+    ).toBe(true);
+    expect(main.liveWidgets.getWidget('fuel')?.userSettings.enabled).not.toBe(
+      true
+    );
+
+    publishing.dispose();
+  });
+
+  it('flushes popup edits when a layout switch closes an overlay before it gets a snapshot', async () => {
+    const { main, overlay, publishing } = await connected();
+
+    overlay.settingsClient.patchSettings('fuel', { opacity: 0.5 });
+    main.liveWidgets.loadLayout('layout-qualify');
+    await overlay.settingsClient.flushSettingsBeforeClose();
+
+    expect(
+      main.layouts
+        .byId('layout-race')
+        ?.widgets.find((widget) => widget.id === 'fuel')?.userSettings.opacity
+    ).toBe(0.5);
+
+    publishing.dispose();
+  });
+
+  it('draws grid preferences before acknowledgement and keeps newer edits over an older snapshot', async () => {
+    const { main, overlay, publishing, publishHeld } = await connected();
+
+    overlay.settingsClient.setGridVisibility(true);
+    expect(overlay.settingsClient.gridVisible).toBe(true);
+    const first = await publishHeld();
+
+    overlay.settingsClient.setGridVisibility(
+      !overlay.settingsClient.gridVisible
+    );
+    applyOverlaySnapshot(overlay, first);
+    expect(overlay.settingsClient.gridVisible).toBe(false);
+    expect(main.appSettings.appSettings.editorShowGrid).toBe(false);
+
+    applyOverlaySnapshot(overlay, await publishHeld());
+    expect(overlay.settingsClient.gridVisible).toBe(false);
+    publishing.dispose();
+  });
+
   it('refuses a widget for a monitor that is not the sender’s, and says so', async () => {
     const { main, overlay, publishing, publishHeld } = await connected();
 
@@ -419,6 +539,28 @@ describe('an overlay’s commands', () => {
 
     expect(xOf(main, 'fuel')).toBe(before);
     expect(xOf(overlay, 'fuel')).toBe(before);
+
+    publishing.dispose();
+  });
+
+  it('keeps a snapped drag on the grid at an unaligned monitor edge', async () => {
+    const { main, overlay, publishing } = await connected();
+
+    const race = main.layouts.byId('layout-race')!;
+
+    runInAction(() => {
+      const monitor = race.monitors.find(({ name }) => name === 'LEFT')!;
+      monitor.bounds.x = 1366;
+    });
+
+    await publishing.publishAll();
+    deliverLatest(overlay);
+
+    overlay.settingsClient.moveWidget('fuel', 1360, 100, 20);
+    overlay.settingsClient.endGeometry('fuel');
+
+    expect(xOf(overlay, 'fuel')).toBe(1380);
+    expect(xOf(main, 'fuel')).toBe(1380);
 
     publishing.dispose();
   });

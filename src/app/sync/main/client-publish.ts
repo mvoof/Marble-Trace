@@ -10,6 +10,7 @@ import {
 } from '@shared/api/overlay-labels';
 import {
   overlaySnapshotFor,
+  overlaySnapshotInputs,
   snapshotAppInputs,
 } from '../client/client-snapshot';
 import type { MainRoot } from '@app/roots/main-root';
@@ -37,8 +38,12 @@ interface ClientState {
 }
 
 /** The monitor of the live layout a client draws, by its window label. */
-const monitorOfClient = (root: MainRoot, clientId: string) =>
-  root.layouts.liveLayout?.monitors.find(
+const monitorOfClient = (
+  root: MainRoot,
+  clientId: string,
+  layoutId = root.layouts.liveLayoutId
+) =>
+  (layoutId ? root.layouts.byId(layoutId) : undefined)?.monitors.find(
     (monitor) => monitorLabel(monitor.name) === clientId
   )?.name;
 
@@ -52,10 +57,7 @@ const isClientsWidget = (
   root: MainRoot,
   widgetId: string,
   monitorName: string
-): boolean =>
-  root.liveWidgets.applyClientCommand(
-    () => root.liveWidgets.getWidget(widgetId)?.monitor === monitorName
-  );
+): boolean => root.liveWidgets.getWidget(widgetId)?.monitor === monitorName;
 
 /**
  * Runs one command, or says why it cannot. Applied through the editor's own
@@ -74,17 +76,11 @@ const runCommand = (
         return 'the widget is not on this monitor';
       }
 
-      liveWidgets.applyClientCommand(() => {
-        if (command.width !== undefined && command.height !== undefined) {
-          liveWidgets.updateSize(
-            command.widgetId,
-            command.width,
-            command.height
-          );
-        }
+      if (command.width !== undefined && command.height !== undefined) {
+        liveWidgets.updateSize(command.widgetId, command.width, command.height);
+      }
 
-        liveWidgets.updatePosition(command.widgetId, command.x, command.y);
-      });
+      liveWidgets.updatePosition(command.widgetId, command.x, command.y);
 
       return null;
     }
@@ -94,9 +90,7 @@ const runCommand = (
         return 'the widget is not on this monitor';
       }
 
-      liveWidgets.applyClientCommand(() =>
-        liveWidgets.setWidgetEnabled(command.widgetId, command.enabled)
-      );
+      liveWidgets.setWidgetEnabled(command.widgetId, command.enabled);
 
       return null;
     }
@@ -106,9 +100,7 @@ const runCommand = (
         return 'a client adds only to its own monitor';
       }
 
-      liveWidgets.applyClientCommand(() =>
-        liveWidgets.setTypeEnabledOnMonitor(command.type, command.monitor, true)
-      );
+      liveWidgets.setTypeEnabledOnMonitor(command.type, command.monitor, true);
 
       return null;
     }
@@ -118,9 +110,29 @@ const runCommand = (
         return 'the widget is not on this monitor';
       }
 
-      liveWidgets.applyClientCommand(() =>
-        liveWidgets.updateUserSettings(command.widgetId, command.partial)
-      );
+      liveWidgets.updateUserSettings(command.widgetId, command.partial);
+
+      return null;
+    }
+
+    case 'switchLayout': {
+      if (!root.layouts.byId(command.targetLayoutId)) {
+        return 'the selected layout no longer exists';
+      }
+
+      root.layoutEditor.applySessionLayout(command.targetLayoutId);
+
+      return null;
+    }
+
+    case 'setGridVisibility': {
+      root.appSettings.update({ editorShowGrid: command.visible });
+
+      return null;
+    }
+
+    case 'setGridSnapping': {
+      root.appSettings.update({ editorSnapToGrid: command.enabled });
 
       return null;
     }
@@ -157,11 +169,15 @@ export const registerClientPublishing = async (root: MainRoot) => {
 
     if (!snapshot) return;
 
-    const state = stateOf(clientId);
-    const { lastHandledCommandNo, rejected } = state;
-
-    runInAction(() => {
+    const { lastHandledCommandNo, rejected } = runInAction(() => {
+      const state = stateOf(clientId);
+      const acknowledgement = {
+        lastHandledCommandNo: state.lastHandledCommandNo,
+        rejected: state.rejected,
+      };
       state.rejected = [];
+
+      return acknowledgement;
     });
 
     void emitSnapshotToClient({
@@ -195,13 +211,22 @@ export const registerClientPublishing = async (root: MainRoot) => {
   };
 
   const handleCommand = (message: CommandMessage) => {
-    const monitorName = monitorOfClient(root, message.clientId);
+    const { command, layoutId, clientId } = message;
+    const monitorName = monitorOfClient(root, clientId, layoutId);
+    const finishesWidgetEdit = command.kind === 'patchSettings';
 
     runInAction(() => {
-      if (message.layoutId !== root.layouts.liveLayoutId || !monitorName) {
+      if (
+        !monitorName ||
+        (layoutId !== root.layouts.liveLayoutId && !finishesWidgetEdit)
+      ) {
         reject(message, 'its layout is no longer on screen');
       } else {
-        const reason = runCommand(root, message.command, monitorName);
+        const applyCommand = () => runCommand(root, command, monitorName);
+        const reason =
+          command.kind === 'switchLayout'
+            ? applyCommand()
+            : root.liveWidgets.applyClientCommand(applyCommand, layoutId);
 
         if (reason) {
           reject(message, reason);
@@ -241,6 +266,7 @@ export const registerClientPublishing = async (root: MainRoot) => {
     () => [
       root.settingsMutations.changeToken,
       ...snapshotAppInputs(root),
+      overlaySnapshotInputs(root),
       Array.from(clients.values(), (state) => state.lastHandledCommandNo),
     ],
     () => void publishAll(),

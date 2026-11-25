@@ -1,13 +1,13 @@
 import { useEffect, useRef, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import { useTranslation } from 'react-i18next';
-import { Button } from 'antd';
 import { Plus, Search } from 'lucide-react';
 import { useClickOutside } from '@shared/hooks/useClickOutside';
 import { useLiveWidgetsStore } from '@entities/layout/live-widgets-context';
 import { useOverlayRoot } from '@app/roots/overlay-root-context';
 import type { PickableWidget } from '@entities/widget/widget-placement';
 import { getWidgetDescription } from '@entities/widget/widget-i18n';
+import { ToolbarButton } from '@shared/ui/Toolbar/ToolbarButton';
 import styles from './WidgetPicker.module.scss';
 
 const PickerRow = observer(
@@ -94,6 +94,7 @@ export const WidgetPicker = observer(() => {
   }
 
   const normalizedQuery = query.trim().toLowerCase();
+  const addWidgetLabel = t('overlayWidgetPicker.addWidget');
 
   const candidates = liveWidgets
     .pickableWidgetsForMonitor(monitorName)
@@ -106,14 +107,14 @@ export const WidgetPicker = observer(() => {
 
   return (
     <div className={styles.container} ref={panelRef}>
-      <Button
-        type="primary"
-        icon={<Plus size={16} />}
-        size="large"
+      <ToolbarButton
+        icon={Plus}
+        label={addWidgetLabel}
+        title={addWidgetLabel}
+        isLabelCollapsible
+        isExpanded={open}
         onClick={toggleOpen}
-      >
-        {t('overlayWidgetPicker.addWidget')}
-      </Button>
+      />
 
       {open && (
         <div className={styles.panel}>

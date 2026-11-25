@@ -15,8 +15,9 @@ import { useSimStore } from '@entities/sim/sim-context';
 import { useLayoutsStore } from '@entities/layout/layouts-context';
 import { useLayoutToastStore } from '@entities/layout/layout-toast-context';
 import { useLiveWidgetsStore } from '@entities/layout/live-widgets-context';
+import { useOverlayRoot } from '@app/roots/overlay-root-context';
 
-// antd and the widget picker stay out of the overlay's initial bundle.
+// The editing controls and widget picker stay out of the initial bundle.
 const DragModeBar = lazy(() =>
   import('@app/windows/overlay/components/DragModeBar/DragModeBar').then(
     (module) => ({ default: module.DragModeBar })
@@ -25,6 +26,7 @@ const DragModeBar = lazy(() =>
 
 export const OverlayCanvas = observer(() => {
   const appSettings = useAppSettingsStore();
+  const { settingsClient } = useOverlayRoot();
   const liveWidgets = useLiveWidgetsStore();
   const layoutToast = useLayoutToastStore();
   const layouts = useLayoutsStore();
@@ -42,7 +44,7 @@ export const OverlayCanvas = observer(() => {
   }, [mouseEnabled]);
 
   const { dragMode } = appSettings;
-  const { hideAllWidgets } = appSettings.appSettings;
+  const { hideAllWidgets, editorGridSize } = appSettings.appSettings;
 
   // Placing widgets with the game closed, the real stores are empty and every
   // widget draws a fraction of its running self. Sample telemetry stands in for
@@ -73,7 +75,9 @@ export const OverlayCanvas = observer(() => {
     transform: `translate(${-(ownBounds?.x ?? 0)}px, ${-(ownBounds?.y ?? 0)}px)`,
   };
 
-  if (hideAllWidgets || simStore.widgetsSuppressed) {
+  const widgetsHidden = hideAllWidgets || simStore.widgetsSuppressed;
+
+  if (widgetsHidden && !dragMode) {
     return null;
   }
 
@@ -90,53 +94,69 @@ export const OverlayCanvas = observer(() => {
       style={{ pointerEvents: mouseEnabled ? 'auto' : 'none' }}
     >
       {dragMode && (
-        <div className={styles.exitButtonContainer}>
-          <Suspense fallback={null}>
-            <DragModeBar />
-          </Suspense>
-        </div>
+        <Suspense fallback={null}>
+          <DragModeBar />
+        </Suspense>
+      )}
+
+      {dragMode && settingsClient.gridVisible && ownBounds && (
+        <div
+          className={styles.grid}
+          aria-hidden="true"
+          style={{
+            backgroundSize: `${editorGridSize}px ${editorGridSize}px`,
+            backgroundPosition: `${-(ownBounds.x % editorGridSize)}px ${-(ownBounds.y % editorGridSize)}px`,
+          }}
+        />
       )}
 
       {/* Widget coordinates are virtual-desktop wide, so this window shifts
           them by its own monitor's origin. Only the widgets whose centre lands
           on this monitor are drawn — dragging one over an edge hands it to the
           neighbouring window. */}
-      <div className={styles.monitorOrigin} style={monitorOffset}>
-        {liveWidgets.ownMonitorWidgets.map((widget) => {
-          const WidgetComponent = componentForWidget(widget.type);
+      <div
+        key={layouts.liveLayoutId}
+        className={styles.monitorOrigin}
+        style={monitorOffset}
+      >
+        {!widgetsHidden &&
+          liveWidgets.ownMonitorWidgets.map((widget) => {
+            const WidgetComponent = componentForWidget(widget.type);
 
-          if (!WidgetComponent) return null;
+            if (!WidgetComponent) {
+              return null;
+            }
 
-          return (
-            <WidgetInstanceScope
-              key={widget.id}
-              type={widget.type}
-              instanceId={widget.id}
-              core={previewStore ?? undefined}
-            >
-              <WidgetContainer widgetId={widget.id}>
-                {previewStore ? (
-                  <CoreProvider core={previewStore}>
+            return (
+              <WidgetInstanceScope
+                key={widget.id}
+                type={widget.type}
+                instanceId={widget.id}
+                core={previewStore ?? undefined}
+              >
+                <WidgetContainer widgetId={widget.id}>
+                  {previewStore ? (
+                    <CoreProvider core={previewStore}>
+                      <WidgetComponent />
+                    </CoreProvider>
+                  ) : (
                     <WidgetComponent />
-                  </CoreProvider>
-                ) : (
-                  <WidgetComponent />
-                )}
-              </WidgetContainer>
-            </WidgetInstanceScope>
-          );
-        })}
+                  )}
+                </WidgetContainer>
+              </WidgetInstanceScope>
+            );
+          })}
       </div>
 
       <div className={styles.toastContainer}>
-        {showInteractBanner && (
+        {!dragMode && showInteractBanner && (
           <div className={`${styles.toast} ${styles.toastInteract}`}>
             <MousePointer2 size={14} className={styles.toastIconInteract} />
             <span className={styles.toastText}>{interactBannerText}</span>
           </div>
         )}
 
-        {layoutToast.message !== null && (
+        {!dragMode && layoutToast.message !== null && (
           <div className={styles.toast}>
             <Layers size={14} className={styles.toastIcon} />
             <span className={styles.toastText}>

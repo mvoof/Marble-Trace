@@ -1,0 +1,19 @@
+@use '@/styles/floating-toolbar' as toolbar;
+
+.bar {
+  @include toolbar.floating-toolbar;
+
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  width: max-content;
+  font-family: $font-widget;
+  transform: translateX(-50%);
+}
+
+.separator {
+  flex: none;
+  width: 1px;
+  height: rem(16);
+  background: $sys-border-main;
+}

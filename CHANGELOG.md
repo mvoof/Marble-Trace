@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **F9 Overlay Editing:** Switch the live layout from any monitor, open the widget picker for that monitor, and control grid visibility and snapping independently. Finish editing exits F9 mode on every monitor.
 - **Website — Widget Gallery:** Refresh the widget examples and screenshots, including the pit exit, towing and input trace layouts.
 - **Website — Homepage:** Refine the brand marks and footer attribution; the cockpit widgets keep their positions while scaling with the screen, up to the source image size.
 

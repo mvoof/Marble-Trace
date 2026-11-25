@@ -31,7 +31,7 @@ export interface ResizeInput {
     scaleFromHeight?: boolean;
     lockAspectRatio?: boolean;
   };
-  /** The editor's grid pitch with snapping on; the overlay has none. */
+  /** The grid pitch for resize snapping. */
   snapGrid?: number | null;
   /** Shift held, or the ratio pinned in the editor: keep the start's shape. */
   keepRatio?: boolean;
@@ -43,10 +43,10 @@ export const snapToGrid = (value: number, gridSize: number): number =>
 /** Snap distance (layout px) for centring a dragged widget on its screen. */
 const SNAP_CENTER_THRESHOLD = 24;
 
-/** The editor's snapping: the grid pitch, and the screen to centre on. */
+/** The grid pitch, and optionally the screen to centre on. */
 export interface DragSnap {
   gridSize: number;
-  area: WidgetBox;
+  area?: WidgetBox;
 }
 
 export interface DragInput {
@@ -57,7 +57,7 @@ export interface DragInput {
   start: { x: number; y: number };
   /** The stored size, which the centring measures. */
   size: { width: number; height: number };
-  /** The editor's snapping with it on; the overlay has none. */
+  /** The active placement grid. */
   snap?: DragSnap | null;
 }
 
@@ -83,6 +83,10 @@ export const dragPosition = ({
   x = snapToGrid(x, snap.gridSize);
   y = snapToGrid(y, snap.gridSize);
 
+  if (!snap.area) {
+    return { x, y };
+  }
+
   const centreX = snap.area.x + snap.area.width / 2;
   const centreY = snap.area.y + snap.area.height / 2;
 
@@ -95,6 +99,30 @@ export const dragPosition = ({
   }
 
   return { x, y };
+};
+
+const resizedSpan = (
+  anchor: number,
+  span: number,
+  minimum: number,
+  fromStart: boolean,
+  gridSize: number | null
+): number => {
+  if (gridSize === null) {
+    return Math.max(minimum, Math.round(span));
+  }
+
+  const sign = fromStart ? -1 : 1;
+  const nearestEdge = snapToGrid(anchor + sign * span, gridSize);
+  const limit = anchor + sign * minimum;
+  const firstLegalEdge = fromStart
+    ? Math.floor(limit / gridSize) * gridSize
+    : Math.ceil(limit / gridSize) * gridSize;
+
+  return Math.max(
+    sign * (nearestEdge - anchor),
+    sign * (firstLegalEdge - anchor)
+  );
 };
 
 /**
@@ -127,35 +155,69 @@ export const resizeBox = ({
     Math.round(design.height * MIN_DESIGN_SHARE)
   );
 
-  if (widget.contentSized) {
-    return scaleFromCorner({ direction, dx, start, drawn, minWidth });
-  }
-
   const fromWest = direction.includes('w');
   const fromNorth = direction.includes('n');
+
+  if (widget.contentSized) {
+    let cornerTravel = dx;
+
+    if (snapGrid !== null && start.width > 0 && drawn.width > 0) {
+      const sign = fromWest ? -1 : 1;
+      const anchor = fromWest ? start.x + drawn.width : start.x;
+      const span = resizedSpan(
+        anchor,
+        drawn.width + sign * dx,
+        (minWidth * drawn.width) / start.width,
+        fromWest,
+        snapGrid
+      );
+      cornerTravel = sign * (span - drawn.width);
+    }
+
+    return scaleFromCorner({
+      direction,
+      dx: cornerTravel,
+      start,
+      drawn,
+      minWidth,
+    });
+  }
 
   let width = start.width;
   let height = start.height;
 
   if (direction.includes('e')) {
-    width = Math.max(minWidth, Math.round(start.width + dx));
+    width = resizedSpan(start.x, start.width + dx, minWidth, false, snapGrid);
   }
 
   if (fromWest) {
-    width = Math.max(minWidth, Math.round(start.width - dx));
+    width = resizedSpan(
+      start.x + start.width,
+      start.width - dx,
+      minWidth,
+      true,
+      snapGrid
+    );
   }
 
   if (direction.includes('s')) {
-    height = Math.max(minHeight, Math.round(start.height + dy));
+    height = resizedSpan(
+      start.y,
+      start.height + dy,
+      minHeight,
+      false,
+      snapGrid
+    );
   }
 
   if (fromNorth) {
-    height = Math.max(minHeight, Math.round(start.height - dy));
-  }
-
-  if (snapGrid !== null) {
-    width = Math.max(minWidth, snapToGrid(width, snapGrid));
-    height = Math.max(minHeight, snapToGrid(height, snapGrid));
+    height = resizedSpan(
+      start.y + start.height,
+      start.height - dy,
+      minHeight,
+      true,
+      snapGrid
+    );
   }
 
   const isCorner = direction.length === 2;

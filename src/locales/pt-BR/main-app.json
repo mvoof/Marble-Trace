@@ -176,7 +176,8 @@
     "unavailable": "Indisponível neste simulador"
   },
   "overlayCanvas": {
-    "exitEditMode": "Sair do modo de edição",
+    "finishEditing": "Concluir edição",
+    "switchLayout": "Alternar layout",
     "interactMode": "Modo de interação",
     "interactModeHold": "Modo de interação — solte {{key}} para sair",
     "interactModeToggle": "Modo de interação — {{key}} para sair",

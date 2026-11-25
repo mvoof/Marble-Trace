@@ -29,7 +29,19 @@ export const applyOverlaySnapshot = (
   }
 
   runInAction(() => {
-    applyClientSnapshot(root, message.snapshot);
+    const snapshot = message.snapshot;
+
+    if (root.layouts.liveLayoutId !== snapshot.layoutId) {
+      root.settingsClient.leaveLayout();
+    }
+
+    applyClientSnapshot(root, snapshot);
+    root.settingsClient.installLayoutChoices(snapshot.layoutChoices);
+    Object.assign(root.appSettings.appSettings, {
+      editorShowGrid: snapshot.editorShowGrid,
+      editorSnapToGrid: snapshot.editorSnapToGrid,
+      editorGridSize: snapshot.editorGridSize,
+    });
 
     if (
       !compareStructural(root.bindings.overrides, message.snapshot.bindings)
@@ -51,11 +63,18 @@ export const applyOverlaySnapshot = (
  * goes out, so the answer cannot arrive unheard.
  */
 export const initOverlaySync = async (root: OverlayRoot) => {
-  const clientId = getCurrentWebviewWindow().label;
+  const windowHandle = getCurrentWebviewWindow();
+  const clientId = windowHandle.label;
 
   root.settingsClient.connect(clientId);
 
   const unlistens = await setupOverlayListeners(root);
+
+  unlistens.push(
+    await windowHandle.onCloseRequested(() =>
+      root.settingsClient.flushSettingsBeforeClose()
+    )
+  );
 
   unlistens.push(
     await listenToMain((message) => {

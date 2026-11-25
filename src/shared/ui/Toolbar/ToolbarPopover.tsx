@@ -26,8 +26,8 @@ interface PopoverControl {
 interface ToolbarPopoverProps {
   trigger: (control: PopoverControl) => ReactNode;
   children: (control: PopoverControl) => ReactNode;
-  /** Which edge of the trigger the panel lines up with. */
-  align?: 'start' | 'end';
+  /** Align with a trigger edge, or center under the positioned toolbar. */
+  align?: 'start' | 'end' | 'center';
   isWide?: boolean;
   /**
    * Drawn over the whole window rather than inside the trigger's box: for a
@@ -86,7 +86,12 @@ export const ToolbarPopover = observer(
       isOpen,
       toggle: () => {
         if (!isOpen && isDetached && rootRef.current) {
-          setPlacement(detachedPlacementOf(rootRef.current, align));
+          setPlacement(
+            detachedPlacementOf(
+              rootRef.current,
+              align === 'end' ? 'end' : 'start'
+            )
+          );
         }
 
         setIsOpen(!isOpen);
@@ -133,6 +138,7 @@ export const ToolbarPopover = observer(
         className={cx(
           styles.panel,
           align === 'end' && styles.panelEnd,
+          align === 'center' && styles.panelCentered,
           isWide && styles.panelWide,
           isDetached && styles.panelDetached
         )}
@@ -144,7 +150,10 @@ export const ToolbarPopover = observer(
     );
 
     return (
-      <div ref={rootRef} className={styles.root}>
+      <div
+        ref={rootRef}
+        className={cx(styles.root, align === 'center' && styles.rootCentered)}
+      >
         {trigger(control)}
 
         {isDetached ? createPortal(panel, document.body) : panel}

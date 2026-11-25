@@ -82,6 +82,19 @@ describe('resizeBox', () => {
     expect(box).toEqual({ x: 100, y: 100, width: 220, height: 100 });
   });
 
+  it('snaps the dragged edge even when its opposite edge is off-grid', () => {
+    const box = resizeBox({
+      ...base,
+      start: { ...base.start, x: 106, y: 103 },
+      direction: 'nw',
+      dx: 19,
+      dy: 23,
+      snapGrid: 20,
+    });
+
+    expect(box).toEqual({ x: 120, y: 120, width: 186, height: 83 });
+  });
+
   it('derives the height from the design ratio of an aspect-locked widget', () => {
     const box = resizeBox({
       ...base,

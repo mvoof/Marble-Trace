@@ -38,10 +38,14 @@ export const WidgetContainer = observer(
     const player = usePlayerStore();
 
     const widget = liveWidgets.getWidget(widgetId);
+    const gridSize = settingsClient.gridSnapping
+      ? appSettings.editorGridSize
+      : undefined;
 
     // An overlay changes geometry only by command; main handles it.
     const geometryWriter: GeometryWriter = {
-      move: (id, x, y) => settingsClient.moveWidget(id, x, y),
+      move: (instanceId, x, y) =>
+        settingsClient.moveWidget(instanceId, x, y, gridSize),
       resize: (id, box) =>
         settingsClient.resizeWidget(id, box.x, box.y, box.width, box.height),
       end: (id) => settingsClient.endGeometry(id),
@@ -50,7 +54,12 @@ export const WidgetContainer = observer(
     const { onDragMouseDown, onResizeMouseDown } = useWidgetGestures(
       widgetId,
       geometryWriter,
-      { widgets: liveWidgets, viewScale: 1, enabled: dragMode }
+      {
+        widgets: liveWidgets,
+        viewScale: 1,
+        enabled: dragMode,
+        snap: gridSize === undefined ? null : { gridSize },
+      }
     );
 
     const isConnected = simStore.status === 'connected';

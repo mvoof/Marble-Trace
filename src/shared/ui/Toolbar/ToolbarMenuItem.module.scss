@@ -54,6 +54,17 @@
   text-overflow: ellipsis;
 }
 
+.itemWrap {
+  height: auto;
+  min-height: rem(28);
+  padding-block: rem(4);
+
+  .label {
+    overflow-wrap: anywhere;
+    white-space: normal;
+  }
+}
+
 .note {
   flex: none;
   color: $sys-text-muted;

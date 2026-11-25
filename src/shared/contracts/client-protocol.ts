@@ -60,6 +60,13 @@ export interface ClientSnapshot {
   settingsLocked: boolean;
 }
 
+export interface OverlaySnapshot extends ClientSnapshot {
+  layoutChoices: { id: string; name: string }[];
+  editorShowGrid: boolean;
+  editorSnapToGrid: boolean;
+  editorGridSize: number;
+}
+
 /**
  * A drag, a resize or a snap. Sent every few frames while the gesture lasts,
  * so a stream screen follows it, and once more on release with `final`.
@@ -99,7 +106,10 @@ export type ClientCommand =
   | SetGeometryCommand
   | SetEnabledCommand
   | EnableTypeOnMonitorCommand
-  | PatchSettingsCommand;
+  | PatchSettingsCommand
+  | { kind: 'switchLayout'; targetLayoutId: string }
+  | { kind: 'setGridVisibility'; visible: boolean }
+  | { kind: 'setGridSnapping'; enabled: boolean };
 
 export type HelloMessage = Extract<ClientEnvelope, { kind: 'hello' }>;
 
@@ -108,7 +118,7 @@ export type CommandMessage = Extract<ClientEnvelope, { kind: 'command' }> & {
 };
 
 export type SnapshotMessage = Extract<ClientEnvelope, { kind: 'snapshot' }> & {
-  snapshot: ClientSnapshot;
+  snapshot: OverlaySnapshot;
 };
 
 /** What a client sends main. */
