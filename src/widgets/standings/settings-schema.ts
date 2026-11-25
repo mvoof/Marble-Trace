@@ -3,6 +3,7 @@ import {
   LIC_BADGE_STYLE,
   ROW_PADDING,
   STANDINGS_VIEW_MODE,
+  STAT_CHIP_PRESENTATIONS,
 } from '@shared/contracts/widget-choices';
 import {
   bool,
@@ -119,6 +120,7 @@ export const STANDINGS_SETTINGS = defineSettings('standings', {
   driversBehind: num(0, PLAYER_WINDOW),
   /** Driver rows each class gets in grouped view (0 = split the widget height evenly between classes). */
   groupedRowsPerClass: num(0, { min: 0, max: 30, step: 1 }),
+  sessionChipStyle: choice(STAT_CHIP_PRESENTATIONS, 'semantic'),
   showColumnHeaders: bool(true),
   /** The whole bar above the table: session type, field, SOF, track, laps and clock. */
   showSessionHeader: bool(true),

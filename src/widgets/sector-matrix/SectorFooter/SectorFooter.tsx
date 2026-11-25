@@ -38,7 +38,7 @@ export const SectorFooter = observer(() => {
   return (
     <div className={styles.footer}>
       {showsLast && (
-        <StatChip lead="LAST" look="reading" className={styles.chip}>
+        <StatChip lead="LAST" presentation="text" className={styles.chip}>
           <FixedDigits text={formatLapTimeOrDash(lastLapTime)} />
         </StatChip>
       )}

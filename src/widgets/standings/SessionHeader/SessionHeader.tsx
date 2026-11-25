@@ -97,6 +97,7 @@ export const SessionHeader = observer(() => {
       <div className={styles.sessionLeft}>
         {currentSession && (
           <StatChip
+            presentation={settings.sessionChipStyle}
             lead={(
               currentSession.sessionTypeLabel ?? currentSession.sessionType
             ).toUpperCase()}
@@ -111,13 +112,23 @@ export const SessionHeader = observer(() => {
         )}
 
         {settings.showTotalDrivers && (
-          <StatChip icon={Users} look="reading" tone="info">
+          <StatChip
+            presentation={settings.sessionChipStyle}
+            icon={Users}
+            look="reading"
+            tone="info"
+          >
             {driverIdentities.length}
           </StatChip>
         )}
 
         {showSof && (
-          <StatChip lead="SOF" look="reading" tone="accent">
+          <StatChip
+            presentation={settings.sessionChipStyle}
+            lead="SOF"
+            look="reading"
+            tone="accent"
+          >
             {formatIRating(overallSof, settings.abbreviateSof)}
           </StatChip>
         )}
@@ -128,6 +139,9 @@ export const SessionHeader = observer(() => {
       <div className={styles.sessionRight}>
         {lapProgress && (
           <StatChip
+            presentation={
+              lapProgress.isFinalLap ? 'semantic' : settings.sessionChipStyle
+            }
             lead="LAPS"
             look="reading"
             tone={lapProgress.isFinalLap ? 'accent' : 'positive'}

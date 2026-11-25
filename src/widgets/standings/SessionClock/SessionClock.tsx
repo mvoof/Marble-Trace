@@ -73,7 +73,12 @@ export const SessionClock = observer(() => {
 
   if (isEnded) {
     return (
-      <StatChip lead="TIME" look="reading" tone="muted">
+      <StatChip
+        presentation={settings.sessionChipStyle}
+        lead="TIME"
+        look="reading"
+        tone="muted"
+      >
         END
       </StatChip>
     );
@@ -88,7 +93,14 @@ export const SessionClock = observer(() => {
   const prefix = isCountdown ? '' : '+';
 
   return (
-    <StatChip lead="TIME" look="reading" tone={URGENCY_TONE[urgency]}>
+    <StatChip
+      presentation={
+        urgency === 'normal' ? settings.sessionChipStyle : 'semantic'
+      }
+      lead="TIME"
+      look="reading"
+      tone={URGENCY_TONE[urgency]}
+    >
       <span
         ref={clockRef}
         className={cx(
