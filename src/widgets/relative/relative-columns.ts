@@ -12,6 +12,7 @@ export const RELATIVE_COLUMNS = [
   'sr',
   'ir',
   'gap',
+  'speed',
   'distance',
 ] as const;
 

@@ -1,0 +1,26 @@
+.cell {
+  display: flex;
+  align-items: baseline;
+  justify-content: flex-end;
+  gap: sp(xxxs);
+  padding-inline: sp(xxs);
+  font-family: $font-mono;
+  white-space: nowrap;
+}
+
+.value {
+  font-size: fs(xs);
+  font-weight: 700;
+  color: $widget-text-primary;
+}
+
+.unit {
+  flex: 0 0 4ch;
+  font-size: fs(xxxs);
+  color: $widget-text-secondary;
+  visibility: hidden;
+}
+
+.cell[data-available='true'] .unit {
+  visibility: visible;
+}

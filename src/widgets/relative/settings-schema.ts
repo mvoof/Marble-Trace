@@ -64,6 +64,8 @@ const COLUMNS = {
   showIRatingChip: bool(true),
   /** Driver's profile country flag, in its own column before the name. */
   showCountryFlag: bool(false),
+  showSpeed: bool(false),
+  showSpeedUnits: bool(true),
   /** Meters or feet along the track to each car, after the gap. */
   showDistance: bool(false),
 } as const;

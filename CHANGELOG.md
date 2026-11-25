@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Relative — Session Header and Footer:** See session type, driver count, SOF, laps and time above the table, with temperatures, track wetness, pit stops, incidents and penalties below. Relative and Standings now share controls for individual items and separate chip styles for each bar. Turn off all items in a bar to hide it.
 - **Standings** gains a choice of colored, neutral or frameless chips in the header and footer of each widget instance. Final laps, urgent countdowns and incident warnings keep their signal colors.
 - **Standings and Relative — Chip Labels:** Choose text or icons separately for the header and footer. For example, the surface chip can show a road icon beside the track condition.
+- **Relative — Speed Column:** Turn on Speed to see how fast nearby cars are going in km/h or mph. It starts after Gap and can be dragged to another position. Hide the unit labels for a narrower column.
 
 ### Changed
 

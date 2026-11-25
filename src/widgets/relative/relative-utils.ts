@@ -37,6 +37,9 @@ export const NAME_COLUMN_MAX_PX = 300;
 export const NAME_COLUMN_DEFAULT_PX = 180;
 
 const DISTANCE_COLUMN_PX = 60;
+const SPEED_VALUE_PX = 24;
+const SPEED_UNIT_PX = 25;
+const SPEED_UNIT_GAP_PX = 2;
 
 const clampNameColumnWidth = (width: number | undefined) => {
   if (!Number.isFinite(width)) {
@@ -63,6 +66,7 @@ const COLUMN_BLOCKS: Record<RelativeColumn, ColumnBlock> = {
   sr: 'rating',
   ir: 'rating',
   gap: 'track',
+  speed: 'track',
   distance: 'track',
 };
 
@@ -73,14 +77,11 @@ interface ColSpec {
   show: boolean;
 }
 
-// A chip's column: the chip's own width and the cell's padding, growing with
-// the font scale as the chip's digits do.
-const chipColumn = (
+// The value and its cell padding, with the text following the font scale.
+const scaledColumn = (
   width: ChipWidth | null,
   settings: WithFontScale<RelativeWidgetSettings>
 ): ColSpec => ({
-  // The design width is what the grid really draws, the font scale too — else a
-  // scaled-up chip pushes the last column out of the frame.
   px:
     width === null
       ? 0
@@ -94,6 +95,10 @@ const columnSpecs = (
   settings: WithFontScale<RelativeWidgetSettings>
 ): Record<RelativeColumn, ColSpec> => {
   const { sr, ir } = ratingChipParts(settings);
+  const speedWidth = {
+    fixedPx: settings.showSpeedUnits ? SPEED_UNIT_GAP_PX : 0,
+    textPx: SPEED_VALUE_PX + (settings.showSpeedUnits ? SPEED_UNIT_PX : 0),
+  };
 
   return {
     pos: { px: 28, show: settings.showPosition },
@@ -106,9 +111,10 @@ const columnSpecs = (
     },
     // The safety rating and the iRating, each a column — the same columns
     // Standings has, so the two tables line up when stacked.
-    sr: chipColumn(srChipWidth(sr, settings.licBadgeStyle), settings),
-    ir: chipColumn(irChipWidth(ir), settings),
+    sr: scaledColumn(srChipWidth(sr, settings.licBadgeStyle), settings),
+    ir: scaledColumn(irChipWidth(ir), settings),
     gap: { px: padded(56), show: settings.showGap },
+    speed: scaledColumn(settings.showSpeed ? speedWidth : null, settings),
     // Five digits and the unit ("41010 ft"), half a lap of the Nordschleife.
     distance: { px: padded(DISTANCE_COLUMN_PX), show: settings.showDistance },
   };
