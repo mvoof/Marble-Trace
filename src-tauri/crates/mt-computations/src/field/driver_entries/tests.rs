@@ -1670,6 +1670,44 @@ fn test_published_live_positions_still_win_over_results() {
 }
 
 #[test]
+fn test_published_race_positions_take_precedence_over_grid_slots() {
+    let mut session = unpublished_positions_session(SessionType::Race);
+    session.sessions[0].results_positions.clear();
+    session.cars[2].car_class_id = session.cars[0].car_class_id + 1;
+
+    let mut car_idx = unpublished_positions_frame();
+    car_idx.car_idx_position = vec![0, 1, 2];
+    car_idx.car_idx_class_position = vec![0, 1, 1];
+    let start_positions = HashMap::from([(0, (2, 1)), (1, (1, 2)), (2, (3, 1))]);
+    let state = Mutex::new(DriverEntriesState::default());
+
+    let frame = compute(
+        &car_idx,
+        &session,
+        &start_positions,
+        false,
+        Some(SessionState::Racing),
+        &state,
+    );
+
+    let player = player_entry(&frame);
+    assert_eq!((player.position, player.class_position), (0, 0));
+    assert_eq!(
+        (player.start_pos_overall, player.start_pos_class),
+        (Some(2), Some(1))
+    );
+    assert_eq!(player.live_position, 2);
+
+    let positions: Vec<_> = frame
+        .entries
+        .iter()
+        .filter(|entry| !entry.is_player)
+        .map(|entry| (entry.position, entry.class_position))
+        .collect();
+    assert_eq!(positions, [(1, 1), (2, 1)]);
+}
+
+#[test]
 fn test_zeroed_positions_before_the_green_keep_the_grid_order() {
     let mut session = unpublished_positions_session(SessionType::Race);
     session.sessions[0].results_positions.clear();
