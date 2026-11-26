@@ -26,6 +26,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **Standings and Relative — Position Color:** The setting description now says it changes the color of your position number.
 - **Standings:** Keep positions, gaps and iRating estimates in sync during overtakes, retain classified cars when live telemetry drops, and clear the lap delta on untimed laps.
+- **Standings — Official Positions:** At the start of a race, a driver who crosses the line can take their published place even if another driver's starting slot still holds it.
 
 ## [0.29.0] — 2026-11-19
 
