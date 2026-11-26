@@ -163,6 +163,8 @@ mod tests {
             on_pit_road: false,
             estimated_ir_delta_live: None,
             estimated_ir_delta_official: None,
+            player_ir_delta_live: None,
+            player_ir_delta_official: None,
             relative_lap_dist: Some({
                 // Compute relative_lap_dist relative to player_lap_dist=0.0
                 let mut diff = lap_dist_pct - player_lap_dist;

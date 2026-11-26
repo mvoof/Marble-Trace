@@ -377,6 +377,40 @@ describe('StandingsWidgetStore — per instance', () => {
     }
   });
 
+  it('selects the player projection per table and follows the selected order', () => {
+    const frame = core.backendComputed.driverEntries!;
+    const [driver, otherClassDriver] = frame.entries;
+
+    runInAction(() => {
+      core.backendComputed.updateDriverEntries({
+        ...frame,
+        entries: [
+          {
+            ...driver,
+            estimatedIrDeltaLive: 12,
+            playerIrDeltaLive: 34,
+            playerIrDeltaOfficial: -8,
+          },
+          otherClassDriver,
+        ],
+      });
+      core.liveWidgets.updateUserSettings(COPY_ID, { irDeltaMode: 'player' });
+    });
+
+    const driverTable = openTable(core, STANDINGS);
+    const playerTable = openTable(core, COPY_ID);
+
+    expect(driverTable.projectedIrDeltaOf(driver.carIdx)).toBe(12);
+    expect(playerTable.projectedIrDeltaOf(driver.carIdx)).toBe(34);
+    expect(playerTable.projectedIrDeltaOf(otherClassDriver.carIdx)).toBeNull();
+
+    runInAction(() => {
+      core.liveWidgets.updateUserSettings(COPY_ID, { useLivePositions: false });
+    });
+
+    expect(playerTable.projectedIrDeltaOf(driver.carIdx)).toBe(-8);
+  });
+
   it('replaces a lap delta with zero on an identical consecutive lap', () => {
     const frame = core.backendComputed.driverEntries!;
     const [driver] = frame.entries;

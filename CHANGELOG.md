@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Standings and Relative — Chip Labels:** Choose text or icons separately for the header and footer. For example, the surface chip can show a road icon beside the track condition.
 - **Relative — Speed Column:** Turn on Speed to see how fast nearby cars are going in km/h or mph. It starts after Gap and can be dragged to another position. Hide the unit labels for a narrower column.
 - **Application Updates — Download Progress:** See how much of the update has downloaded in the banner and in Settings → Updates. A progress bar shows the downloaded and total size when the server provides it. If the total is unknown, a spinner appears alongside the amount received.
+- **Standings — ±iR Forecast:** Choose **Driver** to see each driver's projected change, or **You** to see how your iRating would change if you finished at that position in your class.
 
 ### Changed
 
@@ -23,6 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Standings and Relative — Position Color:** The setting description now says it changes the color of your position number.
 - **Standings:** Keep positions, gaps and iRating estimates in sync during overtakes, retain classified cars when live telemetry drops, and clear the lap delta on untimed laps.
 
 ## [0.29.0] — 2026-11-19

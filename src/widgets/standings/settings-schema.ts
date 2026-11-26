@@ -100,6 +100,7 @@ export const STANDINGS_SETTINGS = defineSettings('standings', {
   /** Seconds of inactivity after which a manual scroll returns to the automatic view (0 = keep it). */
   scrollResetSeconds: num(8, { min: 0, max: 30 }),
   ...COLUMNS,
+  irDeltaMode: choice(['driver', 'player'], 'driver'),
   /**
    * The order the table draws its columns in, left to right — hidden ones
    * keep their place for when they are switched back on. Order never changes
@@ -110,7 +111,7 @@ export const STANDINGS_SETTINGS = defineSettings('standings', {
   showLivePosChange: bool(true),
   /**
    * Drives the position number, the row order of the table, the move animation
-   * and its arrows, and which of the two projected iR deltas the ΔiR column reads.
+   * and its arrows, and which order the ±iR projection uses.
    */
   useLivePositions: bool(true),
   /** Rows shown in front of the player when they no longer fit in the top block (0 = pin the player row only). */
