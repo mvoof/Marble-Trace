@@ -151,7 +151,7 @@ export const STANDINGS_SETTINGS = defineSettings('standings', {
   playerRowColor: color(DEFAULT_PLAYER_ROW_COLOR, {
     label: 'common.playerRowColor',
   }),
-  /** Color of the player's position number and car number. */
+  /** Color of the player's position number. */
   playerAccentColor: color(DEFAULT_PLAYER_ACCENT_COLOR, {
     label: 'common.playerAccentColor',
   }),
