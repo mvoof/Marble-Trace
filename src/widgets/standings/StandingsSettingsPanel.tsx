@@ -177,6 +177,7 @@ export const StandingsSettingsPanel = observer(() => {
         />
         <Row setting="abbreviateIRating" disabled={!settings.showIRating} />
         <Row setting="showIRatingChip" disabled={!settings.showIRating} />
+        <Row setting="irDeltaMode" disabled={!settings.showIrChange} />
       </Card>
 
       <Card title={t('settingsPanels.common.positions')}>

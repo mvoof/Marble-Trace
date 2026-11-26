@@ -1252,6 +1252,14 @@ export type DriverEntry = {
   onPitRoad: boolean;
   estimatedIrDeltaLive: number | null;
   estimatedIrDeltaOfficial: number | null;
+  /**
+   * The player's projected change if they finish at this car's live rank in their class.
+   */
+  playerIrDeltaLive?: number | null;
+  /**
+   * Same projection at this car's official rank.
+   */
+  playerIrDeltaOfficial?: number | null;
   relativeLapDist: number | null;
   classEstLapTime: number;
   rawFlags: number;

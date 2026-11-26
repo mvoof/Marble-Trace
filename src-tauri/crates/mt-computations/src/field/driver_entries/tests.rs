@@ -1042,6 +1042,8 @@ pub(crate) fn make_live_entry(
         on_pit_road: false,
         estimated_ir_delta_live: None,
         estimated_ir_delta_official: None,
+        player_ir_delta_live: None,
+        player_ir_delta_official: None,
         relative_lap_dist: Some(0.0),
         class_est_lap_time: 0.0,
         raw_flags: 0,
@@ -1130,7 +1132,7 @@ fn test_ir_deltas_score_an_unplaced_car_as_a_non_starter() {
 
     let deltas = compute_ir_deltas(&with_non_starter, true);
 
-    assert!(deltas[&9] < 0);
+    assert!(deltas[&9].driver < 0);
     assert_ne!(deltas, compute_ir_deltas(&starters_only, true));
 }
 
@@ -1154,8 +1156,8 @@ fn test_ir_deltas_skip_unrated_cars() {
     let deltas = compute_ir_deltas(&entries, true);
 
     assert_eq!(deltas.get(&1), None);
-    assert!(deltas[&0] > 0);
-    assert!(deltas[&2] < 0);
+    assert!(deltas[&0].driver > 0);
+    assert!(deltas[&2].driver < 0);
 }
 
 #[test]
@@ -1166,8 +1168,8 @@ fn test_ir_deltas_follow_live_order_mid_lap() {
 
     let deltas = compute_ir_deltas(&entries, true);
 
-    assert!(deltas[&1] > 0);
-    assert!(deltas[&0] < 0);
+    assert!(deltas[&1].driver > 0);
+    assert!(deltas[&0].driver < 0);
 }
 
 #[test]
@@ -1178,8 +1180,55 @@ fn test_ir_deltas_follow_official_order_when_not_live() {
 
     let deltas = compute_ir_deltas(&entries, false);
 
-    assert!(deltas[&0] > 0);
-    assert!(deltas[&1] < 0);
+    assert!(deltas[&0].driver > 0);
+    assert!(deltas[&1].driver < 0);
+}
+
+#[test]
+fn test_player_ir_deltas_predict_their_finish_at_each_rank_in_their_class() {
+    let mut entries = vec![
+        make_ir_entry(0, 1, 2, 3100),
+        make_ir_entry(1, 2, 3, 2250),
+        make_ir_entry(2, 3, 1, 1200),
+        make_ir_entry(3, 4, 4, 1800),
+        make_ir_entry(4, 5, 5, 2000),
+        make_ir_entry(5, 0, 6, 1750),
+        make_ir_entry(6, 1, 1, 2900),
+        make_ir_entry(7, 2, 2, 1650),
+        make_ir_entry(8, 6, 7, 0),
+    ];
+    entries[1].is_player = true;
+    entries[6].car_class_id = 1;
+    entries[7].car_class_id = 1;
+
+    for use_live in [true, false] {
+        let deltas = compute_ir_deltas(&entries, use_live);
+
+        for (index, entry) in entries.iter().enumerate().take(5) {
+            let mut reordered = entries.clone();
+            reordered[1].class_position = entry.class_position;
+            reordered[1].live_class_position = entry.live_class_position;
+            reordered[index].class_position = entries[1].class_position;
+            reordered[index].live_class_position = entries[1].live_class_position;
+
+            assert_eq!(
+                deltas[&entry.car_idx].player,
+                Some(compute_ir_deltas(&reordered, use_live)[&1].driver)
+            );
+        }
+
+        for car_idx in [5, 6, 7] {
+            assert_eq!(deltas[&car_idx].player, None);
+        }
+
+        assert!(!deltas.contains_key(&8));
+
+        let mut player_unplaced = entries.clone();
+        player_unplaced[1].class_position = 0;
+        assert!(compute_ir_deltas(&player_unplaced, use_live)
+            .values()
+            .all(|delta| delta.player.is_none()));
+    }
 }
 
 #[test]

@@ -68,6 +68,12 @@ pub struct DriverEntry {
     pub on_pit_road: bool,
     pub estimated_ir_delta_live: Option<i32>,
     pub estimated_ir_delta_official: Option<i32>,
+    /// The player's projected change if they finish at this car's live rank in their class.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub player_ir_delta_live: Option<i32>,
+    /// Same projection at this car's official rank.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub player_ir_delta_official: Option<i32>,
     pub relative_lap_dist: Option<f32>,
     pub class_est_lap_time: f32,
     pub raw_flags: u32,
@@ -356,6 +362,8 @@ pub fn compute(
                     .unwrap_or(false),
                 estimated_ir_delta_live: None,
                 estimated_ir_delta_official: None,
+                player_ir_delta_live: None,
+                player_ir_delta_official: None,
                 relative_lap_dist: None,
                 class_est_lap_time: driver.car_class_est_lap_time,
                 raw_flags: car_idx.car_idx_session_flags.get(idx).copied().unwrap_or(0),
@@ -558,8 +566,12 @@ pub fn compute(
         let official_deltas = compute_ir_deltas(&entries, false);
 
         for entry in &mut entries {
-            entry.estimated_ir_delta_live = live_deltas.get(&entry.car_idx).copied();
-            entry.estimated_ir_delta_official = official_deltas.get(&entry.car_idx).copied();
+            let live = live_deltas.get(&entry.car_idx);
+            let official = official_deltas.get(&entry.car_idx);
+            entry.estimated_ir_delta_live = live.map(|delta| delta.driver);
+            entry.estimated_ir_delta_official = official.map(|delta| delta.driver);
+            entry.player_ir_delta_live = live.and_then(|delta| delta.player);
+            entry.player_ir_delta_official = official.and_then(|delta| delta.player);
         }
     }
 
@@ -881,6 +893,12 @@ fn number_positions(entries: &mut [DriverEntry]) {
     }
 }
 
+#[derive(Debug, PartialEq, Eq)]
+struct IrDeltas {
+    driver: i32,
+    player: Option<i32>,
+}
+
 /// Not iRacing's formula — iRacing publishes none. This is the community estimate
 /// from Kenny Powell's "iRacing SOF iRating Calculator" spreadsheet
 /// (https://github.com/SIMRacingApps/SIMRacingApps/issues/209#issuecomment-531877336),
@@ -892,8 +910,9 @@ fn number_positions(entries: &mut [DriverEntry]) {
 /// order, so the gain/loss updates mid-lap, or the sim's official one, which only
 /// moves when a car crosses start/finish. Both are computed every tick and the
 /// frontend shows whichever the standings widget is set to.
-fn compute_ir_deltas(entries: &[DriverEntry], use_live: bool) -> HashMap<i32, i32> {
+fn compute_ir_deltas(entries: &[DriverEntry], use_live: bool) -> HashMap<i32, IrDeltas> {
     let mut result = HashMap::new();
+    let player = entries.iter().find(|entry| entry.is_player);
 
     // classId -> [(carIdx, rank, iRating)]
     let mut starters: HashMap<i32, Vec<(i32, i32, u32)>> = HashMap::new();
@@ -963,10 +982,38 @@ fn compute_ir_deltas(entries: &[DriverEntry], use_live: bool) -> HashMap<i32, i3
                 .map(RaceResult::from)
                 .collect();
 
-        for outcome in calculate_irating_changes(race_results) {
+        let outcomes = calculate_irating_changes(race_results);
+        let player_outcome = player
+            .filter(|entry| entry.car_class_id == class_id)
+            .and_then(|entry| {
+                outcomes.iter().find(|outcome| {
+                    outcome.race_result.started && outcome.race_result.driver == entry.car_idx
+                })
+            });
+
+        // Each place gained adds one actual point and 0.01 in the rank correction.
+        // The model subtracts that correction, leaving 0.99 points at 200 / N iR each.
+        const IR_DELTA_PER_RANK_NUMERATOR: f32 = 198.0;
+        let ir_delta_per_rank = IR_DELTA_PER_RANK_NUMERATOR / last_starter_rank as f32;
+
+        for outcome in &outcomes {
+            let player_delta =
+                player_outcome
+                    .filter(|_| outcome.race_result.started)
+                    .map(|player_outcome| {
+                        let places_gained = player_outcome.race_result.finish_rank as f32
+                            - outcome.race_result.finish_rank as f32;
+
+                        (player_outcome.irating_change + places_gained * ir_delta_per_rank).round()
+                            as i32
+                    });
+
             result.insert(
                 outcome.race_result.driver,
-                outcome.irating_change.round() as i32,
+                IrDeltas {
+                    driver: outcome.irating_change.round() as i32,
+                    player: player_delta,
+                },
             );
         }
     }

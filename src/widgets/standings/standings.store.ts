@@ -369,6 +369,14 @@ export class StandingsWidgetStore implements StandingsHotkeyTarget {
       return null;
     }
 
+    if (this.settings.irDeltaMode === 'player') {
+      return (
+        (this.useTrackOrder
+          ? entry.playerIrDeltaLive
+          : entry.playerIrDeltaOfficial) ?? null
+      );
+    }
+
     return this.useTrackOrder
       ? entry.estimatedIrDeltaLive
       : entry.estimatedIrDeltaOfficial;

@@ -1067,6 +1067,8 @@ mod tests {
             on_pit_road: false,
             estimated_ir_delta_live: None,
             estimated_ir_delta_official: None,
+            player_ir_delta_live: None,
+            player_ir_delta_official: None,
             relative_lap_dist: Some(0.0),
             class_est_lap_time: 90.0,
             raw_flags: 0,
