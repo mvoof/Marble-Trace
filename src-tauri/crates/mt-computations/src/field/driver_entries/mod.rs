@@ -518,6 +518,13 @@ pub fn compute(
         RankingMode::Official => assign_static_positions(&mut entries, official_sort_key),
     }
 
+    if live_positions
+        && matches!(ranking_mode, RankingMode::TrackOrder)
+        && !start_positions.is_empty()
+    {
+        clear_conflicting_grid_positions(&mut entries, car_idx, &results_positions_map);
+    }
+
     let player_lap_dist = entries
         .iter()
         .find(|e| e.car_idx == player_car_idx)
@@ -580,6 +587,53 @@ pub fn compute(
         player_car_idx,
         pit_lane_loss_s: None,
         pit_exit_loss_s: None,
+    }
+}
+
+/// Once cars cross the line, a published race rank can take a slot still
+/// held by another car's grid fallback. Keep its grid slot for start deltas.
+fn clear_conflicting_grid_positions(
+    entries: &mut [DriverEntry],
+    car_idx: &CarIdxFrame,
+    results: &HashMap<i32, &ResultPosition>,
+) {
+    let rank_at = |ranks: &[i32], index| ranks.get(index).copied().unwrap_or(0);
+    let mut published_overall = HashSet::new();
+    let mut published_class = HashSet::new();
+
+    for entry in entries.iter() {
+        let index = entry.car_idx as usize;
+        let overall = rank_at(&car_idx.car_idx_position, index);
+        let in_class = rank_at(&car_idx.car_idx_class_position, index);
+
+        if overall > 0 {
+            published_overall.insert(overall);
+        }
+
+        if in_class > 0 {
+            published_class.insert((entry.car_class_id, in_class));
+        }
+    }
+
+    for entry in entries {
+        let index = entry.car_idx as usize;
+        let result = results.get(&entry.car_idx);
+
+        if entry.start_pos_overall == Some(entry.position)
+            && published_overall.contains(&entry.position)
+            && rank_at(&car_idx.car_idx_position, index) <= 0
+            && !result.is_some_and(|result| result.position > 0)
+        {
+            entry.position = 0;
+        }
+
+        if entry.start_pos_class == Some(entry.class_position)
+            && published_class.contains(&(entry.car_class_id, entry.class_position))
+            && rank_at(&car_idx.car_idx_class_position, index) <= 0
+            && result.and_then(|result| result.class_position).is_none()
+        {
+            entry.class_position = 0;
+        }
     }
 }
 
